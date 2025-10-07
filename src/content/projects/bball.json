@@ -1,0 +1,60 @@
+{
+  "order": 5,
+  "slug": "bball",
+  "title": "The Intelligent Scouting Archive",
+  "tagline": "Sports Analytics · Personal Project",
+  "summary": "Built a scouting assistant that centralizes hard-to-find European university basketball data. Mixed-method research informed a workflow that continuously discovers, enriches, and updates player records for recruiters.",
+  "highlights": [
+    "Qualitative interviews with scouts",
+    "Data architecture for statistical insight",
+    "AI prompt engineering for niche sources",
+    "Responsive UI for rapid triage"
+  ],
+  "links": [
+    {
+      "href": "/bball",
+      "label": "Read case study",
+      "variant": "primary"
+    }
+  ],
+  "caseStudy": {
+    "hero": {
+      "eyebrow": "Case Study",
+      "title": "The Intelligent Scouting Archive",
+      "subtitle": "A personal project applying mixed-methods research to solve a real-world data challenge in sports analytics."
+    },
+    "situation": {
+      "title": "The Situation: A Hidden Talent Pool",
+      "description": "While American collegiate sports are data-rich, European university basketball represents a significant, yet underserved, talent pool. Player information is often ephemeral, scattered across temporary tournament sites that are difficult to track. This \"data obscurity\" creates a significant challenge for scouts who rely on timely and accurate information."
+    },
+    "methodology": [
+      {
+        "title": "1. Qualitative Research: Understanding the User",
+        "description": "Conducted in-depth interviews with basketball scouts to map their daily workflows and pinpoint their primary frustrations. The most time-consuming work was manual data collection—insight that became the cornerstone of the project."
+      },
+      {
+        "title": "2. Quantitative Framework: Designing for Insight",
+        "description": "Designed a data architecture that could support statistical analysis, including correlations between player stats and team performance. Structured the schema so findings translate into actionable recommendations."
+      },
+      {
+        "title": "3. Technical Implementation: Building the Solution",
+        "description": "Prototyped a full-stack workflow: a Tailwind CSS interface, Firebase for real-time data, and Google Gemini prompts tuned to parse niche sports sources."
+      }
+    ],
+    "results": [
+      "Discovers and archives players from obscure sources.",
+      "Automatically enriches profiles with stats, summaries, and sources.",
+      "Continuously updates itself to ensure data freshness.",
+      "Provides a clean, user-friendly interface for scouts."
+    ],
+    "skills": [
+      "Mixed-Methods Research",
+      "Qualitative & Quantitative Analysis",
+      "Data-Driven Recommendations",
+      "Statistical Analysis Design",
+      "AI Prompt Engineering",
+      "Front-End Development",
+      "Database Management"
+    ]
+  }
+}

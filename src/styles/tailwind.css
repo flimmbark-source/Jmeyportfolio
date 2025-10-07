@@ -73,3 +73,42 @@ html[data-large-text="true"] {
 .skip-link:focus {
   transform: translateY(0);
 }
+
+.gradient-bg {
+  background-color: #f3f4f6;
+  background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  height: 350px;
+  max-height: 400px;
+}
+
+@media (min-width: 768px) {
+  .chart-container {
+    height: 400px;
+  }
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.step-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
