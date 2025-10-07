@@ -1,5 +1,6 @@
 ---
 import '../styles/tailwind.css';
+import mainScript from '../main.js?url';
 
 interface NavLink {
   href: string;
@@ -137,6 +138,6 @@ const { title, description, mainClass = '', navLinks = defaultNavLinks } = Astro
         </div>
       </div>
     </footer>
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src={mainScript}></script>
   </body>
 </html>
