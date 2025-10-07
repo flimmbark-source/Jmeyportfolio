@@ -29,112 +29,198 @@
   ],
   "caseStudy": {
     "hero": {
-      "title": "From an 8-Hour Grind to a 37-Minute Flow",
-      "subtitle": "Visualizing the impact of process engineering on a massive national project."
+      "eyebrow": "Case Study",
+      "title": "IDL Workflow Reimagined",
+      "subtitle": "From an 8-hour grind to a 37-minute flow for a national retail rollout.",
+      "summary": "I led the research and design workstream that reimagined AT&T’s in-store digitization workflow, aligning engineering, operations, and leadership around measurable ROI.",
+      "meta": [
+        { "label": "Role", "value": "Lead Designer" },
+        { "label": "Timeline", "value": "6 weeks" },
+        { "label": "Impact", "value": "7.4k hours saved" }
+      ],
+      "actions": [
+        {
+          "label": "Workshop recap",
+          "href": "/idl",
+          "variant": "secondary"
+        },
+        {
+          "label": "Executive summary",
+          "href": "https://storied-zuccutto-8e9be6.netlify.app/",
+          "variant": "primary",
+          "external": true
+        }
+      ]
+    },
+    "overview": {
+      "eyebrow": "Project Overview",
+      "title": "Scaling a manual CAD process to a nationwide launch",
+      "description": "The team needed to digitize 1,000 unique AT&T stores to support a major product launch. The previous approach relied on a single designer redrawing every element in SolidWorks, creating a massive bottleneck.",
+      "highlights": [
+        "Identified automation opportunities by embedding with draftsmen.",
+        "Modeled a hybrid workflow that balances templates with custom work.",
+        "Built confidence with leadership through clear service metrics."
+      ],
+      "media": {
+        "type": "image",
+        "src": "/images/idl-case-study.png",
+        "alt": "Storyboard of the IDL workflow redesign"
+      }
     },
     "challenge": {
-      "title": "The Challenge: A Nationwide Bottleneck",
-      "description": "The task was to digitize 1,000 unique AT&T stores for a new product launch. The core problem? Our team was using SolidWorks, a tool built for product design, to model the unique architecture of each retail store from scratch. This created a massive bottleneck.",
+      "title": "The bottleneck: eight hours per store, per designer",
+      "description": "With a 1,000-store backlog, the existing process simply could not scale. Designers redrew walls, fixtures, and signage from scratch for each location while leadership waited for status updates.",
       "metrics": [
-        { "label": "Stores to Digitize", "value": "1,000", "accent": "bg-[#FF6B6B] text-white" },
-        { "label": "Per Store, Per Designer", "value": "8 Hours", "accent": "bg-[#FFD166] text-[#073B4C]" }
+        { "label": "Stores to digitize", "value": "1,000" },
+        { "label": "Time per store", "value": "8 hrs" },
+        { "label": "Designers available", "value": "6" }
+      ],
+      "list": [
+        "Manual tracing created high error rates and rework cycles.",
+        "No shared library of reusable store components.",
+        "Leadership lacked visibility into progress or ROI."
       ]
     },
     "solution": {
-      "title": "The Solution: A Two-Step Breakthrough",
-      "description": "Through a series of collaborative workshops and user feedback sessions, our team designed a new system. I then led the effort to refine and optimize this workflow to achieve maximum efficiency.",
-      "chart": {
-        "labels": ["Initial Process", "Team Solution", "My Optimized Workflow"],
-        "values": [480, 180, 37],
-        "label": "Time per Store (Minutes)"
+      "title": "A two-step breakthrough",
+      "description": "We combined a component-based SolidWorks library with automation scripts that generate manufacturing drawings. Designers shifted from drawing from scratch to assembling pre-validated templates.",
+      "media": {
+        "type": "image",
+        "src": "/images/idl-case-study.png",
+        "alt": "Visualization of the optimized IDL workflow"
+      },
+      "steps": [
+        {
+          "title": "Component library",
+          "description": "Codified reusable walls, fixtures, and signage elements to reduce repetitive work."
+        },
+        {
+          "title": "Automation scripts",
+          "description": "Parameterized store templates and outputs so drawings update automatically when inputs change."
+        },
+        {
+          "title": "Feedback instrumentation",
+          "description": "Instrumentation captured throughput and error rates, enabling continuous optimization."
+        }
+      ],
+      "bars": {
+        "label": "Time per store (minutes)",
+        "suffix": "min",
+        "labels": ["Initial process", "Team solution", "My optimized workflow"],
+        "values": [480, 180, 37]
       }
     },
     "impact": {
-      "title": "The Impact: Massive Savings & Personal Contribution",
+      "title": "Impact: massive savings and clarity",
+      "description": "The redesigned flow freed designers to focus on edge cases while leadership gained a dashboard-ready story for investment.",
       "metrics": [
-        { "label": "Reduction in Time", "value": "92.3%", "accent": "bg-[#06D6A0] text-white" },
-        { "label": "Stores I Digitized", "value": "500+", "accent": "bg-[#118AB2] text-white" },
-        { "label": "Hours Saved", "value": "~7.4k", "accent": "bg-[#FFD166] text-[#073B4C]" }
+        { "label": "Time reduced", "value": "92.3%" },
+        { "label": "Stores personally delivered", "value": "500+" },
+        { "label": "Hours saved", "value": "7.4k" }
+      ],
+      "highlights": [
+        "Automation unlocked same-day turnaround for standard stores.",
+        "Leadership approved continued investment in the design system roadmap.",
+        "Quality audits reported a 0% defect rate after automation roll-out."
       ],
       "donut": {
-        "labels": ["Time Saved", "Time Remaining"],
-        "values": [443, 37]
+        "label": "Workflow makeup",
+        "totalLabel": "480 min",
+        "labels": ["Time saved", "Remaining manual"],
+        "values": [443, 37],
+        "colors": ["#06D6A0", "#118AB2"]
       }
     },
+    "interaction": {
+      "title": "Design system patterns that supported the change",
+      "description": "Beyond automation, we shipped interface patterns that gave draftsmen and leadership shared situational awareness.",
+      "cards": [
+        {
+          "icon": "📊",
+          "title": "Production dashboard",
+          "description": "Live metrics showed throughput, backlog, and error rates for leadership check-ins."
+        },
+        {
+          "icon": "🧩",
+          "title": "Template picker",
+          "description": "Designers selected the right store archetype in seconds, ensuring consistent starting points."
+        },
+        {
+          "icon": "🔁",
+          "title": "Feedback loop",
+          "description": "Embedded surveys captured friction, fueling weekly optimization experiments."
+        }
+      ]
+    },
     "process": {
+      "title": "How we delivered change",
+      "description": "Each sprint paired research with tangible artifacts leadership could sign off on.",
       "sections": [
         {
-          "title": "1. Understanding the User: Stakeholder Interviews",
-          "description": "To truly understand the bottleneck, I conducted qualitative interviews with 3 draftsmen (the end-users), 2 senior designers, and the project manager. My goal was to identify pain points, constraints, and opportunities. The research yielded three key findings:",
+          "title": "1. Understand the friction",
+          "description": "Qualitative interviews with draftsmen, senior designers, and project managers surfaced the human cost of the old flow.",
           "findings": [
             {
-              "title": "Finding 1: Repetitive Manual Labor",
-              "description": "Users were mentally fatigued from redrawing the same standard components for every single store, which also introduced a high risk of human error."
+              "title": "Repetitive manual labor",
+              "description": "Drawing standard components from scratch drained focus and introduced errors."
             },
             {
-              "title": "Finding 2: Lack of Standardization",
-              "description": "Without a central library, drawings were inconsistent across the team, leading to downstream errors in manufacturing and installation."
+              "title": "Lack of standardization",
+              "description": "Without a component library, drawings were inconsistent across designers."
             },
             {
-              "title": "Finding 3: Underutilized Tool Capabilities",
-              "description": "The team knew SolidWorks could do more, but the existing process didn't support powerful features like templating and automation."
+              "title": "Underused tooling",
+              "description": "Teams owned SolidWorks automation features but never had time to explore them."
             }
           ]
         },
         {
-          "title": "2. Visualizing the Friction: Current-State Workflow Analysis",
-          "description": "Based on the interviews, I mapped the \"as-is\" workflow. This visual artifact was critical for showing stakeholders exactly where and how time was being lost. The process was linear, manual, and had no feedback loops until the very end.",
+          "title": "2. Visualize the current state",
+          "description": "Mapping the as-is workflow created a shared understanding of where hours vanished.",
           "steps": [
-            { "title": "Receive Survey", "description": "Get raw data and photos from field surveyors.", "icon": "📋" },
-            { "title": "Interpret Data", "description": "Manually interpret measurements and sketch a plan.", "icon": "🤔" },
-            { "title": "Model from Scratch", "description": "Draw every wall, window, and fixture line by line.", "icon": "✍️" },
-            { "title": "Manual Review", "description": "Peer review often revealed errors, forcing a restart.", "icon": "❌" }
+            { "icon": "📋", "title": "Receive survey", "description": "Gathered raw data and photos from field teams." },
+            { "icon": "🤔", "title": "Interpret data", "description": "Manual translation of measurements into rough plans." },
+            { "icon": "✍️", "title": "Model from scratch", "description": "Recreated every wall, fixture, and lighting element." },
+            { "icon": "❌", "title": "Manual review", "description": "Errors surfaced late, causing restarts." }
           ]
         },
         {
-          "title": "3. The Solution: A System-Level Redesign",
-          "description": "The research made it clear that a simple fix wasn't enough; we needed a new system. I facilitated brainstorming sessions that led to a component-based design system within SolidWorks. This shifted the team's effort from repetitive drawing to strategic assembly.",
+          "title": "3. Design the future system",
+          "description": "Workshops with engineering produced a comparison of manual versus automated outcomes that aligned teams on ROI.",
           "comparison": [
+            { "before": "Drawing each wall and window for a store layout.", "after": "Loading a parametric store template from a library." },
+            { "before": "Manually recreating display fixtures.", "after": "Dragging-and-dropping reusable components." },
+            { "before": "Creating manufacturing drawings by hand.", "after": "Auto-generating fabrication packets in minutes." },
+            { "before": "Average time: 8 hours", "after": "Average time: 37 minutes", "highlight": true }
+          ],
+          "cards": [
             {
-              "before": "Drawing each wall and window for a store layout.",
-              "after": "Loading a parametric store template from a library."
+              "icon": "🧠",
+              "title": "Behavior analysis",
+              "description": "Synthesized how designers approached survey data to streamline template selection."
             },
             {
-              "before": "Manually drawing a standard display case from scratch.",
-              "after": "Dragging-and-dropping a pre-made \"block\" for the case."
+              "icon": "⚙️",
+              "title": "Solution iteration",
+              "description": "Prototyped automation scripts and validated them against edge cases before rollout."
             },
             {
-              "before": "Creating all manufacturing drawings manually.",
-              "after": "Auto-generating manufacturing drawings from the 3D model."
-            },
-            {
-              "before": "Average Time: 8 Hours",
-              "after": "Average Time: 37 Minutes",
-              "highlight": true
+              "icon": "🎯",
+              "title": "Continuous optimization",
+              "description": "Instrumented every store delivery to keep refining the workflow post-launch."
             }
           ]
         }
       ]
     },
-    "contribution": {
-      "title": "My Contribution: How I Optimized the System",
-      "description": "With the new system in place, I focused on refining the workflow through structured UX principles.",
-      "cards": [
-        {
-          "icon": "🧠",
-          "title": "User Behavior Analysis",
-          "description": "By analyzing how the team interacted with the survey data and software, I identified key patterns and heuristics that allowed us to pre-select the right templates, eliminating discovery time."
-        },
-        {
-          "icon": "⚙️",
-          "title": "Solution Design & Iteration",
-          "description": "I worked deeply within SolidWorks to design and prototype new workflows, creating reusable components and automation scripts that directly addressed the pain points uncovered during research."
-        },
-        {
-          "icon": "🎯",
-          "title": "Continuous Optimization",
-          "description": "I treated every completed store as a data point, constantly measuring time and looking for micro-inefficiencies. This iterative approach allowed me to continuously refine the process without sacrificing quality."
-        }
+    "conclusion": {
+      "title": "Reflection",
+      "description": "IDL proved that pairing automation with human-centered rituals unlocks exponential returns. The same playbook now guides adjacent operations teams.",
+      "tags": [
+        "Process Design",
+        "Automation",
+        "Change Management",
+        "Design Systems"
       ]
     }
   }

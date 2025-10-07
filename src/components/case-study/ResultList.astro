@@ -1,0 +1,15 @@
+---
+const { items = [] } = Astro.props;
+---
+{items.length > 0 && (
+  <ul class="mt-8 space-y-4">
+    {items.map((item) => (
+      <li class="flex items-start gap-3 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4 text-emerald-800">
+        <span class="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-sm font-bold text-white">
+          ✓
+        </span>
+        <p class="text-base leading-relaxed">{item}</p>
+      </li>
+    ))}
+  </ul>
+)}
