@@ -1,0 +1,32 @@
+{
+  "order": 4,
+  "slug": "agora-21",
+  "title": "Agora 21 Participation Hub",
+  "tagline": "Civic Tech · Platform",
+  "summary": "Delivered a civic engagement concept that gave residents a voice in policy making. Story-driven onboarding and accessible patterns increased reported civic efficacy by 50% in testing.",
+  "highlights": [
+    "Community listening sessions",
+    "Accessibility-first UI library",
+    "Service journey orchestration",
+    "Impact storytelling"
+  ],
+  "image": {
+    "src": "/images/agora21.png",
+    "alt": "Agora 21 civic platform mobile screens"
+  },
+  "links": [
+    {
+      "href": "https://extraordinary-salamander-f823fe.netlify.app/",
+      "label": "View case study",
+      "variant": "primary",
+      "external": true
+    }
+  ],
+  "caseStudy": {
+    "hero": {
+      "title": "Agora 21",
+      "subtitle": "A Platform for Civic Renewal"
+    },
+    "overview": "Agora 21 explores how civic platforms can combine participatory budgeting, deliberation hubs, and local service feedback into a single, accessible experience. The prototype uses modular dashboards, guided learning states, and credibility signals to help residents see their impact."
+  }
+}

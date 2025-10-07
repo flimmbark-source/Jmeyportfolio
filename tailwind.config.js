@@ -2,11 +2,8 @@
 module.exports = {
   darkMode: 'class',
   content: [
-    './index.html',
-    './Bball/**/*.html',
-    './IDL/**/*.html',
-    './agora 21/**/*.html',
-    './src/**/*.{html,js,jsx,ts,tsx}'
+    './src/**/*.{astro,html,js,jsx,ts,tsx,md,mdx}',
+    './src/content/**/*.{json,md}'
   ],
   theme: {
     extend: {

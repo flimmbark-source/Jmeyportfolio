@@ -1,0 +1,25 @@
+{
+  "order": 1,
+  "slug": "earth-hero",
+  "title": "Earth Hero Habit Builder",
+  "tagline": "Sustainability · Web App",
+  "summary": "Designed a climate action companion that transformed overwhelming eco-goals into playful, trackable rituals. Gamified progress loops raised daily habit completion by 30% in pilot tests.",
+  "highlights": [
+    "Mixed-method research & segmentation",
+    "Gamified onboarding experiments",
+    "Motion system for feedback moments",
+    "Figma prototype + usability analytics"
+  ],
+  "image": {
+    "src": "/images/earth-hero.png",
+    "alt": "Earth Hero app interface screens"
+  },
+  "links": [
+    {
+      "href": "https://www.figma.com/proto/LzhPtZ3yducApu5mLb8l8Y/Shuna?node-id=109-9633&starting-point-node-id=109%3A9633&t=QeVp0oCGODIAZ4hp-1",
+      "label": "View prototype",
+      "variant": "primary",
+      "external": true
+    }
+  ]
+}
