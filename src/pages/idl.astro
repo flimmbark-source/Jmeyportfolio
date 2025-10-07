@@ -1,0 +1,12 @@
+---
+import { getEntry } from 'astro:content';
+import CaseStudyLayout from '../layouts/CaseStudyLayout.astro';
+
+const { data } = await getEntry('projects', 'idl');
+const caseStudy = data.caseStudy;
+---
+<CaseStudyLayout
+  title={`${caseStudy.hero.title} | Jacob Meyerkopf`}
+  description={caseStudy.hero.subtitle ?? data.summary}
+  caseStudy={caseStudy}
+/>
