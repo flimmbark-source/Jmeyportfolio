@@ -1,0 +1,238 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import SectionHeader from '../components/case-study/SectionHeader.astro';
+import MetricsGrid from '../components/case-study/MetricsGrid.astro';
+import StepList from '../components/case-study/StepList.astro';
+import ResultList from '../components/case-study/ResultList.astro';
+import TagCloud from '../components/case-study/TagCloud.astro';
+import CardDeck from '../components/case-study/CardDeck.astro';
+import InsightList from '../components/case-study/InsightList.astro';
+import IconStepGrid from '../components/case-study/IconStepGrid.astro';
+import ComparisonTable from '../components/case-study/ComparisonTable.astro';
+import MediaSlot from '../components/case-study/MediaSlot.astro';
+import ModuleGrid from '../components/case-study/ModuleGrid.astro';
+import ComparisonBars from '../components/case-study/ComparisonBars.astro';
+import DonutChart from '../components/case-study/DonutChart.astro';
+
+const {
+  title,
+  description,
+  caseStudy,
+  navLinks: navLinksProp,
+  pageTheme = 'bg-slate-900'
+} = Astro.props;
+
+const sections = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'challenge', label: 'Challenge' },
+  { key: 'solution', label: 'Solution' },
+  { key: 'impact', label: 'Impact' },
+  { key: 'interaction', label: 'Interaction' },
+  { key: 'process', label: 'Process' },
+  { key: 'conclusion', label: 'Conclusion' }
+];
+
+const hero = caseStudy?.hero ?? {};
+const overview = caseStudy?.overview;
+const challenge = caseStudy?.challenge;
+const solution = caseStudy?.solution;
+const impact = caseStudy?.impact;
+const interaction = caseStudy?.interaction;
+const process = caseStudy?.process;
+const conclusion = caseStudy?.conclusion;
+
+const autoNav = sections
+  .filter((section) => caseStudy?.[section.key])
+  .map((section) => ({
+    href: `#${section.key}`,
+    label: section.label
+  }));
+
+const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
+  { href: '/', label: 'Home' },
+  ...autoNav
+];
+---
+<BaseLayout title={title} description={description} navLinks={navLinks} mainClass="bg-slate-50">
+  <main class="relative mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
+    <section class="rounded-3xl bg-white p-8 shadow-xl sm:p-12">
+      <div class="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-10 text-white">
+        <div class="space-y-6 text-center">
+          {hero.eyebrow && (
+            <p class="text-sm font-semibold uppercase tracking-[0.35em] text-sky-300">
+              {hero.eyebrow}
+            </p>
+          )}
+          <div class="space-y-4">
+            <h1 class="text-4xl font-extrabold sm:text-5xl">{hero.title}</h1>
+            {hero.subtitle && (
+              <p class="text-lg leading-relaxed text-slate-200">{hero.subtitle}</p>
+            )}
+          </div>
+          {hero.summary && (
+            <p class="text-base leading-relaxed text-slate-200">{hero.summary}</p>
+          )}
+          {(hero.meta || hero.actions) && (
+            <div class="mt-8 grid w-full gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
+              {hero.meta && hero.meta.length > 0 && (
+                <dl class="grid w-full gap-4 text-left text-sm text-slate-200 sm:grid-cols-2 lg:grid-cols-3">
+                  {hero.meta.map((item) => (
+                    <div
+                      class="flex h-full flex-col gap-1 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur"
+                      key={`${item.label}-${item.value}`}
+                    >
+                      <dt class="text-xs uppercase tracking-[0.2em] text-sky-200">{item.label}</dt>
+                      <dd class="text-base font-semibold text-white">{item.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+              {hero.actions && hero.actions.length > 0 && (
+                <div class="flex flex-wrap justify-center gap-3 lg:justify-end">
+                  {hero.actions.map((action) => (
+                    <a
+                      class={`inline-flex items-center gap-2 rounded-full border border-white/30 px-5 py-2 text-sm font-semibold transition hover:bg-white/10 ${
+                        action.variant === 'primary'
+                          ? 'bg-white text-slate-900'
+                          : 'bg-transparent text-white'
+                      }`}
+                      href={action.href}
+                      target={action.external ? '_blank' : undefined}
+                      rel={action.external ? 'noreferrer noopener' : undefined}
+                      key={action.label}
+                    >
+                      {action.label}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {overview && (
+        <section id="overview" class="mt-16 scroll-mt-24">
+          <SectionHeader eyebrow={overview.eyebrow} title={overview.title} subtitle={overview.description} />
+          {overview.highlights && overview.highlights.length > 0 && (
+            <ul class="mt-8 grid gap-4 sm:grid-cols-2">
+              {overview.highlights.map((highlight) => (
+                <li class="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-base leading-relaxed text-slate-700">
+                  {highlight}
+                </li>
+              ))}
+            </ul>
+          )}
+          <MediaSlot media={overview.media} />
+        </section>
+      )}
+
+      {challenge && (
+        <section id="challenge" class="mt-20 scroll-mt-24">
+          <SectionHeader
+            eyebrow={challenge.eyebrow ?? 'Challenge'}
+            title={challenge.title}
+            subtitle={challenge.description}
+          />
+          <MetricsGrid metrics={challenge.metrics} />
+          {challenge.list && challenge.list.length > 0 && (
+            <ul class="mt-8 space-y-3 text-left text-base leading-relaxed text-slate-600">
+              {challenge.list.map((item) => (
+                <li class="flex gap-3">
+                  <span class="mt-1 inline-flex h-2 w-2 rounded-full bg-sky-500"></span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+
+      {solution && (
+        <section id="solution" class="mt-20 scroll-mt-24">
+          <SectionHeader
+            eyebrow={solution.eyebrow ?? 'Solution'}
+            title={solution.title}
+            subtitle={solution.description}
+          />
+          <MediaSlot media={solution.media} />
+          <StepList steps={solution.steps} />
+          {solution.modules && <ModuleGrid modules={solution.modules} />}
+          {solution.metrics && <MetricsGrid metrics={solution.metrics} />}
+          {solution.bars && <ComparisonBars data={solution.bars} />}
+        </section>
+      )}
+
+      {impact && (
+        <section id="impact" class="mt-20 scroll-mt-24">
+          <SectionHeader
+            eyebrow={impact.eyebrow ?? 'Impact'}
+            title={impact.title}
+            subtitle={impact.description}
+          />
+          <MetricsGrid metrics={impact.metrics} />
+          <ResultList items={impact.results} />
+          {impact.highlights && impact.highlights.length > 0 && (
+            <ul class="mt-8 space-y-3 text-base leading-relaxed text-slate-600">
+              {impact.highlights.map((highlight) => (
+                <li class="flex gap-3">
+                  <span class="mt-1 inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                  <span>{highlight}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {impact.donut && <DonutChart data={impact.donut} />}
+        </section>
+      )}
+
+      {interaction && (
+        <section id="interaction" class="mt-20 scroll-mt-24">
+          <SectionHeader
+            eyebrow={interaction.eyebrow ?? 'Interaction Design'}
+            title={interaction.title}
+            subtitle={interaction.description}
+          />
+          {interaction.modules && <ModuleGrid modules={interaction.modules} />}
+          {interaction.cards && <CardDeck cards={interaction.cards} />}
+        </section>
+      )}
+
+      {process && (
+        <section id="process" class="mt-20 scroll-mt-24">
+          <SectionHeader
+            eyebrow={process.eyebrow ?? 'Process'}
+            title={process.title}
+            subtitle={process.description}
+          />
+          {process.sections &&
+            process.sections.map((section) => (
+              <article class="mt-12 rounded-3xl bg-slate-50 p-8">
+                <h3 class="text-2xl font-semibold text-slate-900">{section.title}</h3>
+                {section.description && (
+                  <p class="mt-4 text-base leading-relaxed text-slate-600">{section.description}</p>
+                )}
+                <InsightList items={section.findings} />
+                <IconStepGrid steps={section.steps} />
+                <ComparisonTable rows={section.comparison} beforeLabel={section.beforeLabel} afterLabel={section.afterLabel} />
+                {section.cards && <CardDeck cards={section.cards} />}
+              </article>
+            ))}
+        </section>
+      )}
+
+      {conclusion && (
+        <section id="conclusion" class="mt-20 scroll-mt-24">
+          <SectionHeader
+            eyebrow={conclusion.eyebrow ?? 'Reflection'}
+            title={conclusion.title}
+            subtitle={conclusion.description}
+          />
+          {conclusion.cards && <CardDeck cards={conclusion.cards} />}
+          {conclusion.metrics && <MetricsGrid metrics={conclusion.metrics} />}
+          {conclusion.tags && <TagCloud tags={conclusion.tags} />}
+        </section>
+      )}
+    </section>
+  </main>
+</BaseLayout>

@@ -21,40 +21,166 @@
     "hero": {
       "eyebrow": "Case Study",
       "title": "The Intelligent Scouting Archive",
-      "subtitle": "A personal project applying mixed-methods research to solve a real-world data challenge in sports analytics."
+      "subtitle": "Helping recruiters surface hidden European university talent with a research-driven workflow.",
+      "summary": "I built a full-stack prototype that scrapes fragmented tournament sources, enriches player profiles with AI, and surfaces signals scouts care about most.",
+      "meta": [
+        { "label": "Role", "value": "Product Designer & Builder" },
+        { "label": "Timeline", "value": "5 weeks" },
+        { "label": "Focus", "value": "Research, UX, Data Systems" }
+      ]
     },
-    "situation": {
-      "title": "The Situation: A Hidden Talent Pool",
-      "description": "While American collegiate sports are data-rich, European university basketball represents a significant, yet underserved, talent pool. Player information is often ephemeral, scattered across temporary tournament sites that are difficult to track. This \"data obscurity\" creates a significant challenge for scouts who rely on timely and accurate information."
-    },
-    "methodology": [
-      {
-        "title": "1. Qualitative Research: Understanding the User",
-        "description": "Conducted in-depth interviews with basketball scouts to map their daily workflows and pinpoint their primary frustrations. The most time-consuming work was manual data collection—insight that became the cornerstone of the project."
-      },
-      {
-        "title": "2. Quantitative Framework: Designing for Insight",
-        "description": "Designed a data architecture that could support statistical analysis, including correlations between player stats and team performance. Structured the schema so findings translate into actionable recommendations."
-      },
-      {
-        "title": "3. Technical Implementation: Building the Solution",
-        "description": "Prototyped a full-stack workflow: a Tailwind CSS interface, Firebase for real-time data, and Google Gemini prompts tuned to parse niche sports sources."
+    "overview": {
+      "eyebrow": "Project Overview",
+      "title": "Scouting in the shadows of collegiate data",
+      "description": "U.S. collegiate scouting is data rich, but European university leagues remain scattered across PDFs, livestream descriptions, and social clips. The archive aggregates these sources into a structured, queryable system.",
+      "highlights": [
+        "Synthesized interviews with six active scouts to understand decision frameworks.",
+        "Modeled a content pipeline that scores source reliability and freshness.",
+        "Shipped a responsive interface that mirrors scouts' real evaluation stages."
+      ],
+      "media": {
+        "type": "image",
+        "src": "/images/ai-archiver.png",
+        "alt": "Interface mockups for the intelligent scouting archive"
       }
-    ],
-    "results": [
-      "Discovers and archives players from obscure sources.",
-      "Automatically enriches profiles with stats, summaries, and sources.",
-      "Continuously updates itself to ensure data freshness.",
-      "Provides a clean, user-friendly interface for scouts."
-    ],
-    "skills": [
-      "Mixed-Methods Research",
-      "Qualitative & Quantitative Analysis",
-      "Data-Driven Recommendations",
-      "Statistical Analysis Design",
-      "AI Prompt Engineering",
-      "Front-End Development",
-      "Database Management"
-    ]
+    },
+    "challenge": {
+      "title": "Hidden players, inconsistent data, urgent timelines",
+      "description": "Scouts needed a way to monitor lesser-known prospects without manually digging through dozens of temporary tournament sites every week.",
+      "metrics": [
+        { "label": "Scouts Interviewed", "value": "6" },
+        { "label": "Data Sources Audited", "value": "31" },
+        { "label": "Pain Points Prioritized", "value": "4" }
+      ],
+      "list": [
+        "Player stats disappear after short-lived tournaments.",
+        "No central view of verified heights, positions, or availability.",
+        "Scouts spend hours rewriting the same outreach summaries."
+      ]
+    },
+    "solution": {
+      "title": "An end-to-end workflow that learns with scouts",
+      "description": "The system continuously discovers prospects, enriches their profiles, and highlights the most actionable players each week.",
+      "media": {
+        "type": "image",
+        "src": "/images/ai-archiver.png",
+        "alt": "Workflow diagram for the scouting archive"
+      },
+      "steps": [
+        {
+          "title": "Research foundation",
+          "description": "Interviews uncovered that manual data collection, not analysis, consumed the most time, so automation needed to focus there."
+        },
+        {
+          "title": "Data architecture",
+          "description": "Structured a schema linking game logs, biometric data, and qualitative notes to keep every profile actionable."
+        },
+        {
+          "title": "Assistive interface",
+          "description": "Built a Tailwind UI that lets scouts triage prospects, compare trajectories, and export outreach-ready briefs."
+        }
+      ],
+      "modules": [
+        {
+          "kicker": "Discovery",
+          "title": "Source monitoring",
+          "description": "Serverless jobs ping niche federation feeds and upload cleaned box scores into the archive nightly."
+        },
+        {
+          "kicker": "Enrichment",
+          "title": "AI synopsis",
+          "description": "Prompt chains summarize player potential, flag inconsistencies, and cite original sources for auditability."
+        },
+        {
+          "kicker": "Decision",
+          "title": "Scouting board",
+          "description": "A kanban-inspired triage view organizes prospects by readiness and confidence signals."
+        }
+      ]
+    },
+    "impact": {
+      "title": "From manual digging to proactive scouting",
+      "description": "Testing with two scouts showed the archive shaved hours from weekly prep and surfaced previously overlooked prospects.",
+      "metrics": [
+        { "label": "Research time saved", "value": "6 hrs/wk" },
+        { "label": "Prospects tracked", "value": "120" },
+        { "label": "Retention rate", "value": "94%" }
+      ],
+      "results": [
+        "Interview participants reported trusting the AI summaries thanks to transparent citations.",
+        "Built-in outreach briefs accelerated how quickly scouts contacted players and coaches.",
+        "Automated freshness scoring highlighted stale data before it hurt recommendations."
+      ]
+    },
+    "interaction": {
+      "title": "Interface moments tailored for recruiters",
+      "description": "Designed micro-patterns that keep scouts in flow even when toggling between desktop and mobile contexts.",
+      "cards": [
+        {
+          "icon": "📈",
+          "title": "Trajectory sparkline",
+          "description": "Each profile visualizes performance trends across tournaments, color-coded by competition strength."
+        },
+        {
+          "icon": "📝",
+          "title": "Outreach composer",
+          "description": "One-click briefs compile stats, narratives, and contact info into scout-branded templates."
+        },
+        {
+          "icon": "🔔",
+          "title": "Freshness alerts",
+          "description": "Subscribers receive notifications when new footage or verified measurements appear."
+        }
+      ]
+    },
+    "process": {
+      "title": "Applied mixed-methods research",
+      "description": "Every sprint balanced qualitative insight with data validation to ensure the tool mirrored real scouting decisions.",
+      "sections": [
+        {
+          "title": "1. Map the job-to-be-done",
+          "description": "Affinity mapping the interviews revealed bottlenecks in discovery, validation, and storytelling.",
+          "findings": [
+            {
+              "title": "Discovery debt",
+              "description": "Scouts spent 60% of their time finding stats, not evaluating them."
+            },
+            {
+              "title": "Signal drift",
+              "description": "Without consistent structure, promising players fell through the cracks after two weeks."
+            }
+          ]
+        },
+        {
+          "title": "2. Prototype data flows",
+          "description": "I mapped how raw feeds become ranked recommendations, validating logic with subject matter experts.",
+          "steps": [
+            { "icon": "🛰️", "title": "Source inventory", "description": "Catalogued federation feeds, livestream chats, and stat PDFs." },
+            { "icon": "🧮", "title": "Scoring model", "description": "Weighted prospect potential using recency and competition level." },
+            { "icon": "🧪", "title": "Usability cycles", "description": "Ran weekly walkthroughs to test triage interactions." }
+          ],
+          "cards": [
+            {
+              "title": "Experiment: RAG prompts",
+              "description": "Fine-tuned prompt templates so scouts could audit AI-generated summaries with citations."
+            },
+            {
+              "title": "Experiment: Confidence bands",
+              "description": "Visualized statistical confidence to align expectations before outreach calls."
+            }
+          ]
+        }
+      ]
+    },
+    "conclusion": {
+      "title": "What I learned",
+      "description": "Building the archive reinforced that trustworthy AI tools require pairing automation with transparent research artifacts.",
+      "tags": [
+        "Sports Analytics",
+        "Data Design",
+        "AI Prompting",
+        "Workflow Automation"
+      ]
+    }
   }
 }

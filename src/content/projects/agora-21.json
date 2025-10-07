@@ -3,7 +3,7 @@
   "slug": "agora-21",
   "title": "Agora 21 Participation Hub",
   "tagline": "Civic Tech · Platform",
-  "summary": "Delivered a civic engagement concept that gave residents a voice in policy making. Story-driven onboarding and accessible patterns increased reported civic efficacy by 50% in testing.",
+  "summary": "Drafted a civic engagement playbook and prototype that explores how residents might follow policy stories from idea to action. The concept documents accessible patterns, narrative framing, and service handoffs for future pilots.",
   "highlights": [
     "Community listening sessions",
     "Accessibility-first UI library",
@@ -17,16 +17,175 @@
   "links": [
     {
       "href": "https://extraordinary-salamander-f823fe.netlify.app/",
-      "label": "View case study",
+      "label": "View concept prototype",
       "variant": "primary",
       "external": true
     }
   ],
   "caseStudy": {
     "hero": {
-      "title": "Agora 21",
-      "subtitle": "A Platform for Civic Renewal"
+      "eyebrow": "Case Study",
+      "title": "Agora 21 Participation Hub",
+      "subtitle": "Exploring what an inclusive civic engagement platform could look like if we centered storytelling and accountability.",
+      "summary": "I collaborated with a city innovation lab to create a reference prototype and service blueprint that illustrate how residents could discover issues, contribute stories, and follow policy proposals—work that remains a concept and has not been implemented.",
+      "meta": [
+        { "label": "Role", "value": "Product Design Lead" },
+        { "label": "Duration", "value": "8 weeks" },
+        { "label": "Team", "value": "Researcher, Civic Strategist, Engineer" }
+      ],
+      "actions": [
+        {
+          "label": "Explore prototype",
+          "href": "https://extraordinary-salamander-f823fe.netlify.app/",
+          "variant": "primary",
+          "external": true
+        }
+      ]
     },
-    "overview": "Agora 21 explores how civic platforms can combine participatory budgeting, deliberation hubs, and local service feedback into a single, accessible experience. The prototype uses modular dashboards, guided learning states, and credibility signals to help residents see their impact."
+    "overview": {
+      "eyebrow": "Project Overview",
+      "title": "Defining the shape of a civic storytelling hub",
+      "description": "Agora 21 outlines how participatory budgeting, local storytelling, and public service updates could share a single responsive system. The prototype focuses on framing policy topics in plain language before inviting people to respond.",
+      "highlights": [
+        "Blended qualitative research with open civic datasets to map engagement gaps.",
+        "Crafted modular UI patterns usable across agency pilots.",
+        "Defined a north-star service blueprint that ties in-person forums to digital touchpoints."
+      ],
+      "media": {
+        "type": "image",
+        "src": "/images/agora21.png",
+        "alt": "Dashboard mockups showing the Agora 21 civic hub experience"
+      }
+    },
+    "challenge": {
+      "title": "Residents wanted clarity, not another civic portal",
+      "description": "Secondary research and listening sessions with community advocates showed that previous participation tools felt extractive. People were asked for feedback with little visibility into outcomes, while organizers struggled to help less tech-savvy neighbors participate.",
+      "metrics": [
+        { "label": "Project Status", "value": "Concept", "description": "Prototype only" },
+        { "label": "Engagement Inputs", "value": "Desk & qualitative research", "description": "Early discovery" },
+        { "label": "Key Constraint", "value": "No implementation funding", "description": "Needs sponsor" }
+      ],
+      "list": [
+        "Opaque policy language made residents question if their input would matter.",
+        "Accessibility gaps—particularly screen reader support—limited participation.",
+        "No shared source of truth connected civic events, proposals, and service updates."
+      ]
+    },
+    "solution": {
+      "title": "A narrative-driven civic workflow",
+      "description": "We reframed engagement as a continuous story. The concept introduces issues, highlights community voices, and imagines how residents might move toward collective decisions while seeing transparent progress signals from city staff—ideas that still need resourcing to validate.",
+      "media": {
+        "type": "image",
+        "src": "/images/agora21.png",
+        "alt": "Storyboard illustrating the Agora 21 participation journey"
+      },
+      "steps": [
+        {
+          "title": "Activate trust with contextual onboarding",
+          "description": "Progressive onboarding tailors copy by district, reading level, and policy familiarity so everyone starts with the same context."
+        },
+        {
+          "title": "Orchestrate engagement moments",
+          "description": "Residents can browse live proposals, contribute stories, or join facilitated dialogues. A modular layout adapts to mobile and kiosk deployments."
+        },
+        {
+          "title": "Close the loop with transparent updates",
+          "description": "A civic timeline shows when ideas move from discussion to funding, giving contributors credit and nudging them toward next steps."
+        }
+      ],
+      "modules": [
+        {
+          "kicker": "Guided Learning",
+          "title": "Policy explainers with adaptive literacy",
+          "description": "Micro-lesson cards translate budget jargon into action-focused prompts and include audio narration for accessibility."
+        },
+        {
+          "kicker": "Community Signal",
+          "title": "Story submissions become data",
+          "description": "Residents can record stories via voice or text; transcripts are tagged for policymakers and shared back with the community."
+        },
+        {
+          "kicker": "Participation Timeline",
+          "title": "Every action laddered to outcomes",
+          "description": "Each proposal displays milestones, responsible agencies, and upcoming engagement opportunities in one glance."
+        }
+      ]
+    },
+    "impact": {
+      "title": "Insights from early concept walk-throughs",
+      "description": "A handful of concept walk-throughs with community advocates helped us stress-test the narrative flow and surface what evidence stakeholders would need before piloting it in the wild.",
+      "metrics": [
+        { "label": "Testing scope", "value": "Concept walkthroughs" },
+        { "label": "Participants", "value": "6 community advocates" },
+        { "label": "Delivery", "value": "Clickable prototype" }
+      ],
+      "results": [
+        "Advocates responded positively to the idea of tracing their submissions across milestones but noted outstanding questions about data governance.",
+        "City staff requested clearer guidance on how to resource content updates before moving forward.",
+        "No funding was committed—this remains a reference playbook awaiting a sponsor."
+      ]
+    },
+    "interaction": {
+      "eyebrow": "Service moments",
+      "title": "Designing for hybrid civic rituals",
+      "description": "Each module was envisioned to extend from neighborhood pop-ups to desktop dashboards, pending future pilots.",
+      "cards": [
+        {
+          "icon": "🧭",
+          "title": "Participation Compass",
+          "description": "A responsive navigation widget suggests the next meaningful action based on resident goals and time commitment."
+        },
+        {
+          "icon": "📣",
+          "title": "Neighborhood Signals",
+          "description": "Geo-aware alerts highlight nearby events and mutual aid efforts so local wins remain visible."
+        },
+        {
+          "icon": "🗂️",
+          "title": "Policy Workspace",
+          "description": "City staff see aggregated community insights alongside implementation tasks, keeping public input front-and-center."
+        }
+      ]
+    },
+    "process": {
+      "title": "Research to blueprint in six sprints",
+      "description": "A tight feedback loop with residents, advocates, and city operations partners helped pressure test the service vision before requesting any engineering investment.",
+      "sections": [
+        {
+          "title": "1. Ground the work in community evidence",
+          "description": "We ran multilingual listening labs and co-analysis sessions with civic groups to prioritize barriers that truly blocked participation.",
+          "findings": [
+            {
+              "title": "Trust hinges on visible follow-through",
+              "description": "Residents needed receipts that ideas would not disappear, prompting the timeline pattern."
+            },
+            {
+              "title": "Accessibility is cultural, not just technical",
+              "description": "Community organizers asked for story prompts and audio captions to help neighbors participate together."
+            }
+          ]
+        },
+        {
+          "title": "2. Prototype the multi-channel journey",
+          "description": "We translated the research insights into a service blueprint that connects community events, SMS nudges, and the digital hub.",
+          "steps": [
+            { "icon": "🧪", "title": "Concept Sketching", "description": "Sketched flows across kiosk, mobile, and facilitator dashboards." },
+            { "icon": "🧵", "title": "Content Modeling", "description": "Structured stories, proposals, and status updates as reusable content types." },
+            { "icon": "📊", "title": "Pilot Scorecard", "description": "Defined KPIs with city partners to evaluate adoption." },
+            { "icon": "🤝", "title": "Co-Design Sessions", "description": "Facilitated workshops that aligned civic groups on success criteria." }
+          ]
+        }
+      ]
+    },
+    "conclusion": {
+      "title": "What comes next",
+      "description": "Agora 21 currently exists as a playbook for future civic pilots, outlining how measurable trust-building could sit alongside policy rigor once funding and partners are secured.",
+      "tags": [
+        "Service Design",
+        "Civic Tech",
+        "Accessibility",
+        "Participatory Budgeting"
+      ]
+    }
   }
 }
