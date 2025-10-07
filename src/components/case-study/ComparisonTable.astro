@@ -1,0 +1,27 @@
+---
+const { rows = [], beforeLabel = 'Before', afterLabel = 'After' } = Astro.props;
+---
+{rows.length > 0 && (
+  <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-slate-200">
+      <thead class="bg-slate-50">
+        <tr>
+          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide text-rose-600">
+            {beforeLabel}
+          </th>
+          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide text-emerald-600">
+            {afterLabel}
+          </th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {rows.map((row) => (
+          <tr class={row.highlight ? 'bg-slate-50 font-semibold' : 'bg-white'}>
+            <td class="px-6 py-4 text-sm leading-relaxed text-slate-700">{row.before}</td>
+            <td class="px-6 py-4 text-sm leading-relaxed text-slate-700">{row.after}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
