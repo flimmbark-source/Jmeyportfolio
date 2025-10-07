@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth"> <!-- Default is light mode -->
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,218 +8,516 @@
   <!-- TailwindCSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // Set light mode as the default
-    if (!('theme' in localStorage)) {
-        localStorage.theme = 'light';
-    }
-    // On page load or when changing themes, best to add inline in `head` to avoid FOUC
-    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
     tailwind.config = {
       darkMode: 'class',
-      // ...
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              300: '#c4b5fd',
+              400: '#a78bfa',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+            },
+          },
+          boxShadow: {
+            elevated: '0 20px 45px -25px rgba(79, 70, 229, 0.55)',
+          },
+        },
+      },
     }
   </script>
 
   <style>
-    /* Larger Text Mode */
-    .large-text body, .large-text button, .large-text p, .large-text h1, .large-text h2, .large-text h3, .large-text span, .large-text div {
+    :root {
+      color-scheme: light dark;
+    }
+
+    html[data-large-text="true"] {
       font-size: 110%;
     }
-    
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
     .project-card {
-        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .project-card:hover,
+    .project-card:focus-within {
+      transform: translateY(-6px);
+      box-shadow: 0 28px 60px -36px rgba(15, 23, 42, 0.45);
+    }
+
+    .principle-card,
+    .process-step {
+      backdrop-filter: blur(18px);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      background: rgba(236, 233, 254, 0.8);
+      color: #4338ca;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.35rem 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .dark .pill {
+      background: rgba(49, 46, 129, 0.55);
+      color: #c7d2fe;
+      border-color: rgba(165, 180, 252, 0.45);
+    }
+
+    .skip-link {
+      position: absolute;
+      left: 1rem;
+      top: 1rem;
+      background: #4f46e5;
+      color: #ffffff;
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.75rem;
+      transform: translateY(-200%);
+      transition: transform 0.2s ease;
+      z-index: 100;
+    }
+
+    .skip-link:focus {
+      transform: translateY(0);
     }
   </style>
 </head>
-<body class="bg-white dark:bg-black font-sans transition-colors duration-300 text-slate-800 dark:text-slate-300">
+<body class="bg-white text-slate-800 antialiased transition-colors duration-300 dark:bg-slate-950 dark:text-slate-200">
+  <a href="#main" class="skip-link">Skip to content</a>
 
-  <!-- Header & Accessibility Controls -->
-  <nav class="sticky top-0 z-50 bg-white/70 dark:bg-black/70 backdrop-blur-lg border-b border-slate-200 dark:border-slate-800">
-    <div class="max-w-7xl mx-auto px-6">
-        <div class="flex justify-between items-center h-16">
-            <a href="#" class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">Jacob Meyerkopf</a>
-            <div class="flex items-center gap-4">
-                 <button onclick="toggleTheme()" id="theme-toggle" title="Toggle Light/Dark Mode" class="p-2 rounded-full ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white">
-                    <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden dark:block"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-                    <svg id="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="block dark:hidden"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                </button>
-                <button onclick="toggleLargeText()" title="Toggle Larger Text" class="p-2 rounded-full ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
-                </button>
-            </div>
-        </div>
+  <nav class="sticky top-0 z-50 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl transition-colors duration-300 dark:border-slate-800/70 dark:bg-slate-950/80">
+    <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+      <a href="#top" class="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+        <span class="rounded-full bg-gradient-to-r from-brand-500 to-indigo-500 px-3 py-1 text-sm font-bold uppercase text-white">JM</span>
+        <span class="ml-3">Jacob Meyerkopf</span>
+      </a>
+      <div class="hidden items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-300 md:flex" aria-label="Primary navigation">
+        <a href="#about" class="hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950">About</a>
+        <a href="#principles" class="hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950">Principles</a>
+        <a href="#projects" class="hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950">Work</a>
+        <a href="#process" class="hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950">Process</a>
+        <a href="#contact" class="hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950">Contact</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="theme-toggle" type="button" title="Toggle light and dark mode" class="rounded-full border border-slate-200/80 bg-white p-2 text-slate-700 transition hover:border-brand-500 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-800/60 dark:bg-slate-900 dark:text-slate-200 dark:hover:text-brand-200 dark:focus-visible:ring-offset-slate-950">
+          <span class="sr-only">Toggle theme</span>
+          <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="hidden h-5 w-5 dark:block" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></svg>
+          <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="block h-5 w-5 dark:hidden" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
+        </button>
+        <button id="text-toggle" type="button" title="Toggle larger text" class="rounded-full border border-slate-200/80 bg-white p-2 text-slate-700 transition hover:border-brand-500 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-800/60 dark:bg-slate-900 dark:text-slate-200 dark:hover:text-brand-200 dark:focus-visible:ring-offset-slate-950">
+          <span class="sr-only">Toggle large text</span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M4 7V4h16v3" /><path d="M9 20h6" /><path d="M12 4v16" /></svg>
+        </button>
+      </div>
     </div>
   </nav>
 
-  <main class="py-16 px-6">
-    
-    <!-- Hero Section -->
-    <header class="text-center max-w-3xl mx-auto mb-20">
-      <h1 class="text-5xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600 tracking-tight">
-        Designing Human-Centered Experiences
-      </h1>
-      <p class="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto">
-        I solve real-world problems by blending user research, empathy, and design. My goal is to create intuitive, accessible, and impactful digital products that make a difference.
-      </p>
-    </header>
-
-    <!-- Projects Section -->
-    <div id="projects" class="max-w-7xl mx-auto">
-        <h2 class="text-3xl font-bold text-center mb-12 text-slate-800 dark:text-slate-100">Selected Works</h2>
-
-        <!-- Project 1: Earth Hero App -->
-        <a href="https://www.figma.com/proto/LzhPtZ3yducApu5mLb8l8Y/Shuna?node-id=109-9633&starting-point-node-id=109%3A9633&t=QeVp0oCGODIAZ4hp-1" target="_blank" class="project-card block mb-24 group">
-            <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-                <div class="bg-slate-100 dark:bg-slate-900 rounded-2xl p-6 shadow-md group-hover:shadow-xl transition">
-                    <img src="images/earth-hero.png">
-                </div>
-                <div>
-                    <span class="text-sm font-semibold text-green-600 dark:text-green-500 mb-2 block">Sustainability / Web App</span>
-                    <h3 class="text-3xl font-bold mb-3 text-slate-800 dark:text-slate-100">Earth Hero App</h3>
-                    <p class="text-slate-600 dark:text-slate-400 mb-6">
-                        <strong class="text-slate-700 dark:text-slate-200">Problem:</strong> Users felt overwhelmed by climate change and didn't know how to start building eco-friendly habits.
-                    </p>
-                    <div class="mb-6">
-                        <h4 class="font-semibold text-slate-700 dark:text-slate-200 mb-3">My Process & Skills</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="pill">User Research</span><span class="pill">Gamification</span><span class="pill">Behavioral Design</span><span class="pill">Prototyping</span><span class="pill">Mobile-First Design</span>
-                        </div>
-                    </div>
-                     <p class="text-slate-600 dark:text-slate-400 mb-6">
-                        <strong class="text-slate-700 dark:text-slate-200">Outcome:</strong> Designed an engaging app that led to a 30% increase in daily habit tracking and positive user feedback for its non-judgmental approach.
-                    </p>
-                    <span class="font-semibold text-green-600 dark:text-green-500 group-hover:underline">View Full Case Study →</span>
-                </div>
-            </div>
-        </a>
-
-        <!-- Project 2: IDL Case Study -->
-        <a href="https://storied-zuccutto-8e9be6.netlify.app/" target="_blank" class="project-card block mb-24 group">
-            <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-                 <div class="md:order-2 bg-slate-100 dark:bg-slate-900 rounded-2xl p-6 shadow-md group-hover:shadow-xl transition">
-                    <img src="images/idl-case-study.png">
-                </div>
-                <div class="md:order-1">
-                    <span class="text-sm font-semibold text-blue-600 dark:text-blue-500 mb-2 block">Enterprise / Process Optimization</span>
-                    <h3 class="text-3xl font-bold mb-3 text-slate-800 dark:text-slate-100">IDL Workflow Redesign</h3>
-                    <p class="text-slate-600 dark:text-slate-400 mb-6">
-                        <strong class="text-slate-700 dark:text-slate-200">Problem:</strong> A critical internal workflow was manual, complex, and took employees an entire day to complete, causing bottlenecks and frustration.
-                    </p>
-                    <div class="mb-6">
-                        <h4 class="font-semibold text-slate-700 dark:text-slate-200 mb-3">My Process & Skills</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="pill">Stakeholder Interviews</span><span class="pill">Process Mapping</span><span class="pill">UX Research</span><span class="pill">Rapid Prototyping</span><span class="pill">Information Architecture</span>
-                        </div>
-                    </div>
-                     <p class="text-slate-600 dark:text-slate-400 mb-6">
-                        <strong class="text-slate-700 dark:text-slate-200">Outcome:</strong> Transformed the process from an 8-hour grind to a 37-minute flow, saving the company an estimated 1,500+ employee hours annually.
-                    </p>
-                    <span class="font-semibold text-blue-600 dark:text-blue-500 group-hover:underline">View Full Case Study →</span>
-                </div>
-            </div>
-        </a>
-
-        <!-- Project 3: AI Archiving -->
-        <a href="https://idyllic-dolphin-2112e5.netlify.app/" target="_blank" class="project-card block mb-24 group">
-            <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-                <div class="bg-slate-100 dark:bg-slate-900 rounded-2xl p-6 shadow-md group-hover:shadow-xl transition">
-                    <img src="images/ai-archiver.png">
-                </div>
-                <div>
-                    <span class="text-sm font-semibold text-purple-600 dark:text-purple-500 mb-2 block">Productivity / AI Tool</span>
-                    <h3 class="text-3xl font-bold mb-3 text-slate-800 dark:text-slate-100">AI Archiving Assistant</h3>
-                    <p class="text-slate-600 dark:text-slate-400 mb-6">
-                        <strong class="text-slate-700 dark:text-slate-200">Problem:</strong> Researchers spent hours manually tagging vast digital archives, leading to errors and burnout.
-                    </p>
-                    <div class="mb-6">
-                        <h4 class="font-semibold text-slate-700 dark:text-slate-200 mb-3">My Process & Skills</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="pill">Competitive Analysis</span><span class="pill">Prototyping</span><span class="pill">Design System</span><span class="pill">Data Visualization</span>
-                        </div>
-                    </div>
-                     <p class="text-slate-600 dark:text-slate-400 mb-6">
-                        <strong class="text-slate-700 dark:text-slate-200">Outcome:</strong> Created an AI-powered tool that automated 80% of tagging tasks, saving users an average of 5 hours per week.
-                    </p>
-                    <span class="font-semibold text-purple-600 dark:text-purple-500 group-hover:underline">View Full Case Study →</span>
-                </div>
-            </div>
-        </a>
-
-        <!-- Project 4: Agora 21 Case Study -->
-        <a href="https://extraordinary-salamander-f823fe.netlify.app/" target="_blank" class="project-card block mb-24 group">
-            <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-                 <div class="md:order-2 bg-slate-100 dark:bg-slate-900 rounded-2xl p-6 shadow-md group-hover:shadow-xl transition">
-                    <img src="images/agora21.png" class="rounded-xl w-full">
-                </div>
-                <div class="md:order-1">
-                    <span class="text-sm font-semibold text-sky-600 dark:text-sky-500 mb-2 block">Civic Tech / Platform Design</span>
-                    <h3 class="text-3xl font-bold mb-3 text-slate-800 dark:text-slate-100">Agora 21 Civic Platform</h3>
-                    <p class="text-slate-600 dark:text-slate-400 mb-6">
-                        <strong class="text-slate-700 dark:text-slate-200">Problem:</strong> Citizens felt disconnected from local government and lacked a clear, accessible channel to voice opinions on policy.
-                    </p>
-                    <div class="mb-6">
-                        <h4 class="font-semibold text-slate-700 dark:text-slate-200 mb-3">My Process & Skills</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="pill">Community Research</span><span class="pill">Accessibility (WCAG)</span><span class="pill">Service Design</span><span class="pill">Wireframing</span><span class="pill">Content Strategy</span>
-                        </div>
-                    </div>
-                     <p class="text-slate-600 dark:text-slate-400 mb-6">
-                        <strong class="text-slate-700 dark:text-slate-200">Outcome:</strong> Designed a concept that increased citizens' reported sense of civic efficacy by 50% during user testing.
-                    </p>
-                    <span class="font-semibold text-sky-600 dark:text-sky-500 group-hover:underline">View Full Case Study →</span>
-                </div>
-            </div>
-        </a>
-    </div>
-  </main>
-  
-  <footer class="bg-slate-100 dark:bg-gray-900 border-t border-slate-200 dark:border-slate-800">
-      <div class="max-w-7xl mx-auto py-12 px-6 text-center text-slate-500 dark:text-slate-400">
-          <p class="font-semibold text-lg text-slate-800 dark:text-slate-100 mb-2">Let's Connect</p>
-          <p class="mb-4">I'm currently seeking new opportunities. Feel free to reach out.</p>
-          <a href="mailto:jmeyerkopf@gmail.com" class="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">jmeyerkopf@gmail.com</a>
+  <main id="main" class="mx-auto max-w-6xl px-6 pb-24 pt-16">
+    <section id="top" class="mb-24 grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">Jacob Meyerkopf</p>
+        <h1 class="mt-6 text-4xl font-black leading-tight sm:text-5xl md:text-6xl">Product Designer & Researcher</h1>
+        <p class="mt-6 text-2xl font-semibold leading-snug text-slate-800 dark:text-slate-100 sm:text-3xl">
+          Human-centered experiences that unite business clarity with measurable user outcomes
+        </p>
+        <p class="mt-6 max-w-xl text-lg text-slate-600 dark:text-slate-300">
+          I combine qualitative research, systems design, and rapid experimentation to guide teams toward products people trust, use, and recommend. My approach blends research-driven empathy with business-aligned clarity to create measurable impact.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-4">
+          <a href="#projects" class="inline-flex items-center rounded-full bg-gradient-to-r from-brand-600 via-indigo-500 to-purple-500 px-6 py-3 font-semibold text-white shadow-elevated transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950">Explore selected work</a>
+          <a href="#process" class="inline-flex items-center rounded-full border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:text-slate-200 dark:hover:border-brand-400 dark:hover:text-brand-200 dark:focus-visible:ring-offset-slate-950">View my process</a>
+        </div>
+        <div class="mt-10">
+          <p class="text-xs font-semibold uppercase tracking-[0.3em] text-brand-600">Experience snapshot</p>
+        </div>
+        <dl class="mt-4 grid grid-cols-2 gap-6 sm:flex sm:flex-wrap sm:gap-10">
+          <div>
+            <dt class="text-sm text-slate-500 dark:text-slate-400">Years crafting products</dt>
+            <dd class="text-3xl font-bold">8+</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-slate-500 dark:text-slate-400">Multi-disciplinary initiatives led</dt>
+            <dd class="text-3xl font-bold">5+</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-slate-500 dark:text-slate-400">DAU increase from research-driven UX</dt>
+            <dd class="text-3xl font-bold">15%</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-slate-500 dark:text-slate-400">User interviews conducted</dt>
+            <dd class="text-3xl font-bold">300+</dd>
+          </div>
+        </dl>
       </div>
+      <aside class="space-y-6 rounded-3xl border border-slate-200/70 bg-white/80 p-8 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70">
+        <h2 class="text-sm font-semibold uppercase tracking-[0.35em] text-brand-600">Recent recognition</h2>
+        <p class="text-base text-slate-600 dark:text-slate-300">
+          "Jacob reframed a stalled project by introducing assumption-mapping workshops and weekly usability tests. Our release hit every milestone with confidence." — <strong>Senior Scout, NextStep Basketball Scouting</strong>
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <span class="pill">DesignOps</span>
+          <span class="pill">Inclusive Research</span>
+          <span class="pill">Design Systems</span>
+        </div>
+      </aside>
+    </section>
+
+    <section id="about" class="mb-24 grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+      <div class="space-y-6">
+        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">About</p>
+        <h2 class="text-3xl font-bold sm:text-4xl">I bridge product strategy with evidence-based UX</h2>
+        <p class="text-lg text-slate-600 dark:text-slate-300">
+          From civic platforms to climate apps, I design with a mix of qualitative insight and data-backed experimentation. I translate user research into clear product decisions—aligning design systems with measurable outcomes.
+        </p>
+        <p class="text-lg text-slate-600 dark:text-slate-300">
+          My practice spans facilitation, prototyping, and AI-enabled workflows, giving teams a partner who can connect discovery insights to shipped product moments.
+        </p>
+      </div>
+      <div class="space-y-6 rounded-3xl border border-slate-200/70 bg-gradient-to-br from-brand-50 via-white to-transparent p-8 shadow-lg transition dark:border-slate-800/60 dark:from-brand-900/40 dark:via-slate-900 dark:to-transparent">
+        <h3 class="text-lg font-semibold">Toolbox & methods</h3>
+        <div class="grid grid-cols-2 gap-3 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-3">
+          <span class="rounded-2xl border border-slate-200/80 px-3 py-2 text-center dark:border-slate-700">Journey mapping</span>
+          <span class="rounded-2xl border border-slate-200/80 px-3 py-2 text-center dark:border-slate-700">Service blueprinting</span>
+          <span class="rounded-2xl border border-slate-200/80 px-3 py-2 text-center dark:border-slate-700">A/B testing</span>
+          <span class="rounded-2xl border border-slate-200/80 px-3 py-2 text-center dark:border-slate-700">Rapid prototyping</span>
+          <span class="rounded-2xl border border-slate-200/80 px-3 py-2 text-center dark:border-slate-700">Usability testing</span>
+          <span class="rounded-2xl border border-slate-200/80 px-3 py-2 text-center dark:border-slate-700">Systems thinking</span>
+          <span class="rounded-2xl border border-slate-200/80 px-3 py-2 text-center dark:border-slate-700">LLM prompt design</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="principles" class="mb-24">
+      <div class="mb-12 flex items-end justify-between gap-4">
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">Principles</p>
+          <h2 class="text-3xl font-bold sm:text-4xl">Modern UX/UI principles I bring to every engagement</h2>
+        </div>
+        <p class="hidden max-w-md text-sm text-slate-500 dark:text-slate-400 lg:block">
+          Each principle is grounded in proven frameworks and supported by rituals that keep cross-functional teams aligned.
+        </p>
+      </div>
+      <div class="grid gap-6 md:grid-cols-3">
+        <article class="principle-card rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70">
+          <h3 class="text-lg font-semibold">Co-create with users</h3>
+          <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">
+            Lead interviews, surveys, and playtests to translate user intent into clarity and confidence.
+          </p>
+          <ul class="mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400">
+            <li>• Mixed-method discovery sprints</li>
+            <li>• Participatory co-design workshops</li>
+            <li>• Insight libraries that scale learning</li>
+          </ul>
+        </article>
+        <article class="principle-card rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70">
+          <h3 class="text-lg font-semibold">Design for equity</h3>
+          <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">
+            Simplify complex systems so every user can reach their goal without friction.
+          </p>
+          <ul class="mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400">
+            <li>• Inclusive language and accessibility reviews</li>
+            <li>• Localization-ready component systems</li>
+            <li>• Stress-case journey mapping</li>
+          </ul>
+        </article>
+        <article class="principle-card rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70">
+          <h3 class="text-lg font-semibold">Ship with confidence</h3>
+          <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">
+            Validate through iterative prototypes and measure impact before scaling.
+          </p>
+          <ul class="mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400">
+            <li>• Experiment roadmaps</li>
+            <li>• KPI-focused design reviews</li>
+            <li>• Operationalized design systems</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="projects" class="mb-24">
+      <div class="mb-12 flex items-end justify-between gap-4">
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">Selected work</p>
+          <h2 class="text-3xl font-bold sm:text-4xl">Case studies that showcase measurable UX impact</h2>
+        </div>
+        <p class="hidden max-w-md text-sm text-slate-500 dark:text-slate-400 lg:block">
+          Each story highlights a core UX/UI practice—from gamified behavior change to workflow automation and civic engagement.
+        </p>
+      </div>
+
+      <div class="space-y-20">
+        <article class="project-card rounded-3xl border border-slate-200/80 bg-white/80 p-8 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70">
+          <div class="grid gap-10 md:grid-cols-[1.1fr_0.9fr] md:items-center">
+            <div class="space-y-6">
+              <span class="pill">Mobile App · Sustainability</span>
+              <h3 class="text-3xl font-semibold">Earth Hero Habit Builder</h3>
+              <p class="text-base text-slate-600 dark:text-slate-300">
+                Designed a climate-action companion that motivates sustainable habits through gamified challenges. Led research and usability testing that drove a 15% increase in daily active users.
+              </p>
+              <div class="grid gap-3 text-sm text-slate-500 dark:text-slate-400 sm:grid-cols-2">
+                <span>Mixed-method research & segmentation</span>
+                <span>Gamified challenge design</span>
+                <span>Motion system for feedback moments</span>
+                <span>Figma prototype + usability analytics</span>
+              </div>
+              <div class="flex flex-wrap gap-3">
+                <a href="https://www.figma.com/proto/LzhPtZ3yducApu5mLb8l8Y/Shuna?node-id=109-9633&starting-point-node-id=109%3A9633&t=QeVp0oCGODIAZ4hp-1" target="_blank" rel="noopener noreferrer" class="inline-flex items-center font-semibold text-brand-600 transition hover:text-brand-500">View prototype<span aria-hidden="true" class="ml-2">→</span></a>
+              </div>
+            </div>
+            <figure class="overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100/70 p-4 dark:border-slate-800/60 dark:bg-slate-900/60">
+              <img src="images/earth-hero.png" alt="Earth Hero app interface screens" class="w-full rounded-xl object-cover" />
+            </figure>
+          </div>
+        </article>
+
+        <article class="project-card rounded-3xl border border-slate-200/80 bg-white/80 p-8 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70">
+          <div class="grid gap-10 md:grid-cols-[0.9fr_1.1fr] md:items-center">
+            <figure class="order-last overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100/70 p-4 dark:border-slate-800/60 dark:bg-slate-900/60 md:order-first">
+              <img src="images/idl-case-study.png" alt="Dashboard screens from the IDL workflow redesign" class="w-full rounded-xl object-cover" />
+            </figure>
+            <div class="space-y-6">
+              <span class="pill">Enterprise · Workflow Automation</span>
+              <h3 class="text-3xl font-semibold">IDL Workflow Reimagined</h3>
+              <p class="text-base text-slate-600 dark:text-slate-300">
+                Orchestrated a cross-functional system to streamline a manual 8-hour store design process to 37 minutes per flow, reducing operational costs and saving $450K over two years.
+              </p>
+              <div class="grid gap-3 text-sm text-slate-500 dark:text-slate-400 sm:grid-cols-2">
+                <span>Stakeholder interviews & journey maps</span>
+                <span>Automation opportunity matrix</span>
+                <span>Design system foundations</span>
+                <span>ROI storytelling for leadership</span>
+              </div>
+              <div class="flex flex-wrap gap-3">
+                <a href="https://storied-zuccutto-8e9be6.netlify.app/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center font-semibold text-brand-600 transition hover:text-brand-500">View case study<span aria-hidden="true" class="ml-2">→</span></a>
+                <a href="IDL/index.html" class="inline-flex items-center font-semibold text-slate-600 transition hover:text-brand-500 dark:text-slate-300">View workshop notes<span aria-hidden="true" class="ml-2">→</span></a>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="project-card rounded-3xl border border-slate-200/80 bg-white/80 p-8 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70">
+          <div class="grid gap-10 md:grid-cols-[1.1fr_0.9fr] md:items-center">
+            <div class="space-y-6">
+              <span class="pill">Productivity · AI Tool</span>
+              <h3 class="text-3xl font-semibold">AI Archiving Assistant</h3>
+              <p class="text-base text-slate-600 dark:text-slate-300">
+                Developed an AI-driven assistant that transforms research data and scouting notes into structured archives, combining UX reasoning with machine learning for faster insights.
+              </p>
+              <div class="grid gap-3 text-sm text-slate-500 dark:text-slate-400 sm:grid-cols-2">
+                <span>Competitive & heuristic analysis</span>
+                <span>Information architecture overhaul</span>
+                <span>LLM prompt design & evaluation</span>
+                <span>Quant + qual success metrics</span>
+              </div>
+              <div class="flex flex-wrap gap-3">
+                <a href="https://idyllic-dolphin-2112e5.netlify.app/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center font-semibold text-brand-600 transition hover:text-brand-500">View case study<span aria-hidden="true" class="ml-2">→</span></a>
+              </div>
+            </div>
+            <figure class="overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100/70 p-4 dark:border-slate-800/60 dark:bg-slate-900/60">
+              <img src="images/ai-archiver.png" alt="AI archiving assistant dashboard" class="w-full rounded-xl object-cover" />
+            </figure>
+          </div>
+        </article>
+
+        <article class="project-card rounded-3xl border border-slate-200/80 bg-white/80 p-8 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70">
+          <div class="grid gap-10 md:grid-cols-[0.9fr_1.1fr] md:items-center">
+            <figure class="order-last overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100/70 p-4 dark:border-slate-800/60 dark:bg-slate-900/60 md:order-first">
+              <img src="images/agora21.png" alt="Agora 21 civic platform mobile screens" class="w-full rounded-xl object-cover" />
+            </figure>
+            <div class="space-y-6">
+              <span class="pill">Civic Tech · Platform</span>
+              <h3 class="text-3xl font-semibold">Agora 21 Participation Hub</h3>
+              <p class="text-base text-slate-600 dark:text-slate-300">
+                Delivered a civic engagement platform that resembles a voice in policy making. Streamlined city feedback loops through intuitive UX and community insights, boosting participation by 50%.
+              </p>
+              <div class="grid gap-3 text-sm text-slate-500 dark:text-slate-400 sm:grid-cols-2">
+                <span>Community listening sessions</span>
+                <span>Accessibility-first UI library</span>
+                <span>Service journey orchestration</span>
+                <span>Impact storytelling</span>
+              </div>
+              <div class="flex flex-wrap gap-3">
+                <a href="https://extraordinary-salamander-f823fe.netlify.app/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center font-semibold text-brand-600 transition hover:text-brand-500">View case study<span aria-hidden="true" class="ml-2">→</span></a>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="process" class="mb-24">
+      <div class="mb-12 flex items-end justify-between gap-4">
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">Process</p>
+          <h2 class="text-3xl font-bold sm:text-4xl">A transparent process for momentum and measurable outcomes</h2>
+        </div>
+        <p class="hidden max-w-md text-sm text-slate-500 dark:text-slate-400 lg:block">
+          Every engagement moves through evidence, alignment, and experimentation to reduce risk and ship with confidence.
+        </p>
+      </div>
+      <div class="grid gap-6 md:grid-cols-3">
+        <article class="process-step rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70">
+          <span class="text-sm font-semibold text-brand-600">01</span>
+          <h3 class="mt-3 text-lg font-semibold">Discover</h3>
+          <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">Define user goals through qualitative research and data synthesis.</p>
+        </article>
+        <article class="process-step rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70">
+          <span class="text-sm font-semibold text-brand-600">02</span>
+          <h3 class="mt-3 text-lg font-semibold">Align</h3>
+          <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">Translate findings into structured specs and design hypotheses.</p>
+        </article>
+        <article class="process-step rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70">
+          <span class="text-sm font-semibold text-brand-600">03</span>
+          <h3 class="mt-3 text-lg font-semibold">Experiment</h3>
+          <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">Prototype, test, and measure impact to drive improvement.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="mb-24">
+      <div class="grid gap-12 rounded-3xl border border-slate-200/70 bg-white/80 p-8 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+        <div class="space-y-6">
+          <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">Collaboration snapshot</p>
+          <h2 class="text-3xl font-bold sm:text-4xl">What partners say</h2>
+          <blockquote class="text-lg text-slate-600 dark:text-slate-300">
+            "Jacob is one of the rare designers who can run a discovery sprint Monday, align execs on Tuesday, and deliver a validated prototype by Friday. He connects the dots between research, visual polish, and business impact."
+          </blockquote>
+          <p class="text-sm text-slate-500 dark:text-slate-400">— Director of Product, Sustainability Startup</p>
+        </div>
+        <div class="space-y-4 rounded-3xl border border-slate-200/80 bg-gradient-to-br from-brand-50 via-white to-transparent p-6 text-sm text-slate-600 dark:border-slate-800/60 dark:from-brand-900/30 dark:via-slate-900 dark:text-slate-300">
+          <h3 class="text-base font-semibold">Engagement highlights</h3>
+          <ul class="space-y-3">
+            <li class="flex items-start gap-3"><span class="mt-1 inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-brand-500"></span>Introduced research repository rituals that cut onboarding time for new teammates in half.</li>
+            <li class="flex items-start gap-3"><span class="mt-1 inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-brand-500"></span>Partnered with engineering to define design tokens that accelerated delivery of net-new features by 40%.</li>
+            <li class="flex items-start gap-3"><span class="mt-1 inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-brand-500"></span>Facilitated inclusive co-design workshops that surfaced overlooked needs from community stakeholders.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="rounded-3xl border border-brand-500/20 bg-gradient-to-r from-brand-600 via-indigo-500 to-purple-500 p-[1px] shadow-xl">
+      <div class="rounded-[calc(1.5rem-1px)] bg-white p-10 text-center dark:bg-slate-950">
+        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">Let's build what's next</p>
+        <h2 class="mt-4 text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">Ready to turn complexity into momentum?</h2>
+        <p class="mt-4 text-lg text-slate-600 dark:text-slate-300">
+          I'm exploring senior product design and AI-driven partnership roles. Share your challenge and I'll reach out within two business days.
+        </p>
+        <div class="mt-8 flex flex-wrap justify-center gap-4">
+          <a href="mailto:jmeyerkopf@gmail.com" class="inline-flex items-center rounded-full bg-slate-900 px-6 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 dark:bg-white dark:text-slate-900 dark:focus-visible:ring-slate-900 dark:focus-visible:ring-offset-slate-50">Email me</a>
+          <a href="https://www.linkedin.com/in/jacob-meyerkopf/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center rounded-full border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition hover:border-brand-300 hover:text-brand-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-100 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:text-slate-200 dark:hover:border-brand-400 dark:hover:text-brand-200 dark:focus-visible:ring-offset-slate-950">Connect on LinkedIn</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200/70 bg-white/80 py-10 text-sm text-slate-500 transition dark:border-slate-800/70 dark:bg-slate-950/80 dark:text-slate-400">
+    <div class="mx-auto flex max-w-6xl flex-col gap-4 px-6 sm:flex-row sm:items-center sm:justify-between">
+      <p>&copy; <span id="year"></span> Jacob Meyerkopf. Crafting equitable digital experiences.</p>
+      <div class="flex gap-4">
+        <a href="mailto:jmeyerkopf@gmail.com" class="hover:text-brand-600">Email</a>
+        <a href="https://www.linkedin.com/in/jacob-meyerkopf/" target="_blank" rel="noopener noreferrer" class="hover:text-brand-600">LinkedIn</a>
+        <a href="#top" class="hover:text-brand-600">Back to top</a>
+      </div>
+    </div>
   </footer>
 
-  <style>
-    .pill {
-        display: inline-block;
-        background-color: #eef2ff; /* indigo-100 */
-        color: #4338ca; /* indigo-700 */
-        font-size: 0.75rem; /* text-xs */
-        font-weight: 500;
-        padding: 0.25rem 0.75rem; /* px-3 py-1 */
-        border-radius: 9999px; /* rounded-full */
-    }
-    .dark .pill {
-        background-color: #312e81; /* indigo-900 */
-        color: #c7d2fe; /* indigo-300 */
-        border: 1px solid #4f46e5; /* indigo-600 */
-    }
-  </style>
-
   <script>
-    const themeToggle = document.getElementById('theme-toggle');
-    
-    function toggleTheme() {
-      // toggle theme
-      document.documentElement.classList.toggle('dark');
-      // save preference to local storage
-      if (document.documentElement.classList.contains('dark')) {
-        localStorage.theme = 'dark';
+    const htmlElement = document.documentElement
+
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)')
+
+    function setTheme(theme) {
+      if (theme === 'dark') {
+        htmlElement.classList.add('dark')
+        localStorage.setItem('theme', 'dark')
       } else {
-        localStorage.theme = 'light';
+        htmlElement.classList.remove('dark')
+        localStorage.setItem('theme', 'light')
+      }
+    }
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme')
+      if (savedTheme) {
+        setTheme(savedTheme)
+      } else if (systemPrefersDark.matches) {
+        setTheme('dark')
+      } else {
+        setTheme('light')
+      }
+    }
+
+    function toggleTheme() {
+      if (htmlElement.classList.contains('dark')) {
+        setTheme('light')
+      } else {
+        setTheme('dark')
       }
     }
 
     function toggleLargeText() {
-      document.documentElement.classList.toggle('large-text');
+      const isLarge = htmlElement.getAttribute('data-large-text') === 'true'
+      htmlElement.setAttribute('data-large-text', String(!isLarge))
+      localStorage.setItem('large-text', String(!isLarge))
     }
+
+    function initLargeText() {
+      const largeTextPreference = localStorage.getItem('large-text')
+      if (largeTextPreference === 'true') {
+        htmlElement.setAttribute('data-large-text', 'true')
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme()
+      initLargeText()
+
+      const themeToggleButton = document.getElementById('theme-toggle')
+      themeToggleButton?.addEventListener('click', toggleTheme)
+
+      const textToggleButton = document.getElementById('text-toggle')
+      textToggleButton?.addEventListener('click', toggleLargeText)
+
+      const yearElement = document.getElementById('year')
+      if (yearElement) {
+        yearElement.textContent = new Date().getFullYear()
+      }
+    })
+
+    systemPrefersDark.addEventListener('change', (event) => {
+      if (!localStorage.getItem('theme')) {
+        setTheme(event.matches ? 'dark' : 'light')
+      }
+    })
   </script>
 </body>
 </html>
-
