@@ -16,15 +16,15 @@
   },
   "links": [
     {
-      "href": "https://storied-zuccutto-8e9be6.netlify.app/",
+      "href": "/idl",
       "label": "View case study",
-      "variant": "primary",
-      "external": true
+      "variant": "primary"
     },
     {
-      "href": "/idl",
-      "label": "View workshop notes",
-      "variant": "secondary"
+      "href": "https://storied-zuccutto-8e9be6.netlify.app/",
+      "label": "Executive summary",
+      "variant": "secondary",
+      "external": true
     }
   ],
   "caseStudy": {

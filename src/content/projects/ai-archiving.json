@@ -16,9 +16,14 @@
   },
   "links": [
     {
-      "href": "https://idyllic-dolphin-2112e5.netlify.app/",
+      "href": "/ai-archiving",
       "label": "View case study",
-      "variant": "primary",
+      "variant": "primary"
+    },
+    {
+      "href": "https://idyllic-dolphin-2112e5.netlify.app/",
+      "label": "Explore prototype",
+      "variant": "secondary",
       "external": true
     }
   ]
