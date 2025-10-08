@@ -19,12 +19,6 @@
       "href": "/idl",
       "label": "View case study",
       "variant": "primary"
-    },
-    {
-      "href": "https://storied-zuccutto-8e9be6.netlify.app/",
-      "label": "Executive summary",
-      "variant": "secondary",
-      "external": true
     }
   ],
   "caseStudy": {
