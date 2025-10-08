@@ -30,7 +30,7 @@
       "meta": [
         { "label": "Role", "value": "Product Design Lead" },
         { "label": "Duration", "value": "8 weeks" },
-        { "label": "Team", "value": "Researcher, Civic Strategist, Engineer" }
+        { "label": "Team", "value": "Researcher, Civic Strategist" }
       ],
       "actions": [
         {
@@ -61,8 +61,8 @@
       "description": "Secondary research and listening sessions with community advocates showed that previous participation tools felt extractive. People were asked for feedback with little visibility into outcomes, while organizers struggled to help less tech-savvy neighbors participate.",
       "metrics": [
         { "label": "Project Status", "value": "Concept", "description": "Prototype only" },
-        { "label": "Engagement Inputs", "value": "Desk & qualitative research", "description": "Early discovery" },
-        { "label": "Key Constraint", "value": "No implementation funding", "description": "Needs sponsor" }
+        { "label": "Engagement Inputs", "value": "Qualitative research", "description": "Early discovery" },
+        { "label": "Key Constraint", "value": "No funding", "description": "Needs sponsor" }
       ],
       "list": [
         "Opaque policy language made residents question if their input would matter.",
