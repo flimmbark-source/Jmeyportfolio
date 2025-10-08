@@ -16,9 +16,14 @@
   },
   "links": [
     {
+      "href": "/agora-21",
+      "label": "View case study",
+      "variant": "primary"
+    },
+    {
       "href": "https://extraordinary-salamander-f823fe.netlify.app/",
-      "label": "View concept prototype",
-      "variant": "primary",
+      "label": "Explore prototype",
+      "variant": "secondary",
       "external": true
     }
   ],
