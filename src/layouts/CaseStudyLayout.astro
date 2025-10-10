@@ -53,36 +53,41 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
   ...autoNav
 ];
 ---
-<BaseLayout title={title} description={description} navLinks={navLinks} mainClass="bg-slate-50">
-  <main class="relative mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
-    <section class="rounded-3xl bg-white p-8 shadow-xl sm:p-12">
-      <div class="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-10 text-white">
+<BaseLayout
+  title={title}
+  description={description}
+  navLinks={navLinks}
+  mainClass="bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-slate-100"
+>
+  <main class="relative mx-auto max-w-5xl px-4 py-16 text-slate-900 transition-colors duration-300 sm:px-6 lg:px-8 dark:text-slate-100">
+    <section class="rounded-3xl border border-slate-200/70 bg-slate-100/80 p-8 shadow-xl backdrop-blur-sm sm:p-12 dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+      <div class="rounded-3xl bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200 p-10 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-white">
         <div class="space-y-6 text-center">
           {hero.eyebrow && (
-            <p class="text-sm font-semibold uppercase tracking-[0.35em] text-sky-300">
+            <p class="text-sm font-semibold uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300">
               {hero.eyebrow}
             </p>
           )}
           <div class="space-y-4">
             <h1 class="text-4xl font-extrabold sm:text-5xl">{hero.title}</h1>
             {hero.subtitle && (
-              <p class="text-lg leading-relaxed text-slate-200">{hero.subtitle}</p>
+              <p class="text-lg leading-relaxed text-slate-700 dark:text-slate-200">{hero.subtitle}</p>
             )}
           </div>
           {hero.summary && (
-            <p class="text-base leading-relaxed text-slate-200">{hero.summary}</p>
+            <p class="text-base leading-relaxed text-slate-700 dark:text-slate-200">{hero.summary}</p>
           )}
           {(hero.meta || hero.actions) && (
             <div class="mt-8 flex w-full flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-between">
               {hero.meta && hero.meta.length > 0 && (
-                <dl class="grid w-full max-w-3xl gap-4 text-left text-sm text-slate-200 sm:grid-cols-2 lg:grid-cols-3">
+                <dl class="grid w-full max-w-3xl gap-4 text-left text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-3 dark:text-slate-200">
                   {hero.meta.map((item) => (
                     <div
-                      class="flex h-full flex-col gap-1 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur"
+                      class="flex h-full flex-col gap-1 rounded-2xl border border-slate-200/70 bg-slate-100/80 p-4 backdrop-blur dark:border-white/20 dark:bg-white/10"
                       key={`${item.label}-${item.value}`}
                     >
-                      <dt class="text-xs uppercase tracking-[0.2em] text-sky-200">{item.label}</dt>
-                      <dd class="text-base font-semibold text-white">{item.value}</dd>
+                      <dt class="text-xs uppercase tracking-[0.2em] text-sky-600 dark:text-sky-200">{item.label}</dt>
+                      <dd class="text-base font-semibold text-slate-900 dark:text-white">{item.value}</dd>
                     </div>
                   ))}
                 </dl>
@@ -91,10 +96,10 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
                 <div class="flex flex-wrap justify-center gap-3">
                   {hero.actions.map((action) => (
                     <a
-                      class={`inline-flex items-center gap-2 rounded-full border border-white/30 px-5 py-2 text-sm font-semibold transition hover:bg-white/10 ${
+                      class={`inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-semibold transition hover:bg-white/70 dark:hover:bg-white/10 ${
                         action.variant === 'primary'
-                          ? 'bg-white text-slate-900'
-                          : 'bg-transparent text-white'
+                          ? 'border-white/80 bg-white text-slate-900 dark:border-transparent'
+                          : 'border-white/30 bg-transparent text-slate-900 dark:text-white'
                       }`}
                       href={action.href}
                       target={action.external ? '_blank' : undefined}
@@ -117,7 +122,7 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
           {overview.highlights && overview.highlights.length > 0 && (
             <ul class="mt-8 grid gap-4 sm:grid-cols-2">
               {overview.highlights.map((highlight) => (
-                <li class="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-base leading-relaxed text-slate-700">
+                <li class="rounded-2xl border border-slate-200/70 bg-slate-100/70 p-5 text-base leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
                   {highlight}
                 </li>
               ))}
@@ -136,10 +141,10 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
           />
           <MetricsGrid metrics={challenge.metrics} />
           {challenge.list && challenge.list.length > 0 && (
-            <ul class="mt-8 space-y-3 text-left text-base leading-relaxed text-slate-600">
+            <ul class="mt-8 space-y-3 text-left text-base leading-relaxed text-slate-600 dark:text-slate-300">
               {challenge.list.map((item) => (
                 <li class="flex gap-3">
-                  <span class="mt-1 inline-flex h-2 w-2 rounded-full bg-sky-500"></span>
+                  <span class="mt-1 inline-flex h-2 w-2 rounded-full bg-sky-500 dark:bg-sky-400"></span>
                   <span>{item}</span>
                 </li>
               ))}
@@ -173,10 +178,10 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
           <MetricsGrid metrics={impact.metrics} />
           <ResultList items={impact.results} />
           {impact.highlights && impact.highlights.length > 0 && (
-            <ul class="mt-8 space-y-3 text-base leading-relaxed text-slate-600">
+            <ul class="mt-8 space-y-3 text-base leading-relaxed text-slate-600 dark:text-slate-300">
               {impact.highlights.map((highlight) => (
                 <li class="flex gap-3">
-                  <span class="mt-1 inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                  <span class="mt-1 inline-flex h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span>
                   <span>{highlight}</span>
                 </li>
               ))}
@@ -207,10 +212,10 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
           />
           {process.sections &&
             process.sections.map((section) => (
-              <article class="mt-12 rounded-3xl bg-slate-50 p-8">
-                <h3 class="text-2xl font-semibold text-slate-900">{section.title}</h3>
+              <article class="mt-12 rounded-3xl border border-slate-200/70 bg-slate-100/70 p-8 dark:border-slate-700 dark:bg-slate-900/60">
+                <h3 class="text-2xl font-semibold text-slate-900 dark:text-white">{section.title}</h3>
                 {section.description && (
-                  <p class="mt-4 text-base leading-relaxed text-slate-600">{section.description}</p>
+                  <p class="mt-4 text-base leading-relaxed text-slate-600 dark:text-slate-300">{section.description}</p>
                 )}
                 <InsightList items={section.findings} />
                 <IconStepGrid steps={section.steps} />
