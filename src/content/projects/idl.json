@@ -32,19 +32,6 @@
         { "label": "Timeline", "value": "6 weeks" },
         { "label": "Impact", "value": "7.4k hours saved" }
       ],
-      "actions": [
-        {
-          "label": "Workshop recap",
-          "href": "/idl",
-          "variant": "secondary"
-        },
-        {
-          "label": "Executive summary",
-          "href": "https://storied-zuccutto-8e9be6.netlify.app/",
-          "variant": "primary",
-          "external": true
-        }
-      ]
     },
     "overview": {
       "eyebrow": "Project Overview",
