@@ -28,9 +28,18 @@
       "subtitle": "Exploring what an inclusive civic engagement platform could look like if we centered storytelling and accountability.",
       "summary": "I collaborated with a city innovation lab to create a reference prototype and service blueprint that illustrate how residents could discover issues, contribute stories, and follow policy proposals—work that remains a concept and has not been implemented.",
       "meta": [
-        { "label": "Role", "value": "Product Design Lead" },
-        { "label": "Duration", "value": "8 weeks" },
-        { "label": "Team", "value": "Researcher, Civic Strategist" }
+        {
+          "label": "Role",
+          "value": "Product Design Lead"
+        },
+        {
+          "label": "Duration",
+          "value": "8 weeks"
+        },
+        {
+          "label": "Team",
+          "value": "Researcher, Civic Strategist"
+        }
       ],
       "actions": [
         {
@@ -49,20 +58,27 @@
         "Blended qualitative research with open civic datasets to map engagement gaps.",
         "Crafted modular UI patterns usable across agency pilots.",
         "Defined a north-star service blueprint that ties in-person forums to digital touchpoints."
-      ],
-      "media": {
-        "type": "image",
-        "src": "/images/agora21.png",
-        "alt": "Dashboard mockups showing the Agora 21 civic hub experience"
-      }
+      ]
     },
     "challenge": {
       "title": "Residents wanted clarity, not another civic portal",
       "description": "Secondary research and listening sessions with community advocates showed that previous participation tools felt extractive. People were asked for feedback with little visibility into outcomes, while organizers struggled to help less tech-savvy neighbors participate.",
       "metrics": [
-        { "label": "Project Status", "value": "Concept", "description": "Prototype only" },
-        { "label": "Engagement Inputs", "value": "Qualitative research", "description": "Early discovery" },
-        { "label": "Key Constraint", "value": "No funding", "description": "Needs sponsor" }
+        {
+          "label": "Project Status",
+          "value": "Concept",
+          "description": "Prototype only"
+        },
+        {
+          "label": "Engagement Inputs",
+          "value": "Qualitative research",
+          "description": "Early discovery"
+        },
+        {
+          "label": "Key Constraint",
+          "value": "No funding",
+          "description": "Needs sponsor"
+        }
       ],
       "list": [
         "Opaque policy language made residents question if their input would matter.",
@@ -73,11 +89,6 @@
     "solution": {
       "title": "A narrative-driven civic workflow",
       "description": "We reframed engagement as a continuous story. The concept introduces issues, highlights community voices, and imagines how residents might move toward collective decisions while seeing transparent progress signals from city staff.",
-      "media": {
-        "type": "image",
-        "src": "/images/agora21.png",
-        "alt": "Storyboard illustrating the Agora 21 participation journey"
-      },
       "steps": [
         {
           "title": "Activate trust with contextual onboarding",
@@ -114,9 +125,18 @@
       "title": "Proof points from usability and pilot sessions",
       "description": "Concept testing with a small group of advocates helped us stress-test the narrative flow and surface what evidence stakeholders would need before piloting it in the wild.",
       "metrics": [
-        { "label": "Testing scope", "value": "Concept walkthroughs" },
-        { "label": "Participants", "value": "6 community advocates" },
-        { "label": "Delivery", "value": "Clickable prototype" }
+        {
+          "label": "Testing scope",
+          "value": "Concept walkthroughs"
+        },
+        {
+          "label": "Participants",
+          "value": "6 community advocates"
+        },
+        {
+          "label": "Delivery",
+          "value": "Clickable prototype"
+        }
       ],
       "results": [
         "Advocates responded positively to the idea of tracing their submissions across milestones but noted outstanding questions about data governance.",
@@ -168,10 +188,26 @@
           "title": "2. Prototype the multi-channel journey",
           "description": "We translated the research insights into a service blueprint that connects community events, SMS nudges, and the digital hub.",
           "steps": [
-            { "icon": "🧪", "title": "Concept Sketching", "description": "Sketched flows across kiosk, mobile, and facilitator dashboards." },
-            { "icon": "🧵", "title": "Content Modeling", "description": "Structured stories, proposals, and status updates as reusable content types." },
-            { "icon": "📊", "title": "Pilot Scorecard", "description": "Defined KPIs with city partners to evaluate adoption." },
-            { "icon": "🤝", "title": "Co-Design Sessions", "description": "Facilitated workshops that aligned civic groups on success criteria." }
+            {
+              "icon": "🧪",
+              "title": "Concept Sketching",
+              "description": "Sketched flows across kiosk, mobile, and facilitator dashboards."
+            },
+            {
+              "icon": "🧵",
+              "title": "Content Modeling",
+              "description": "Structured stories, proposals, and status updates as reusable content types."
+            },
+            {
+              "icon": "📊",
+              "title": "Pilot Scorecard",
+              "description": "Defined KPIs with city partners to evaluate adoption."
+            },
+            {
+              "icon": "🤝",
+              "title": "Co-Design Sessions",
+              "description": "Facilitated workshops that aligned civic groups on success criteria."
+            }
           ]
         }
       ]
