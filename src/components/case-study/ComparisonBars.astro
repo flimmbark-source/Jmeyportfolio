@@ -9,12 +9,12 @@ const scale = max === 0 ? 0 : 100 / max;
       const label = data.labels[index];
       const width = `${Math.max(6, value * scale)}%`;
       return (
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div class="flex items-center justify-between text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <div class="rounded-2xl border border-slate-200/70 bg-slate-100/80 p-5 shadow-sm transition-colors duration-300 dark:border-slate-700 dark:bg-slate-900/60">
+          <div class="flex items-center justify-between text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
             <span>{Array.isArray(label) ? label.join(' ') : label}</span>
-            <span class="text-slate-900">{value} {data.suffix ?? ''}</span>
+            <span class="text-slate-900 dark:text-white">{value} {data.suffix ?? ''}</span>
           </div>
-          <div class="mt-3 h-3 rounded-full bg-slate-100">
+          <div class="mt-3 h-3 rounded-full bg-slate-100 dark:bg-slate-800">
             <div class="h-full rounded-full bg-sky-500" style={`width: ${width}`}></div>
           </div>
         </div>
