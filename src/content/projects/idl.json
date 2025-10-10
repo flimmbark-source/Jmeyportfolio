@@ -54,12 +54,7 @@
         "Identified automation opportunities by embedding with draftsmen.",
         "Modeled a hybrid workflow that balances templates with custom work.",
         "Built confidence with leadership through clear service metrics."
-      ],
-      "media": {
-        "type": "image",
-        "src": "/images/idl-case-study.png",
-        "alt": "Storyboard of the IDL workflow redesign"
-      }
+      ]
     },
     "challenge": {
       "title": "The bottleneck: eight hours per store, per designer",
@@ -78,11 +73,6 @@
     "solution": {
       "title": "A two-step breakthrough",
       "description": "We combined a component-based SolidWorks library with automation scripts that generate manufacturing drawings. Designers shifted from drawing from scratch to assembling pre-validated templates.",
-      "media": {
-        "type": "image",
-        "src": "/images/idl-case-study.png",
-        "alt": "Visualization of the optimized IDL workflow"
-      },
       "steps": [
         {
           "title": "Component library",
