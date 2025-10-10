@@ -229,10 +229,10 @@ export default function RotogoCaseStudy() {
               className="flex items-center gap-2 px-8 py-3 bg-teal-500 text-white font-semibold rounded-lg hover:bg-teal-600 transition-colors duration-300"
             >
               <ExternalLink size={20} /> View Live Site
+              </motion.a>
           </motion.div>
         </div>
       </footer>
-
       <style>{`
         .bg-grid-pattern {
           background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
