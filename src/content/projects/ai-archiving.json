@@ -49,11 +49,7 @@
         "Mapped existing taxonomies into a flexible ontology for model training.",
         "Prototyped review queues that balanced automation with curator control."
       ],
-      "media": {
-        "type": "image",
-        "src": "/images/ai-archiver.png",
-        "alt": "Screens from the AI archiving assistant interface"
-      }
+      "media": null
     },
     "challenge": {
       "title": "Researchers were drowning in manual tagging",
@@ -72,11 +68,7 @@
     "solution": {
       "title": "Confidence-based automation with human guardrails",
       "description": "We introduced a machine learning tagging assistant that pre-populates metadata, routes items into confidence-based review queues, and teaches the model through curator feedback loops.",
-      "media": {
-        "type": "image",
-        "src": "/images/ai-archiver.png",
-        "alt": "Interface mockups showing AI-suggested tags and review controls"
-      },
+      "media": null,
       "steps": [
         {
           "title": "Model training hub",
