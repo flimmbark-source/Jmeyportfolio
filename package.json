@@ -23,5 +23,12 @@
   },
   "optionalDependencies": {
     "@esbuild/linux-x64": "^0.25.10"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.4.0",
+    "framer-motion": "^12.23.24",
+    "lucide-react": "^0.545.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   }
 }
