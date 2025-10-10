@@ -229,20 +229,6 @@ export default function RotogoCaseStudy() {
               className="flex items-center gap-2 px-8 py-3 bg-teal-500 text-white font-semibold rounded-lg hover:bg-teal-600 transition-colors duration-300"
             >
               <ExternalLink size={20} /> View Live Site
-            </motion.a>
-            <motion.a
-              href="#"
-              variants={fadeIn}
-              initial="hidden"
-              animate="show"
-              whileInView="show"
-              viewport={{ once: true }}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-8 py-3 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600 transition-colors duration-300"
-            >
-              <Github size={20} /> View on GitHub
-            </motion.a>
           </motion.div>
         </div>
       </footer>
