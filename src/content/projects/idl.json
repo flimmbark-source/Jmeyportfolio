@@ -118,8 +118,8 @@
         "Quality audits reported a 0% defect rate after automation roll-out."
       ],
       "donut": {
-        "label": "Workflow makeup",
-        "totalLabel": "480 min",
+        "label": "",
+        "totalLabel": "",
         "labels": ["Time saved", "Remaining manual"],
         "values": [443, 37],
         "colors": ["#06D6A0", "#118AB2"]

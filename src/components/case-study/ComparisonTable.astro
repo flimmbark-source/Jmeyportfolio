@@ -2,23 +2,23 @@
 const { rows = [], beforeLabel = 'Before', afterLabel = 'After' } = Astro.props;
 ---
 {rows.length > 0 && (
-  <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-    <table class="min-w-full divide-y divide-slate-200">
-      <thead class="bg-slate-50">
+  <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200/70 bg-slate-100/80 shadow-sm transition-colors duration-300 dark:border-slate-700 dark:bg-slate-900/60">
+    <table class="min-w-full divide-y divide-slate-200/70 dark:divide-slate-800/80">
+      <thead class="bg-slate-100/70 dark:bg-slate-900/70">
         <tr>
-          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide text-rose-600">
+          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-300">
             {beforeLabel}
           </th>
-          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide text-emerald-600">
+          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-300">
             {afterLabel}
           </th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-slate-100">
+      <tbody class="divide-y divide-slate-100/70 dark:divide-slate-800/70">
         {rows.map((row) => (
-          <tr class={row.highlight ? 'bg-slate-50 font-semibold' : 'bg-white'}>
-            <td class="px-6 py-4 text-sm leading-relaxed text-slate-700">{row.before}</td>
-            <td class="px-6 py-4 text-sm leading-relaxed text-slate-700">{row.after}</td>
+          <tr class={row.highlight ? 'bg-slate-100/70 font-semibold dark:bg-slate-900/60' : 'bg-slate-100/40 dark:bg-transparent'}>
+            <td class="px-6 py-4 text-sm leading-relaxed text-slate-700 dark:text-slate-200">{row.before}</td>
+            <td class="px-6 py-4 text-sm leading-relaxed text-slate-700 dark:text-slate-200">{row.after}</td>
           </tr>
         ))}
       </tbody>
