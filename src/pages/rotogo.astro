@@ -1,0 +1,9 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import RotogoCaseStudy from '../components/RotogoCaseStudy.jsx';
+
+const navLinks = [{ href: '/', label: 'Home' }];
+---
+<BaseLayout title="Rotogo Mobility Case Study | Jacob Meyerkopf" mainClass="p-0" navLinks={navLinks}>
+  <RotogoCaseStudy client:load />
+</BaseLayout>
