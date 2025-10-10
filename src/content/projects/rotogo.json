@@ -1,0 +1,30 @@
+{
+  "order": 6,
+  "slug": "rotogo",
+  "title": "Rotogo Mobility Case Study",
+  "tagline": "Product Design · AI Collaboration",
+  "summary": "Documented how pairing with large language models unlocked my first end-to-end app build—from prompts to deployment—while translating AI output into shippable product flows.",
+  "highlights": [
+    "Prompt engineering for usable front-end code",
+    "Iterative UX/UI refinements guided by AI feedback",
+    "Version control and shipping with Netlify",
+    "Launched a live mobility prototype in one month"
+  ],
+  "image": {
+    "src": "/images/rotogo.png",
+    "alt": "Rotogo hero showcasing the AI-assisted case study"
+  },
+  "links": [
+    {
+      "href": "/rotogo",
+      "label": "View case study",
+      "variant": "primary"
+    },
+    {
+      "href": "https://rotogo.netlify.app/",
+      "label": "View live app",
+      "variant": "secondary",
+      "external": true
+    }
+  ]
+}
