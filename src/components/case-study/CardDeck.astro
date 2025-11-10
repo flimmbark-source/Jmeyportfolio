@@ -8,7 +8,7 @@ const { cards = [] } = Astro.props;
         {card.icon && <div class="text-3xl">{card.icon}</div>}
         <h3 class="text-xl font-semibold text-slate-900 dark:text-white">{card.title}</h3>
         {card.description && (
-          <p class="text-base leading-relaxed text-slate-600 dark:text-slate-300">{card.description}</p>
+          <p class="text-base leading-relaxed text-slate-700 dark:text-slate-200">{card.description}</p>
         )}
         {card.link && (
           <a

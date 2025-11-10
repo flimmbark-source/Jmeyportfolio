@@ -7,7 +7,12 @@ const isEmbed = media?.type === 'embed';
 {media && (
   <div class="mt-10 overflow-hidden rounded-3xl border border-slate-200/70 bg-slate-100/80 shadow-lg transition-colors duration-300 dark:border-slate-700 dark:bg-slate-900/70">
     {isImage && (
-      <img src={media.src} alt={media.alt ?? ''} class="h-full w-full object-cover" loading="lazy" />
+      <img
+        src={media.src}
+        alt={media.alt ?? media.title ?? 'Illustration of the project work'}
+        class="h-full w-full object-cover"
+        loading="lazy"
+      />
     )}
     {isVideo && (
       <video class="h-full w-full" controls poster={media.poster}>
