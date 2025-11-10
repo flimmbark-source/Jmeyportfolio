@@ -3,12 +3,12 @@
   "slug": "ai-archiving",
   "title": "AI Archiving Assistant",
   "tagline": "Productivity · AI Tool",
-  "summary": "Built an adaptive tagging assistant that uses machine learning to pre-label archival content. Researchers reclaimed five hours each week through auto-tagging and confidence-based review queues.",
+  "summary": "Returned five researcher hours weekly by deploying a confidence-based tagging assistant that pre-labels archives and routes reviews intelligently.",
   "highlights": [
-    "Competitive & heuristic analysis",
-    "Information architecture overhaul",
-    "Feedback-driven design system",
-    "Quant + qual success metrics"
+    "AI UX",
+    "Information Architecture",
+    "Explainability",
+    "Product Discovery"
   ],
   "image": {
     "src": "/images/ai-archiver.png",

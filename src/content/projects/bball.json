@@ -2,18 +2,18 @@
   "order": 5,
   "slug": "bball",
   "title": "The Intelligent Scouting Archive",
-  "tagline": "Sports Analytics · Personal Project",
-  "summary": "Built a scouting assistant that centralizes hard-to-find European university basketball data. Mixed-method research informed a workflow that continuously discovers, enriches, and updates player records for recruiters.",
+  "tagline": "Sports Analytics · Web App",
+  "summary": "Enabled scouts to reclaim six hours weekly by automating discovery of European prospects with an AI-enriched archive tuned to recruitment workflows.",
   "highlights": [
-    "Qualitative interviews with scouts",
-    "Data architecture for statistical insight",
-    "AI prompt engineering for niche sources",
-    "Responsive UI for rapid triage"
+    "Sports Analytics",
+    "Data Design",
+    "AI Automation",
+    "UX Prototyping"
   ],
   "links": [
     {
       "href": "/bball",
-      "label": "Read case study",
+      "label": "View case study",
       "variant": "primary"
     }
   ],
