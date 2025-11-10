@@ -71,11 +71,11 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
           <div class="space-y-4">
             <h1 class="text-4xl font-extrabold sm:text-5xl">{hero.title}</h1>
             {hero.subtitle && (
-              <p class="text-lg leading-relaxed text-slate-700 dark:text-slate-200">{hero.subtitle}</p>
+              <p class="text-lg leading-relaxed text-slate-800 dark:text-slate-200">{hero.subtitle}</p>
             )}
           </div>
           {hero.summary && (
-            <p class="text-base leading-relaxed text-slate-700 dark:text-slate-200">{hero.summary}</p>
+            <p class="text-base leading-relaxed text-slate-800 dark:text-slate-200">{hero.summary}</p>
           )}
           {(hero.meta || hero.actions) && (
             <div class="mt-8 flex w-full flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -96,7 +96,7 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
                 <div class="flex flex-wrap justify-center gap-3">
                   {hero.actions.map((action) => (
                     <a
-                      class={`cta-button inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-semibold transition hover:bg-white/70 dark:hover:bg-white/10 ${
+                      class={`cta-button inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-semibold transition hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100 dark:hover:bg-white/10 dark:focus-visible:ring-offset-slate-900 ${
                         action.variant === 'primary'
                           ? 'cta-button--accent border-white/80 bg-white text-slate-900 dark:border-transparent'
                           : 'cta-button--subtle border-white/30 bg-transparent text-slate-900 dark:text-white'
@@ -141,7 +141,7 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
           />
           <MetricsGrid metrics={challenge.metrics} />
           {challenge.list && challenge.list.length > 0 && (
-            <ul class="mt-8 space-y-3 text-left text-base leading-relaxed text-slate-600 dark:text-slate-300">
+            <ul class="mt-8 space-y-3 text-left text-base leading-relaxed text-slate-700 dark:text-slate-200">
               {challenge.list.map((item) => (
                 <li class="flex gap-3">
                   <span class="mt-1 inline-flex h-2 w-2 rounded-full bg-sky-500 dark:bg-sky-400"></span>
@@ -178,7 +178,7 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
           <MetricsGrid metrics={impact.metrics} />
           <ResultList items={impact.results} />
           {impact.highlights && impact.highlights.length > 0 && (
-            <ul class="mt-8 space-y-3 text-base leading-relaxed text-slate-600 dark:text-slate-300">
+            <ul class="mt-8 space-y-3 text-base leading-relaxed text-slate-700 dark:text-slate-200">
               {impact.highlights.map((highlight) => (
                 <li class="flex gap-3">
                   <span class="mt-1 inline-flex h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span>
@@ -215,7 +215,7 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
               <article class="mt-12 rounded-3xl border border-slate-200/70 bg-slate-100/70 p-8 dark:border-slate-700 dark:bg-slate-900/60">
                 <h3 class="text-2xl font-semibold text-slate-900 dark:text-white">{section.title}</h3>
                 {section.description && (
-                  <p class="mt-4 text-base leading-relaxed text-slate-600 dark:text-slate-300">{section.description}</p>
+                  <p class="mt-4 text-base leading-relaxed text-slate-700 dark:text-slate-200">{section.description}</p>
                 )}
                 <InsightList items={section.findings} />
                 <IconStepGrid steps={section.steps} />

@@ -10,10 +10,10 @@ const { modules = [] } = Astro.props;
           <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-white">{module.title}</h3>
         </div>
         {module.description && (
-          <p class="text-base leading-relaxed text-slate-600 dark:text-slate-300">{module.description}</p>
+          <p class="text-base leading-relaxed text-slate-700 dark:text-slate-200">{module.description}</p>
         )}
         {module.bullets && (
-          <ul class="mt-2 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+          <ul class="mt-2 space-y-2 text-sm text-slate-700 dark:text-slate-200">
             {module.bullets.map((bullet) => (
               <li class="flex gap-2">
                 <span class="text-sky-500 dark:text-sky-300">•</span>
