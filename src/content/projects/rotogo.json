@@ -2,13 +2,13 @@
   "order": 6,
   "slug": "rotogo",
   "title": "Rotogo Game App",
-  "tagline": "Creative Tools · AI Game",
-  "summary": "Shipped a live AI-assisted game in one month by pairing LLM collaboration with iterative UX refinements to accelerate solo product delivery.",
+  "tagline": "Product Design · AI Collaboration",
+  "summary": "Documented how pairing with large language models helped me to learn how to code and complete an end-to-end app build, from prompts to deployment.",
   "highlights": [
-    "AI Collaboration",
-    "Front-end Development",
-    "Design Systems",
-    "Product Strategy"
+    "Prompt engineering for usable front-end code",
+    "Iterative UX/UI refinements guided by AI feedback",
+    "Version control and shipping with Netlify",
+    "Launched a live prototype in one month"
   ],
   "image": {
     "src": "/images/rotogo.png",

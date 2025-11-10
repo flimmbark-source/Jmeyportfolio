@@ -2,13 +2,13 @@
   "order": 4,
   "slug": "agora-21",
   "title": "Agora 21 Participation Hub",
-  "tagline": "Civic Tech · Web Platform",
-  "summary": "Equipped civic teams with a concept playbook that maps storytelling-driven engagement, clarifying how residents track policy proposals from idea to action.",
+  "tagline": "Civic Tech · Platform",
+  "summary": "Drafted a civic engagement playbook and prototype that explores how residents might follow policy stories from idea to action. The concept documents accessible patterns, narrative framing, and service handoffs for future pilots.",
   "highlights": [
-    "Civic Tech",
-    "Service Blueprinting",
-    "Accessibility",
-    "Storytelling"
+    "Community listening sessions",
+    "Accessibility-first UI library",
+    "Service journey orchestration",
+    "Impact storytelling"
   ],
   "image": {
     "src": "/images/agora21.png",

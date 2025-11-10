@@ -2,13 +2,13 @@
   "order": 2,
   "slug": "idl",
   "title": "IDL Workflow Reimagined",
-  "tagline": "Retail Operations · Workflow Automation",
-  "summary": "Reduced document processing from eight hours to 37 minutes by orchestrating an automation-led workflow and service alerts for retail rollouts.",
+  "tagline": "Enterprise · Workflow Automation",
+  "summary": "Orchestrated a cross-functional sprint to streamline a manual 8-hour document processing flow. The redesigned service blueprint brought the task down to 37 minutes and added clear service-level alerts.",
   "highlights": [
-    "Workflow Automation",
-    "Service Design",
-    "Stakeholder Alignment",
-    "Design Ops"
+    "Stakeholder interviews & journey maps",
+    "Automation opportunity matrix",
+    "Design system foundations",
+    "ROI storytelling for leadership"
   ],
   "image": {
     "src": "/images/idl-case-study.png",
