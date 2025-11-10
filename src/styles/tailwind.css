@@ -19,16 +19,87 @@ html[data-large-text="true"] {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  .project-card:hover,
+  .project-card:focus-within,
+  .cta-button:hover,
+  .cta-button:focus-visible {
+    transform: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+  }
+
+  [data-animate-on-scroll] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .case-study-hero {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 .project-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
 }
 
 .project-card:hover,
 .project-card:focus-within {
-  transform: translateY(-6px);
-  box-shadow: 0 28px 60px -36px rgba(15, 23, 42, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 26px 55px -34px rgba(15, 23, 42, 0.35);
+}
+
+.cta-button {
+  transition: transform 0.35s ease, box-shadow 0.35s ease, filter 0.35s ease;
+  will-change: transform, box-shadow;
+}
+
+.cta-button:hover,
+.cta-button:focus-visible {
+  transform: translateY(-2px) scale(1.01);
+}
+
+.cta-button--accent {
+  box-shadow: 0 22px 46px -32px rgba(79, 70, 229, 0.55);
+}
+
+.cta-button--accent:hover,
+.cta-button--accent:focus-visible {
+  box-shadow: 0 30px 64px -28px rgba(79, 70, 229, 0.55);
+  filter: brightness(1.02);
+}
+
+.cta-button--subtle:hover,
+.cta-button--subtle:focus-visible {
+  box-shadow: 0 22px 44px -36px rgba(79, 70, 229, 0.35);
+  border-color: rgba(79, 70, 229, 0.35);
+}
+
+[data-animate-on-scroll] {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  will-change: transform, opacity;
+}
+
+[data-animate-on-scroll].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.case-study-hero {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: case-study-hero-reveal 0.55s ease forwards;
+}
+
+@keyframes case-study-hero-reveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .principle-card,

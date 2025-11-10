@@ -61,7 +61,7 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
 >
   <main class="relative mx-auto max-w-5xl px-4 py-16 text-slate-900 transition-colors duration-300 sm:px-6 lg:px-8 dark:text-slate-100">
     <section class="rounded-3xl border border-slate-200/70 bg-slate-100/80 p-8 shadow-xl backdrop-blur-sm sm:p-12 dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
-      <div class="rounded-3xl bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200 p-10 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-white">
+      <div class="case-study-hero rounded-3xl bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200 p-10 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-white">
         <div class="space-y-6 text-center">
           {hero.eyebrow && (
             <p class="text-sm font-semibold uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300">
@@ -96,10 +96,10 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
                 <div class="flex flex-wrap justify-center gap-3">
                   {hero.actions.map((action) => (
                     <a
-                      class={`inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-semibold transition hover:bg-white/70 dark:hover:bg-white/10 ${
+                      class={`cta-button inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-semibold transition hover:bg-white/70 dark:hover:bg-white/10 ${
                         action.variant === 'primary'
-                          ? 'border-white/80 bg-white text-slate-900 dark:border-transparent'
-                          : 'border-white/30 bg-transparent text-slate-900 dark:text-white'
+                          ? 'cta-button--accent border-white/80 bg-white text-slate-900 dark:border-transparent'
+                          : 'cta-button--subtle border-white/30 bg-transparent text-slate-900 dark:text-white'
                       }`}
                       href={action.href}
                       target={action.external ? '_blank' : undefined}

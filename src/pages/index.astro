@@ -61,7 +61,7 @@ const processSteps = [
   description="Product designer blending research, service design, and experimentation to ship measurable outcomes."
   mainClass="mx-auto max-w-6xl px-6 pb-24 pt-16"
 >
-  <section id="top" class="mb-28 grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+  <section id="top" class="mb-28 grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center" data-animate-on-scroll data-animate-initial>
     <div>
       <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">Product Designer &amp; Researcher</p>
       <h1 class="mt-6 text-4xl font-black leading-tight sm:text-5xl md:text-6xl">
@@ -73,13 +73,13 @@ const processSteps = [
       <div class="mt-8 flex flex-wrap gap-4">
         <a
           href="#projects"
-          class="inline-flex items-center rounded-full bg-gradient-to-r from-brand-600 via-indigo-500 to-purple-500 px-6 py-3 font-semibold text-white shadow-elevated transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950"
+          class="cta-button cta-button--accent inline-flex items-center rounded-full bg-gradient-to-r from-brand-600 via-indigo-500 to-purple-500 px-6 py-3 font-semibold text-white shadow-elevated transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950"
         >
           View selected work
         </a>
         <a
           href="#process"
-          class="inline-flex items-center rounded-full border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:text-slate-200 dark:hover:border-brand-400 dark:hover:text-brand-200 dark:focus-visible:ring-offset-slate-950"
+          class="cta-button cta-button--subtle inline-flex items-center rounded-full border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:text-slate-200 dark:hover:border-brand-400 dark:hover:text-brand-200 dark:focus-visible:ring-offset-slate-950"
         >
           See my process
         </a>
@@ -93,7 +93,11 @@ const processSteps = [
         ))}
       </dl>
     </div>
-    <aside class="space-y-6 rounded-3xl border border-slate-200/70 bg-white/80 p-8 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70">
+    <aside
+      class="space-y-6 rounded-3xl border border-slate-200/70 bg-white/80 p-8 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70"
+      data-animate-on-scroll
+      data-animate-delay="0.15s"
+    >
       <h2 class="text-sm font-semibold uppercase tracking-[0.35em] text-brand-600">Recent recognition</h2>
       <p class="text-base text-slate-600 dark:text-slate-300">
         "Jacob reframed a stalled project with assumption-mapping workshops and weekly tests. We hit every milestone with confidence." — <strong>Senior Scout, NextStep Basketball</strong>
@@ -106,7 +110,7 @@ const processSteps = [
     </aside>
   </section>
 
-  <section id="about" class="mb-28 grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+  <section id="about" class="mb-28 grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-start" data-animate-on-scroll>
     <div class="space-y-7">
       <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">About</p>
       <h2 class="text-3xl font-bold sm:text-4xl">I bridge product strategy with evidence-based UX</h2>
@@ -131,7 +135,7 @@ const processSteps = [
     </div>
   </section>
 
-  <section id="principles" class="mb-28">
+  <section id="principles" class="mb-28" data-animate-on-scroll>
     <div class="mb-12 flex items-end justify-between gap-4">
       <div>
         <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">Principles</p>
@@ -143,8 +147,12 @@ const processSteps = [
       </p>
     </div>
     <div class="grid gap-6 md:grid-cols-3">
-      {principles.map((principle) => (
-        <article class="principle-card rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70">
+      {principles.map((principle, index) => (
+        <article
+          class="principle-card rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70"
+          data-animate-on-scroll
+          data-animate-delay={`${index * 70}ms`}
+        >
           <h3 class="text-lg font-semibold">{principle.title}</h3>
           <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{principle.description}</p>
           <ul class="mt-4 space-y-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
@@ -157,7 +165,7 @@ const processSteps = [
     </div>
   </section>
 
-  <section id="projects" class="mb-28">
+  <section id="projects" class="mb-28" data-animate-on-scroll>
     <div class="mb-12 flex items-end justify-between gap-4">
       <div>
         <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">Selected work</p>
@@ -174,7 +182,11 @@ const processSteps = [
         const isEven = index % 2 === 1;
         const data = project.data;
         return (
-          <article class="project-card rounded-3xl border border-slate-200/80 bg-white/80 p-8 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70">
+          <article
+            class="project-card rounded-3xl border border-slate-200/80 bg-white/80 p-8 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70"
+            data-animate-on-scroll
+            data-animate-delay={`${index * 80}ms`}
+          >
             <div class={`grid gap-10 md:items-center ${isEven ? 'md:grid-cols-[0.9fr_1.1fr]' : 'md:grid-cols-[1.1fr_0.9fr]'}`}>
               {!isEven && (
                 <div class="space-y-6">
@@ -248,7 +260,7 @@ const processSteps = [
     </div>
   </section>
 
-  <section id="process" class="mb-28">
+  <section id="process" class="mb-28" data-animate-on-scroll>
     <div class="mb-12 flex items-end justify-between gap-4">
       <div>
         <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">Process</p>
@@ -260,8 +272,12 @@ const processSteps = [
       </p>
     </div>
     <div class="grid gap-6 md:grid-cols-4">
-      {processSteps.map((step) => (
-        <article class="process-step rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70">
+      {processSteps.map((step, index) => (
+        <article
+          class="process-step rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70"
+          data-animate-on-scroll
+          data-animate-delay={`${index * 60}ms`}
+        >
           <span class="text-sm font-semibold text-brand-600">{step.step}</span>
           <h3 class="mt-3 text-lg font-semibold">{step.title}</h3>
           <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">{step.description}</p>
@@ -271,7 +287,7 @@ const processSteps = [
   </section>
 
   {testimonial && (
-    <section class="mb-28">
+    <section class="mb-28" data-animate-on-scroll>
       <div class="grid gap-12 rounded-3xl border border-slate-200/70 bg-white/80 p-8 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
         <div class="space-y-6">
           <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">Collaboration snapshot</p>
@@ -295,7 +311,11 @@ const processSteps = [
     </section>
   )}
 
-  <section id="contact" class="rounded-3xl border border-brand-500/20 bg-gradient-to-r from-brand-600 via-indigo-500 to-purple-500 p-[1px] shadow-xl">
+  <section
+    id="contact"
+    class="rounded-3xl border border-brand-500/20 bg-gradient-to-r from-brand-600 via-indigo-500 to-purple-500 p-[1px] shadow-xl"
+    data-animate-on-scroll
+  >
     <div class="rounded-[calc(1.5rem-1px)] bg-white p-10 text-center dark:bg-slate-950">
       <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">Let's build what's next</p>
       <h2 class="mt-4 text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">Ready to turn complexity into momentum?</h2>
@@ -306,7 +326,7 @@ const processSteps = [
       <div class="mt-8 flex flex-wrap justify-center gap-4">
         <a
           href="mailto:jmeyerkopf@gmail.com"
-          class="inline-flex items-center rounded-full bg-slate-900 px-6 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 dark:bg-white dark:text-slate-900 dark:focus-visible:ring-slate-900 dark:focus-visible:ring-offset-slate-50"
+          class="cta-button cta-button--accent inline-flex items-center rounded-full bg-slate-900 px-6 py-3 font-semibold text-white shadow-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 dark:bg-white dark:text-slate-900 dark:focus-visible:ring-slate-900 dark:focus-visible:ring-offset-slate-50"
         >
           Let's talk
         </a>
@@ -314,7 +334,7 @@ const processSteps = [
           href="https://www.linkedin.com/in/jacobmeyerkopf/"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex items-center rounded-full border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition hover:border-brand-300 hover:text-brand-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-100 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:text-slate-200 dark:hover:border-brand-400 dark:hover:text-brand-200 dark:focus-visible:ring-offset-slate-950"
+          class="cta-button cta-button--subtle inline-flex items-center rounded-full border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition hover:border-brand-300 hover:text-brand-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-100 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:text-slate-200 dark:hover:border-brand-400 dark:hover:text-brand-200 dark:focus-visible:ring-offset-slate-950"
         >
           Connect on LinkedIn
         </a>
@@ -322,3 +342,49 @@ const processSteps = [
     </div>
   </section>
 </BaseLayout>
+
+<script is:inline>
+  (() => {
+    const animatedElements = document.querySelectorAll('[data-animate-on-scroll]');
+    if (!animatedElements.length) return;
+
+    const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const shouldReduce = reduceMotionQuery.matches;
+
+    const revealElement = (element) => {
+      element.classList.add('is-visible');
+    };
+
+    animatedElements.forEach((element) => {
+      const delay = element.dataset.animateDelay;
+      if (delay) {
+        element.style.transitionDelay = delay;
+      }
+    });
+
+    if (shouldReduce || !('IntersectionObserver' in window)) {
+      animatedElements.forEach(revealElement);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            revealElement(entry.target);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: '0px 0px -10% 0px', threshold: 0.2 }
+    );
+
+    animatedElements.forEach((element) => {
+      if (element.dataset.animateInitial !== undefined) {
+        requestAnimationFrame(() => revealElement(element));
+      } else {
+        observer.observe(element);
+      }
+    });
+  })();
+</script>
