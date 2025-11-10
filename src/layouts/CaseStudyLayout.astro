@@ -60,6 +60,21 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
   mainClass="bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-slate-100"
 >
   <main class="relative mx-auto max-w-5xl px-4 py-16 text-slate-900 transition-colors duration-300 sm:px-6 lg:px-8 dark:text-slate-100">
+    {hero.meta && hero.meta.length > 0 && (
+      <div class="mb-8">
+        <div class="sticky top-6 z-30">
+          <dl class="grid gap-4 rounded-2xl border border-slate-200/70 bg-white/80 p-4 text-left text-sm shadow-lg backdrop-blur dark:border-white/10 dark:bg-white/10 dark:text-slate-100 sm:grid-cols-2 lg:grid-cols-4">
+            {hero.meta.map((item) => (
+              <div class="flex flex-col gap-1 rounded-xl bg-white/60 p-3 dark:bg-white/5" key={`${item.label}-${item.value}`}>
+                <dt class="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300">{item.label}</dt>
+                <dd class="text-base font-semibold text-slate-900 dark:text-white">{item.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </div>
+    )}
+
     <section class="rounded-3xl border border-slate-200/70 bg-slate-100/80 p-8 shadow-xl backdrop-blur-sm sm:p-12 dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
       <div class="rounded-3xl bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200 p-10 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-white">
         <div class="space-y-6 text-center">
@@ -77,40 +92,23 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
           {hero.summary && (
             <p class="text-base leading-relaxed text-slate-700 dark:text-slate-200">{hero.summary}</p>
           )}
-          {(hero.meta || hero.actions) && (
-            <div class="mt-8 flex w-full flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-between">
-              {hero.meta && hero.meta.length > 0 && (
-                <dl class="grid w-full max-w-3xl gap-4 text-left text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-3 dark:text-slate-200">
-                  {hero.meta.map((item) => (
-                    <div
-                      class="flex h-full flex-col gap-1 rounded-2xl border border-slate-200/70 bg-slate-100/80 p-4 backdrop-blur dark:border-white/20 dark:bg-white/10"
-                      key={`${item.label}-${item.value}`}
-                    >
-                      <dt class="text-xs uppercase tracking-[0.2em] text-sky-600 dark:text-sky-200">{item.label}</dt>
-                      <dd class="text-base font-semibold text-slate-900 dark:text-white">{item.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              )}
-              {hero.actions && hero.actions.length > 0 && (
-                <div class="flex flex-wrap justify-center gap-3">
-                  {hero.actions.map((action) => (
-                    <a
-                      class={`inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-semibold transition hover:bg-white/70 dark:hover:bg-white/10 ${
-                        action.variant === 'primary'
-                          ? 'border-white/80 bg-white text-slate-900 dark:border-transparent'
-                          : 'border-white/30 bg-transparent text-slate-900 dark:text-white'
-                      }`}
-                      href={action.href}
-                      target={action.external ? '_blank' : undefined}
-                      rel={action.external ? 'noreferrer noopener' : undefined}
-                      key={action.label}
-                    >
-                      {action.label}
-                    </a>
-                  ))}
-                </div>
-              )}
+          {hero.actions && hero.actions.length > 0 && (
+            <div class="mt-8 flex flex-wrap justify-center gap-3">
+              {hero.actions.map((action) => (
+                <a
+                  class={`inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-semibold transition hover:bg-white/70 dark:hover:bg-white/10 ${
+                    action.variant === 'primary'
+                      ? 'border-white/80 bg-white text-slate-900 dark:border-transparent'
+                      : 'border-white/30 bg-transparent text-slate-900 dark:text-white'
+                  }`}
+                  href={action.href}
+                  target={action.external ? '_blank' : undefined}
+                  rel={action.external ? 'noreferrer noopener' : undefined}
+                  key={action.label}
+                >
+                  {action.label}
+                </a>
+              ))}
             </div>
           )}
         </div>
@@ -239,5 +237,20 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
         </section>
       )}
     </section>
+
+    <footer class="mt-16 flex flex-col items-center gap-6 text-center">
+      <a
+        class="text-sm font-semibold text-sky-600 transition hover:text-sky-700 dark:text-sky-300 dark:hover:text-sky-200"
+        href="/"
+      >
+        ← Back to portfolio
+      </a>
+      <a
+        class="inline-flex items-center gap-2 rounded-full bg-sky-600 px-6 py-3 text-base font-semibold text-white shadow-lg transition hover:bg-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 dark:bg-sky-500 dark:hover:bg-sky-400"
+        href="mailto:hello@jacobmeyerkopf.com"
+      >
+        Interested in similar work? Let’s talk.
+      </a>
+    </footer>
   </main>
 </BaseLayout>
