@@ -10,7 +10,7 @@ const scale = max === 0 ? 0 : 100 / max;
       const width = `${Math.max(6, value * scale)}%`;
       return (
         <div class="rounded-2xl border border-slate-200/70 bg-slate-100/80 p-5 shadow-sm transition-colors duration-300 dark:border-slate-700 dark:bg-slate-900/60">
-          <div class="flex items-center justify-between text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
+          <div class="flex items-center justify-between text-sm font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-200">
             <span>{Array.isArray(label) ? label.join(' ') : label}</span>
             <span class="text-slate-900 dark:text-white">{value} {data.suffix ?? ''}</span>
           </div>

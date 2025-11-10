@@ -39,8 +39,8 @@ export default function RotogoCaseStudy() {
         <div className="absolute inset-0 bg-grid-pattern opacity-30"></div>
         <motion.div variants={fadeIn} initial="hidden" animate="show" className="relative z-10 max-w-4xl">
           <h1 className="mb-4 bg-gradient-to-b from-slate-900 via-slate-700 to-slate-500 bg-clip-text text-5xl font-extrabold text-transparent md:text-7xl dark:from-white dark:via-slate-200 dark:to-slate-400">Rotogo: A Journey from Prompt to Product</h1>
-          <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-slate-600 md:text-xl dark:text-slate-300">How I learned to code, design, and ship a real-world application by partnering with Large Language Models.</p>
-          <motion.div variants={staggerContainer} initial="hidden" animate="show" className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm uppercase tracking-wider text-slate-600 dark:text-slate-300">
+          <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-slate-700 md:text-xl dark:text-slate-200">How I learned to code, design, and ship a real-world application by partnering with Large Language Models.</p>
+          <motion.div variants={staggerContainer} initial="hidden" animate="show" className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm uppercase tracking-wider text-slate-700 dark:text-slate-200">
             <motion.p variants={fadeIn}><strong>Role:</strong> AI-Assisted Developer</motion.p>
             <motion.p variants={fadeIn}><strong>Timeline:</strong> 1 Month (2025)</motion.p>
             <motion.p variants={fadeIn}><strong>Tools:</strong> LLMs, React, Vite, Tailwind, GitHub</motion.p>
@@ -50,7 +50,7 @@ export default function RotogoCaseStudy() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.2, duration: 0.8 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-slate-500 dark:text-slate-400"
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-slate-700 dark:text-slate-300"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
         </motion.div>
@@ -68,7 +68,7 @@ export default function RotogoCaseStudy() {
             className="text-center max-w-3xl mx-auto"
           >
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-indigo-400">The Challenge</h2>
-            <p className="text-lg md:text-xl leading-relaxed text-slate-600 dark:text-slate-300">
+            <p className="text-lg md:text-xl leading-relaxed text-slate-700 dark:text-slate-200">
               Starting with zero lines of code and a blank canvas, my goal was to learn software development through active creation, not passive study. Could I use AI as a collaborator to navigate the complex world of coding, version control, and product deployment?
             </p>
           </motion.div>
@@ -105,7 +105,7 @@ export default function RotogoCaseStudy() {
                   </div>
                   <div className={`text-center md:text-left md:order-${index % 2 === 0 ? 2 : 1}`}>
                     <h3 className="mb-3 text-2xl font-semibold text-slate-900 dark:text-white">{step.title}</h3>
-                    <p className="leading-relaxed text-slate-600 dark:text-slate-300">{step.description}</p>
+                    <p className="leading-relaxed text-slate-700 dark:text-slate-200">{step.description}</p>
                   </div>
                 </motion.div>
               ))}
@@ -134,7 +134,12 @@ export default function RotogoCaseStudy() {
               viewport={{ once: true, amount: 0.2 }}
               className="group relative max-w-4xl overflow-hidden rounded-xl border border-slate-200/70 bg-slate-100/80 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/70"
             >
-              <a href="https://rotogo.netlify.app/" target="_blank" rel="noopener noreferrer" className="relative z-10 block">
+              <a
+                href="https://rotogo.netlify.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative z-10 block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950"
+              >
                 <img src="https://api.microlink.io/?url=https://rotogo.netlify.app/&screenshot=true&meta=false&embed=screenshot.url" alt="Rotogo Live App Preview" className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105" />
               </a>
               {/* Gradient overlay must not block clicks */}
@@ -143,19 +148,19 @@ export default function RotogoCaseStudy() {
                 href="https://rotogo.netlify.app/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="absolute bottom-4 right-4 z-10 flex items-center gap-2 rounded-md bg-teal-500 px-4 py-2 font-medium text-white transition hover:bg-teal-600"
+                className="absolute bottom-4 right-4 z-10 flex items-center gap-2 rounded-md bg-teal-500 px-4 py-2 font-medium text-white transition hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:ring-offset-2 focus:ring-offset-slate-900"
               >
                 <ExternalLink size={18} /> Open Live App
               </a>
             </motion.div>
           </div>
-          <p className="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-4 text-center text-sm text-slate-700 dark:text-slate-300">
             Static screenshot preview to avoid network prompts. View the live site directly{' '}
             <a
               href="https://rotogo.netlify.app/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-teal-500 underline transition hover:text-teal-400 dark:text-teal-300"
+              className="text-teal-600 underline transition hover:text-teal-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100 dark:text-teal-300 dark:focus-visible:ring-offset-slate-900"
             >
               here
             </a>
@@ -189,7 +194,7 @@ export default function RotogoCaseStudy() {
                 >
                   <div className="mb-4">{learning.icon}</div>
                   <h3 className="mb-2 text-xl font-bold text-slate-900 dark:text-white">{learning.title}</h3>
-                  <p className="text-slate-600 dark:text-slate-300">{learning.text}</p>
+                  <p className="text-slate-700 dark:text-slate-200">{learning.text}</p>
                 </motion.div>
               ))}
             </motion.div>
@@ -207,10 +212,10 @@ export default function RotogoCaseStudy() {
             className="text-center max-w-3xl mx-auto"
           >
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Impact & Reflection</h2>
-            <p className="mb-8 text-lg leading-relaxed text-slate-600 md:text-xl dark:text-slate-300">
+            <p className="mb-8 text-lg leading-relaxed text-slate-700 md:text-xl dark:text-slate-200">
               This project was more than just building an app; it was a paradigm shift in how I approach learning. It proved that with the right tools and a collaborative mindset, anyone can transform curiosity into tangible skills and creations.
             </p>
-            <blockquote className="border-l-4 border-teal-400 pl-6 text-left text-lg italic text-slate-700 dark:text-slate-300">
+            <blockquote className="border-l-4 border-teal-400 pl-6 text-left text-lg italic text-slate-800 dark:text-slate-200">
               “Before Rotogo, I didn’t know how to write a line of code. After Rotogo, I knew how to build and ship a product.”
             </blockquote>
           </motion.div>
