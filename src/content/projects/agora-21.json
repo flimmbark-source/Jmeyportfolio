@@ -4,6 +4,14 @@
   "title": "Agora 21 Participation Hub",
   "tagline": "Civic Tech · Platform",
   "summary": "Drafted a civic engagement playbook and prototype that explores how residents might follow policy stories from idea to action. The concept documents accessible patterns, narrative framing, and service handoffs for future pilots.",
+  "client": "City Innovation Lab",
+  "year": "2024",
+  "deliverables": [
+    "Discovery research synthesis",
+    "Narrative-driven service blueprint",
+    "Responsive participation prototype"
+  ],
+  "poster": "/images/agora21.png",
   "highlights": [
     "Community listening sessions",
     "Accessibility-first UI library",

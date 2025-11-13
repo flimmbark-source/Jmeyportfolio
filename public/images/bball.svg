@@ -1,0 +1,34 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Abstract illustration representing basketball analytics">
+  <defs>
+    <linearGradient id="court" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="arc" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fde047" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#f97316" stop-opacity="0.9" />
+    </linearGradient>
+    <linearGradient id="grid" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#a5b4fc" stop-opacity="0.2" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#court)" rx="48" />
+  <g stroke="url(#grid)" stroke-width="2">
+    <path d="M0 120h1200M0 240h1200M0 360h1200M0 480h1200M0 600h1200M0 720h1200" opacity="0.5" />
+    <path d="M150 0v800M300 0v800M450 0v800M600 0v800M750 0v800M900 0v800M1050 0v800" opacity="0.5" />
+  </g>
+  <circle cx="600" cy="400" r="220" fill="none" stroke="#94a3b8" stroke-width="4" opacity="0.75" />
+  <circle cx="600" cy="400" r="120" fill="none" stroke="#38bdf8" stroke-width="3" opacity="0.9" />
+  <path d="M260 400h680" stroke="#fde047" stroke-width="6" stroke-linecap="round" opacity="0.9" />
+  <path d="M600 180c100 70 100 270 0 340c-100-70-100-270 0-340z" fill="url(#arc)" opacity="0.25" />
+  <g fill="#f8fafc" font-family="'Inter', 'Segoe UI', sans-serif" font-weight="700" text-anchor="middle">
+    <text x="600" y="160" font-size="42" opacity="0.9">INTELLIGENT</text>
+    <text x="600" y="214" font-size="72" letter-spacing="0.3em">SCOUTING</text>
+    <text x="600" y="272" font-size="42" opacity="0.9">ARCHIVE</text>
+  </g>
+  <g fill="#f8fafc" font-family="'Inter', 'Segoe UI', sans-serif" font-size="24" opacity="0.8">
+    <text x="230" y="680">AI-ASSISTED RESEARCH</text>
+    <text x="860" y="680">DATA STORYTELLING</text>
+  </g>
+</svg>

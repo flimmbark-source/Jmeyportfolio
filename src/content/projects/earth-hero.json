@@ -5,6 +5,14 @@
   "title": "Earth Hero Habit Builder",
   "tagline": "Sustainability · Web App",
   "summary": "Designed a climate action companion that transformed overwhelming eco-goals into playful, trackable rituals. Gamified progress loops raised daily habit completion by 30% in pilot tests.",
+  "client": "Earth Hero Collective",
+  "year": "2024",
+  "deliverables": [
+    "Behavioral research study",
+    "Gamification system architecture",
+    "Responsive prototype"
+  ],
+  "poster": "/images/earth-hero.png",
   "highlights": [
     "Mixed-method research & segmentation",
     "Gamified onboarding experiments",

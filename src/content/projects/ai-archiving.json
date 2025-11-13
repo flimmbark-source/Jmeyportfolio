@@ -4,6 +4,14 @@
   "title": "AI Archiving Assistant",
   "tagline": "Productivity · AI Tool",
   "summary": "Built an adaptive tagging assistant that uses machine learning to pre-label archival content. Researchers reclaimed five hours each week through auto-tagging and confidence-based review queues.",
+  "client": "Heritage Research Lab",
+  "year": "2023",
+  "deliverables": [
+    "Workflow audit",
+    "Model-assisted interaction patterns",
+    "Observability dashboard"
+  ],
+  "poster": "/images/ai-archiver.png",
   "highlights": [
     "Competitive & heuristic analysis",
     "Information architecture overhaul",
