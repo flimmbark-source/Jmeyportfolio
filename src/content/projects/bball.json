@@ -4,6 +4,14 @@
   "title": "The Intelligent Scouting Archive",
   "tagline": "Sports Analytics · Personal Project",
   "summary": "Built a scouting assistant that centralizes hard-to-find European university basketball data. Mixed-method research informed a workflow that continuously discovers, enriches, and updates player records for recruiters.",
+  "client": "Independent exploration",
+  "year": "2022",
+  "deliverables": [
+    "Competitive scouting research",
+    "Multi-source ingestion pipeline",
+    "Decision-support dashboard"
+  ],
+  "poster": "/images/bball.svg",
   "highlights": [
     "Qualitative interviews with scouts",
     "Data architecture for statistical insight",

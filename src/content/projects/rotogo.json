@@ -4,6 +4,14 @@
   "title": "Rotogo Game App",
   "tagline": "Product Design · AI Collaboration",
   "summary": "Documented how pairing with large language models helped me to learn how to code and complete an end-to-end app build, from prompts to deployment.",
+  "client": "Self-directed sprint",
+  "year": "2023",
+  "deliverables": [
+    "Prompt-to-prototype experiments",
+    "Component library",
+    "Netlify deployment pipeline"
+  ],
+  "poster": "/images/rotogo.png",
   "highlights": [
     "Prompt engineering for usable front-end code",
     "Iterative UX/UI refinements guided by AI feedback",

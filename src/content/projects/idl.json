@@ -4,6 +4,14 @@
   "title": "IDL Workflow Reimagined",
   "tagline": "Enterprise · Workflow Automation",
   "summary": "Orchestrated a cross-functional sprint to streamline a manual 8-hour document processing flow. The redesigned service blueprint brought the task down to 37 minutes and added clear service-level alerts.",
+  "client": "AT&T Retail Ops",
+  "year": "2021",
+  "deliverables": [
+    "Executive alignment workshop",
+    "Automation service blueprint",
+    "Design system starter kit"
+  ],
+  "poster": "/images/idl-case-study.png",
   "highlights": [
     "Stakeholder interviews & journey maps",
     "Automation opportunity matrix",
