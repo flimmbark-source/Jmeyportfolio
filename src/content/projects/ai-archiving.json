@@ -26,7 +26,7 @@
       "eyebrow": "Case Study",
       "title": "AI Archiving Assistant",
       "subtitle": "Giving researchers a faster way to surface institutional knowledge.",
-      "summary": "I led the product discovery and design of an intelligent tagging assistant that pre-labels archival assets, blending machine learning with human review cues to reclaim research time.",
+      "summary": "I led the product discovery and design of an intelligent tagging assistant that pre-labels archival assets. It blends machine learning with human review cues to reclaim research time.",
       "meta": [
         { "label": "Role", "value": "Product Design Lead" },
         { "label": "Timeline", "value": "10 weeks" },
@@ -91,7 +91,7 @@
       ]
     },
     "solution": {
-      "title": "Confidence-based automation with human guardrails",
+      "title": "Confidence-based automation with human safeguards",
       "description": "We introduced a machine learning tagging assistant that pre-populates metadata, routes items into confidence-based review queues, and teaches the model through curator feedback loops.",
       "media": null,
       "steps": [
@@ -180,7 +180,7 @@
       "sections": [
         {
           "title": "1. Map current-state workflows",
-          "description": "Documented intake rituals, tooling, and exceptions through contextual inquiry sessions.",
+          "description": "Documented intake habits, tooling, and exceptions through contextual inquiry sessions.",
           "findings": [
             {
               "title": "Hidden taxonomies",
@@ -203,7 +203,7 @@
         },
         {
           "title": "3. Launch and measure",
-          "description": "Established success metrics and governance rituals before handing off to implementation teams.",
+          "description": "Established success metrics and governance habits before handing off to implementation teams.",
           "comparison": [
             { "before": "Tagging each asset by hand.", "after": "Auto-suggested tags with one-click approvals." },
             { "before": "Guessing which items to prioritize.", "after": "Confidence queues that surface at-risk assets." },
