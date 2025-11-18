@@ -7,21 +7,13 @@ const featuredProjects = projects.filter((project) => project.data.image);
 const testimonialEntry = (await getCollection('testimonials'))[0];
 const testimonial = testimonialEntry?.data;
 
-const stats = [
-  { label: 'Avg uplift in key metrics', value: '32%' },
-  { label: 'User interviews', value: '300+' },
-  { label: 'Cross-functional teams partnered with', value: '15' }
-];
-
 const flagshipCopy = {
   idl: {
-    eyebrow: 'Flagship 1 – IDL Workflow Reimagined',
     title: 'Rebuilding a 1,000-store rollout workflow',
     oneLiner: 'Cut store drawing time from 8 hours to 37 minutes and saved ~7.4k hours across a retail rollout.',
     tags: ['Workflow design', 'Automation', 'Ops tools']
   },
   'ai-archiving': {
-    eyebrow: 'Flagship 2 – AI Archiving Assistant',
     title: 'AI assistant for a 60k+ item archive',
     oneLiner: 'Designed a human-in-the-loop tagging tool that saves researchers ~5 hours a week with 92% tag accuracy.',
     tags: ['AI/ML', 'Knowledge management', 'Trust & governance']
@@ -86,28 +78,6 @@ const processSteps = [
       <p class="mt-4 max-w-2xl text-lg text-slate-700 dark:text-slate-200">
         I’m Jacob, a product designer &amp; researcher in Tel Aviv. I turn messy workflows and AI/automation ideas into interfaces people trust and actually use.
       </p>
-      <div class="mt-8 flex flex-wrap gap-4">
-        <a
-          href="#projects"
-          class="cta-button cta-button--accent inline-flex items-center rounded-full bg-gradient-to-r from-brand-600 via-indigo-500 to-purple-500 px-6 py-3 font-semibold text-white shadow-elevated transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950"
-        >
-          View selected work
-        </a>
-        <a
-          href="#process"
-          class="cta-button cta-button--subtle inline-flex items-center rounded-full border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:text-slate-200 dark:hover:border-brand-400 dark:hover:text-brand-200 dark:focus-visible:ring-offset-slate-950"
-        >
-          See my process
-        </a>
-      </div>
-      <dl class="mt-10 flex flex-wrap gap-8">
-        {stats.map((stat) => (
-          <div class="min-w-[140px]">
-            <dt class="text-sm font-medium text-slate-700 dark:text-slate-300">{stat.label}</dt>
-            <dd class="text-3xl font-bold">{stat.value}</dd>
-          </div>
-        ))}
-      </dl>
     </div>
     <aside
       class="space-y-6 rounded-3xl border border-slate-200/70 bg-white/80 p-8 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70"
@@ -152,15 +122,6 @@ const processSteps = [
   </section>
 
   <section id="projects" class="mb-28" data-animate-on-scroll>
-    <div class="mb-12 flex items-end justify-between gap-4">
-      <div>
-        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">Selected work</p>
-        <h2 class="text-3xl font-bold sm:text-4xl">Flagship product design projects</h2>
-        <p class="mt-3 text-base font-medium text-slate-700 dark:text-slate-200">Two high-impact case studies up front, with more work further down for context.</p>
-      </div>
-      <p class="hidden max-w-md text-sm text-slate-700 dark:text-slate-300 lg:block">Built with research-driven workflows, automation, and AI-assisted tooling that deliver measurable outcomes.</p>
-    </div>
-
     <div class="space-y-16">
       <div class="grid gap-8 lg:grid-cols-2">
         {flagshipProjects.map((project, index) => {
@@ -174,7 +135,6 @@ const processSteps = [
             >
               <div class={`grid gap-6 ${data.image ? 'md:grid-cols-[1.05fr_0.95fr]' : ''}`}>
                 <div class="space-y-4">
-                  {copy && <p class="text-xs font-semibold uppercase tracking-[0.3em] text-brand-600">{copy.eyebrow}</p>}
                   <h3 class="text-2xl font-semibold text-slate-900 dark:text-white">{copy?.title || data.title}</h3>
                   <p class="text-base text-slate-700 dark:text-slate-200">{copy?.oneLiner || data.summary}</p>
                   {copy?.tags && (
@@ -216,13 +176,6 @@ const processSteps = [
 
       {supportingProjects.length > 0 && (
         <div class="space-y-6">
-          <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div class="space-y-2">
-              <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">More selected work</p>
-              <h3 class="text-2xl font-semibold text-slate-900 dark:text-white">Additional collaborations</h3>
-              <p class="text-base font-medium text-slate-700 dark:text-slate-200">Snapshots from civic tech, climate, and sports experiences.</p>
-            </div>
-          </div>
           <div class="grid gap-6 md:grid-cols-2">
             {supportingProjects.map((project, index) => {
               const data = project.data;
