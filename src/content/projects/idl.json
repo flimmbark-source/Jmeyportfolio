@@ -31,32 +31,7 @@
         { "label": "Role", "value": "Lead Designer" },
         { "label": "Timeline", "value": "6 weeks" },
         { "label": "Impact", "value": "7.4k hours saved" }
-      ],
-      "tldr": {
-        "title": "Case snapshot",
-        "items": [
-          {
-            "label": "Context",
-            "value": "A small design team supporting ~1,000 retail stores, redrawing layouts by hand for every change."
-          },
-          {
-            "label": "My role",
-            "value": "Lead designer for workflow + tooling: mapped the end-to-end process, co-designed templates with draftsmen, and defined the new production dashboard."
-          },
-          {
-            "label": "The problem",
-            "value": "Each store took ~8 hours of manual CAD work, with no clear visibility for ops or leadership."
-          },
-          {
-            "label": "Outcomes",
-            "value": [
-              "8 hours → 37 minutes per store",
-              "~7.4k hours saved across a rollout",
-              "0% defects in a sampled audit of generated drawings"
-            ]
-          }
-        ]
-      }
+      ]
     },
     "overview": {
       "eyebrow": "Project Overview",
