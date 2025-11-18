@@ -28,16 +28,19 @@ const sections = [
   { key: 'solution', label: 'Solution' },
   { key: 'impact', label: 'Impact' },
   { key: 'interaction', label: 'Interaction' },
+  { key: 'friction', label: 'What was hard' },
   { key: 'process', label: 'Process' },
   { key: 'conclusion', label: 'Conclusion' }
 ];
 
 const hero = caseStudy?.hero ?? {};
+const tldrItems = hero?.tldr?.items ?? [];
 const overview = caseStudy?.overview;
 const challenge = caseStudy?.challenge;
 const solution = caseStudy?.solution;
 const impact = caseStudy?.impact;
 const interaction = caseStudy?.interaction;
+const friction = caseStudy?.friction;
 const process = caseStudy?.process;
 const conclusion = caseStudy?.conclusion;
 
@@ -74,6 +77,44 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
               <p class="text-lg leading-relaxed text-slate-800 dark:text-slate-200">{hero.subtitle}</p>
             )}
           </div>
+          {tldrItems.length > 0 && (
+            <div class="mx-auto w-full max-w-4xl rounded-2xl border border-slate-200/70 bg-white/80 p-6 text-left shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5 dark:shadow-none">
+              <div class="flex items-center gap-3">
+                <span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-sky-700 dark:bg-sky-900/60 dark:text-sky-100">
+                  TL;DR
+                </span>
+                {hero.tldr?.title && (
+                  <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-600 dark:text-slate-200">
+                    {hero.tldr.title}
+                  </p>
+                )}
+              </div>
+              <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                {tldrItems.map((item) => (
+                  <div
+                    class="h-full rounded-xl border border-slate-200/70 bg-slate-50/80 p-4 backdrop-blur dark:border-white/10 dark:bg-white/5"
+                    key={`${item.label}-${item.value}`}
+                  >
+                    <dt class="text-xs uppercase tracking-[0.2em] text-sky-600 dark:text-sky-200">{item.label}</dt>
+                    <dd class="mt-2 text-base leading-relaxed text-slate-800 dark:text-slate-100">
+                      {Array.isArray(item.value) ? (
+                        <ul class="space-y-1">
+                          {item.value.map((line) => (
+                            <li class="flex gap-2" key={`${item.label}-${line}`}>
+                              <span class="mt-1 inline-flex h-1.5 w-1.5 rounded-full bg-sky-500 dark:bg-sky-300"></span>
+                              <span>{line}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p>{item.value}</p>
+                      )}
+                    </dd>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {hero.summary && (
             <p class="text-base leading-relaxed text-slate-800 dark:text-slate-200">{hero.summary}</p>
           )}
@@ -202,6 +243,28 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
           {interaction.cards && <CardDeck cards={interaction.cards} />}
         </section>
       )}
+
+        {friction && (
+          <section id="friction" class="mt-20 scroll-mt-24">
+            <SectionHeader
+              eyebrow={friction.eyebrow ?? 'What was hard'}
+              title={friction.title ?? 'What was hard'}
+              subtitle={friction.description}
+            />
+            {friction.points && friction.points.length > 0 && (
+              <ul class="mt-8 space-y-4 text-base leading-relaxed text-slate-700 dark:text-slate-200">
+                {friction.points.map((point) => (
+                  <li class="rounded-2xl border border-amber-200/70 bg-amber-50/80 p-5 shadow-sm dark:border-amber-500/30 dark:bg-amber-500/10">
+                    <div class="flex gap-3">
+                      <span class="mt-1 inline-flex h-2.5 w-2.5 rounded-full bg-amber-500 dark:bg-amber-300"></span>
+                      <span>{point}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
 
       {process && (
         <section id="process" class="mt-20 scroll-mt-24">

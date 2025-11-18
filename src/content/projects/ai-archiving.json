@@ -26,12 +26,37 @@
       "eyebrow": "Case Study",
       "title": "AI Archiving Assistant",
       "subtitle": "Giving researchers a faster way to surface institutional knowledge.",
-      "summary": "I led the product discovery and design of an intelligent tagging assistant that pre-labels archival assets, blending machine learning with human review cues to reclaim research time.",
+      "summary": "I led the product discovery and design of an intelligent tagging assistant that pre-labels archival assets. It blends machine learning with human review cues to reclaim research time.",
       "meta": [
         { "label": "Role", "value": "Product Design Lead" },
         { "label": "Timeline", "value": "10 weeks" },
         { "label": "Team", "value": "Research Lead, ML Engineer, PM" }
       ],
+      "tldr": {
+        "title": "Case snapshot",
+        "items": [
+          {
+            "label": "Context",
+            "value": "A small archives team trying to keep up with ~60k+ new digital items a year. Tagging each one took ~12 minutes."
+          },
+          {
+            "label": "My role",
+            "value": "Product designer for the review experience: mapped existing workflows, designed the review queues, and defined how confidence, tags, and “explainability” show up in the UI."
+          },
+          {
+            "label": "The problem",
+            "value": "Researchers were repeating work and couldn’t trust existing tags; ~28% of effort was going into duplicates and cleanup."
+          },
+          {
+            "label": "Outcomes",
+            "value": [
+              "~5 hours/week saved per researcher on tagging and lookups",
+              "~92% tag accuracy in sampled items",
+              "41% drop in duplicate-work support tickets"
+            ]
+          }
+        ]
+      },
       "actions": [
         {
           "label": "Back to portfolio",
@@ -66,7 +91,7 @@
       ]
     },
     "solution": {
-      "title": "Confidence-based automation with human guardrails",
+      "title": "Confidence-based automation with human safeguards",
       "description": "We introduced a machine learning tagging assistant that pre-populates metadata, routes items into confidence-based review queues, and teaches the model through curator feedback loops.",
       "media": null,
       "steps": [
@@ -141,13 +166,21 @@
         }
       ]
     },
+    "friction": {
+      "title": "What was hard",
+      "points": [
+        "Balancing automation and control. At first, we pushed too many items into “auto-approve” based on confidence scores. It looked efficient on paper, but researchers felt blind to mistakes. We dialed it back and leaned into “review by exception” with clear filters instead.",
+        "Explaining “why this tag.” Early prototypes surfaced raw model scores, which meant nothing to non-technical users. I switched to simple “because of X, Y, Z in the item” hints and tiny examples pulled from the record itself.",
+        "Drawing a line on what not to automate. Some sensitive collections stayed manual on purpose. I worked with stakeholders to define a simple rule of thumb for when AI was allowed, and the interface reflects that boundary instead of hiding it."
+      ]
+    },
     "process": {
       "title": "Process: discovery to pilot in three tracks",
       "description": "We ran concurrent sprints focused on researcher needs, data readiness, and model evaluation to validate the concept quickly.",
       "sections": [
         {
           "title": "1. Map current-state workflows",
-          "description": "Documented intake rituals, tooling, and exceptions through contextual inquiry sessions.",
+          "description": "Documented intake habits, tooling, and exceptions through contextual inquiry sessions.",
           "findings": [
             {
               "title": "Hidden taxonomies",
@@ -170,7 +203,7 @@
         },
         {
           "title": "3. Launch and measure",
-          "description": "Established success metrics and governance rituals before handing off to implementation teams.",
+          "description": "Established success metrics and governance habits before handing off to implementation teams.",
           "comparison": [
             { "before": "Tagging each asset by hand.", "after": "Auto-suggested tags with one-click approvals." },
             { "before": "Guessing which items to prioritize.", "after": "Confidence queues that surface at-risk assets." },

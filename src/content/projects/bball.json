@@ -22,7 +22,7 @@
       "eyebrow": "Case Study",
       "title": "The Intelligent Scouting Archive",
       "subtitle": "Helping recruiters surface hidden European university talent with a research-driven workflow.",
-      "summary": "I built a full-stack prototype that scrapes fragmented tournament sources, enriches player profiles with AI, and surfaces signals scouts care about most.",
+      "summary": "I built a full-stack prototype that scrapes fragmented tournament sources and enriches player profiles with AI. It surfaces the signals scouts care about most.",
       "meta": [
         { "label": "Role", "value": "Product Designer & Builder" },
         { "label": "Timeline", "value": "5 weeks" },
