@@ -15,10 +15,8 @@ const initTheme = () => {
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme) {
     setTheme(savedTheme);
-  } else if (systemPrefersDark.matches) {
-    setTheme('dark');
   } else {
-    setTheme('light');
+    setTheme('dark');
   }
 };
 

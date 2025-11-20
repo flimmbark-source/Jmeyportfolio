@@ -39,12 +39,11 @@ const { title, description, mainClass = '', navLinks = defaultNavLinks } = Astro
     <script is:inline>
       try {
         const storedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const root = document.documentElement;
-        if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
-          root.classList.add('dark');
-        } else {
+        if (storedTheme === 'light') {
           root.classList.remove('dark');
+        } else {
+          root.classList.add('dark');
         }
         if (localStorage.getItem('large-text') === 'true') {
           root.setAttribute('data-large-text', 'true');
