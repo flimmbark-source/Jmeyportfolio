@@ -32,30 +32,6 @@
         { "label": "Timeline", "value": "10 weeks" },
         { "label": "Team", "value": "Research Lead, ML Engineer, PM" }
       ],
-      "tldr": {
-        "title": "Case snapshot",
-        "items": [
-          {
-            "label": "Context",
-            "value": "A small archives team trying to keep up with ~60k+ new digital items a year. Tagging each one took ~12 minutes."
-          },
-          {
-            "label": "My role",
-            "value": "Product designer for the review experience: mapped existing workflows, designed the review queues, and defined how confidence, tags, and “explainability” show up in the UI."
-          },
-          {
-            "label": "The problem",
-            "value": "Researchers were repeating work and couldn’t trust existing tags; ~28% of effort was going into duplicates and cleanup."
-          },
-          {
-            "label": "Outcomes",
-            "value": [
-              "~5 hours/week saved per researcher on tagging and lookups",
-              "~92% tag accuracy in sampled items",
-              "41% drop in duplicate-work support tickets"
-            ]
-          }
-        ]
       },
       "actions": [
         {
