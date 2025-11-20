@@ -102,35 +102,6 @@
         "colors": ["#06D6A0", "#118AB2"]
       }
     },
-    "interaction": {
-      "title": "Design system patterns that supported the change",
-      "description": "Beyond automation, we shipped interface patterns that gave draftsmen and leadership shared situational awareness.",
-      "cards": [
-        {
-          "icon": "📊",
-          "title": "Production dashboard",
-          "description": "Live metrics showed throughput, backlog, and error rates for leadership check-ins."
-        },
-        {
-          "icon": "🧩",
-          "title": "Template picker",
-          "description": "Designers selected the right store archetype in seconds, ensuring consistent starting points."
-        },
-        {
-          "icon": "🔁",
-          "title": "Feedback loop",
-          "description": "Embedded surveys captured friction, fueling weekly optimization experiments."
-        }
-      ]
-    },
-    "friction": {
-      "title": "What was hard",
-      "points": [
-        "Designers didn’t trust full automation. Our first idea was a “one-click template” that picked everything automatically. Draftsmen pushed back—edge cases felt risky—so we shifted to a guided picker that shows a few smart defaults and always lets them adjust.",
-        "Ops wanted speed; draftsmen wanted control. I had to make explicit trade-offs between “ship it fast” and “keep flexibility.” In the final flow, ops get a simple status view, while draftsmen still see the underlying template pieces.",
-        "Change fatigue was real. This project landed on top of other rollouts. I simplified the new process down to three clear steps and used side-by-side “old vs new” views in training so teams didn’t feel like we were ripping everything up."
-      ]
-    },
     "process": {
       "title": "How we delivered change",
       "description": "Each sprint paired research with tangible artifacts leadership could sign off on.",
