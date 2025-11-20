@@ -1,6 +1,5 @@
 ---
 import '../styles/tailwind.css';
-import mainScript from '../main.js?url';
 
 interface NavLink {
   href: string;
@@ -60,7 +59,10 @@ const { title, description, mainClass = '', navLinks = defaultNavLinks } = Astro
     class="relative min-h-screen text-slate-800 antialiased transition-colors duration-300 dark:bg-slate-950 dark:text-slate-200"
   >
     <div aria-hidden="true" class="fixed inset-0 -z-10">
-      <div class="absolute inset-0 bg-[url('/images/background.png')] bg-cover bg-top bg-no-repeat bg-fixed opacity-50" />
+      <div
+        data-parallax-layer
+        class="absolute inset-0 bg-[url('/images/background.png')] bg-cover bg-top bg-no-repeat opacity-50 will-change-transform"
+      />
       <div class="absolute inset-0 bg-white/10 backdrop-blur-[1px] dark:bg-slate-950/10" />
     </div>
     <a href="#main" class="skip-link">Skip to content</a>
@@ -181,6 +183,7 @@ const { title, description, mainClass = '', navLinks = defaultNavLinks } = Astro
         </div>
       </div>
     </footer>
+    <script src="/scripts/parallax.js" is:inline></script>
     <script type="module" src="/scripts/accessibility.js"></script>
   </body>
 </html>
