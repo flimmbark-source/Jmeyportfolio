@@ -2,12 +2,18 @@
   const layer = document.querySelector('[data-parallax-layer]');
   if (!layer) return;
 
-  const speed = 0.18;
+  const speed = 1; // Use full scroll range to reveal the entire background image
   let ticking = false;
+  let maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+
+  const updateMaxScroll = () => {
+    maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  };
 
   const updateLayer = () => {
-    const offset = window.scrollY * speed;
-    layer.style.transform = `translate3d(0, ${offset}px, 0)`;
+    const scrollProgress = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+    const offset = Math.min(scrollProgress * 100 * speed, 100);
+    layer.style.backgroundPosition = `center ${offset}%`;
     ticking = false;
   };
 
@@ -19,5 +25,9 @@
   };
 
   updateLayer();
+  window.addEventListener('resize', () => {
+    updateMaxScroll();
+    updateLayer();
+  });
   window.addEventListener('scroll', handleScroll, { passive: true });
 })();
