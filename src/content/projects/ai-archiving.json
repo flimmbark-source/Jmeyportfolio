@@ -31,7 +31,7 @@
         { "label": "Role", "value": "Product Design Lead" },
         { "label": "Timeline", "value": "10 weeks" },
         { "label": "Team", "value": "Research Lead, ML Engineer, PM" }
-      },
+      ],
       "actions": [
         {
           "label": "Back to portfolio",
@@ -39,7 +39,8 @@
           "variant": "secondary"
         }
       ]
-    },
+    }
+  }
     "overview": {
       "eyebrow": "Project Overview",
       "title": "Turning backlog chaos into searchable insight",
