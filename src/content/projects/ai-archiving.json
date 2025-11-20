@@ -40,163 +40,162 @@
         }
       ]
     }
-  }
-    "overview": {
-      "eyebrow": "Project Overview",
-      "title": "Turning backlog chaos into searchable insight",
-      "description": "The archives team managed 60k+ assets with inconsistent metadata, making discovery slow and duplicative. We explored how AI-generated tags could accelerate intake without compromising provenance.",
-      "highlights": [
-        "Shadowed researchers to understand labeling heuristics and edge cases.",
-        "Mapped existing taxonomies into a flexible ontology for model training.",
-        "Prototyped review queues that balanced automation with curator control."
-      ],
-      "media": null
-    },
-    "challenge": {
-      "title": "Researchers were drowning in manual tagging",
-      "description": "Processing archival drops required triaging thousands of assets by hand. Without consistent metadata, teams rebuilt prior work and overlooked relevant artifacts during grant proposals.",
-      "metrics": [
-        { "label": "Assets ingested yearly", "value": "60k", "description": "Images, video, and oral histories" },
-        { "label": "Average tagging time", "value": "12 min", "description": "Per asset across teams" },
-        { "label": "Duplicate effort", "value": "28%", "description": "Re-finding previously cataloged work" }
-      ],
-      "list": [
-        "No consistent taxonomy across departments led to conflicting labels.",
-        "Researchers distrusted black-box automation without quality signals.",
-        "Leadership needed defensible metrics before funding an ML pipeline."
-      ]
-    },
-    "solution": {
-      "title": "Confidence-based automation with human safeguards",
-      "description": "We introduced a machine learning tagging assistant that pre-populates metadata, routes items into confidence-based review queues, and teaches the model through curator feedback loops.",
-      "media": null,
-      "steps": [
-        {
-          "title": "Model training hub",
-          "description": "Annotated a gold-standard dataset and exposed prediction rationales so researchers could audit AI suggestions."
-        },
-        {
-          "title": "Confidence queues",
-          "description": "Segmented intake into auto-approve, needs-review, and escalations with contextual guidance."
-        },
-        {
-          "title": "Feedback instrumentation",
-          "description": "Embedded accept / revise interactions that retrained the model nightly and surfaced precision metrics."
-        }
-      ],
-      "modules": [
-        {
-          "kicker": "Suggested tags",
-          "title": "Transparent predictions",
-          "description": "Each AI tag displays related assets and training examples so curators understand provenance."
-        },
-        {
-          "kicker": "Bulk actions",
-          "title": "Curate at scale",
-          "description": "Batch apply approvals, edits, or taxonomy changes without leaving the review flow."
-        },
-        {
-          "kicker": "Escalation notes",
-          "title": "Close the loop",
-          "description": "Route nuanced artifacts to subject-matter experts with structured context and due dates."
-        }
-      ]
-    },
-    "impact": {
-      "title": "Impact: five hours saved per researcher each week",
-      "description": "Pilot teams measured a dramatic reduction in manual tagging, freeing time for analysis while increasing trust in metadata quality.",
-      "metrics": [
-        { "label": "Time saved weekly", "value": "5 hrs" },
-        { "label": "Tag accuracy", "value": "92%", "description": "Post-review precision" },
-        { "label": "Adoption", "value": "3 teams", "description": "Rolled out across research pods" }
-      ],
-      "results": [
-        "Researchers located relevant precedent assets in minutes instead of hours.",
-        "Leadership approved continued investment in expanding the ontology.",
-        "Support tickets about duplicate work dropped by 41% during the pilot."
-      ],
-      "highlights": [
-        "Confidence dashboards gave curators evidence to trust automation.",
-        "Bulk actions reduced repetitive metadata edits by 63%.",
-        "Nightly retraining incorporated reviewer feedback without engineering support."
-      ]
-    },
-    "interaction": {
-      "title": "Interaction patterns that kept humans in control",
-      "description": "We paired AI affordances with explainability cues so archivists always understood why a suggestion appeared and how to adjust it.",
-      "cards": [
-        {
-          "icon": "🧠",
-          "title": "Explainability chips",
-          "description": "Hover states reveal the model features that triggered each suggestion."
-        },
-        {
-          "icon": "⚖️",
-          "title": "Review balance",
-          "description": "Queues surface work by effort, keeping heavy lifts evenly distributed."
-        },
-        {
-          "icon": "📈",
-          "title": "Performance snapshots",
-          "description": "Inline charts show precision / recall so teams know when to recalibrate."
-        }
-      ]
-    },
-    "friction": {
-      "title": "What was hard",
-      "points": [
-        "Balancing automation and control. At first, we pushed too many items into “auto-approve” based on confidence scores. It looked efficient on paper, but researchers felt blind to mistakes. We dialed it back and leaned into “review by exception” with clear filters instead.",
-        "Explaining “why this tag.” Early prototypes surfaced raw model scores, which meant nothing to non-technical users. I switched to simple “because of X, Y, Z in the item” hints and tiny examples pulled from the record itself.",
-        "Drawing a line on what not to automate. Some sensitive collections stayed manual on purpose. I worked with stakeholders to define a simple rule of thumb for when AI was allowed, and the interface reflects that boundary instead of hiding it."
-      ]
-    },
-    "process": {
-      "title": "Process: discovery to pilot in three tracks",
-      "description": "We ran concurrent sprints focused on researcher needs, data readiness, and model evaluation to validate the concept quickly.",
-      "sections": [
-        {
-          "title": "1. Map current-state workflows",
-          "description": "Documented intake habits, tooling, and exceptions through contextual inquiry sessions.",
-          "findings": [
-            {
-              "title": "Hidden taxonomies",
-              "description": "Teams maintained personal spreadsheets of tags that never made it into the CMS."
-            },
-            {
-              "title": "Quality anxiety",
-              "description": "Curators feared automation would overwrite provenance notes without review."
-            }
-          ]
-        },
-        {
-          "title": "2. Prototype the assistant",
-          "description": "Designed mid-fidelity flows in Figma and paired them with a lightweight inference service to test predictions live.",
-          "steps": [
-            { "icon": "📝", "title": "Scenario scripts", "description": "Created tagging stories across asset types to stress test UI states." },
-            { "icon": "🧪", "title": "Usability loops", "description": "Ran weekly sessions with archivists to refine thresholds and messaging." },
-            { "icon": "🤖", "title": "Model tuning", "description": "Partnered with the ML engineer to translate qualitative feedback into feature weights." }
-          ]
-        },
-        {
-          "title": "3. Launch and measure",
-          "description": "Established success metrics and governance habits before handing off to implementation teams.",
-          "comparison": [
-            { "before": "Tagging each asset by hand.", "after": "Auto-suggested tags with one-click approvals." },
-            { "before": "Guessing which items to prioritize.", "after": "Confidence queues that surface at-risk assets." },
-            { "before": "No feedback loop for model errors.", "after": "Embedded controls that retrain nightly." }
-          ]
-        }
-      ]
-    },
-    "conclusion": {
-      "title": "Reflection",
-      "description": "The assistant proved that explainable AI can augment archivists without erasing their craft. Next we're expanding to audio transcripts and aligning governance with legal compliance.",
-      "tags": [
-        "AI-Assisted Workflows",
-        "Knowledge Management",
-        "Explainability",
-        "Product Discovery"
-      ]
-    }
+  },
+  "overview": {
+    "eyebrow": "Project Overview",
+    "title": "Turning backlog chaos into searchable insight",
+    "description": "The archives team managed 60k+ assets with inconsistent metadata, making discovery slow and duplicative. We explored how AI-generated tags could accelerate intake without compromising provenance.",
+    "highlights": [
+      "Shadowed researchers to understand labeling heuristics and edge cases.",
+      "Mapped existing taxonomies into a flexible ontology for model training.",
+      "Prototyped review queues that balanced automation with curator control."
+    ],
+    "media": null
+  },
+  "challenge": {
+    "title": "Researchers were drowning in manual tagging",
+    "description": "Processing archival drops required triaging thousands of assets by hand. Without consistent metadata, teams rebuilt prior work and overlooked relevant artifacts during grant proposals.",
+    "metrics": [
+      { "label": "Assets ingested yearly", "value": "60k", "description": "Images, video, and oral histories" },
+      { "label": "Average tagging time", "value": "12 min", "description": "Per asset across teams" },
+      { "label": "Duplicate effort", "value": "28%", "description": "Re-finding previously cataloged work" }
+    ],
+    "list": [
+      "No consistent taxonomy across departments led to conflicting labels.",
+      "Researchers distrusted black-box automation without quality signals.",
+      "Leadership needed defensible metrics before funding an ML pipeline."
+    ]
+  },
+  "solution": {
+    "title": "Confidence-based automation with human safeguards",
+    "description": "We introduced a machine learning tagging assistant that pre-populates metadata, routes items into confidence-based review queues, and teaches the model through curator feedback loops.",
+    "media": null,
+    "steps": [
+      {
+        "title": "Model training hub",
+        "description": "Annotated a gold-standard dataset and exposed prediction rationales so researchers could audit AI suggestions."
+      },
+      {
+        "title": "Confidence queues",
+        "description": "Segmented intake into auto-approve, needs-review, and escalations with contextual guidance."
+      },
+      {
+        "title": "Feedback instrumentation",
+        "description": "Embedded accept / revise interactions that retrained the model nightly and surfaced precision metrics."
+      }
+    ],
+    "modules": [
+      {
+        "kicker": "Suggested tags",
+        "title": "Transparent predictions",
+        "description": "Each AI tag displays related assets and training examples so curators understand provenance."
+      },
+      {
+        "kicker": "Bulk actions",
+        "title": "Curate at scale",
+        "description": "Batch apply approvals, edits, or taxonomy changes without leaving the review flow."
+      },
+      {
+        "kicker": "Escalation notes",
+        "title": "Close the loop",
+        "description": "Route nuanced artifacts to subject-matter experts with structured context and due dates."
+      }
+    ]
+  },
+  "impact": {
+    "title": "Impact: five hours saved per researcher each week",
+    "description": "Pilot teams measured a dramatic reduction in manual tagging, freeing time for analysis while increasing trust in metadata quality.",
+    "metrics": [
+      { "label": "Time saved weekly", "value": "5 hrs" },
+      { "label": "Tag accuracy", "value": "92%", "description": "Post-review precision" },
+      { "label": "Adoption", "value": "3 teams", "description": "Rolled out across research pods" }
+    ],
+    "results": [
+      "Researchers located relevant precedent assets in minutes instead of hours.",
+      "Leadership approved continued investment in expanding the ontology.",
+      "Support tickets about duplicate work dropped by 41% during the pilot."
+    ],
+    "highlights": [
+      "Confidence dashboards gave curators evidence to trust automation.",
+      "Bulk actions reduced repetitive metadata edits by 63%.",
+      "Nightly retraining incorporated reviewer feedback without engineering support."
+    ]
+  },
+  "interaction": {
+    "title": "Interaction patterns that kept humans in control",
+    "description": "We paired AI affordances with explainability cues so archivists always understood why a suggestion appeared and how to adjust it.",
+    "cards": [
+      {
+        "icon": "🧠",
+        "title": "Explainability chips",
+        "description": "Hover states reveal the model features that triggered each suggestion."
+      },
+      {
+        "icon": "⚖️",
+        "title": "Review balance",
+        "description": "Queues surface work by effort, keeping heavy lifts evenly distributed."
+      },
+      {
+        "icon": "📈",
+        "title": "Performance snapshots",
+        "description": "Inline charts show precision / recall so teams know when to recalibrate."
+      }
+    ]
+  },
+  "friction": {
+    "title": "What was hard",
+    "points": [
+      "Balancing automation and control. At first, we pushed too many items into \"auto-approve\" based on confidence scores. It looked efficient on paper, but researchers felt blind to mistakes. We dialed it back and leaned into \"review by exception\" with clear filters instead.",
+      "Explaining \"why this tag.\" Early prototypes surfaced raw model scores, which meant nothing to non-technical users. I switched to simple \"because of X, Y, Z in the item\" hints and tiny examples pulled from the record itself.",
+      "Drawing a line on what not to automate. Some sensitive collections stayed manual on purpose. I worked with stakeholders to define a simple rule of thumb for when AI was allowed, and the interface reflects that boundary instead of hiding it."
+    ]
+  },
+  "process": {
+    "title": "Process: discovery to pilot in three tracks",
+    "description": "We ran concurrent sprints focused on researcher needs, data readiness, and model evaluation to validate the concept quickly.",
+    "sections": [
+      {
+        "title": "1. Map current-state workflows",
+        "description": "Documented intake habits, tooling, and exceptions through contextual inquiry sessions.",
+        "findings": [
+          {
+            "title": "Hidden taxonomies",
+            "description": "Teams maintained personal spreadsheets of tags that never made it into the CMS."
+          },
+          {
+            "title": "Quality anxiety",
+            "description": "Curators feared automation would overwrite provenance notes without review."
+          }
+        ]
+      },
+      {
+        "title": "2. Prototype the assistant",
+        "description": "Designed mid-fidelity flows in Figma and paired them with a lightweight inference service to test predictions live.",
+        "steps": [
+          { "icon": "📝", "title": "Scenario scripts", "description": "Created tagging stories across asset types to stress test UI states." },
+          { "icon": "🧪", "title": "Usability loops", "description": "Ran weekly sessions with archivists to refine thresholds and messaging." },
+          { "icon": "🤖", "title": "Model tuning", "description": "Partnered with the ML engineer to translate qualitative feedback into feature weights." }
+        ]
+      },
+      {
+        "title": "3. Launch and measure",
+        "description": "Established success metrics and governance habits before handing off to implementation teams.",
+        "comparison": [
+          { "before": "Tagging each asset by hand.", "after": "Auto-suggested tags with one-click approvals." },
+          { "before": "Guessing which items to prioritize.", "after": "Confidence queues that surface at-risk assets." },
+          { "before": "No feedback loop for model errors.", "after": "Embedded controls that retrain nightly." }
+        ]
+      }
+    ]
+  },
+  "conclusion": {
+    "title": "Reflection",
+    "description": "The assistant proved that explainable AI can augment archivists without erasing their craft. Next we're expanding to audio transcripts and aligning governance with legal compliance.",
+    "tags": [
+      "AI-Assisted Workflows",
+      "Knowledge Management",
+      "Explainability",
+      "Product Discovery"
+    ]
   }
 }
