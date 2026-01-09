@@ -1,0 +1,9 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import LetterRiverCaseStudy from '../components/LetterRiverCaseStudy.jsx';
+
+const navLinks = [{ href: '/', label: 'Home' }];
+---
+<BaseLayout title="Letter River Case Study | Jacob Meyerkopf" mainClass="p-0" navLinks={navLinks}>
+  <LetterRiverCaseStudy client:load />
+</BaseLayout>
