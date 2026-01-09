@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Github, ExternalLink, Brain, Languages, Accessibility, TrendingUp, Database, Zap, BookOpen, Award } from 'lucide-react';
+import { ExternalLink, Brain, Languages, Accessibility, TrendingUp, Database, Zap, BookOpen, Award } from 'lucide-react';
 
 export default function LetterRiverCaseStudy() {
   const { scrollYProgress } = useScroll();
@@ -25,7 +25,7 @@ export default function LetterRiverCaseStudy() {
     {
       icon: <Brain className="h-8 w-8 text-purple-500 dark:text-purple-300" />,
       title: "Implementing Spaced Repetition",
-      description: "I researched educational psychology and implemented the SM-2 algorithm—the same system used by apps like Anki. This was my first deep dive into learning science and algorithmic thinking applied to education."
+      description: "I researched educational psychology and implemented the SM-2 algorithm, the same system used by apps like Anki. This was my first deep dive into learning science and algorithmic thinking applied to education."
     },
     {
       icon: <Zap className="h-8 w-8 text-amber-500 dark:text-amber-300" />,
@@ -49,21 +49,36 @@ export default function LetterRiverCaseStudy() {
     }
   ];
 
-  const technicalHighlights = [
+  const keyFeatures = [
     {
       icon: <Brain size={32} className="text-purple-500 dark:text-purple-300" />,
-      title: "Adaptive Learning Algorithm",
-      text: "Custom SM-2 spaced repetition system that schedules review based on performance—letters you struggle with appear more frequently until mastered."
+      title: "Spaced Repetition System",
+      text: "Implements the SM-2 algorithm used by Anki. Letters you struggle with appear more frequently, while mastered ones review at increasing intervals for scientifically optimized long-term retention."
     },
     {
-      icon: <TrendingUp size={32} className="text-teal-500 dark:text-teal-300" />,
+      icon: <Languages size={32} className="text-indigo-500 dark:text-indigo-300" />,
+      title: "12 Language Support",
+      text: "Modular language pack system supporting Hebrew, Arabic, Russian, Japanese hiragana, and more. Adding new writing systems is as simple as creating a configuration file."
+    },
+    {
+      icon: <Accessibility size={32} className="text-rose-500 dark:text-rose-300" />,
+      title: "Accessibility First",
+      text: "High contrast mode, reduced motion, adjustable game speed, click-based controls, dyslexia-friendly fonts, and customizable typefaces ensure inclusive learning for all users."
+    },
+    {
+      icon: <Database size={32} className="text-teal-500 dark:text-teal-300" />,
+      title: "Offline-Capable PWA",
+      text: "Progressive Web App with IndexedDB persistence and service worker caching. Install on any device and use completely offline with progress syncing automatically when back online."
+    },
+    {
+      icon: <TrendingUp size={32} className="text-amber-500 dark:text-amber-300" />,
       title: "Modern Tech Stack",
       text: "React 18 with Vite bundling, Tailwind CSS for responsive design, and React Context for complex state management across the application."
     },
     {
-      icon: <Zap size={32} className="text-amber-500 dark:text-amber-300" />,
-      title: "Offline-First Architecture",
-      text: "Progressive Web App with IndexedDB persistence and service worker caching—works completely offline after initial load."
+      icon: <Zap size={32} className="text-indigo-600 dark:text-indigo-400" />,
+      title: "Interactive Game Engine",
+      text: "HTML5 Canvas-based gameplay with smooth animations and drag-and-drop mechanics. Custom game loop optimized for performance with multiple difficulty modes."
     }
   ];
 
@@ -87,7 +102,7 @@ export default function LetterRiverCaseStudy() {
         <div className="absolute inset-0 bg-grid-pattern opacity-30"></div>
         <motion.div variants={fadeIn} initial="hidden" animate="show" className="relative z-10 max-w-4xl">
           <h1 className="mb-4 bg-gradient-to-b from-slate-900 via-slate-700 to-slate-500 bg-clip-text text-5xl font-extrabold text-transparent md:text-7xl dark:from-white dark:via-slate-200 dark:to-slate-400">Letter River: Scaling Learning Through Code</h1>
-          <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-slate-700 md:text-xl dark:text-slate-200">Building upon Rotogo's foundation to create a comprehensive, accessible language-learning platform with spaced repetition, multi-language support, and Progressive Web App architecture.</p>
+          <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-slate-700 md:text-xl dark:text-slate-200">Creating a comprehensive, accessible language-learning platform with spaced repetition, multi-language support, and Progressive Web App architecture while developing full-stack development skills.</p>
           <motion.div variants={staggerContainer} initial="hidden" animate="show" className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm uppercase tracking-wider text-slate-700 dark:text-slate-200">
             <motion.p variants={fadeIn}><strong>Role:</strong> Full-Stack Developer & Designer</motion.p>
             <motion.p variants={fadeIn}><strong>Timeline:</strong> Mid-Late 2025</motion.p>
@@ -117,7 +132,7 @@ export default function LetterRiverCaseStudy() {
           >
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">The Challenge</h2>
             <p className="text-lg md:text-xl leading-relaxed text-slate-700 dark:text-slate-200">
-              After successfully building and shipping Rotogo, I wanted to tackle a real problem: learning the Hebrew alphabet. Existing apps rushed into phrases before solidifying the fundamentals. Could I build a better learning tool—one backed by educational science, accessible to everyone, and scalable to multiple languages? This wasn't just about building another app; it was about expanding my skills to include learning algorithms, accessibility standards, and production-ready architecture.
+              I wanted to tackle a real problem: learning the Hebrew alphabet. Existing apps rushed into phrases before solidifying the fundamentals. Could I build a better learning tool backed by educational science, accessible to everyone, and scalable to multiple languages? This project would push me to develop skills in learning algorithms, accessibility standards, game development, and production-ready Progressive Web App architecture.
             </p>
           </motion.div>
         </section>
@@ -214,7 +229,7 @@ export default function LetterRiverCaseStudy() {
           </p>
         </section>
 
-        {/* Technical Highlights */}
+        {/* Key Features & Technical Highlights */}
         <section className="py-20 md:py-32">
           <motion.div
             variants={fadeIn}
@@ -223,24 +238,24 @@ export default function LetterRiverCaseStudy() {
             whileInView="show"
             viewport={{ once: true, amount: 0.3 }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-center tracking-tight mb-12">Technical Highlights</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center tracking-tight mb-12">Key Features & Technical Highlights</h2>
             <motion.div
               variants={staggerContainer}
               initial="hidden"
               animate="show"
               whileInView="show"
               viewport={{ once: true, amount: 0.3 }}
-              className="grid md:grid-cols-3 gap-8"
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
             >
-              {technicalHighlights.map((highlight, i) => (
+              {keyFeatures.map((feature, i) => (
                 <motion.div
                   key={i}
                   variants={fadeIn}
                   className="rounded-2xl border border-slate-200/70 bg-slate-100/80 p-8 transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/50 dark:border-slate-700/80 dark:bg-slate-900/60"
                 >
-                  <div className="mb-4">{highlight.icon}</div>
-                  <h3 className="mb-2 text-xl font-bold text-slate-900 dark:text-white">{highlight.title}</h3>
-                  <p className="text-slate-700 dark:text-slate-200">{highlight.text}</p>
+                  <div className="mb-4">{feature.icon}</div>
+                  <h3 className="mb-2 text-xl font-bold text-slate-900 dark:text-white">{feature.title}</h3>
+                  <p className="text-slate-700 dark:text-slate-200">{feature.text}</p>
                 </motion.div>
               ))}
             </motion.div>
@@ -257,9 +272,9 @@ export default function LetterRiverCaseStudy() {
             viewport={{ once: true, amount: 0.3 }}
             className="max-w-4xl mx-auto"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-center tracking-tight mb-8">Skills Expanded from Rotogo</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center tracking-tight mb-8">Skills Developed</h2>
             <p className="text-center text-lg text-slate-700 dark:text-slate-200 mb-12">
-              Letter River represents a significant evolution in technical capabilities and software architecture:
+              Building Letter River required mastering diverse technical capabilities and software architecture:
             </p>
             <motion.ul
               variants={staggerContainer}
@@ -283,68 +298,6 @@ export default function LetterRiverCaseStudy() {
           </motion.div>
         </section>
 
-        {/* Key Features */}
-        <section className="py-20 md:py-32">
-          <motion.h2
-            variants={fadeIn}
-            initial="hidden"
-            animate="show"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.5 }}
-            className="text-3xl md:text-4xl font-bold text-center tracking-tight mb-12"
-          >
-            Feature Showcase
-          </motion.h2>
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            animate="show"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.2 }}
-            className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto"
-          >
-            <motion.div variants={fadeIn} className="rounded-xl border border-slate-200 bg-white p-8 dark:border-slate-700 dark:bg-slate-900">
-              <div className="mb-4 flex items-center gap-3">
-                <Brain className="h-8 w-8 text-purple-500 dark:text-purple-300" />
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white">Spaced Repetition System</h3>
-              </div>
-              <p className="text-slate-700 dark:text-slate-200">
-                Implements the SM-2 algorithm used by Anki. Letters you struggle with appear more frequently, while mastered ones review at increasing intervals—scientifically optimized for long-term retention.
-              </p>
-            </motion.div>
-
-            <motion.div variants={fadeIn} className="rounded-xl border border-slate-200 bg-white p-8 dark:border-slate-700 dark:bg-slate-900">
-              <div className="mb-4 flex items-center gap-3">
-                <Languages className="h-8 w-8 text-indigo-500 dark:text-indigo-300" />
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white">12 Language Support</h3>
-              </div>
-              <p className="text-slate-700 dark:text-slate-200">
-                Modular language pack system supporting Hebrew, Arabic, Russian, Japanese hiragana, and more. Adding new writing systems is as simple as creating a configuration file.
-              </p>
-            </motion.div>
-
-            <motion.div variants={fadeIn} className="rounded-xl border border-slate-200 bg-white p-8 dark:border-slate-700 dark:bg-slate-900">
-              <div className="mb-4 flex items-center gap-3">
-                <Accessibility className="h-8 w-8 text-rose-500 dark:text-rose-300" />
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white">Accessibility First</h3>
-              </div>
-              <p className="text-slate-700 dark:text-slate-200">
-                High contrast mode, reduced motion, adjustable game speed, click-based controls, dyslexia-friendly fonts, and customizable typefaces ensure inclusive learning for all users.
-              </p>
-            </motion.div>
-
-            <motion.div variants={fadeIn} className="rounded-xl border border-slate-200 bg-white p-8 dark:border-slate-700 dark:bg-slate-900">
-              <div className="mb-4 flex items-center gap-3">
-                <Database className="h-8 w-8 text-teal-500 dark:text-teal-300" />
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white">Offline-Capable PWA</h3>
-              </div>
-              <p className="text-slate-700 dark:text-slate-200">
-                Progressive Web App with IndexedDB persistence and service worker caching. Install on any device and use completely offline—progress syncs automatically when back online.
-              </p>
-            </motion.div>
-          </motion.div>
-        </section>
-
         {/* Impact & Reflection */}
         <section className="py-20 md:py-32">
           <motion.div
@@ -357,10 +310,10 @@ export default function LetterRiverCaseStudy() {
           >
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Impact & Reflection</h2>
             <p className="mb-8 text-lg leading-relaxed text-slate-700 md:text-xl dark:text-slate-200">
-              Letter River represents the evolution from learning to code to building production-ready software. By integrating educational science, accessibility standards, and modern web technologies, I created a platform that not only solved my own learning challenge but could scale to help others master new writing systems worldwide.
+              Letter River demonstrates how building production-ready software requires more than coding skills. By integrating educational science, accessibility standards, and modern web technologies, I created a platform that not only solved my own learning challenge but could scale to help others master new writing systems worldwide.
             </p>
             <blockquote className="border-l-4 border-blue-400 pl-6 text-left text-lg italic text-slate-800 dark:text-slate-200">
-              "Rotogo taught me how to code. Letter River taught me how to architect, optimize, and ship software that matters."
+              "Building Letter River taught me how to architect, optimize, and ship software that truly matters to users."
             </blockquote>
           </motion.div>
         </section>
@@ -395,15 +348,6 @@ export default function LetterRiverCaseStudy() {
               className="flex items-center gap-2 rounded-lg bg-blue-500 px-8 py-3 font-semibold text-white transition-colors duration-300 hover:bg-blue-600"
             >
               <ExternalLink size={20} /> Try Live App
-            </motion.a>
-            <motion.a
-              href="https://github.com/flimmbark-source/HebrewLetterRiver"
-              variants={fadeIn}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 rounded-lg border-2 border-slate-300 bg-white px-8 py-3 font-semibold text-slate-900 transition-colors duration-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
-            >
-              <Github size={20} /> View Source Code
             </motion.a>
           </motion.div>
         </div>

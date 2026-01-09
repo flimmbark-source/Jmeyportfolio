@@ -3,7 +3,7 @@
   "slug": "letter-river",
   "title": "Letter River Learning App",
   "tagline": "Educational Design · AI-Powered Development",
-  "summary": "Built a comprehensive language-learning platform with spaced repetition, multi-language support, and accessibility features—expanding from basic prototyping to production-ready Progressive Web App.",
+  "summary": "Built a comprehensive language-learning platform with spaced repetition, multi-language support, and accessibility features to develop full-stack web development skills and production-ready Progressive Web App architecture.",
   "highlights": [
     "Implemented SM-2 spaced repetition algorithm for optimal learning",
     "Designed adaptive game mechanics with multiple difficulty modes",
@@ -23,12 +23,6 @@
     {
       "href": "https://letterriver.netlify.app/",
       "label": "View live app",
-      "variant": "secondary",
-      "external": true
-    },
-    {
-      "href": "https://github.com/flimmbark-source/HebrewLetterRiver",
-      "label": "View on GitHub",
       "variant": "secondary",
       "external": true
     }
