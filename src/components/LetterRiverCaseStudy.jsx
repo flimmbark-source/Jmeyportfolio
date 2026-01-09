@@ -20,7 +20,7 @@ export default function LetterRiverCaseStudy() {
     {
       icon: <BookOpen className="h-8 w-8 text-blue-500 dark:text-blue-300" />,
       title: "The Problem: Learning a New Alphabet",
-      description: "While learning Hebrew, I found existing apps jumped too quickly into phrases without solidifying the alphabet. I needed a tool that would let me master the fundamentals through active practice, not passive study."
+      description: "While learning, I found existing apps jumped too quickly into phrases without solidifying the alphabet. I needed a tool that would let me master the fundamentals through active practice, not passive study."
     },
     {
       icon: <Brain className="h-8 w-8 text-purple-500 dark:text-purple-300" />,
@@ -40,7 +40,7 @@ export default function LetterRiverCaseStudy() {
     {
       icon: <Languages className="h-8 w-8 text-indigo-500 dark:text-indigo-300" />,
       title: "Scaling to Multiple Languages",
-      description: "What started as a Hebrew learning tool evolved into a platform for 12 different writing systems. I designed a modular language pack system that makes adding new scripts as simple as creating a config file."
+      description: "What started as a small learning tool evolved into a platform for 12 different writing systems. I designed a modular language pack system that makes adding new scripts as simple as creating a config file."
     },
     {
       icon: <Accessibility className="h-8 w-8 text-rose-500 dark:text-rose-300" />,
@@ -132,7 +132,7 @@ export default function LetterRiverCaseStudy() {
           >
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">The Challenge</h2>
             <p className="text-lg md:text-xl leading-relaxed text-slate-700 dark:text-slate-200">
-              I wanted to tackle a real problem: learning the Hebrew alphabet. Existing apps rushed into phrases before solidifying the fundamentals. Could I build a better learning tool backed by educational science, accessible to everyone, and scalable to multiple languages? This project would push me to develop skills in learning algorithms, accessibility standards, game development, and production-ready Progressive Web App architecture.
+              I wanted to tackle a real problem: learning a new alphabet. Existing apps rushed into phrases before solidifying the fundamentals. Could I build a better learning tool backed by educational science, accessible to everyone, and scalable to multiple languages? This project would push me to develop skills in learning algorithms, accessibility standards, game development, and production-ready Progressive Web App architecture.
             </p>
           </motion.div>
         </section>
