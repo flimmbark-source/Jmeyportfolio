@@ -282,7 +282,7 @@ export default function LetterRiverCaseStudy() {
           </div>
 
           <h1 className="mb-5 bg-gradient-to-b from-slate-900 via-slate-700 to-slate-500 bg-clip-text text-5xl font-extrabold leading-tight text-transparent md:text-7xl dark:from-white dark:via-slate-200 dark:to-slate-400">
-            Letter River: Making Hebrew Learning Navigable
+            Letter River: Making Language Learning Navigable
           </h1>
 
           <p className="mx-auto mb-8 max-w-3xl text-lg leading-relaxed text-slate-700 md:text-xl dark:text-slate-200">
