@@ -2,7 +2,15 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import LetterRiverCaseStudy from '../components/LetterRiverCaseStudy.jsx';
 
-const navLinks = [{ href: '/', label: 'Home' }];
+const navLinks = [
+  { href: '/', label: 'Home' },
+  { href: '#challenge', label: 'Challenge' },
+  { href: '#process', label: 'Process' },
+  { href: '#journey', label: 'Journey' },
+  { href: '#architecture', label: 'Architecture' },
+  { href: '#features', label: 'Features' },
+  { href: '#outcome', label: 'Outcome' },
+];
 ---
 <BaseLayout title="Letter River Case Study | Jacob Meyerkopf" mainClass="p-0" navLinks={navLinks}>
   <LetterRiverCaseStudy client:load />

@@ -344,7 +344,7 @@ export default function LetterRiverCaseStudy() {
         </section>
 
         {/* Challenge Section */}
-        <section className="py-20 md:py-28">
+        <section id="challenge" className="scroll-mt-28 py-20 md:py-28">
           <motion.div
             variants={fadeIn}
             initial="hidden"
@@ -397,7 +397,7 @@ export default function LetterRiverCaseStudy() {
         </section>
 
         {/* Process Section */}
-        <section className="py-20 md:py-28">
+        <section id="process" className="scroll-mt-28 py-20 md:py-28">
           <motion.div
             variants={fadeIn}
             initial="hidden"
@@ -435,7 +435,7 @@ export default function LetterRiverCaseStudy() {
         </section>
 
         {/* Development Journey Section */}
-        <section className="relative py-20 md:py-28">
+        <section id="journey" className="relative scroll-mt-28 py-20 md:py-28">
           <motion.h2
             variants={fadeIn}
             initial="hidden"
@@ -475,7 +475,7 @@ export default function LetterRiverCaseStudy() {
         </section>
 
         {/* Product Architecture */}
-        <section className="py-20 md:py-28">
+        <section id="architecture" className="scroll-mt-28 py-20 md:py-28">
           <motion.div
             variants={fadeIn}
             initial="hidden"
@@ -703,7 +703,7 @@ export default function LetterRiverCaseStudy() {
         </section>
 
         {/* Key Features & Technical Highlights */}
-        <section className="py-20 md:py-28">
+        <section id="features" className="scroll-mt-28 py-20 md:py-28">
           <motion.div
             variants={fadeIn}
             initial="hidden"
@@ -770,7 +770,7 @@ export default function LetterRiverCaseStudy() {
         </section>
 
         {/* Outcome + Next Validation */}
-        <section className="grid gap-8 py-20 md:py-28 lg:grid-cols-2 lg:items-start">
+        <section id="outcome" className="grid scroll-mt-28 gap-8 py-20 md:py-28 lg:grid-cols-2 lg:items-start">
           <motion.div
             variants={fadeIn}
             initial="hidden"
