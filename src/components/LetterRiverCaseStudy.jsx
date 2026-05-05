@@ -241,7 +241,6 @@ export default function LetterRiverCaseStudy() {
   ];
 
   const nextValidation = [
-    "Run structured first-session tests with beginner Hebrew learners.",
     "Track where learners hesitate, abandon a session, or miss the next action.",
     "Measure whether guided sections improve return behavior compared with a flat pack list.",
     "Audit accessibility around Hebrew text size, contrast, motion, audio, and touch targets.",
