@@ -286,7 +286,7 @@ export default function LetterRiverCaseStudy() {
           </h1>
 
           <p className="mx-auto mb-8 max-w-3xl text-lg leading-relaxed text-slate-700 md:text-xl dark:text-slate-200">
-            I designed and built a responsive language-learning platform that helps beginners move from Hebrew letters to vocabulary, reading, and practical conversation through guided paths, compact practice loops, and a scalable product architecture.
+            I designed and built a responsive language-learning platform that helps beginners move from letters to vocabulary, to reading through guided paths, compact practice loops, and a scalable product architecture.
           </p>
 
           <motion.div
