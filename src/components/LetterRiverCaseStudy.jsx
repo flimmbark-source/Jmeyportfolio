@@ -71,7 +71,7 @@ export default function LetterRiverCaseStudy() {
       step: "02",
       title: "Map",
       description:
-        "I separated the journey into layers: letters, vocabulary, review, reading, conversation, and motivation. That helped me design Letter River as a product system instead of a pile of exercises.",
+        "I separated the journey into layers: letters, vocabulary, review, reading, and motivation. That helped me design Letter River as a product system instead of a pile of exercises.",
     },
     {
       icon: <Zap className="h-8 w-8 text-amber-500 dark:text-amber-300" />,
@@ -118,7 +118,7 @@ export default function LetterRiverCaseStudy() {
       icon: <MessageCircle className="h-8 w-8 text-rose-500 dark:text-rose-300" />,
       title: "Moving from Words to Context",
       description:
-        "As the product matured, I expanded beyond isolated word practice into conversation-based reading so learners could begin connecting vocabulary to practical situations and short phrases.",
+        "As the product matured, I expanded beyond isolated word practice into reading comprehension so learners could begin connecting vocabulary to practical situations and short phrases.",
     },
     {
       icon: <Database className="h-8 w-8 text-teal-500 dark:text-teal-300" />,
@@ -154,7 +154,7 @@ export default function LetterRiverCaseStudy() {
     {
       icon: <MessageCircle size={32} className="text-rose-500 dark:text-rose-300" />,
       title: "Read",
-      text: "Conversation-based practice that moves learners from isolated words toward practical language in context.",
+      text: "Reading-based practice that moves learners from isolated words toward practical language in context.",
       tags: ["Scenarios", "Typing", "Phrases"],
     },
     {
@@ -193,12 +193,6 @@ export default function LetterRiverCaseStudy() {
       problem: "Language learning needs repetition, but repeated screens quickly become stale.",
       decision: "The same vocabulary can move through Bridge Builder, Loose Planks, and Deep Script.",
       impact: "Reinforcement feels varied while the learning target stays consistent.",
-    },
-    {
-      title: "Context after recognition",
-      problem: "Knowing isolated words does not automatically create practical confidence.",
-      decision: "The Read section introduces role-based conversation practice and short practical phrases.",
-      impact: "The product grows from memorization into usable language moments.",
     },
   ];
 
@@ -787,7 +781,7 @@ export default function LetterRiverCaseStudy() {
           >
             <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Outcome</h2>
             <p className="mt-5 text-lg leading-relaxed text-slate-700 dark:text-slate-200">
-              Letter River is now a live prototype with a structured learning architecture, multiple practice modes, themed curriculum sections, reading/conversation practice, progress systems, mobile-first navigation, and a scalable React codebase.
+              Letter River is now a live prototype with a structured learning architecture, multiple practice modes, themed curriculum sections, reading practice, progress systems, mobile-first navigation, and a scalable React codebase.
             </p>
             <p className="mt-4 text-lg leading-relaxed text-slate-700 dark:text-slate-200">
               I am intentionally not claiming fabricated growth metrics. The value of this case study is in the product thinking, design decisions, and working system that can now be tested with real learners.
