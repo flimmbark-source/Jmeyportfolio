@@ -305,23 +305,6 @@ export default function LetterRiverCaseStudy() {
               <strong>Stack:</strong> React, Vite, Tailwind, GitHub, Netlify
             </motion.p>
           </motion.div>
-
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <a
-              href="https://letterriver.netlify.app/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-blue-500 px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 focus:ring-offset-slate-100 dark:focus:ring-offset-slate-950"
-            >
-              <ExternalLink size={18} /> View live app
-            </a>
-            <a
-              href="#case-study"
-              className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white/70 px-6 py-3 font-semibold text-slate-800 shadow-sm backdrop-blur transition hover:border-blue-400 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 focus:ring-offset-slate-100 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100 dark:focus:ring-offset-slate-950"
-            >
-              Read the case study <ArrowRight size={18} />
-            </a>
-          </div>
         </motion.div>
 
         <motion.div
