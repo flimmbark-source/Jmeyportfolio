@@ -47,11 +47,11 @@ function SectionEyebrow({ number, children }) {
   );
 }
 
-function DesktopFrame({ src, alt, caption }) {
+function DesktopFrame({ src, alt, caption, className = "" }) {
   return (
-    <figure className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-950">
+    <figure className={`overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-950 ${className}`}>
       <div className="bg-slate-100 p-2 dark:bg-slate-800">
-        <img src={src} alt={alt} loading="lazy" className="w-full rounded-2xl object-contain" />
+        <img src={src} alt={alt} loading="lazy" className="mx-auto max-h-[420px] w-full rounded-2xl object-contain" />
       </div>
       {caption ? (
         <figcaption className="border-t border-slate-200 px-4 py-3 text-xs font-semibold text-slate-600 dark:border-slate-800 dark:text-slate-300">
@@ -62,10 +62,10 @@ function DesktopFrame({ src, alt, caption }) {
   );
 }
 
-function MobileFrame({ src, alt, caption, className = "" }) {
+function MobileFrame({ src, alt, caption, className = "", imageClassName = "h-[390px] object-cover object-top" }) {
   return (
     <figure className={`mx-auto w-full max-w-[220px] overflow-hidden rounded-[1.55rem] border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-950 ${className}`}>
-      <img src={src} alt={alt} loading="lazy" className="h-[390px] w-full object-cover object-top" />
+      <img src={src} alt={alt} loading="lazy" className={`w-full ${imageClassName}`} />
       {caption ? (
         <figcaption className="border-t border-slate-200 px-3 py-2 text-center text-xs font-bold text-slate-600 dark:border-slate-800 dark:text-slate-300">
           {caption}
@@ -123,10 +123,10 @@ export default function LetterRiverCaseStudy() {
   const progressBarWidth = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   const cognitiveLoad = [
-    { icon: <BookOpen size={22} />, title: "Letters", detail: "New shapes with no reference" },
+    { icon: <BookOpen size={22} />, title: "Letters", detail: "New shapes, no reference" },
     { icon: <Flame size={22} />, title: "Sounds", detail: "Different from English" },
     { icon: <Languages size={22} />, title: "Transliteration", detail: "Another layer to decode" },
-    { icon: <Sparkles size={22} />, title: "Meaning", detail: "Learn the word and its use" },
+    { icon: <Sparkles size={22} />, title: "Meaning", detail: "Learn use, not just a label" },
     { icon: <Brain size={22} />, title: "Recall", detail: "Remember and recognize" },
     { icon: <ArrowRight size={22} className="rotate-180" />, title: "Reading direction", detail: "Right-to-left feels unfamiliar" },
     { icon: <Target size={22} />, title: "Motivation", detail: "Easy to feel stuck early" },
@@ -169,7 +169,7 @@ export default function LetterRiverCaseStudy() {
             <motion.div initial={{ opacity: 0, scale: 0.985 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.08, duration: 0.55 }} className="grid gap-4 sm:grid-cols-[1fr_180px] sm:items-end">
               <DesktopFrame src={screenshots.desktopHero} alt="Letter River desktop home screen" caption="Responsive desktop prototype" />
               <div className="hidden sm:block">
-                <MobileFrame src={screenshots.home} alt="Letter River mobile home screen" caption="Mobile home" />
+                <MobileFrame src={screenshots.home} alt="Letter River mobile home screen" caption="Mobile home" imageClassName="h-[340px] object-cover object-top" />
               </div>
             </motion.div>
           </div>
@@ -191,17 +191,17 @@ export default function LetterRiverCaseStudy() {
         </section>
 
         <section id="challenge" className={`${panel} ${sectionPad} mt-5 scroll-mt-24`}>
-          <div className="grid gap-8 lg:grid-cols-[0.42fr_1fr] lg:items-start">
+          <div className="grid gap-8 lg:grid-cols-[0.38fr_1fr] lg:items-start">
             <div>
               <SectionEyebrow number="01">The UX problem</SectionEyebrow>
               <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">Beginners face stacked cognitive load.</h2>
               <p className="mt-4 text-slate-700 dark:text-slate-300">New learners are not just memorizing words. They are juggling unfamiliar symbols, sounds, direction, transliteration, meaning, recall, and motivation at once.</p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {cognitiveLoad.map((item) => (
-                <article key={item.title} className="rounded-2xl border border-slate-200 bg-[#fbf8ef] p-4 text-center dark:border-slate-800 dark:bg-slate-950/60">
+                <article key={item.title} className="min-w-0 rounded-2xl border border-slate-200 bg-[#fbf8ef] p-4 text-center dark:border-slate-800 dark:bg-slate-950/60">
                   <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-white text-emerald-800 shadow-sm dark:bg-slate-900 dark:text-emerald-300">{item.icon}</div>
-                  <h3 className="mt-3 text-sm font-black text-slate-950 dark:text-white">{item.title}</h3>
+                  <h3 className="mt-3 break-words text-sm font-black leading-tight text-slate-950 dark:text-white">{item.title}</h3>
                   <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">{item.detail}</p>
                 </article>
               ))}
@@ -220,7 +220,7 @@ export default function LetterRiverCaseStudy() {
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {systemFlow.map((step) => (
                 <article key={step.title} className="rounded-3xl border border-slate-200 bg-[#fbf8ef] p-4 dark:border-slate-800 dark:bg-slate-950/50">
-                  <MobileFrame src={step.src} alt={`${step.title} screenshot from Letter River`} />
+                  <MobileFrame src={step.src} alt={`${step.title} screenshot from Letter River`} imageClassName="h-[330px] object-cover object-top" />
                   <h3 className="mt-4 text-center text-sm font-black text-slate-950 dark:text-white">{step.title}</h3>
                   <p className="mt-1 text-center text-xs leading-relaxed text-slate-600 dark:text-slate-300">{step.note}</p>
                 </article>
@@ -233,18 +233,18 @@ export default function LetterRiverCaseStudy() {
           <SectionEyebrow number="03">Three design decisions</SectionEyebrow>
           <div className="grid gap-6 lg:grid-cols-3">
             <DecisionCard number="1" title="Guide the next action." text="Beginners need clarity, not more choices." note="The learner always has a recommended action, while secondary paths stay available.">
-              <MobileFrame src={screenshots.home} alt="Home screen with continue journey card" />
+              <MobileFrame src={screenshots.vocabJourney} alt="Vocabulary Journey screen with current pack card" imageClassName="h-[390px] object-cover object-top" />
               <div className="mt-4 grid gap-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                <span className="rounded-2xl bg-white p-3 dark:bg-slate-900">Primary CTA stays obvious.</span>
-                <span className="rounded-2xl bg-white p-3 dark:bg-slate-900">Progress is visible but secondary.</span>
+                <span className="rounded-2xl bg-white p-3 dark:bg-slate-900">Current pack is clearly prioritized.</span>
+                <span className="rounded-2xl bg-white p-3 dark:bg-slate-900">Review and reading remain secondary actions.</span>
               </div>
             </DecisionCard>
 
             <DecisionCard number="2" title="Reuse words across patterns." text="Repetition works better when the task changes." note="The same vocabulary can return as recognition, recall, and script practice without feeling like the same drill.">
-              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-                <MobileFrame src={screenshots.bridgeBuilder} alt="Bridge Builder screenshot" className="max-w-[190px]" />
-                <MobileFrame src={screenshots.loosePlanks} alt="Loose Planks screenshot" className="max-w-[190px]" />
-                <MobileFrame src={screenshots.deepScript} alt="Deep Script screenshot" className="max-w-[190px]" />
+              <div className="grid gap-4">
+                <MobileFrame src={screenshots.bridgeBuilder} alt="Bridge Builder screenshot" imageClassName="h-[240px] object-cover object-top" className="max-w-[260px]" />
+                <MobileFrame src={screenshots.loosePlanks} alt="Loose Planks screenshot" imageClassName="h-[240px] object-cover object-top" className="max-w-[260px]" />
+                <MobileFrame src={screenshots.deepScript} alt="Deep Script screenshot" imageClassName="h-[240px] object-cover object-top" className="max-w-[260px]" />
               </div>
               <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-black uppercase tracking-widest text-emerald-800 dark:text-emerald-300">
                 Bridge Builder <ArrowRight size={14} /> Review <ArrowRight size={14} /> Deep Script
@@ -252,7 +252,7 @@ export default function LetterRiverCaseStudy() {
             </DecisionCard>
 
             <DecisionCard number="3" title="Move recognition into reading." text="Known words become useful inside short, meaningful tasks." note="Reading becomes a continuation of practice, not a separate jump in difficulty.">
-              <MobileFrame src={screenshots.read} alt="Read in context screenshot" />
+              <MobileFrame src={screenshots.read} alt="Read in context screenshot" imageClassName="h-[390px] object-cover object-top" />
               <div className="mt-4 grid gap-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
                 <span className="rounded-2xl bg-white p-3 dark:bg-slate-900">Familiar words appear in context.</span>
                 <span className="rounded-2xl bg-white p-3 dark:bg-slate-900">Support stays nearby without overloading the screen.</span>
@@ -289,16 +289,16 @@ export default function LetterRiverCaseStudy() {
             <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">The screenshots support the argument.</h2>
             <p className="mt-4 text-slate-700 dark:text-slate-300">Each capture shows a specific product decision: guided entry, language architecture, varied practice, and contextual reading.</p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <MobileFrame src={screenshots.vocabJourney} alt="Vocabulary Journey screen" caption="Guided path" />
-              <MobileFrame src={screenshots.settings} alt="Settings screen showing language preferences" caption="Language architecture" />
+              <MobileFrame src={screenshots.vocabJourney} alt="Vocabulary Journey screen" caption="Guided path" imageClassName="h-[330px] object-cover object-top" />
+              <MobileFrame src={screenshots.settings} alt="Settings screen showing language preferences" caption="Language architecture" imageClassName="h-[330px] object-cover object-top" />
             </div>
           </article>
           <article className={`${panel} ${sectionPad}`}>
             <SectionEyebrow number="06">Responsive behavior</SectionEyebrow>
             <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">Mobile-first screens, desktop presentation.</h2>
             <p className="mt-4 text-slate-700 dark:text-slate-300">Most learning actions happen in compact mobile layouts, while the portfolio page frames them in a clear product narrative.</p>
-            <div className="mt-6">
-              <DesktopFrame src={screenshots.letterRiver} alt="Letter River mode screen" caption="Letter learning mode" />
+            <div className="mt-6 grid place-items-center">
+              <MobileFrame src={screenshots.letterRiver} alt="Letter River mode screen" caption="Letter learning mode" imageClassName="h-[360px] object-cover object-top" />
             </div>
           </article>
         </section>
