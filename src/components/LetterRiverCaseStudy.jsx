@@ -99,15 +99,15 @@ function EvidenceNote({ children }) {
 }
 
 
-function ReducesTags({ items }) {
+function ReducesTags({ items, className = "" }) {
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-2">
-      <span className="text-[0.62rem] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Reduces</span>
+    <div className={`mt-3 flex flex-wrap items-center gap-2 ${className}`}>
       {items.map((label) => (
         <span key={label} className="rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-[0.68rem] font-bold text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200">
           {label}
         </span>
       ))}
+      <span className="text-[0.62rem] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Reduces</span>
     </div>
   );
 }
@@ -132,13 +132,13 @@ function DecisionRow({ number, title, principle, reduces, why, children }) {
     <article className={`${panel} p-5 sm:p-6`}>
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-7">
         <div className="flex justify-center sm:block">{children}</div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-800 text-sm font-black text-white">{number}</span>
+        <div className="min-w-0 flex-1 text-right">
+          <div className="flex items-center justify-end gap-3">
             <h3 className="text-lg font-black leading-tight tracking-tight text-slate-950 dark:text-white sm:text-xl">{title}</h3>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-800 text-sm font-black text-white">{number}</span>
           </div>
           <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{principle}</p>
-          <ReducesTags items={reduces} />
+          <ReducesTags items={reduces} className="justify-end" />
           <p className="mt-3 border-t border-slate-200 pt-3 text-sm leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-400">
             <strong className="font-black text-slate-950 dark:text-white">Why it mattered: </strong>
             {why}
