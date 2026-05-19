@@ -75,6 +75,21 @@ function MobileFrame({ src, alt, caption, className = "", imageClassName = "h-[3
   );
 }
 
+function MobileFullFrame({ src, alt, caption, className = "", maxHeight = "max-h-[430px]" }) {
+  return (
+    <figure className={`mx-auto w-full max-w-[230px] overflow-hidden rounded-[1.55rem] border border-slate-200 bg-[#f8f5ec] shadow-sm dark:border-slate-700 dark:bg-slate-950 ${className}`}>
+      <div className="flex items-center justify-center bg-[#f8f5ec] dark:bg-slate-950">
+        <img src={src} alt={alt} loading="lazy" className={`h-auto w-full object-contain ${maxHeight}`} />
+      </div>
+      {caption ? (
+        <figcaption className="border-t border-slate-200 px-3 py-2 text-center text-xs font-bold text-slate-600 dark:border-slate-800 dark:text-slate-300">
+          {caption}
+        </figcaption>
+      ) : null}
+    </figure>
+  );
+}
+
 function EvidenceNote({ children }) {
   return (
     <div className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold leading-relaxed text-emerald-950 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-100">
@@ -83,9 +98,9 @@ function EvidenceNote({ children }) {
   );
 }
 
-function DecisionCard({ number, title, text, children, note }) {
+function DecisionCard({ number, title, text, children, note, className = "" }) {
   return (
-    <article className={`${panel} overflow-hidden`}>
+    <article className={`${panel} overflow-hidden ${className}`}>
       <div className="border-b border-slate-200 bg-[#fbf8ef] p-5 dark:border-slate-800 dark:bg-slate-950/60">
         <div className="flex items-start gap-3">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-800 text-sm font-black text-white">
@@ -114,6 +129,15 @@ function FlowCard({ icon, title, detail }) {
       </div>
       <h3 className="font-black text-slate-950 dark:text-white">{title}</h3>
       <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{detail}</p>
+    </article>
+  );
+}
+
+function PracticeSequenceItem({ src, title, detail }) {
+  return (
+    <article className="rounded-3xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/60">
+      <MobileFullFrame src={src} alt={`${title} screenshot`} caption={title} className="max-w-[185px]" maxHeight="max-h-[350px]" />
+      <p className="mt-4 text-center text-sm leading-relaxed text-slate-700 dark:text-slate-300">{detail}</p>
     </article>
   );
 }
@@ -231,7 +255,7 @@ export default function LetterRiverCaseStudy() {
 
         <section id="journey" className={`${sectionPad} mt-5 scroll-mt-24 ${panel}`}>
           <SectionEyebrow number="03">Three design decisions</SectionEyebrow>
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-6 lg:grid-cols-2">
             <DecisionCard number="1" title="Guide the next action." text="Beginners need clarity, not more choices." note="The learner always has a recommended action, while secondary paths stay available.">
               <MobileFrame src={screenshots.vocabJourney} alt="Vocabulary Journey screen with current pack card" imageClassName="h-[390px] object-cover object-top" />
               <div className="mt-4 grid gap-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -240,22 +264,28 @@ export default function LetterRiverCaseStudy() {
               </div>
             </DecisionCard>
 
-            <DecisionCard number="2" title="Reuse words across patterns." text="Repetition works better when the task changes." note="The same vocabulary can return as recognition, recall, and script practice without feeling like the same drill.">
-              <div className="grid gap-4">
-                <MobileFrame src={screenshots.bridgeBuilder} alt="Bridge Builder screenshot" imageClassName="h-[240px] object-cover object-top" className="max-w-[260px]" />
-                <MobileFrame src={screenshots.loosePlanks} alt="Loose Planks screenshot" imageClassName="h-[240px] object-cover object-top" className="max-w-[260px]" />
-                <MobileFrame src={screenshots.deepScript} alt="Deep Script screenshot" imageClassName="h-[240px] object-cover object-top" className="max-w-[260px]" />
-              </div>
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-black uppercase tracking-widest text-emerald-800 dark:text-emerald-300">
-                Bridge Builder <ArrowRight size={14} /> Review <ArrowRight size={14} /> Deep Script
-              </div>
-            </DecisionCard>
-
             <DecisionCard number="3" title="Move recognition into reading." text="Known words become useful inside short, meaningful tasks." note="Reading becomes a continuation of practice, not a separate jump in difficulty.">
               <MobileFrame src={screenshots.read} alt="Read in context screenshot" imageClassName="h-[390px] object-cover object-top" />
               <div className="mt-4 grid gap-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
                 <span className="rounded-2xl bg-white p-3 dark:bg-slate-900">Familiar words appear in context.</span>
                 <span className="rounded-2xl bg-white p-3 dark:bg-slate-900">Support stays nearby without overloading the screen.</span>
+              </div>
+            </DecisionCard>
+
+            <DecisionCard
+              number="2"
+              title="Reuse words across practice patterns."
+              text="Repetition works better when the task changes, so this section needs to read as a sequence."
+              note="The same vocabulary can return as recognition, recall, and script practice without feeling like the same drill."
+              className="lg:col-span-2"
+            >
+              <div className="grid gap-5 lg:grid-cols-3">
+                <PracticeSequenceItem src={screenshots.bridgeBuilder} title="Bridge Builder" detail="Introduce the word through guided sound, meaning, and recognition." />
+                <PracticeSequenceItem src={screenshots.loosePlanks} title="Loose Planks" detail="Bring the word back through matching and recall." />
+                <PracticeSequenceItem src={screenshots.deepScript} title="Deep Script" detail="Challenge memory through letters, forms, and reconstruction." />
+              </div>
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-xs font-black uppercase tracking-widest text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+                Bridge Builder <ArrowRight size={14} /> Review <ArrowRight size={14} /> Deep Script
               </div>
             </DecisionCard>
           </div>
@@ -298,7 +328,7 @@ export default function LetterRiverCaseStudy() {
             <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">Mobile-first screens, desktop presentation.</h2>
             <p className="mt-4 text-slate-700 dark:text-slate-300">Most learning actions happen in compact mobile layouts, while the portfolio page frames them in a clear product narrative.</p>
             <div className="mt-6 grid place-items-center">
-              <MobileFrame src={screenshots.letterRiver} alt="Letter River mode screen" caption="Letter learning mode" imageClassName="h-[360px] object-cover object-top" />
+              <MobileFullFrame src={screenshots.letterRiver} alt="Letter River mode screen" caption="Letter learning mode" className="max-w-[260px]" maxHeight="max-h-[520px]" />
             </div>
           </article>
         </section>
