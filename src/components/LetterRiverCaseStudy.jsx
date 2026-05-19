@@ -10,8 +10,8 @@ import {
   Eye,
   Flame,
   Languages,
-  Layers3,
   MousePointer2,
+  Repeat,
   Route,
   Settings,
   Sparkles,
@@ -99,6 +99,19 @@ function EvidenceNote({ children }) {
 }
 
 
+function ReducesTags({ items }) {
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      <span className="text-[0.62rem] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Reduces</span>
+      {items.map((label) => (
+        <span key={label} className="rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-[0.68rem] font-bold text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200">
+          {label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function FlowCard({ icon, title, detail }) {
   return (
     <article className="rounded-2xl border border-slate-200 bg-[#fbf8ef] p-5 dark:border-slate-800 dark:bg-slate-950/60">
@@ -115,7 +128,7 @@ function PracticeSequenceItem({ src, title, detail }) {
   return (
     <article className="rounded-3xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/60">
       <figure className="mx-auto w-full max-w-[230px] overflow-hidden rounded-[1.55rem] border border-slate-200 bg-[#f8f5ec] shadow-sm dark:border-slate-700 dark:bg-slate-950">
-        <img src={src} alt={`${title} screenshot`} loading="lazy" className="h-[360px] w-full object-cover object-top" />
+        <img src={src} alt={`${title} screenshot`} loading="lazy" className="h-[360px] w-full object-contain" />
         <figcaption className="border-t border-slate-200 px-3 py-2 text-center text-xs font-bold uppercase tracking-widest text-emerald-800 dark:border-slate-800 dark:text-emerald-300">
           {title}
         </figcaption>
@@ -203,6 +216,7 @@ export default function LetterRiverCaseStudy() {
               <SectionEyebrow number="01">The UX problem</SectionEyebrow>
               <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">Beginners face stacked cognitive load.</h2>
               <p className="mt-4 text-slate-700 dark:text-slate-300">New learners are not just memorizing words. They are juggling unfamiliar symbols, sounds, direction, transliteration, meaning, recall, and motivation at once.</p>
+              <p className="mt-4 text-sm font-semibold leading-relaxed text-emerald-800 dark:text-emerald-300">The design question: which of these can the system carry, so the learner doesn’t have to?</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {cognitiveLoad.map((item) => (
@@ -216,30 +230,58 @@ export default function LetterRiverCaseStudy() {
           </div>
         </section>
 
+        <section id="insight" className="mt-5 scroll-mt-24 overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-900 p-8 shadow-lg shadow-emerald-950/20 sm:p-10 lg:p-12">
+          <p className="mb-4 flex items-center gap-3 text-xs font-black uppercase tracking-widest text-emerald-300">
+            <span className="rounded-full bg-emerald-800/60 px-2.5 py-1 text-[0.68rem] text-emerald-50">02</span>
+            The reframe
+          </p>
+          <h2 className="max-w-3xl text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl">
+            The problem wasn’t the content. It was knowing what to do next.
+          </h2>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-emerald-100/90">
+            Beginners didn’t stall because Hebrew was too hard. They stalled because every screen asked them to decide where to go. So I stopped designing more lessons and started designing a system that always answers one question: <span className="font-black text-white">what now?</span>
+          </p>
+        </section>
+
         <section id="process" className={`${panel} ${sectionPad} mt-5 scroll-mt-24`}>
           <div className="grid gap-8 lg:grid-cols-[0.32fr_1fr]">
             <div>
-              <SectionEyebrow number="02">From lessons to a learning system</SectionEyebrow>
+              <SectionEyebrow number="03">From lessons to a learning system</SectionEyebrow>
               <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">A connected loop that builds skill and confidence.</h2>
               <p className="mt-4 text-slate-700 dark:text-slate-300">Each screen supports the next one. Words are introduced, practiced in different ways, and then used in context.</p>
               <EvidenceNote>Review is not a separate destination. It brings words back into the loop at the right moment.</EvidenceNote>
             </div>
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {systemFlow.map((step) => (
-                <article key={step.title} className="rounded-3xl border border-slate-200 bg-[#fbf8ef] p-4 dark:border-slate-800 dark:bg-slate-950/50">
-                  <MobileFrame src={step.src} alt={`${step.title} screenshot from Letter River`} imageClassName="h-[330px] object-cover object-top" />
-                  <h3 className="mt-4 text-center text-sm font-black text-slate-950 dark:text-white">{step.title}</h3>
-                  <p className="mt-1 text-center text-xs leading-relaxed text-slate-600 dark:text-slate-300">{step.note}</p>
-                </article>
-              ))}
+            <div>
+              <div className="mb-5 flex flex-wrap items-center gap-x-2 gap-y-2 rounded-2xl bg-emerald-50 px-4 py-3 text-xs font-black uppercase tracking-widest text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+                {systemFlow.map((step, i) => (
+                  <span key={step.title} className="flex items-center gap-2">
+                    {step.title}
+                    {i < systemFlow.length - 1 ? <ArrowRight size={14} /> : null}
+                  </span>
+                ))}
+              </div>
+              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                {systemFlow.map((step, i) => (
+                  <article key={step.title} className="relative rounded-3xl border border-slate-200 bg-[#fbf8ef] p-4 dark:border-slate-800 dark:bg-slate-950/50">
+                    <span className="absolute left-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-emerald-800 text-xs font-black text-white shadow">{i + 1}</span>
+                    <MobileFrame src={step.src} alt={`${step.title} screenshot from Letter River`} imageClassName="h-[330px] object-contain" />
+                    <h3 className="mt-4 text-center text-sm font-black text-slate-950 dark:text-white">{step.title}</h3>
+                    <p className="mt-1 text-center text-xs leading-relaxed text-slate-600 dark:text-slate-300">{step.note}</p>
+                  </article>
+                ))}
+              </div>
+              <div className="mt-5 flex items-center justify-center gap-2 rounded-2xl border border-dashed border-emerald-300 bg-emerald-50/60 px-4 py-3 text-xs font-black uppercase tracking-widest text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300">
+                <Repeat size={15} />
+                Review loops words back to the right step — the system never dead-ends.
+              </div>
             </div>
           </div>
         </section>
 
         <section id="journey" className={`${sectionPad} mt-5 scroll-mt-24 ${panel}`}>
-          <SectionEyebrow number="03">Three design decisions</SectionEyebrow>
+          <SectionEyebrow number="04">Three design decisions</SectionEyebrow>
           <p className="mb-6 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-            Each decision addresses a specific moment where a beginner can get stuck or lose confidence.
+            Each decision takes one of the cognitive-load factors above and moves it from the learner onto the system.
           </p>
           <div className="flex flex-col gap-6">
 
@@ -251,11 +293,12 @@ export default function LetterRiverCaseStudy() {
                   <div>
                     <h3 className="text-xl font-black tracking-tight text-slate-950 dark:text-white">Guide the next action.</h3>
                     <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">Beginners need clarity, not more choices.</p>
+                    <ReducesTags items={["Motivation", "Decision overload"]} />
                   </div>
                 </div>
               </div>
               <div className="grid gap-6 p-5 lg:grid-cols-[220px_1fr] lg:items-start">
-                <MobileFrame src={screenshots.vocabJourney} alt="Vocabulary Journey screen with current pack card" imageClassName="h-[390px] object-cover object-top" className="mx-auto" />
+                <MobileFrame src={screenshots.vocabJourney} alt="Vocabulary Journey screen with current pack card" imageClassName="h-[420px] object-contain" className="mx-auto" />
                 <div className="flex flex-col justify-center gap-4">
                   <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                     On the Vocab Journey screen, the current pack is surfaced at the top. Secondary actions — review and reading — remain available but visually subordinate. The learner never has to decide where to start.
@@ -280,6 +323,7 @@ export default function LetterRiverCaseStudy() {
                   <div>
                     <h3 className="text-xl font-black tracking-tight text-slate-950 dark:text-white">Reuse words across practice patterns.</h3>
                     <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">Repetition works better when the task changes, so this section needs to read as a sequence.</p>
+                    <ReducesTags items={["Recall", "Meaning"]} />
                   </div>
                 </div>
               </div>
@@ -307,11 +351,12 @@ export default function LetterRiverCaseStudy() {
                   <div>
                     <h3 className="text-xl font-black tracking-tight text-slate-950 dark:text-white">Move recognition into reading.</h3>
                     <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">Known words become useful inside short, meaningful tasks.</p>
+                    <ReducesTags items={["Reading direction", "Meaning", "Motivation"]} />
                   </div>
                 </div>
               </div>
               <div className="grid gap-6 p-5 lg:grid-cols-[220px_1fr] lg:items-start">
-                <MobileFrame src={screenshots.read} alt="Read in context screenshot" imageClassName="h-[390px] object-cover object-top" className="mx-auto" />
+                <MobileFrame src={screenshots.read} alt="Read in context screenshot" imageClassName="h-[420px] object-contain" className="mx-auto" />
                 <div className="flex flex-col justify-center gap-4">
                   <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                     The Read screen puts familiar vocabulary into short, meaningful sentences. Learners encounter words they already know in a new form — not a test, but a continuation of practice.
@@ -334,8 +379,9 @@ export default function LetterRiverCaseStudy() {
         <section id="architecture" className={`${panel} ${sectionPad} mt-5 scroll-mt-24`}>
           <div className="grid gap-10 lg:grid-cols-[0.35fr_1fr] lg:items-start">
             <div>
-              <SectionEyebrow number="04">Built as a working product</SectionEyebrow>
-              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">A coded prototype that reflects real product architecture.</h2>
+              <SectionEyebrow number="05">I designed it and shipped it</SectionEyebrow>
+              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">Not a mockup — a working app I built end to end.</h2>
+              <p className="mt-4 text-sm leading-relaxed text-slate-700 dark:text-slate-300">Every design decision above is live in code: real state, real navigation, deployed and usable. Designing and building it myself meant the UX and the architecture stayed honest with each other.</p>
               <ul className="mt-5 space-y-2 text-sm text-slate-700 dark:text-slate-300">
                 {["React + TypeScript", "Tailwind", "Firebase", "Deployed on Netlify", "GitHub workflow"].map((item) => (
                   <li key={item} className="flex items-center gap-2"><CheckCircle2 size={17} className="text-emerald-700 dark:text-emerald-300" /> {item}</li>
@@ -353,24 +399,18 @@ export default function LetterRiverCaseStudy() {
           </div>
         </section>
 
-        <section id="features" className="mt-5 grid gap-5 scroll-mt-24 lg:grid-cols-2">
-          <article className={`${panel} ${sectionPad}`}>
-            <SectionEyebrow number="05">Product evidence</SectionEyebrow>
-            <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">The screenshots support the argument.</h2>
-            <p className="mt-4 text-slate-700 dark:text-slate-300">Each capture shows a specific product decision: guided entry, language architecture, varied practice, and contextual reading.</p>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <MobileFrame src={screenshots.vocabJourney} alt="Vocabulary Journey screen" caption="Guided path" imageClassName="h-[330px] object-cover object-top" />
-              <MobileFrame src={screenshots.settings} alt="Settings screen showing language preferences" caption="Language architecture" imageClassName="h-[330px] object-cover object-top" />
+        <section id="features" className={`${panel} ${sectionPad} mt-5 scroll-mt-24`}>
+          <div className="grid gap-8 lg:grid-cols-[0.35fr_1fr] lg:items-start">
+            <div>
+              <SectionEyebrow number="06">Beyond the core loop</SectionEyebrow>
+              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">The system also handles setup and letter-level practice.</h2>
+              <p className="mt-4 text-slate-700 dark:text-slate-300">Settings separates the app language from the language being learned, so the interface never adds to the load. Letter River mode drills letter shapes before words enter the loop.</p>
             </div>
-          </article>
-          <article className={`${panel} ${sectionPad}`}>
-            <SectionEyebrow number="06">Responsive behavior</SectionEyebrow>
-            <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">Mobile-first screens, desktop presentation.</h2>
-            <p className="mt-4 text-slate-700 dark:text-slate-300">Most learning actions happen in compact mobile layouts, while the portfolio page frames them in a clear product narrative.</p>
-            <div className="mt-6 grid place-items-center">
-              <MobileFullFrame src={screenshots.letterRiver} alt="Letter River mode screen" caption="Letter learning mode" className="max-w-[260px]" maxHeight="max-h-[520px]" />
+            <div className="grid place-items-center gap-5 sm:grid-cols-2">
+              <MobileFrame src={screenshots.settings} alt="Settings screen showing language preferences" caption="Language architecture" imageClassName="h-[420px] object-contain" />
+              <MobileFullFrame src={screenshots.letterRiver} alt="Letter River mode screen" caption="Letter learning mode" maxHeight="max-h-[420px]" />
             </div>
-          </article>
+          </div>
         </section>
 
         <section id="outcome" className={`${panel} ${sectionPad} my-5 scroll-mt-24`}>
@@ -378,6 +418,7 @@ export default function LetterRiverCaseStudy() {
             <div>
               <SectionEyebrow number="07">What I’d validate next</SectionEyebrow>
               <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">This is a prototype. The next step is learning from real users.</h2>
+              <EvidenceNote>What building it taught me: the hardest part of a learning product isn’t the content — it’s removing decisions so the learner can keep moving.</EvidenceNote>
             </div>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {[
@@ -387,7 +428,7 @@ export default function LetterRiverCaseStudy() {
                 ["Measure learning", "Track completion, review accuracy, and long-term recall."],
               ].map(([title, detail]) => (
                 <article key={title} className="rounded-2xl border border-slate-200 bg-[#fbf8ef] p-5 dark:border-slate-800 dark:bg-slate-950/60">
-                  <h3 className="font-black text-blue-700 dark:text-blue-300">{title}</h3>
+                  <h3 className="font-black text-emerald-800 dark:text-emerald-300">{title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{detail}</p>
                 </article>
               ))}
