@@ -135,14 +135,14 @@ function FlowCard({ icon, title, detail }) {
 
 function PracticeSequenceItem({ src, title, detail }) {
   return (
-    <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950/60">
-      <div className="h-[360px] w-full overflow-hidden bg-[#f8f5ec] dark:bg-slate-950">
-        <img src={src} alt={`${title} screenshot`} loading="lazy" className="h-full w-full object-cover object-top" />
-      </div>
-      <div className="border-t border-slate-200 p-4 dark:border-slate-800">
-        <h4 className="text-center text-sm font-black uppercase tracking-widest text-emerald-800 dark:text-emerald-300">{title}</h4>
-        <p className="mt-3 text-center text-sm leading-relaxed text-slate-700 dark:text-slate-300">{detail}</p>
-      </div>
+    <article className="rounded-3xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/60">
+      <figure className="mx-auto w-full max-w-[230px] overflow-hidden rounded-[1.55rem] border border-slate-200 bg-[#f8f5ec] shadow-sm dark:border-slate-700 dark:bg-slate-950">
+        <img src={src} alt={`${title} screenshot`} loading="lazy" className="h-[360px] w-full object-cover object-top" />
+        <figcaption className="border-t border-slate-200 px-3 py-2 text-center text-xs font-bold uppercase tracking-widest text-emerald-800 dark:border-slate-800 dark:text-emerald-300">
+          {title}
+        </figcaption>
+      </figure>
+      <p className="mt-4 text-center text-sm leading-relaxed text-slate-700 dark:text-slate-300">{detail}</p>
     </article>
   );
 }
