@@ -135,9 +135,14 @@ function FlowCard({ icon, title, detail }) {
 
 function PracticeSequenceItem({ src, title, detail }) {
   return (
-    <article className="rounded-3xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/60">
-      <MobileFullFrame src={src} alt={`${title} screenshot`} caption={title} className="max-w-[185px]" maxHeight="max-h-[350px]" />
-      <p className="mt-4 text-center text-sm leading-relaxed text-slate-700 dark:text-slate-300">{detail}</p>
+    <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950/60">
+      <div className="h-[360px] w-full overflow-hidden bg-[#f8f5ec] dark:bg-slate-950">
+        <img src={src} alt={`${title} screenshot`} loading="lazy" className="h-full w-full object-cover object-top" />
+      </div>
+      <div className="border-t border-slate-200 p-4 dark:border-slate-800">
+        <h4 className="text-center text-sm font-black uppercase tracking-widest text-emerald-800 dark:text-emerald-300">{title}</h4>
+        <p className="mt-3 text-center text-sm leading-relaxed text-slate-700 dark:text-slate-300">{detail}</p>
+      </div>
     </article>
   );
 }
