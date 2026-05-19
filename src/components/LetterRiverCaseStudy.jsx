@@ -98,28 +98,6 @@ function EvidenceNote({ children }) {
   );
 }
 
-function DecisionCard({ number, title, text, children, note, className = "" }) {
-  return (
-    <article className={`${panel} overflow-hidden ${className}`}>
-      <div className="border-b border-slate-200 bg-[#fbf8ef] p-5 dark:border-slate-800 dark:bg-slate-950/60">
-        <div className="flex items-start gap-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-800 text-sm font-black text-white">
-            {number}
-          </span>
-          <div>
-            <h3 className="text-xl font-black tracking-tight text-slate-950 dark:text-white">{title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{text}</p>
-          </div>
-        </div>
-      </div>
-      <div className="p-5">{children}</div>
-      <div className="border-t border-slate-200 bg-slate-50 p-5 text-sm leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300">
-        <strong className="text-slate-950 dark:text-white">Why it mattered: </strong>
-        {note}
-      </div>
-    </article>
-  );
-}
 
 function FlowCard({ icon, title, detail }) {
   return (
@@ -260,39 +238,96 @@ export default function LetterRiverCaseStudy() {
 
         <section id="journey" className={`${sectionPad} mt-5 scroll-mt-24 ${panel}`}>
           <SectionEyebrow number="03">Three design decisions</SectionEyebrow>
-          <div className="grid gap-6 lg:grid-cols-2">
-            <DecisionCard number="1" title="Guide the next action." text="Beginners need clarity, not more choices." note="The learner always has a recommended action, while secondary paths stay available.">
-              <MobileFrame src={screenshots.vocabJourney} alt="Vocabulary Journey screen with current pack card" imageClassName="h-[390px] object-cover object-top" />
-              <div className="mt-4 grid gap-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                <span className="rounded-2xl bg-white p-3 dark:bg-slate-900">Current pack is clearly prioritized.</span>
-                <span className="rounded-2xl bg-white p-3 dark:bg-slate-900">Review and reading remain secondary actions.</span>
-              </div>
-            </DecisionCard>
+          <p className="mb-6 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            Each decision addresses a specific moment where a beginner can get stuck or lose confidence.
+          </p>
+          <div className="flex flex-col gap-6">
 
-            <DecisionCard number="3" title="Move recognition into reading." text="Known words become useful inside short, meaningful tasks." note="Reading becomes a continuation of practice, not a separate jump in difficulty.">
-              <MobileFrame src={screenshots.read} alt="Read in context screenshot" imageClassName="h-[390px] object-cover object-top" />
-              <div className="mt-4 grid gap-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                <span className="rounded-2xl bg-white p-3 dark:bg-slate-900">Familiar words appear in context.</span>
-                <span className="rounded-2xl bg-white p-3 dark:bg-slate-900">Support stays nearby without overloading the screen.</span>
+            {/* Decision 1 */}
+            <article className={`${panel} overflow-hidden`}>
+              <div className="border-b border-slate-200 bg-[#fbf8ef] p-5 dark:border-slate-800 dark:bg-slate-950/60">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-800 text-sm font-black text-white">1</span>
+                  <div>
+                    <h3 className="text-xl font-black tracking-tight text-slate-950 dark:text-white">Guide the next action.</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">Beginners need clarity, not more choices.</p>
+                  </div>
+                </div>
               </div>
-            </DecisionCard>
+              <div className="grid gap-6 p-5 lg:grid-cols-[220px_1fr] lg:items-start">
+                <MobileFrame src={screenshots.vocabJourney} alt="Vocabulary Journey screen with current pack card" imageClassName="h-[390px] object-cover object-top" className="mx-auto" />
+                <div className="flex flex-col justify-center gap-4">
+                  <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                    On the Vocab Journey screen, the current pack is surfaced at the top. Secondary actions — review and reading — remain available but visually subordinate. The learner never has to decide where to start.
+                  </p>
+                  <div className="grid gap-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    <span className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-900">Current pack is clearly prioritized.</span>
+                    <span className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-900">Review and reading remain secondary actions.</span>
+                  </div>
+                </div>
+              </div>
+              <div className="border-t border-slate-200 bg-slate-50 p-5 text-sm leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300">
+                <strong className="text-slate-950 dark:text-white">Why it mattered: </strong>
+                The learner always has a recommended action, while secondary paths stay available.
+              </div>
+            </article>
 
-            <DecisionCard
-              number="2"
-              title="Reuse words across practice patterns."
-              text="Repetition works better when the task changes, so this section needs to read as a sequence."
-              note="The same vocabulary can return as recognition, recall, and script practice without feeling like the same drill."
-              className="lg:col-span-2"
-            >
-              <div className="grid gap-5 lg:grid-cols-3">
-                <PracticeSequenceItem src={screenshots.bridgeBuilder} title="Bridge Builder" detail="Introduce the word through guided sound, meaning, and recognition." />
-                <PracticeSequenceItem src={screenshots.loosePlanks} title="Loose Planks" detail="Bring the word back through matching and recall." />
-                <PracticeSequenceItem src={screenshots.deepScript} title="Deep Script" detail="Challenge memory through letters, forms, and reconstruction." />
+            {/* Decision 2 */}
+            <article className={`${panel} overflow-hidden`}>
+              <div className="border-b border-slate-200 bg-[#fbf8ef] p-5 dark:border-slate-800 dark:bg-slate-950/60">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-800 text-sm font-black text-white">2</span>
+                  <div>
+                    <h3 className="text-xl font-black tracking-tight text-slate-950 dark:text-white">Reuse words across practice patterns.</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">Repetition works better when the task changes, so this section needs to read as a sequence.</p>
+                  </div>
+                </div>
               </div>
-              <div className="mt-5 flex flex-wrap items-center justify-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-xs font-black uppercase tracking-widest text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
-                Bridge Builder <ArrowRight size={14} /> Review <ArrowRight size={14} /> Deep Script
+              <div className="p-5">
+                <div className="grid gap-5 sm:grid-cols-3">
+                  <PracticeSequenceItem src={screenshots.bridgeBuilder} title="Bridge Builder" detail="Introduce the word through guided sound, meaning, and recognition." />
+                  <PracticeSequenceItem src={screenshots.loosePlanks} title="Loose Planks" detail="Bring the word back through matching and recall." />
+                  <PracticeSequenceItem src={screenshots.deepScript} title="Deep Script" detail="Challenge memory through letters, forms, and reconstruction." />
+                </div>
+                <div className="mt-5 flex flex-wrap items-center justify-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-xs font-black uppercase tracking-widest text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+                  Bridge Builder <ArrowRight size={14} /> Loose Planks <ArrowRight size={14} /> Deep Script
+                </div>
               </div>
-            </DecisionCard>
+              <div className="border-t border-slate-200 bg-slate-50 p-5 text-sm leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300">
+                <strong className="text-slate-950 dark:text-white">Why it mattered: </strong>
+                The same vocabulary can return as recognition, recall, and script practice without feeling like the same drill.
+              </div>
+            </article>
+
+            {/* Decision 3 */}
+            <article className={`${panel} overflow-hidden`}>
+              <div className="border-b border-slate-200 bg-[#fbf8ef] p-5 dark:border-slate-800 dark:bg-slate-950/60">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-800 text-sm font-black text-white">3</span>
+                  <div>
+                    <h3 className="text-xl font-black tracking-tight text-slate-950 dark:text-white">Move recognition into reading.</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">Known words become useful inside short, meaningful tasks.</p>
+                  </div>
+                </div>
+              </div>
+              <div className="grid gap-6 p-5 lg:grid-cols-[220px_1fr] lg:items-start">
+                <MobileFrame src={screenshots.read} alt="Read in context screenshot" imageClassName="h-[390px] object-cover object-top" className="mx-auto" />
+                <div className="flex flex-col justify-center gap-4">
+                  <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                    The Read screen puts familiar vocabulary into short, meaningful sentences. Learners encounter words they already know in a new form — not a test, but a continuation of practice.
+                  </p>
+                  <div className="grid gap-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    <span className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-900">Familiar words appear in context.</span>
+                    <span className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-900">Support stays nearby without overloading the screen.</span>
+                  </div>
+                </div>
+              </div>
+              <div className="border-t border-slate-200 bg-slate-50 p-5 text-sm leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300">
+                <strong className="text-slate-950 dark:text-white">Why it mattered: </strong>
+                Reading becomes a continuation of practice, not a separate jump in difficulty.
+              </div>
+            </article>
+
           </div>
         </section>
 
