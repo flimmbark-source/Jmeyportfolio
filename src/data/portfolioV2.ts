@@ -89,7 +89,7 @@ export const portfolioV2Nodes: PortfolioNode[] = [
     status: 'external',
     summary: 'Professional UX, research, workflow and systems work.',
     connections: [c('why', 2), c('systems', 3)],
-    route: '/'
+    route: '/ux'
   },
   {
     id: 'unfinished',
@@ -97,7 +97,7 @@ export const portfolioV2Nodes: PortfolioNode[] = [
     kind: 'lens',
     status: 'unfinished',
     summary: 'A separate workshop view for prototypes and ideas that are still being worked through.',
-    connections: [c('phase-g', 3), c('splitpulse', 3), c('wash-dishes', 3)]
+    connections: [c('phase-g', 3), c('splitpulse', 3)]
   },
 
   {
@@ -182,16 +182,6 @@ export const portfolioV2Nodes: PortfolioNode[] = [
     summary: 'An alchemical action-rhythm vertical slice built around configuring and performing responses in rhythm.',
     connections: [c('unfinished', 3), c('systems', 3), c('game-design', 3), c('play', 2)],
     repo: 'flimmbark-source/SplitPulse'
-  },
-  {
-    id: 'wash-dishes',
-    title: 'Just Wash the Dishes',
-    kind: 'project',
-    status: 'unfinished',
-    kicker: 'Unfinished · Concept',
-    summary: 'A disability-focused interactive concept about endurance, burnout and the hidden cost of an ordinary task.',
-    connections: [c('unfinished', 3), c('disability', 3), c('embodiment', 3), c('interactive-art', 2)],
-    repo: 'flimmbark-source/WashDishes'
   }
 ];
 
