@@ -2,12 +2,17 @@
   const MOBILE_BREAKPOINT = 720;
   const NAV_CLEARANCE = 18;
   const EDGE_PADDING = 16;
-  const MAX_LAG = 260;
+  const DESKTOP_MAX_LAG = 260;
+  const MOBILE_MAX_LAG = 120;
 
   let items = [];
   let lastScrollY = window.scrollY;
   let frame = 0;
   let observer = null;
+
+  function isMobile() {
+    return window.innerWidth <= MOBILE_BREAKPOINT;
+  }
 
   function navBottom() {
     const nav = document.querySelector('.pv2-nav');
@@ -28,26 +33,26 @@
         el,
         lag: 0,
         targetLag: 0,
-        // Cancel the document's immediate scroll movement entirely so there is
-        // no visible snap. The visible movement happens only through the slow
-        // catch-up below.
+        // Fully cancel the immediate document movement so wheel/touch scroll
+        // does not create a visible snap. Mobile uses the same principle but
+        // with a shorter trail so the stacked layout remains easy to navigate.
         counter: 1,
-        // Very slow, slightly different rates so each block follows the bio
-        // with its own weight rather than moving as a rigid group.
-        follow: 0.0035 + ((index * 0.0021) % 0.0065),
+        desktopFollow: 0.0035 + ((index * 0.0021) % 0.0065),
+        mobileFollow: 0.008 + ((index * 0.0027) % 0.008),
       }));
     lastScrollY = window.scrollY;
   }
 
   function applyScrollDelta(delta) {
-    if (window.innerWidth <= MOBILE_BREAKPOINT || Math.abs(delta) <= 0.01) return;
+    if (Math.abs(delta) <= 0.01) return;
 
+    const maxLag = isMobile() ? MOBILE_MAX_LAG : DESKTOP_MAX_LAG;
     for (const item of items) {
       const compensation = delta * item.counter;
       item.targetLag += compensation;
       item.lag += compensation;
-      item.targetLag = Math.max(-MAX_LAG, Math.min(MAX_LAG, item.targetLag));
-      item.lag = Math.max(-MAX_LAG, Math.min(MAX_LAG, item.lag));
+      item.targetLag = Math.max(-maxLag, Math.min(maxLag, item.targetLag));
+      item.lag = Math.max(-maxLag, Math.min(maxLag, item.lag));
       item.el.style.setProperty('--pv2-scroll-drift-y', `${item.lag.toFixed(2)}px`);
     }
   }
@@ -60,35 +65,39 @@
   }
 
   function tick() {
-    if (window.innerWidth <= MOBILE_BREAKPOINT) {
-      for (const item of items) item.el.style.removeProperty('--pv2-scroll-drift-y');
-      frame = requestAnimationFrame(tick);
-      return;
-    }
-
+    const mobile = isMobile();
+    const maxLag = mobile ? MOBILE_MAX_LAG : DESKTOP_MAX_LAG;
     const minTop = navBottom();
     const maxBottom = window.innerHeight - EDGE_PADDING;
 
     for (const item of items) {
-      item.targetLag += (0 - item.targetLag) * item.follow;
-      item.lag += (item.targetLag - item.lag) * 0.08;
+      const follow = mobile ? item.mobileFollow : item.desktopFollow;
+      item.targetLag += (0 - item.targetLag) * follow;
+      item.lag += (item.targetLag - item.lag) * (mobile ? 0.11 : 0.08);
+      item.lag = Math.max(-maxLag, Math.min(maxLag, item.lag));
 
       item.el.style.setProperty('--pv2-scroll-drift-y', `${item.lag.toFixed(2)}px`);
 
-      // Keep every drifting block visible while it slowly catches up.
-      const rect = item.el.getBoundingClientRect();
-      if (rect.top < minTop) {
-        const correction = minTop - rect.top;
-        item.lag += correction;
-        item.targetLag = Math.max(item.targetLag, item.lag);
-      }
-      if (rect.bottom > maxBottom) {
-        const correction = rect.bottom - maxBottom;
-        item.lag -= correction;
-        item.targetLag = Math.min(item.targetLag, item.lag);
-      }
+      if (!mobile) {
+        // Desktop pieces live in a viewport-like composition, so keep them
+        // fully visible while they trail the scroll.
+        const rect = item.el.getBoundingClientRect();
+        if (rect.top < minTop) {
+          const correction = minTop - rect.top;
+          item.lag += correction;
+          item.targetLag = Math.max(item.targetLag, item.lag);
+        }
+        if (rect.bottom > maxBottom) {
+          const correction = rect.bottom - maxBottom;
+          item.lag -= correction;
+          item.targetLag = Math.min(item.targetLag, item.lag);
+        }
 
-      item.el.style.setProperty('--pv2-scroll-drift-y', `${item.lag.toFixed(2)}px`);
+        item.el.style.setProperty('--pv2-scroll-drift-y', `${item.lag.toFixed(2)}px`);
+      }
+      // On mobile we deliberately do not clamp every card into the viewport:
+      // the cards are a vertical document flow and offscreen cards must remain
+      // offscreen until the user naturally scrolls to them.
     }
 
     frame = requestAnimationFrame(tick);
