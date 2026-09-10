@@ -100,26 +100,9 @@ function Overview({ onSelect, reducedMotion }) {
   );
 }
 
-function LensLinks({ node, onSelectConcept }) {
-  const concepts = node.connections
-    .map(({ id, weight }) => ({ node: portfolioV2NodeMap.get(id), weight }))
-    .filter(({ node: item }) => item && (item.kind === 'concept' || item.kind === 'intent'))
-    .sort((a, b) => b.weight - a.weight)
-    .slice(0, 4);
-
-  if (!concepts.length) return null;
-
-  return (
-    <div className="pv2-lenses">
-      <span>Seen through</span>
-      {concepts.map(({ node: concept }) => (
-        <button key={concept.id} type="button" onClick={() => onSelectConcept(concept.id)}>{concept.title}</button>
-      ))}
-    </div>
-  );
-}
-
 function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
+  const siblingIds = node.status === 'unfinished' ? unfinishedProjectIds : publicProjectIds;
+
   return (
     <motion.main
       className="pv2-focus"
@@ -127,7 +110,7 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
       animate={{ opacity: 1 }}
       exit={reducedMotion ? undefined : { opacity: 0 }}
     >
-      <button className="pv2-back" type="button" onClick={onBack}>← All work</button>
+      <button className="pv2-back" type="button" onClick={onBack}>← {node.status === 'unfinished' ? 'Workshop' : 'All work'}</button>
 
       <section className="pv2-focus__layout">
         <div className="pv2-focus__intro">
@@ -135,7 +118,6 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
           <motion.h1 layoutId={`title-${node.id}`}>{node.title}</motion.h1>
           <p className="pv2-focus__summary">{node.summary}</p>
           {node.purpose && <p className="pv2-focus__purpose">{node.purpose}</p>}
-          <LensLinks node={node} onSelectConcept={() => {}} />
         </div>
 
         <motion.div className="pv2-focus__artifact" layoutId={`project-${node.id}`} transition={reducedMotion ? { duration: 0 } : spring}>
@@ -143,7 +125,7 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
           <div className="pv2-focus__artifact-footer">
             <div>
               <span>Preview</span>
-              <strong>Gameplay preview asset can live here</strong>
+              <strong>{node.status === 'unfinished' ? 'Prototype preview asset can live here' : 'Gameplay preview asset can live here'}</strong>
             </div>
             {node.playUrl && (
               <a href={node.playUrl} target="_blank" rel="noreferrer">Play in browser ↗</a>
@@ -154,8 +136,8 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
         </motion.div>
       </section>
 
-      <div className="pv2-focus__rail" aria-label="Other projects">
-        {publicProjectIds.filter((id) => id !== node.id).map((id) => {
+      <div className="pv2-focus__rail" aria-label={node.status === 'unfinished' ? 'Other unfinished projects' : 'Other projects'}>
+        {siblingIds.filter((id) => id !== node.id).map((id) => {
           const item = portfolioV2NodeMap.get(id);
           return item ? <button key={id} type="button" onClick={() => onSelect(id)}>{item.title}</button> : null;
         })}
@@ -164,7 +146,7 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
   );
 }
 
-function Workshop({ onBack, onSelect, reducedMotion }) {
+function Workshop({ onBack, onSelect }) {
   const projects = unfinishedProjectIds.map((id) => portfolioV2NodeMap.get(id)).filter(Boolean);
   return (
     <motion.main className="pv2-workshop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -228,6 +210,11 @@ export default function RelationalPortfolio() {
   };
 
   const back = () => {
+    if (selected?.status === 'unfinished' && selected.id !== 'unfinished') {
+      setSelectedId('unfinished');
+      writeProjectToUrl('unfinished');
+      return;
+    }
     setSelectedId(null);
     writeProjectToUrl(null);
   };
@@ -237,7 +224,7 @@ export default function RelationalPortfolio() {
       <header className="pv2-nav">
         <a href="/v2" className="pv2-nav__name">Jacob Meyerkopf</a>
         <nav aria-label="Portfolio navigation">
-          <button type="button" onClick={back}>Work</button>
+          <button type="button" onClick={() => { setSelectedId(null); writeProjectToUrl(null); }}>Work</button>
           <button type="button" onClick={() => select('unfinished')}>Playground</button>
           <a href="/">UX</a>
           <a href="mailto:jmeyerkopf@gmail.com">Contact</a>
@@ -247,7 +234,7 @@ export default function RelationalPortfolio() {
       <AnimatePresence mode="wait">
         {!selected && <Overview key="overview" onSelect={select} reducedMotion={reducedMotion} />}
         {selected?.kind === 'project' && <ProjectFocus key={selected.id} node={selected} onBack={back} onSelect={select} reducedMotion={reducedMotion} />}
-        {selected?.id === 'unfinished' && <Workshop key="unfinished" onBack={back} onSelect={select} reducedMotion={reducedMotion} />}
+        {selected?.id === 'unfinished' && <Workshop key="unfinished" onBack={back} onSelect={select} />}
         {selected?.id === 'ux-work' && <UXGateway key="ux" onBack={back} />}
       </AnimatePresence>
     </div>
