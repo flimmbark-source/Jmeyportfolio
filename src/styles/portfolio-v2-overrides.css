@@ -63,28 +63,34 @@
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.42);
 }
 
-/* Project thumbnails supplied for the overview. */
-.pv2-project-tile .pv2-visual--rotogo .pv2-visual__frame {
+/* Existing game artwork is reused on both the Work overview and the All Games playground. */
+.pv2-project-tile .pv2-visual--rotogo .pv2-visual__frame,
+.pv2-workshop-card .pv2-visual--rotogo .pv2-visual__frame {
   background: url('/images/rotogoscreen.png') center / cover no-repeat;
 }
 
-.pv2-project-tile .pv2-visual--gig-duel .pv2-visual__frame {
+.pv2-project-tile .pv2-visual--gig-duel .pv2-visual__frame,
+.pv2-workshop-card .pv2-visual--gig-duel .pv2-visual__frame {
   background: url('/images/VenueRivalsscreen .png') center / cover no-repeat;
 }
 
-.pv2-project-tile .pv2-visual--letter-river .pv2-visual__frame {
+.pv2-project-tile .pv2-visual--letter-river .pv2-visual__frame,
+.pv2-workshop-card .pv2-visual--letter-river .pv2-visual__frame {
   background: url('/images/letterriverscreen.png') center / cover no-repeat;
 }
 
-.pv2-project-tile .pv2-visual--last-reading .pv2-visual__frame {
+.pv2-project-tile .pv2-visual--last-reading .pv2-visual__frame,
+.pv2-workshop-card .pv2-visual--last-reading .pv2-visual__frame {
   background: url('/images/Thelastreadingscreen.png') center / cover no-repeat;
 }
 
-.pv2-project-tile .pv2-visual--get-to-the-cafe .pv2-visual__media {
+.pv2-project-tile .pv2-visual--get-to-the-cafe .pv2-visual__media,
+.pv2-workshop-card .pv2-visual--get-to-the-cafe .pv2-visual__media {
   display: none;
 }
 
-.pv2-project-tile .pv2-visual--get-to-the-cafe .pv2-visual__frame {
+.pv2-project-tile .pv2-visual--get-to-the-cafe .pv2-visual__frame,
+.pv2-workshop-card .pv2-visual--get-to-the-cafe .pv2-visual__frame {
   background: url('/images/oiz8uf.png') center / cover no-repeat;
 }
 
@@ -131,6 +137,16 @@
 .pv2-project-tile .pv2-visual--last-reading .pv2-visual__status,
 .pv2-project-tile .pv2-visual--get-to-the-cafe .pv2-visual__mark,
 .pv2-project-tile .pv2-visual--get-to-the-cafe .pv2-visual__status,
+.pv2-workshop-card .pv2-visual--rotogo .pv2-visual__mark,
+.pv2-workshop-card .pv2-visual--rotogo .pv2-visual__status,
+.pv2-workshop-card .pv2-visual--gig-duel .pv2-visual__mark,
+.pv2-workshop-card .pv2-visual--gig-duel .pv2-visual__status,
+.pv2-workshop-card .pv2-visual--letter-river .pv2-visual__mark,
+.pv2-workshop-card .pv2-visual--letter-river .pv2-visual__status,
+.pv2-workshop-card .pv2-visual--last-reading .pv2-visual__mark,
+.pv2-workshop-card .pv2-visual--last-reading .pv2-visual__status,
+.pv2-workshop-card .pv2-visual--get-to-the-cafe .pv2-visual__mark,
+.pv2-workshop-card .pv2-visual--get-to-the-cafe .pv2-visual__status,
 .pv2-focus .pv2-visual--get-to-the-cafe .pv2-visual__mark,
 .pv2-focus .pv2-visual--get-to-the-cafe .pv2-visual__status,
 .pv2-focus .pv2-visual--letter-river .pv2-visual__mark,
