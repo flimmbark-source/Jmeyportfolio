@@ -97,7 +97,21 @@
   background: url('/images/sRdmVj.gif') center / cover no-repeat;
 }
 
-/* Keep overlay labels off supplied screenshots/GIFs so the media reads cleanly. */
+/* Letter River uses the supplied screen recording as a looping GIF-like preview. */
+.pv2-focus .pv2-visual--letter-river.is-large {
+  overflow: hidden;
+}
+
+.pv2-focus .pv2-visual--letter-river.is-large .pv2-letter-river-video {
+  object-fit: cover;
+}
+
+.pv2-focus .pv2-visual--letter-river.is-large .pv2-visual__frame {
+  background: transparent;
+  pointer-events: none;
+}
+
+/* Keep overlay labels off supplied screenshots/GIFs/video so the media reads cleanly. */
 .pv2-project-tile .pv2-visual--rotogo .pv2-visual__mark,
 .pv2-project-tile .pv2-visual--rotogo .pv2-visual__status,
 .pv2-project-tile .pv2-visual--gig-duel .pv2-visual__mark,
@@ -109,7 +123,9 @@
 .pv2-project-tile .pv2-visual--get-to-the-cafe .pv2-visual__mark,
 .pv2-project-tile .pv2-visual--get-to-the-cafe .pv2-visual__status,
 .pv2-focus .pv2-visual--get-to-the-cafe .pv2-visual__mark,
-.pv2-focus .pv2-visual--get-to-the-cafe .pv2-visual__status {
+.pv2-focus .pv2-visual--get-to-the-cafe .pv2-visual__status,
+.pv2-focus .pv2-visual--letter-river .pv2-visual__mark,
+.pv2-focus .pv2-visual--letter-river .pv2-visual__status {
   display: none;
 }
 
