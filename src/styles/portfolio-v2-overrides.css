@@ -100,19 +100,22 @@
 /* Supplied screen recordings behave as looping GIF-like previews in focused views. */
 .pv2-focus .pv2-visual--letter-river.is-large,
 .pv2-focus .pv2-visual--rotogo.is-large,
-.pv2-focus .pv2-visual--last-reading.is-large {
+.pv2-focus .pv2-visual--last-reading.is-large,
+.pv2-focus .pv2-visual--gig-duel.is-large {
   overflow: hidden;
 }
 
 .pv2-focus .pv2-visual--letter-river.is-large .pv2-letter-river-video,
 .pv2-focus .pv2-visual--rotogo.is-large .pv2-rotogo-video,
-.pv2-focus .pv2-visual--last-reading.is-large .pv2-last-reading-video {
+.pv2-focus .pv2-visual--last-reading.is-large .pv2-last-reading-video,
+.pv2-focus .pv2-visual--gig-duel.is-large .pv2-gig-duel-video {
   object-fit: cover;
 }
 
 .pv2-focus .pv2-visual--letter-river.is-large .pv2-visual__frame,
 .pv2-focus .pv2-visual--rotogo.is-large .pv2-visual__frame,
-.pv2-focus .pv2-visual--last-reading.is-large .pv2-visual__frame {
+.pv2-focus .pv2-visual--last-reading.is-large .pv2-visual__frame,
+.pv2-focus .pv2-visual--gig-duel.is-large .pv2-visual__frame {
   background: transparent;
   pointer-events: none;
 }
@@ -135,7 +138,9 @@
 .pv2-focus .pv2-visual--rotogo .pv2-visual__mark,
 .pv2-focus .pv2-visual--rotogo .pv2-visual__status,
 .pv2-focus .pv2-visual--last-reading .pv2-visual__mark,
-.pv2-focus .pv2-visual--last-reading .pv2-visual__status {
+.pv2-focus .pv2-visual--last-reading .pv2-visual__status,
+.pv2-focus .pv2-visual--gig-duel .pv2-visual__mark,
+.pv2-focus .pv2-visual--gig-duel .pv2-visual__status {
   display: none;
 }
 
