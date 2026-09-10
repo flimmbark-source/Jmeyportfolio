@@ -63,28 +63,34 @@
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.42);
 }
 
-/* Project thumbnails supplied for the overview. */
-.pv2-project-tile .pv2-visual--rotogo .pv2-visual__frame {
+/* Existing game artwork is reused on both the Work overview and the All Games playground. */
+.pv2-project-tile .pv2-visual--rotogo .pv2-visual__frame,
+.pv2-workshop-card .pv2-visual--rotogo .pv2-visual__frame {
   background: url('/images/rotogoscreen.png') center / cover no-repeat;
 }
 
-.pv2-project-tile .pv2-visual--gig-duel .pv2-visual__frame {
+.pv2-project-tile .pv2-visual--gig-duel .pv2-visual__frame,
+.pv2-workshop-card .pv2-visual--gig-duel .pv2-visual__frame {
   background: url('/images/VenueRivalsscreen .png') center / cover no-repeat;
 }
 
-.pv2-project-tile .pv2-visual--letter-river .pv2-visual__frame {
+.pv2-project-tile .pv2-visual--letter-river .pv2-visual__frame,
+.pv2-workshop-card .pv2-visual--letter-river .pv2-visual__frame {
   background: url('/images/letterriverscreen.png') center / cover no-repeat;
 }
 
-.pv2-project-tile .pv2-visual--last-reading .pv2-visual__frame {
+.pv2-project-tile .pv2-visual--last-reading .pv2-visual__frame,
+.pv2-workshop-card .pv2-visual--last-reading .pv2-visual__frame {
   background: url('/images/Thelastreadingscreen.png') center / cover no-repeat;
 }
 
-.pv2-project-tile .pv2-visual--get-to-the-cafe .pv2-visual__media {
+.pv2-project-tile .pv2-visual--get-to-the-cafe .pv2-visual__media,
+.pv2-workshop-card .pv2-visual--get-to-the-cafe .pv2-visual__media {
   display: none;
 }
 
-.pv2-project-tile .pv2-visual--get-to-the-cafe .pv2-visual__frame {
+.pv2-project-tile .pv2-visual--get-to-the-cafe .pv2-visual__frame,
+.pv2-workshop-card .pv2-visual--get-to-the-cafe .pv2-visual__frame {
   background: url('/images/oiz8uf.png') center / cover no-repeat;
 }
 
@@ -97,7 +103,30 @@
   background: url('/images/sRdmVj.gif') center / cover no-repeat;
 }
 
-/* Keep overlay labels off supplied screenshots/GIFs so the media reads cleanly. */
+/* Supplied screen recordings behave as looping GIF-like previews in focused views. */
+.pv2-focus .pv2-visual--letter-river.is-large,
+.pv2-focus .pv2-visual--rotogo.is-large,
+.pv2-focus .pv2-visual--last-reading.is-large,
+.pv2-focus .pv2-visual--gig-duel.is-large {
+  overflow: hidden;
+}
+
+.pv2-focus .pv2-visual--letter-river.is-large .pv2-letter-river-video,
+.pv2-focus .pv2-visual--rotogo.is-large .pv2-rotogo-video,
+.pv2-focus .pv2-visual--last-reading.is-large .pv2-last-reading-video,
+.pv2-focus .pv2-visual--gig-duel.is-large .pv2-gig-duel-video {
+  object-fit: cover;
+}
+
+.pv2-focus .pv2-visual--letter-river.is-large .pv2-visual__frame,
+.pv2-focus .pv2-visual--rotogo.is-large .pv2-visual__frame,
+.pv2-focus .pv2-visual--last-reading.is-large .pv2-visual__frame,
+.pv2-focus .pv2-visual--gig-duel.is-large .pv2-visual__frame {
+  background: transparent;
+  pointer-events: none;
+}
+
+/* Keep overlay labels off supplied screenshots/GIFs/video so the media reads cleanly. */
 .pv2-project-tile .pv2-visual--rotogo .pv2-visual__mark,
 .pv2-project-tile .pv2-visual--rotogo .pv2-visual__status,
 .pv2-project-tile .pv2-visual--gig-duel .pv2-visual__mark,
@@ -108,8 +137,26 @@
 .pv2-project-tile .pv2-visual--last-reading .pv2-visual__status,
 .pv2-project-tile .pv2-visual--get-to-the-cafe .pv2-visual__mark,
 .pv2-project-tile .pv2-visual--get-to-the-cafe .pv2-visual__status,
+.pv2-workshop-card .pv2-visual--rotogo .pv2-visual__mark,
+.pv2-workshop-card .pv2-visual--rotogo .pv2-visual__status,
+.pv2-workshop-card .pv2-visual--gig-duel .pv2-visual__mark,
+.pv2-workshop-card .pv2-visual--gig-duel .pv2-visual__status,
+.pv2-workshop-card .pv2-visual--letter-river .pv2-visual__mark,
+.pv2-workshop-card .pv2-visual--letter-river .pv2-visual__status,
+.pv2-workshop-card .pv2-visual--last-reading .pv2-visual__mark,
+.pv2-workshop-card .pv2-visual--last-reading .pv2-visual__status,
+.pv2-workshop-card .pv2-visual--get-to-the-cafe .pv2-visual__mark,
+.pv2-workshop-card .pv2-visual--get-to-the-cafe .pv2-visual__status,
 .pv2-focus .pv2-visual--get-to-the-cafe .pv2-visual__mark,
-.pv2-focus .pv2-visual--get-to-the-cafe .pv2-visual__status {
+.pv2-focus .pv2-visual--get-to-the-cafe .pv2-visual__status,
+.pv2-focus .pv2-visual--letter-river .pv2-visual__mark,
+.pv2-focus .pv2-visual--letter-river .pv2-visual__status,
+.pv2-focus .pv2-visual--rotogo .pv2-visual__mark,
+.pv2-focus .pv2-visual--rotogo .pv2-visual__status,
+.pv2-focus .pv2-visual--last-reading .pv2-visual__mark,
+.pv2-focus .pv2-visual--last-reading .pv2-visual__status,
+.pv2-focus .pv2-visual--gig-duel .pv2-visual__mark,
+.pv2-focus .pv2-visual--gig-duel .pv2-visual__status {
   display: none;
 }
 

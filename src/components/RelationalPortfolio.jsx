@@ -7,6 +7,7 @@ const spring = { type: 'spring', stiffness: 220, damping: 28, mass: 0.9 };
 const softSpring = { type: 'spring', stiffness: 180, damping: 24, mass: 0.85 };
 const publicProjectIds = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotogo', 'gig-duel'];
 const unfinishedProjectIds = ['phase-g', 'splitpulse'];
+const allGameIds = [...publicProjectIds, ...unfinishedProjectIds];
 
 const hoverMotion = {
   top: { y: -9, rotate: -0.35, scale: 1.018 },
@@ -305,7 +306,7 @@ function Overview({ onSelect, reducedMotion }) {
           id="unfinished"
           className="pv2-gateway-link--unfinished"
           eyebrow="Workshop"
-          title="Unfinished →"
+          title="All Games →"
           onClick={() => onSelect('unfinished')}
           reducedMotion={reducedMotion}
           delay={0.2}
@@ -318,7 +319,7 @@ function Overview({ onSelect, reducedMotion }) {
 }
 
 function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
-  const siblingIds = node.status === 'unfinished' ? unfinishedProjectIds : publicProjectIds;
+  const siblingIds = node.status === 'unfinished' ? allGameIds : publicProjectIds;
   const primaryPlayUrl = node.localPlayUrl || node.playUrl;
   const primaryPlayExternal = !node.localPlayUrl && Boolean(node.playUrl);
 
@@ -330,7 +331,7 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
       exit={reducedMotion ? undefined : { opacity: 0 }}
       transition={{ duration: reducedMotion ? 0 : 0.2 }}
     >
-      <button className="pv2-back" type="button" onClick={onBack}>← {node.status === 'unfinished' ? 'Workshop' : 'All work'}</button>
+      <button className="pv2-back" type="button" onClick={onBack}>← {node.status === 'unfinished' ? 'All Games' : 'All work'}</button>
 
       <section className="pv2-focus__layout">
         <motion.div
@@ -368,7 +369,7 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
         </motion.div>
       </section>
 
-      <div className="pv2-focus__rail" aria-label={node.status === 'unfinished' ? 'Other unfinished projects' : 'Other projects'}>
+      <div className="pv2-focus__rail" aria-label={node.status === 'unfinished' ? 'Other games' : 'Other projects'}>
         {siblingIds.filter((id) => id !== node.id).map((id) => {
           const item = portfolioV2NodeMap.get(id);
           return item ? <button key={id} type="button" onClick={() => onSelect(id)}>{item.title}</button> : null;
@@ -379,14 +380,14 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
 }
 
 function Workshop({ onBack, onSelect, reducedMotion }) {
-  const projects = unfinishedProjectIds.map((id) => portfolioV2NodeMap.get(id)).filter(Boolean);
+  const projects = allGameIds.map((id) => portfolioV2NodeMap.get(id)).filter(Boolean);
   return (
     <motion.main className="pv2-workshop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <button className="pv2-back" type="button" onClick={onBack}>← All work</button>
       <div className="pv2-workshop__intro">
         <p className="pv2-overline">Workshop</p>
-        <h1>Unfinished things.</h1>
-        <p>Prototypes, slices, and ideas that are still being worked through.</p>
+        <h1>All Games.</h1>
+        <p>Finished games, experiments, prototypes, and things still being worked through.</p>
       </div>
       <div className="pv2-workshop__grid">
         {projects.map((node, index) => (
