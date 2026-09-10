@@ -141,7 +141,8 @@ export const portfolioV2Nodes: PortfolioNode[] = [
     summary: 'A solitaire-style horror roguelike built around constructing and interpreting five-card tarot readings. Cards score through patterns, Major Arcana can be discarded to trigger abilities, and upgrades let you increasingly manipulate the deck until a single draw can completely reshape a reading.',
     purpose: 'Underneath the card game is a second layer about interpretation itself: reading between the lines, finding patterns in incomplete information, and gradually uncovering secrets hidden inside the deck.',
     connections: [c('patterns', 3), c('game-design', 3), c('play', 2), c('systems', 2), c('perspective', 2), c('explore', 2)],
-    repo: 'flimmbark-source/TheLastReading'
+    repo: 'flimmbark-source/TheLastReading',
+    playUrl: 'https://thelastreading.netlify.app/'
   },
   {
     id: 'rotogo',
@@ -162,7 +163,8 @@ export const portfolioV2Nodes: PortfolioNode[] = [
     kicker: 'Game · For Fun',
     summary: 'A small game experiment I came up with while sitting in a shelter, something for my mind to do while hiding from missiles.',
     purpose: 'It is a compact example of how I use game design as a way to think: take an idea, give it rules, make it playable, and see what happens. The project is small on purpose, but the context it came out of is part of why it matters to me.',
-    connections: [c('play', 2), c('game-design', 2)]
+    connections: [c('play', 2), c('game-design', 2)],
+    playUrl: 'https://gigduel.netlify.app/'
   },
 
   {
