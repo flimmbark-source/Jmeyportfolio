@@ -11,9 +11,9 @@ const gameSrc = '/games/get-to-the-cafe/index.html';
   </head>
   <body>
     <header class="playbar">
-      <a href="/v2?project=get-to-the-cafe">← Back to project</a>
+      <a href="/?project=get-to-the-cafe">← Back to project</a>
       <strong>Get to the Café</strong>
-      <button id="fullscreen" type="button">Fullscreen</button>
+      <button id="fullscreen" type="button" aria-pressed="false">Fullscreen</button>
     </header>
 
     <main class="game-shell" id="game-shell">
@@ -21,25 +21,27 @@ const gameSrc = '/games/get-to-the-cafe/index.html';
         id="game-frame"
         src={gameSrc}
         title="Get to the Café"
-        allow="autoplay; fullscreen; gamepad"
-        allowfullscreen
+        allow="autoplay; gamepad"
       ></iframe>
     </main>
 
     <script is:inline>
       const fullscreenButton = document.getElementById('fullscreen');
-      const gameShell = document.getElementById('game-shell');
+      const gameFrame = document.getElementById('game-frame');
 
-      fullscreenButton?.addEventListener('click', async () => {
-        try {
-          if (!document.fullscreenElement) {
-            await gameShell?.requestFullscreen();
-          } else {
-            await document.exitFullscreen();
-          }
-        } catch (error) {
-          console.warn('Fullscreen request was not available.', error);
+      // Browser fullscreen always reserves Escape and exits before the embedded game
+      // can use it. Use an in-page immersive mode instead so Escape remains a game key.
+      const setImmersive = (active) => {
+        document.body.classList.toggle('is-immersive', active);
+        fullscreenButton?.setAttribute('aria-pressed', String(active));
+        if (fullscreenButton) fullscreenButton.textContent = active ? 'Exit fullscreen' : 'Fullscreen';
+        if (active) {
+          requestAnimationFrame(() => gameFrame?.contentWindow?.focus());
         }
+      };
+
+      fullscreenButton?.addEventListener('click', () => {
+        setImmersive(!document.body.classList.contains('is-immersive'));
       });
     </script>
   </body>
@@ -119,7 +121,46 @@ const gameSrc = '/games/get-to-the-cafe/index.html';
     background: #000;
   }
 
-  .game-shell:fullscreen {
+  :global(body.is-immersive) {
+    display: block;
+  }
+
+  :global(body.is-immersive) .playbar {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 20;
+    width: auto;
+    height: auto;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    backdrop-filter: none;
+  }
+
+  :global(body.is-immersive) .playbar > a,
+  :global(body.is-immersive) .playbar > strong {
+    display: none;
+  }
+
+  :global(body.is-immersive) .playbar button {
+    min-height: 34px;
+    padding: 0 11px;
+    background: rgba(17,17,17,.72);
+    border-color: rgba(255,255,255,.22);
+    opacity: .55;
+  }
+
+  :global(body.is-immersive) .playbar button:hover,
+  :global(body.is-immersive) .playbar button:focus-visible {
+    opacity: 1;
+  }
+
+  :global(body.is-immersive) .game-shell {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
     width: 100vw;
     height: 100vh;
   }
