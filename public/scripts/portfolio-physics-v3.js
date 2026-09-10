@@ -3,10 +3,10 @@
   const EDGE_PADDING = 16;
   const BODY_GAP = 16;
   const STATEMENT_GAP = 30;
-  const NORMAL_SPEED = 0.09;
-  const REDUCED_SPEED = 0.028;
-  const POINTER_IMPULSE = 0.07;
-  const HOME_PULL = 0.0000011;
+  const NORMAL_SPEED = 0.045;
+  const REDUCED_SPEED = 0.014;
+  const POINTER_IMPULSE = 0.035;
+  const HOME_PULL = 0.00000055;
   const DAMPING = 0.9995;
 
   let frame = 0;
@@ -59,6 +59,7 @@
   }
 
   function constrain(body, width, height) {
+    if (body.isStatic) return;
     const maxX = Math.max(EDGE_PADDING, width - body.w - EDGE_PADDING);
     const maxY = Math.max(EDGE_PADDING, height - body.h - EDGE_PADDING);
     if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx); }
@@ -69,31 +70,50 @@
 
   function separate(a, b) {
     if (!overlaps(a, b, BODY_GAP)) return;
+    if (a.isStatic && b.isStatic) return;
+
     const dx = (a.x + a.w / 2) - (b.x + b.w / 2) || 0.01;
     const dy = (a.y + a.h / 2) - (b.y + b.h / 2) || 0.01;
     const overlapX = (a.w + b.w) / 2 + BODY_GAP - Math.abs(dx);
     const overlapY = (a.h + b.h) / 2 + BODY_GAP - Math.abs(dy);
+
     if (overlapX < overlapY) {
       const sign = dx >= 0 ? 1 : -1;
-      const push = Math.max(0, overlapX) / 2;
-      a.x += push * sign;
-      b.x -= push * sign;
-      const av = a.vx;
-      a.vx = b.vx;
-      b.vx = av;
+      const push = Math.max(0, overlapX);
+      if (a.isStatic) {
+        b.x -= push * sign;
+        b.vx = -Math.abs(b.vx) * sign;
+      } else if (b.isStatic) {
+        a.x += push * sign;
+        a.vx = Math.abs(a.vx) * sign;
+      } else {
+        a.x += (push / 2) * sign;
+        b.x -= (push / 2) * sign;
+        const av = a.vx;
+        a.vx = b.vx;
+        b.vx = av;
+      }
     } else {
       const sign = dy >= 0 ? 1 : -1;
-      const push = Math.max(0, overlapY) / 2;
-      a.y += push * sign;
-      b.y -= push * sign;
-      const av = a.vy;
-      a.vy = b.vy;
-      b.vy = av;
+      const push = Math.max(0, overlapY);
+      if (a.isStatic) {
+        b.y -= push * sign;
+        b.vy = -Math.abs(b.vy) * sign;
+      } else if (b.isStatic) {
+        a.y += push * sign;
+        a.vy = Math.abs(a.vy) * sign;
+      } else {
+        a.y += (push / 2) * sign;
+        b.y -= (push / 2) * sign;
+        const av = a.vy;
+        a.vy = b.vy;
+        b.vy = av;
+      }
     }
   }
 
   function separateStatement(body, obstacle) {
-    if (!obstacle || !overlaps(body, obstacle, STATEMENT_GAP)) return;
+    if (body.isStatic || !obstacle || !overlaps(body, obstacle, STATEMENT_GAP)) return;
     const dx = (body.x + body.w / 2) - (obstacle.x + obstacle.w / 2) || 0.01;
     const dy = (body.y + body.h / 2) - (obstacle.y + obstacle.h / 2) || 0.01;
     const overlapX = (body.w + obstacle.w) / 2 + STATEMENT_GAP - Math.abs(dx);
@@ -118,6 +138,7 @@
     const y = clamp(anchor.y - h / 2, EDGE_PADDING, stageRect.height - h - EDGE_PADDING);
     const angle = 0.55 + index * 1.19;
     const speed = reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED;
+    const isStatic = classString(el).includes('gateway-link--ux');
 
     el.style.position = 'absolute';
     el.style.right = 'auto';
@@ -127,24 +148,27 @@
     el.style.transition = 'none';
 
     const body = {
-      el, x, y, w, h,
+      el, x, y, w, h, isStatic,
       homeX: x,
       homeY: y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
+      vx: isStatic ? 0 : Math.cos(angle) * speed,
+      vy: isStatic ? 0 : Math.sin(angle) * speed,
       phase: index * 1.41 + 0.7,
       target: el.querySelector('.pv2-project-tile, .pv2-gateway-link') || el,
     };
 
-    body.enter = (event) => {
-      const r = body.el.getBoundingClientRect();
-      let dx = r.left + r.width / 2 - event.clientX;
-      let dy = r.top + r.height / 2 - event.clientY;
-      const len = Math.hypot(dx, dy) || 1;
-      body.vx += (dx / len) * POINTER_IMPULSE;
-      body.vy += (dy / len) * POINTER_IMPULSE;
-    };
-    body.target.addEventListener('pointerenter', body.enter);
+    if (!isStatic) {
+      body.enter = (event) => {
+        const r = body.el.getBoundingClientRect();
+        let dx = r.left + r.width / 2 - event.clientX;
+        let dy = r.top + r.height / 2 - event.clientY;
+        const len = Math.hypot(dx, dy) || 1;
+        body.vx += (dx / len) * POINTER_IMPULSE;
+        body.vy += (dy / len) * POINTER_IMPULSE;
+      };
+      body.target.addEventListener('pointerenter', body.enter);
+    }
+
     return body;
   }
 
@@ -163,12 +187,12 @@
     const t = now / 1000;
 
     for (const body of bodies) {
+      if (body.isStatic) continue;
+
       body.vx += (body.homeX - body.x) * HOME_PULL * dt;
       body.vy += (body.homeY - body.y) * HOME_PULL * dt;
-
-      // Continual, low-amplitude directional variation keeps these as real moving bodies.
-      body.vx += Math.sin(t * 0.41 + body.phase) * 0.000035 * dt;
-      body.vy += Math.cos(t * 0.37 + body.phase * 1.23) * 0.000035 * dt;
+      body.vx += Math.sin(t * 0.41 + body.phase) * 0.0000175 * dt;
+      body.vy += Math.cos(t * 0.37 + body.phase * 1.23) * 0.0000175 * dt;
       body.vx *= Math.pow(DAMPING, dt);
       body.vy *= Math.pow(DAMPING, dt);
 
@@ -179,7 +203,7 @@
         body.vy += Math.sin(a) * (speedFloor - speed) * 0.18;
       }
 
-      const maxSpeed = reducedMotion() ? 0.055 : 0.18;
+      const maxSpeed = reducedMotion() ? 0.0275 : 0.09;
       body.vx = clamp(body.vx, -maxSpeed, maxSpeed);
       body.vy = clamp(body.vy, -maxSpeed, maxSpeed);
       body.x += body.vx * dt;
@@ -207,7 +231,9 @@
   function teardown() {
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
-    for (const body of bodies) body.target.removeEventListener('pointerenter', body.enter);
+    for (const body of bodies) {
+      if (body.enter) body.target.removeEventListener('pointerenter', body.enter);
+    }
     bodies = [];
     lastTime = 0;
   }
@@ -226,7 +252,6 @@
     bodies = elements.map((el, i) => makeBody(el, i, sr));
     const obstacle = statementRect();
 
-    // Resolve initial collisions before letting the bodies drift.
     for (let pass = 0; pass < 16; pass += 1) {
       bodies.forEach((body) => separateStatement(body, obstacle));
       for (let i = 0; i < bodies.length; i += 1) {
