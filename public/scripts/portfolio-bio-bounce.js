@@ -1,9 +1,9 @@
 (() => {
   const MOBILE_BREAKPOINT = 720;
   const GAP = 18;
-  const SPRING_BACK = 0.08;
-  const DAMPING = 0.82;
-  const BOUNCE_KICK = 1.8;
+  const SPRING_BACK = 0.018;
+  const DAMPING = 0.88;
+  const BOUNCE_KICK = 0.22;
 
   const states = new WeakMap();
   let frame = 0;
