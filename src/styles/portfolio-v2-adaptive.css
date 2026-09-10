@@ -1,8 +1,9 @@
 .pv2-overview__statement {
-  top: 50%;
-  left: 50%;
+  position: absolute;
+  inset: 50% auto auto 50%;
   width: min(650px, 48vw);
   transform: translate(-50%, -50%);
+  text-align: center;
 }
 
 .pv2-float-slot {
@@ -10,9 +11,9 @@
   z-index: 3;
   width: fit-content;
   max-width: calc(100% - 36px);
-  transition:
-    left 320ms var(--pv2-ease),
-    top 320ms var(--pv2-ease);
+  /* Physics owns left/top every frame. Do not transition those values or the
+     browser will continuously chase a moving target and make the bodies look locked. */
+  transition: none;
   will-change: left, top;
 }
 
@@ -70,8 +71,13 @@
     grid-column: 1 / -1;
     width: 100%;
     transform: none;
-    text-align: left;
+    text-align: center;
     margin-bottom: 20px;
+  }
+
+  .pv2-overview__statement > p:last-child {
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .pv2-float-slot {
@@ -101,11 +107,5 @@
 @media (max-width: 460px) {
   .pv2-overview__stage {
     grid-template-columns: 1fr;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pv2-float-slot {
-    transition: none;
   }
 }
