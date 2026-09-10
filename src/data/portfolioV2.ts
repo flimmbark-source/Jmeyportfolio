@@ -1,5 +1,10 @@
-export type PortfolioNodeKind = 'gateway' | 'cluster' | 'project';
+export type PortfolioNodeKind = 'center' | 'intent' | 'concept' | 'gateway' | 'project' | 'lens';
 export type PortfolioNodeStatus = 'public' | 'unfinished' | 'external';
+
+export type PortfolioConnection = {
+  id: string;
+  weight: 1 | 2 | 3;
+};
 
 export type PortfolioNode = {
   id: string;
@@ -8,10 +13,8 @@ export type PortfolioNode = {
   status: PortfolioNodeStatus;
   summary?: string;
   kicker?: string;
-  themes?: string[];
-  practices?: string[];
-  mediums?: string[];
-  connections: string[];
+  purpose?: string;
+  connections: PortfolioConnection[];
   repo?: string;
   playUrl?: string;
   route?: string;
@@ -23,68 +26,87 @@ export type PortfolioNode = {
   };
 };
 
+const c = (id: string, weight: 1 | 2 | 3 = 2): PortfolioConnection => ({ id, weight });
+
 export const portfolioV2Nodes: PortfolioNode[] = [
+  {
+    id: 'why',
+    title: 'Why I make things',
+    kind: 'center',
+    status: 'public',
+    summary: 'I use interaction to test ideas, make sense of systems, and let someone experience a framework rather than only read about it.',
+    connections: [c('embody', 3), c('explore', 3), c('patterns', 3), c('learn-through-play', 3), c('ux-work', 2)]
+  },
+  {
+    id: 'embody',
+    title: 'Embody a framework',
+    kind: 'intent',
+    status: 'public',
+    summary: 'Use interacting systems to let someone inhabit a way of experiencing the world.',
+    connections: [c('why', 3), c('perspective', 3), c('embodiment', 3), c('interactive-art', 3), c('get-to-the-cafe', 3)]
+  },
+  {
+    id: 'explore',
+    title: 'Explore a question',
+    kind: 'intent',
+    status: 'public',
+    summary: 'Build the idea far enough to discover whether it actually makes sense in interaction.',
+    connections: [c('why', 3), c('systems', 3), c('game-design', 2), c('letter-river', 2), c('last-reading', 2)]
+  },
+  {
+    id: 'patterns',
+    title: 'Find hidden patterns',
+    kind: 'intent',
+    status: 'public',
+    summary: 'Make systems for reading between the lines and finding structure in incomplete information.',
+    connections: [c('why', 3), c('systems', 2), c('last-reading', 3), c('perspective', 2)]
+  },
+  {
+    id: 'learn-through-play',
+    title: 'Learn through play',
+    kind: 'intent',
+    status: 'public',
+    summary: 'Use games as an experimental medium for understanding how learning happens.',
+    connections: [c('why', 3), c('learning', 3), c('language', 3), c('play', 3), c('letter-river', 3)]
+  },
+
+  { id: 'disability', title: 'Disability', kind: 'concept', status: 'public', connections: [c('perspective', 3), c('embodiment', 3), c('get-to-the-cafe', 3), c('interactive-art', 2)] },
+  { id: 'perspective', title: 'Perspective', kind: 'concept', status: 'public', connections: [c('embody', 3), c('disability', 3), c('interactive-art', 3), c('get-to-the-cafe', 3), c('last-reading', 2)] },
+  { id: 'systems', title: 'Systems', kind: 'concept', status: 'public', connections: [c('explore', 3), c('game-design', 3), c('ux-work', 3), c('get-to-the-cafe', 3), c('letter-river', 3), c('last-reading', 2)] },
+  { id: 'embodiment', title: 'Embodiment', kind: 'concept', status: 'public', connections: [c('embody', 3), c('disability', 3), c('get-to-the-cafe', 3), c('interactive-art', 2)] },
+  { id: 'learning', title: 'Learning', kind: 'concept', status: 'public', connections: [c('learn-through-play', 3), c('language', 3), c('letter-river', 3), c('systems', 2)] },
+  { id: 'language', title: 'Language', kind: 'concept', status: 'public', connections: [c('learning', 3), c('letter-river', 3), c('perspective', 2)] },
+  { id: 'play', title: 'Play', kind: 'concept', status: 'public', connections: [c('learn-through-play', 3), c('game-design', 3), c('letter-river', 2), c('rotogo', 2), c('gig-duel', 2), c('last-reading', 2)] },
+  { id: 'game-design', title: 'Game Design', kind: 'concept', status: 'public', connections: [c('play', 3), c('systems', 3), c('get-to-the-cafe', 3), c('letter-river', 2), c('last-reading', 3), c('rotogo', 2), c('gig-duel', 2)] },
+  { id: 'interactive-art', title: 'Interactive Art', kind: 'concept', status: 'public', connections: [c('embody', 3), c('perspective', 3), c('embodiment', 2), c('get-to-the-cafe', 3)] },
+
   {
     id: 'ux-work',
     title: 'UX Work',
     kind: 'gateway',
     status: 'external',
     summary: 'Professional UX, research, workflow and systems work.',
-    kicker: 'Classic portfolio',
-    connections: ['games'],
+    connections: [c('why', 2), c('systems', 3)],
     route: '/'
-  },
-  {
-    id: 'games',
-    title: 'Games',
-    kind: 'cluster',
-    status: 'public',
-    summary: 'Interactive work built to be experienced rather than explained.',
-    connections: ['disability', 'education', 'for-fun', 'unfinished', 'ux-work']
-  },
-  {
-    id: 'disability',
-    title: 'Disability',
-    kind: 'cluster',
-    status: 'public',
-    summary: 'Experiences that translate disabled perspective into mechanics and interaction.',
-    connections: ['games', 'get-to-the-cafe', 'unfinished']
-  },
-  {
-    id: 'education',
-    title: 'Education',
-    kind: 'cluster',
-    status: 'public',
-    summary: 'Interactive systems for learning through doing.',
-    connections: ['games', 'letter-river', 'for-fun']
-  },
-  {
-    id: 'for-fun',
-    title: 'For Fun',
-    kind: 'cluster',
-    status: 'public',
-    summary: 'Games made to explore mechanics, tone and play.',
-    connections: ['games', 'rotogo', 'gig-duel', 'last-reading', 'education']
   },
   {
     id: 'unfinished',
     title: 'Unfinished',
-    kind: 'cluster',
+    kind: 'lens',
     status: 'unfinished',
-    summary: 'Work in progress: prototypes, slices and ideas still being worked through.',
-    connections: ['games', 'phase-g', 'splitpulse', 'wash-dishes', 'disability']
+    summary: 'A separate workshop view for prototypes and ideas that are still being worked through.',
+    connections: [c('phase-g', 3), c('splitpulse', 3), c('wash-dishes', 3)]
   },
+
   {
     id: 'get-to-the-cafe',
     title: 'Get to the Café',
     kind: 'project',
     status: 'public',
-    kicker: 'Disability',
-    summary: 'A browser game about managing accumulating internal demands while trying to complete an ordinary social task.',
-    themes: ['disability', 'perspective', 'overload', 'embodiment'],
-    practices: ['game design', 'interaction design', 'systems design'],
-    mediums: ['browser game', '3D'],
-    connections: ['disability', 'games', 'phase-g', 'wash-dishes'],
+    kicker: 'Playable · Disability',
+    summary: 'A browser game about the hidden cost of completing an ordinary social task while internal demands accumulate.',
+    purpose: 'Built to embody a specific aspect of disabled experience against a simulation of the ordinary world. Layered systems each express that experience differently, allowing players to engage with the idea at different depths.',
+    connections: [c('embody', 3), c('disability', 3), c('perspective', 3), c('systems', 3), c('embodiment', 3), c('game-design', 3), c('interactive-art', 3)],
     repo: 'flimmbark-source/CrazyBod',
     playUrl: 'https://whooble.itch.io/gettothecafe'
   },
@@ -93,29 +115,38 @@ export const portfolioV2Nodes: PortfolioNode[] = [
     title: 'Letter River',
     kind: 'project',
     status: 'public',
-    kicker: 'Education',
-    summary: 'A language-learning system built around repeated interaction, accessibility and adaptive practice.',
-    themes: ['language', 'learning', 'accessibility'],
-    practices: ['educational design', 'systems design', 'prototyping'],
-    mediums: ['web app', 'PWA'],
-    connections: ['education', 'games', 'for-fun'],
+    kicker: 'Playable · Education',
+    summary: 'An experimental language-learning game and system.',
+    purpose: 'An exploration of games as a medium for learning, using experimentation to ask how and why language is learned rather than treating learning as content delivery.',
+    connections: [c('learn-through-play', 3), c('learning', 3), c('language', 3), c('systems', 3), c('play', 2), c('game-design', 2), c('explore', 2)],
     repo: 'flimmbark-source/HebrewLetterRiver',
     playUrl: 'https://letterriver.netlify.app/',
     embed: {
       mode: 'iframe',
       url: 'https://letterriver.netlify.app/',
       verified: false,
-      note: 'Current deployment headers block framing; keep as launch link until that policy is deliberately changed.'
+      note: 'Current deployment headers block framing; launch externally until that policy is deliberately changed.'
     }
+  },
+  {
+    id: 'last-reading',
+    title: 'The Last Reading',
+    kind: 'project',
+    status: 'public',
+    kicker: 'Game · For Fun',
+    summary: 'A tarot-inspired card game concerned with interpretation and incomplete information.',
+    purpose: 'Connected to reading between the lines and trying to make sense of hidden patterns.',
+    connections: [c('patterns', 3), c('game-design', 3), c('play', 2), c('systems', 2), c('perspective', 2), c('explore', 2)],
+    repo: 'flimmbark-source/TheLastReading'
   },
   {
     id: 'rotogo',
     title: 'Rotogo',
     kind: 'project',
     status: 'public',
-    kicker: 'For Fun',
-    summary: 'A game/app project currently retained from the existing portfolio roster.',
-    connections: ['for-fun', 'games'],
+    kicker: 'Game · For Fun',
+    summary: 'A finished game/app project from the public roster.',
+    connections: [c('play', 2), c('game-design', 2)],
     route: '/rotogo'
   },
   {
@@ -123,23 +154,11 @@ export const portfolioV2Nodes: PortfolioNode[] = [
     title: 'Gig Duel',
     kind: 'project',
     status: 'public',
-    kicker: 'For Fun',
-    summary: 'Public roster item. Repository and playable source are still unresolved.',
-    connections: ['for-fun', 'games']
+    kicker: 'Game · For Fun',
+    summary: 'A public game project. Repository and playable source are still unresolved.',
+    connections: [c('play', 2), c('game-design', 2)]
   },
-  {
-    id: 'last-reading',
-    title: 'The Last Reading',
-    kind: 'project',
-    status: 'public',
-    kicker: 'For Fun',
-    summary: 'A tarot-inspired card game with single-player readings and multiplayer duel systems.',
-    themes: ['ritual', 'cards', 'interpretation'],
-    practices: ['game design', 'systems design', '3D interaction'],
-    mediums: ['browser game', '3D'],
-    connections: ['for-fun', 'games', 'splitpulse'],
-    repo: 'flimmbark-source/TheLastReading'
-  },
+
   {
     id: 'phase-g',
     title: 'PhaseG',
@@ -147,10 +166,7 @@ export const portfolioV2Nodes: PortfolioNode[] = [
     status: 'unfinished',
     kicker: 'Unfinished',
     summary: 'A disability roguelike prototype exploring persistent statuses and abilities across radically different play modes.',
-    themes: ['disability', 'embodiment', 'state'],
-    practices: ['systems design', 'game design', 'prototyping'],
-    mediums: ['browser prototype', '3D'],
-    connections: ['unfinished', 'disability', 'get-to-the-cafe'],
+    connections: [c('unfinished', 3), c('disability', 3), c('embodiment', 3), c('systems', 3), c('game-design', 3)],
     repo: 'flimmbark-source/PhaseG'
   },
   {
@@ -160,10 +176,7 @@ export const portfolioV2Nodes: PortfolioNode[] = [
     status: 'unfinished',
     kicker: 'Unfinished',
     summary: 'An alchemical action-rhythm vertical slice built around configuring and performing responses in rhythm.',
-    themes: ['systems', 'rhythm', 'combination'],
-    practices: ['interaction design', 'game design', 'systems design'],
-    mediums: ['browser prototype', '3D', 'audio'],
-    connections: ['unfinished', 'last-reading', 'games'],
+    connections: [c('unfinished', 3), c('systems', 3), c('game-design', 3), c('play', 2)],
     repo: 'flimmbark-source/SplitPulse'
   },
   {
@@ -171,16 +184,18 @@ export const portfolioV2Nodes: PortfolioNode[] = [
     title: 'Just Wash the Dishes',
     kind: 'project',
     status: 'unfinished',
-    kicker: 'Unfinished',
+    kicker: 'Unfinished · Concept',
     summary: 'A disability-focused interactive concept about endurance, burnout and the hidden cost of an ordinary task.',
-    themes: ['disability', 'endurance', 'burnout', 'embodiment'],
-    practices: ['experience design', 'game design'],
-    mediums: ['design document'],
-    connections: ['unfinished', 'disability', 'get-to-the-cafe'],
+    connections: [c('unfinished', 3), c('disability', 3), c('embodiment', 3), c('interactive-art', 2)],
     repo: 'flimmbark-source/WashDishes'
   }
 ];
 
 export const portfolioV2NodeMap = new Map(portfolioV2Nodes.map((node) => [node.id, node]));
+export const portfolioV2InitialIds = ['why', 'embody', 'explore', 'patterns', 'learn-through-play', 'get-to-the-cafe', 'letter-river', 'last-reading', 'rotogo', 'gig-duel', 'ux-work', 'unfinished'];
 
-export const portfolioV2InitialIds = ['ux-work', 'games', 'unfinished'];
+export function connectionWeight(a: PortfolioNode, b: PortfolioNode): number {
+  return a.connections.find((connection) => connection.id === b.id)?.weight
+    ?? b.connections.find((connection) => connection.id === a.id)?.weight
+    ?? 0;
+}
