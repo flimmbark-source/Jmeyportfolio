@@ -8,6 +8,14 @@ const softSpring = { type: 'spring', stiffness: 180, damping: 24, mass: 0.85 };
 const publicProjectIds = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotogo', 'gig-duel'];
 const unfinishedProjectIds = ['phase-g', 'splitpulse', 'wash-dishes'];
 
+const hoverMotion = {
+  top: { y: -9, rotate: -0.35, scale: 1.018 },
+  left: { x: 4, y: -7, rotate: -0.8, scale: 1.018 },
+  right: { x: -4, y: -7, rotate: 0.8, scale: 1.018 },
+  'bottom-left': { x: 3, y: -8, rotate: 0.45, scale: 1.018 },
+  'bottom-right': { x: -3, y: -8, rotate: -0.45, scale: 1.018 },
+};
+
 function readProjectFromUrl() {
   if (typeof window === 'undefined') return null;
   const value = new URL(window.location.href).searchParams.get('project');
@@ -25,9 +33,24 @@ function writeProjectToUrl(id, replace = false) {
 }
 
 function ProjectVisual({ node, large = false }) {
+  const [previewAvailable, setPreviewAvailable] = useState(Boolean(node.previewSrc));
+
+  useEffect(() => {
+    setPreviewAvailable(Boolean(node.previewSrc));
+  }, [node.id, node.previewSrc]);
+
   return (
     <div className={`pv2-visual pv2-visual--${node.id}${large ? ' is-large' : ''}`} aria-hidden="true">
-      <div className="pv2-visual__frame">
+      {node.previewSrc && previewAvailable && (
+        <img
+          className="pv2-visual__media"
+          src={node.previewSrc}
+          alt=""
+          loading={large ? 'eager' : 'lazy'}
+          onError={() => setPreviewAvailable(false)}
+        />
+      )}
+      <div className={`pv2-visual__frame${node.previewSrc && previewAvailable ? ' has-media' : ''}`}>
         <span className="pv2-visual__mark">{node.title}</span>
         <span className="pv2-visual__status">{node.status === 'unfinished' ? 'in progress' : 'interactive work'}</span>
       </div>
@@ -44,8 +67,8 @@ function ProjectTile({ node, placement, index, onSelect, reducedMotion }) {
       onClick={() => onSelect(node.id)}
       initial={reducedMotion ? false : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={reducedMotion ? undefined : { y: -7, rotate: placement === 'left' ? -0.55 : placement === 'right' ? 0.55 : 0 }}
-      whileFocus={reducedMotion ? undefined : { y: -4 }}
+      whileHover={reducedMotion ? undefined : hoverMotion[placement]}
+      whileFocus={reducedMotion ? undefined : { y: -4, scale: 1.01 }}
       whileTap={reducedMotion ? undefined : { scale: 0.985 }}
       transition={reducedMotion ? { duration: 0 } : { ...softSpring, delay: 0.04 + index * 0.045 }}
       aria-label={`Open ${node.title}`}
@@ -67,7 +90,7 @@ function GatewayLink({ className, eyebrow, title, onClick, reducedMotion, delay 
       onClick={onClick}
       initial={reducedMotion ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={reducedMotion ? undefined : { x: className.includes('unfinished') ? -4 : 4 }}
+      whileHover={reducedMotion ? undefined : { x: className.includes('unfinished') ? -4 : 4, y: -2 }}
       whileTap={reducedMotion ? undefined : { scale: 0.985 }}
       transition={reducedMotion ? { duration: 0 } : { ...softSpring, delay }}
     >
@@ -136,6 +159,8 @@ function Overview({ onSelect, reducedMotion }) {
 
 function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
   const siblingIds = node.status === 'unfinished' ? unfinishedProjectIds : publicProjectIds;
+  const primaryPlayUrl = node.localPlayUrl || node.playUrl;
+  const primaryPlayExternal = !node.localPlayUrl && Boolean(node.playUrl);
 
   return (
     <motion.main
@@ -165,13 +190,20 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
           <div className="pv2-focus__artifact-footer">
             <div>
               <span>Preview</span>
-              <strong>{node.status === 'unfinished' ? 'Prototype preview asset can live here' : 'Gameplay preview asset can live here'}</strong>
+              <strong>{node.previewSrc ? 'Gameplay preview' : node.status === 'unfinished' ? 'Prototype preview asset can live here' : 'Gameplay preview asset can live here'}</strong>
             </div>
-            {node.playUrl && (
-              <a href={node.playUrl} target="_blank" rel="noreferrer">Play in browser ↗</a>
-            )}
-            {!node.playUrl && node.route && <a href={node.route}>Open project →</a>}
-            {!node.playUrl && !node.route && <span className="pv2-focus__pending">Playable build not connected yet</span>}
+            <div className="pv2-focus__actions">
+              {primaryPlayUrl && (
+                <a href={primaryPlayUrl} target={primaryPlayExternal ? '_blank' : undefined} rel={primaryPlayExternal ? 'noreferrer' : undefined}>
+                  {node.localPlayUrl ? 'Play here →' : 'Play in browser ↗'}
+                </a>
+              )}
+              {node.localPlayUrl && node.playUrl && (
+                <a className="pv2-secondary-action" href={node.playUrl} target="_blank" rel="noreferrer">Open itch.io ↗</a>
+              )}
+              {!primaryPlayUrl && node.route && <a href={node.route}>Open project →</a>}
+              {!primaryPlayUrl && !node.route && <span className="pv2-focus__pending">Playable build not connected yet</span>}
+            </div>
           </div>
         </motion.div>
       </section>
@@ -205,7 +237,7 @@ function Workshop({ onBack, onSelect, reducedMotion }) {
             onClick={() => onSelect(node.id)}
             initial={reducedMotion ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            whileHover={reducedMotion ? undefined : { y: -5 }}
+            whileHover={reducedMotion ? undefined : { y: -5, rotate: index % 2 ? 0.3 : -0.3 }}
             whileTap={reducedMotion ? undefined : { scale: 0.99 }}
             transition={reducedMotion ? { duration: 0 } : { ...softSpring, delay: index * 0.05 }}
           >
