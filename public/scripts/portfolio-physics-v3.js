@@ -16,9 +16,11 @@
   let statement = null;
   let bodies = [];
   let lastTime = 0;
+  let lastStageTop = null;
   let mutationTimer = 0;
   let statementX = null;
   let statementY = null;
+  let fxLayer = null;
 
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
   const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -34,6 +36,81 @@
       a.y + a.h + gap <= b.y ||
       b.y + b.h + gap <= a.y
     );
+  }
+
+  function ensureFxLayer() {
+    if (fxLayer?.isConnected) return fxLayer;
+    fxLayer = document.createElement('div');
+    fxLayer.setAttribute('aria-hidden', 'true');
+    Object.assign(fxLayer.style, {
+      position: 'fixed',
+      inset: '0',
+      pointerEvents: 'none',
+      overflow: 'hidden',
+      zIndex: '1200',
+    });
+    document.body.appendChild(fxLayer);
+    return fxLayer;
+  }
+
+  function impactBurst(event) {
+    if (window.innerWidth <= MOBILE_BREAKPOINT || reducedMotion()) return;
+    const layer = ensureFxLayer();
+    const lineCount = 5 + Math.floor(Math.random() * 3);
+
+    for (let i = 0; i < lineCount; i += 1) {
+      const angle = (Math.PI * 2 * i) / lineCount + (Math.random() - 0.5) * 0.6;
+      const distance = 10 + Math.random() * 12;
+      const length = 5 + Math.random() * 7;
+      const line = document.createElement('span');
+      Object.assign(line.style, {
+        position: 'absolute',
+        left: `${event.clientX}px`,
+        top: `${event.clientY}px`,
+        width: `${length}px`,
+        height: '1.5px',
+        borderRadius: '999px',
+        background: 'rgba(32, 32, 32, 0.78)',
+        transformOrigin: '0 50%',
+        transform: `translate(0, -50%) rotate(${angle}rad) scaleX(0.2)`,
+        opacity: '0',
+      });
+      layer.appendChild(line);
+
+      const dx = Math.cos(angle) * distance;
+      const dy = Math.sin(angle) * distance;
+      const animation = line.animate([
+        { opacity: 0, transform: `translate(0, -50%) rotate(${angle}rad) scaleX(0.2)` },
+        { opacity: 1, offset: 0.18, transform: `translate(${dx * 0.25}px, ${dy * 0.25}px) rotate(${angle}rad) scaleX(1)` },
+        { opacity: 0, transform: `translate(${dx}px, ${dy}px) rotate(${angle}rad) scaleX(0.35)` },
+      ], {
+        duration: 190 + Math.random() * 70,
+        easing: 'cubic-bezier(.2,.9,.25,1)',
+      });
+      animation.addEventListener('finish', () => line.remove(), { once: true });
+    }
+
+    const pop = document.createElement('span');
+    Object.assign(pop.style, {
+      position: 'absolute',
+      left: `${event.clientX}px`,
+      top: `${event.clientY}px`,
+      width: '5px',
+      height: '5px',
+      marginLeft: '-2.5px',
+      marginTop: '-2.5px',
+      border: '1.5px solid rgba(32, 32, 32, 0.72)',
+      borderRadius: '50%',
+      opacity: '0',
+      transform: 'scale(.25)',
+    });
+    layer.appendChild(pop);
+    const popAnimation = pop.animate([
+      { opacity: 0, transform: 'scale(.25)' },
+      { opacity: 0.9, offset: 0.18, transform: 'scale(.65)' },
+      { opacity: 0, transform: 'scale(2.2)' },
+    ], { duration: 180, easing: 'ease-out' });
+    popAnimation.addEventListener('finish', () => pop.remove(), { once: true });
   }
 
   function stageTopLimit(stageRect) {
@@ -190,20 +267,23 @@
       vx: isStatic ? 0 : Math.cos(angle) * speed,
       vy: isStatic ? 0 : Math.sin(angle) * speed,
       phase: index * 1.41 + 0.7,
+      scrollOffsetY: 0,
+      scrollCounter: 0.48 + Math.random() * 0.34,
+      scrollFollow: 0.025 + Math.random() * 0.05,
       target: el.querySelector('.pv2-project-tile, .pv2-gateway-link') || el,
     };
 
-    if (!isStatic) {
-      body.enter = (event) => {
-        const r = body.el.getBoundingClientRect();
-        let dx = r.left + r.width / 2 - event.clientX;
-        let dy = r.top + r.height / 2 - event.clientY;
-        const len = Math.hypot(dx, dy) || 1;
-        body.vx += (dx / len) * POINTER_IMPULSE;
-        body.vy += (dy / len) * POINTER_IMPULSE;
-      };
-      body.target.addEventListener('pointerenter', body.enter);
-    }
+    body.enter = (event) => {
+      impactBurst(event);
+      if (isStatic) return;
+      const r = body.el.getBoundingClientRect();
+      let dx = r.left + r.width / 2 - event.clientX;
+      let dy = r.top + r.height / 2 - event.clientY;
+      const len = Math.hypot(dx, dy) || 1;
+      body.vx += (dx / len) * POINTER_IMPULSE;
+      body.vy += (dy / len) * POINTER_IMPULSE;
+    };
+    body.target.addEventListener('pointerenter', body.enter);
 
     return body;
   }
@@ -218,35 +298,47 @@
     const dt = clamp(lastTime ? now - lastTime : 16.667, 8, 32);
     lastTime = now;
     const sr = stage.getBoundingClientRect();
+    const stageDelta = lastStageTop === null ? 0 : sr.top - lastStageTop;
+    lastStageTop = sr.top;
+
     centerStatementInViewport(sr, dt, false);
     const obstacle = statementRect();
     const speedFloor = reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED;
     const t = now / 1000;
 
     for (const body of bodies) {
-      if (body.isStatic) continue;
+      if (!body.isStatic) {
+        body.vx += (body.homeX - body.x) * HOME_PULL * dt;
+        body.vy += (body.homeY - body.y) * HOME_PULL * dt;
+        body.vx += Math.sin(t * 0.41 + body.phase) * 0.0000175 * dt;
+        body.vy += Math.cos(t * 0.37 + body.phase * 1.23) * 0.0000175 * dt;
+        body.vx *= Math.pow(DAMPING, dt);
+        body.vy *= Math.pow(DAMPING, dt);
 
-      body.vx += (body.homeX - body.x) * HOME_PULL * dt;
-      body.vy += (body.homeY - body.y) * HOME_PULL * dt;
-      body.vx += Math.sin(t * 0.41 + body.phase) * 0.0000175 * dt;
-      body.vy += Math.cos(t * 0.37 + body.phase * 1.23) * 0.0000175 * dt;
-      body.vx *= Math.pow(DAMPING, dt);
-      body.vy *= Math.pow(DAMPING, dt);
+        const speed = Math.hypot(body.vx, body.vy);
+        if (speed < speedFloor) {
+          const a = body.phase + t * 0.16;
+          body.vx += Math.cos(a) * (speedFloor - speed) * 0.18;
+          body.vy += Math.sin(a) * (speedFloor - speed) * 0.18;
+        }
 
-      const speed = Math.hypot(body.vx, body.vy);
-      if (speed < speedFloor) {
-        const a = body.phase + t * 0.16;
-        body.vx += Math.cos(a) * (speedFloor - speed) * 0.18;
-        body.vy += Math.sin(a) * (speedFloor - speed) * 0.18;
+        const maxSpeed = reducedMotion() ? 0.0275 : 0.09;
+        body.vx = clamp(body.vx, -maxSpeed, maxSpeed);
+        body.vy = clamp(body.vy, -maxSpeed, maxSpeed);
+        body.x += body.vx * dt;
+        body.y += body.vy * dt;
+        separateStatement(body, obstacle);
+        constrain(body, sr);
       }
 
-      const maxSpeed = reducedMotion() ? 0.0275 : 0.09;
-      body.vx = clamp(body.vx, -maxSpeed, maxSpeed);
-      body.vy = clamp(body.vy, -maxSpeed, maxSpeed);
-      body.x += body.vx * dt;
-      body.y += body.vy * dt;
-      separateStatement(body, obstacle);
-      constrain(body, sr);
+      // Counter some of the stage's immediate scroll movement, then let each body
+      // settle back at its own randomized rate. This creates a loose parallax-like
+      // follow instead of every block snapping with the page at the same velocity.
+      if (Math.abs(stageDelta) > 0.01) {
+        body.scrollOffsetY -= stageDelta * body.scrollCounter;
+      }
+      const scrollAlpha = 1 - Math.pow(1 - body.scrollFollow, dt / 16.667);
+      body.scrollOffsetY += (0 - body.scrollOffsetY) * scrollAlpha;
     }
 
     for (let pass = 0; pass < 2; pass += 1) {
@@ -256,9 +348,12 @@
       bodies.forEach((b) => constrain(b, sr));
     }
 
+    const minY = stageTopLimit(sr);
     for (const body of bodies) {
+      const maxY = Math.max(minY, sr.height - body.h - EDGE_PADDING);
+      const displayY = clamp(body.y + body.scrollOffsetY, minY, maxY);
       body.el.style.left = `${body.x.toFixed(2)}px`;
-      body.el.style.top = `${body.y.toFixed(2)}px`;
+      body.el.style.top = `${displayY.toFixed(2)}px`;
     }
 
     mark(reducedMotion() ? 'running-reduced' : 'running');
@@ -273,6 +368,7 @@
     }
     bodies = [];
     lastTime = 0;
+    lastStageTop = null;
     statementX = null;
     statementY = null;
   }
@@ -288,6 +384,7 @@
     if (!elements.length) { mark('waiting-for-bodies'); return; }
 
     const sr = stage.getBoundingClientRect();
+    lastStageTop = sr.top;
     centerStatementInViewport(sr, 16.667, true);
     bodies = elements.map((el, i) => makeBody(el, i, sr));
     const obstacle = statementRect();
