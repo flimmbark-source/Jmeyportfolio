@@ -1,11 +1,12 @@
 (() => {
   const MOBILE_BREAKPOINT = 720;
   const EDGE_PADDING = 14;
-  const BODY_GAP = 12;
-  const MAX_SPEED = 0.42;
-  const DAMPING = 0.996;
-  const HOME_PULL = 0.000012;
-  const POINTER_IMPULSE = 0.055;
+  const BODY_GAP = 14;
+  const MAX_SPEED = 0.11;
+  const DAMPING = 0.9986;
+  const HOME_PULL = 0.0000025;
+  const POINTER_IMPULSE = 0.035;
+  const IDLE_FORCE = 0.000012;
 
   let animationFrame = 0;
   let resizeObserver = null;
@@ -44,18 +45,19 @@
     el.style.bottom = '';
   }
 
-  function preferredCenter(el, stageRect) {
-    const className = el.className;
+  function preferredCenter(slot, stageRect) {
+    const child = slot.querySelector('.pv2-project-tile, .pv2-gateway-link');
+    const className = `${slot.className} ${child?.className || ''}`;
     let px = 0.5;
     let py = 0.5;
 
-    if (className.includes('project-tile--top')) { px = 0.50; py = 0.16; }
-    else if (className.includes('project-tile--left')) { px = 0.15; py = 0.48; }
-    else if (className.includes('project-tile--right')) { px = 0.84; py = 0.47; }
-    else if (className.includes('project-tile--bottom-left')) { px = 0.34; py = 0.78; }
-    else if (className.includes('project-tile--bottom-right')) { px = 0.66; py = 0.78; }
-    else if (className.includes('gateway-link--ux')) { px = 0.08; py = 0.22; }
-    else if (className.includes('gateway-link--unfinished')) { px = 0.88; py = 0.78; }
+    if (className.includes('project-tile--top')) { px = 0.50; py = 0.13; }
+    else if (className.includes('project-tile--left')) { px = 0.14; py = 0.47; }
+    else if (className.includes('project-tile--right')) { px = 0.86; py = 0.46; }
+    else if (className.includes('project-tile--bottom-left')) { px = 0.31; py = 0.80; }
+    else if (className.includes('project-tile--bottom-right')) { px = 0.69; py = 0.80; }
+    else if (className.includes('gateway-link--ux')) { px = 0.08; py = 0.20; }
+    else if (className.includes('gateway-link--unfinished')) { px = 0.90; py = 0.78; }
 
     return { x: stageRect.width * px, y: stageRect.height * py };
   }
@@ -67,7 +69,7 @@
     const h = r.height;
     const x = clamp(home.x - w / 2, EDGE_PADDING, stageRect.width - w - EDGE_PADDING);
     const y = clamp(home.y - h / 2, EDGE_PADDING, stageRect.height - h - EDGE_PADDING);
-    const angle = (index / Math.max(1, bodies.length + 1)) * Math.PI * 2;
+    const angle = (index / Math.max(1, document.querySelectorAll('.pv2-float-slot').length)) * Math.PI * 2;
 
     clearInlinePosition(el);
     el.style.right = 'auto';
@@ -81,13 +83,15 @@
       y,
       w,
       h,
-      vx: Math.cos(angle + 0.7) * 0.035,
-      vy: Math.sin(angle + 0.7) * 0.035,
+      vx: Math.cos(angle + 0.7) * 0.045,
+      vy: Math.sin(angle + 0.7) * 0.045,
       homeX: x,
       homeY: y,
+      phase: index * 1.73 + Math.random() * 1.2,
       hovered: false,
     };
 
+    const target = el.querySelector('.pv2-project-tile, .pv2-gateway-link') || el;
     const onEnter = (event) => {
       body.hovered = true;
       const rect = el.getBoundingClientRect();
@@ -103,11 +107,11 @@
     };
 
     const onLeave = () => { body.hovered = false; };
-    el.addEventListener('pointerenter', onEnter);
-    el.addEventListener('pointerleave', onLeave);
+    target.addEventListener('pointerenter', onEnter);
+    target.addEventListener('pointerleave', onLeave);
     body.cleanup = () => {
-      el.removeEventListener('pointerenter', onEnter);
-      el.removeEventListener('pointerleave', onLeave);
+      target.removeEventListener('pointerenter', onEnter);
+      target.removeEventListener('pointerleave', onLeave);
     };
 
     return body;
@@ -129,21 +133,21 @@
     const overlapY = (a.h + b.h) / 2 + BODY_GAP - Math.abs(dy);
 
     if (overlapX < overlapY) {
-      const push = overlapX / 2;
+      const push = Math.max(0, overlapX) / 2;
       const sign = dx >= 0 ? 1 : -1;
       a.x += push * sign;
       b.x -= push * sign;
       const av = a.vx;
-      a.vx = b.vx * 0.72;
-      b.vx = av * 0.72;
+      a.vx = b.vx * 0.78;
+      b.vx = av * 0.78;
     } else {
-      const push = overlapY / 2;
+      const push = Math.max(0, overlapY) / 2;
       const sign = dy >= 0 ? 1 : -1;
       a.y += push * sign;
       b.y -= push * sign;
       const av = a.vy;
-      a.vy = b.vy * 0.72;
-      b.vy = av * 0.72;
+      a.vy = b.vy * 0.78;
+      b.vy = av * 0.78;
     }
   }
 
@@ -162,11 +166,11 @@
     if (overlapX < overlapY) {
       const sign = dx >= 0 ? 1 : -1;
       body.x += overlapX * sign;
-      body.vx += sign * 0.018;
+      body.vx += sign * 0.012;
     } else {
       const sign = dy >= 0 ? 1 : -1;
       body.y += overlapY * sign;
-      body.vy += sign * 0.018;
+      body.vy += sign * 0.012;
     }
   }
 
@@ -174,10 +178,10 @@
     const maxX = Math.max(EDGE_PADDING, width - body.w - EDGE_PADDING);
     const maxY = Math.max(EDGE_PADDING, height - body.h - EDGE_PADDING);
 
-    if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx) * 0.72; }
-    if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx) * 0.72; }
-    if (body.y < EDGE_PADDING) { body.y = EDGE_PADDING; body.vy = Math.abs(body.vy) * 0.72; }
-    if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy) * 0.72; }
+    if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx) * 0.82; }
+    if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx) * 0.82; }
+    if (body.y < EDGE_PADDING) { body.y = EDGE_PADDING; body.vy = Math.abs(body.vy) * 0.82; }
+    if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy) * 0.82; }
   }
 
   function tick(now) {
@@ -187,10 +191,15 @@
     lastTime = now;
     const sr = stage.getBoundingClientRect();
     const obstacle = getStatementRect();
+    const t = now * 0.001;
 
     for (const body of bodies) {
+      // Weak home attraction preserves the composition, while a tiny perpetual force
+      // keeps every object physically alive instead of allowing damping to settle it.
       body.vx += (body.homeX - body.x) * HOME_PULL * dt;
       body.vy += (body.homeY - body.y) * HOME_PULL * dt;
+      body.vx += Math.sin(t * 0.73 + body.phase) * IDLE_FORCE * dt;
+      body.vy += Math.cos(t * 0.61 + body.phase * 1.19) * IDLE_FORCE * dt;
       body.vx *= Math.pow(DAMPING, dt);
       body.vy *= Math.pow(DAMPING, dt);
       body.vx = clamp(body.vx, -MAX_SPEED, MAX_SPEED);
@@ -232,13 +241,14 @@
     statement = document.querySelector('.pv2-overview__statement');
     if (!stage || !statement || window.innerWidth <= MOBILE_BREAKPOINT || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    const elements = [...stage.querySelectorAll('.pv2-project-tile, .pv2-gateway-link')];
+    // The wrapper owns layout position. Framer Motion remains free to animate the
+    // button inside the wrapper for hover/press feedback without fighting physics.
+    const elements = [...stage.querySelectorAll('.pv2-float-slot')];
     if (!elements.length) return;
 
     const sr = stage.getBoundingClientRect();
     bodies = elements.map((el, index) => seedBody(el, index, sr));
 
-    // Resolve the initial composition before the first visible physics frame.
     const obstacle = getStatementRect();
     for (let pass = 0; pass < 12; pass += 1) {
       bodies.forEach((body) => separateFromStatement(body, obstacle));
@@ -247,6 +257,7 @@
       }
       bodies.forEach((body) => constrain(body, sr.width, sr.height));
     }
+
     bodies.forEach((body) => {
       body.homeX = body.x;
       body.homeY = body.y;
@@ -255,6 +266,7 @@
     });
 
     resizeObserver = new ResizeObserver(() => {
+      if (!stage) return;
       const next = stage.getBoundingClientRect();
       bodies.forEach((body) => {
         const r = body.el.getBoundingClientRect();
