@@ -10,6 +10,11 @@
       className: 'pv2-rotogo-video',
       src: '/images/Screen Recording 2026-09-10 162158.mp4',
     },
+    {
+      selector: '.pv2-focus .pv2-visual--last-reading.is-large',
+      className: 'pv2-last-reading-video',
+      src: '/images/Screen Recording 2026-09-10 162450.mp4',
+    },
   ];
 
   let observer = null;
