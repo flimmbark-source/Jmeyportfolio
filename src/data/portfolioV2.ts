@@ -151,7 +151,7 @@ export const portfolioV2Nodes: PortfolioNode[] = [
     kicker: 'Game · For Fun',
     summary: 'A finished game/app project from the public roster.',
     connections: [c('play', 2), c('game-design', 2)],
-    route: '/rotogo'
+    route: 'https://rotogo.netlify.app/'
   },
   {
     id: 'gig-duel',
