@@ -14,8 +14,15 @@
     return nav ? nav.getBoundingClientRect().bottom + NAV_CLEARANCE : NAV_CLEARANCE;
   }
 
+  function driftingSlots() {
+    return [...document.querySelectorAll('.pv2-float-slot')].filter((el) => {
+      if (!el.classList.contains('pv2-float-slot--gateway')) return true;
+      return Boolean(el.querySelector('.pv2-gateway-link--ux'));
+    });
+  }
+
   function setup() {
-    items = [...document.querySelectorAll('.pv2-float-slot:not(.pv2-float-slot--gateway)')].map((el, index) => ({
+    items = driftingSlots().map((el, index) => ({
       el,
       lag: 0,
       targetLag: 0,
@@ -74,7 +81,7 @@
   function start() {
     setup();
     observer = new MutationObserver(() => {
-      const current = document.querySelectorAll('.pv2-float-slot:not(.pv2-float-slot--gateway)').length;
+      const current = driftingSlots().length;
       if (current !== items.length) setup();
     });
     observer.observe(document.body, { childList: true, subtree: true });
