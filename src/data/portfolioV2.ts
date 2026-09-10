@@ -157,7 +157,7 @@ export const portfolioV2Nodes: PortfolioNode[] = [
   },
   {
     id: 'gig-duel',
-    title: 'Gig Duel',
+    title: 'Venue Rivals',
     kind: 'project',
     status: 'public',
     kicker: 'Game · For Fun',
