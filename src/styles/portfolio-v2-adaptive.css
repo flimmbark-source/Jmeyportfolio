@@ -1,9 +1,13 @@
 .pv2-overview__statement {
-  position: absolute;
-  inset: 50% auto auto 50%;
+  position: fixed;
+  top: 50vh;
+  left: 50vw;
+  right: auto;
+  bottom: auto;
   width: min(650px, 48vw);
   transform: translate(-50%, -50%);
   text-align: center;
+  z-index: 2;
 }
 
 .pv2-float-slot {
@@ -46,6 +50,8 @@
 
   .pv2-overview__statement > p:last-child {
     max-width: 470px;
+    margin-left: auto;
+    margin-right: auto;
     font-size: clamp(.88rem, 1.15vw, 1.05rem);
   }
 
