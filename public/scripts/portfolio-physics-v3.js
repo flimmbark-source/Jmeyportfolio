@@ -9,6 +9,7 @@
   const POINTER_IMPULSE = 0.035;
   const HOME_PULL = 0.00000055;
   const DAMPING = 0.9995;
+  const STATEMENT_FOLLOW = 0.055;
 
   let frame = 0;
   let stage = null;
@@ -16,6 +17,8 @@
   let bodies = [];
   let lastTime = 0;
   let mutationTimer = 0;
+  let statementX = null;
+  let statementY = null;
 
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
   const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -40,11 +43,23 @@
     return Math.max(EDGE_PADDING, navRect.bottom - stageRect.top + NAV_CLEARANCE);
   }
 
-  function centerStatementInViewport(stageRect) {
+  function centerStatementInViewport(stageRect, dt = 16.667, snap = false) {
     if (!statement) return;
+    const targetX = window.innerWidth / 2 - stageRect.left;
+    const targetY = window.innerHeight / 2 - stageRect.top;
+
+    if (snap || statementX === null || statementY === null) {
+      statementX = targetX;
+      statementY = targetY;
+    } else {
+      const alpha = 1 - Math.pow(1 - STATEMENT_FOLLOW, dt / 16.667);
+      statementX += (targetX - statementX) * alpha;
+      statementY += (targetY - statementY) * alpha;
+    }
+
     statement.style.position = 'absolute';
-    statement.style.left = `${window.innerWidth / 2 - stageRect.left}px`;
-    statement.style.top = `${window.innerHeight / 2 - stageRect.top}px`;
+    statement.style.left = `${statementX}px`;
+    statement.style.top = `${statementY}px`;
     statement.style.right = 'auto';
     statement.style.bottom = 'auto';
     statement.style.transform = 'translate(-50%, -50%)';
@@ -203,7 +218,7 @@
     const dt = clamp(lastTime ? now - lastTime : 16.667, 8, 32);
     lastTime = now;
     const sr = stage.getBoundingClientRect();
-    centerStatementInViewport(sr);
+    centerStatementInViewport(sr, dt, false);
     const obstacle = statementRect();
     const speedFloor = reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED;
     const t = now / 1000;
@@ -258,6 +273,8 @@
     }
     bodies = [];
     lastTime = 0;
+    statementX = null;
+    statementY = null;
   }
 
   function init() {
@@ -271,7 +288,7 @@
     if (!elements.length) { mark('waiting-for-bodies'); return; }
 
     const sr = stage.getBoundingClientRect();
-    centerStatementInViewport(sr);
+    centerStatementInViewport(sr, 16.667, true);
     bodies = elements.map((el, i) => makeBody(el, i, sr));
     const obstacle = statementRect();
 
