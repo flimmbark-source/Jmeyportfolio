@@ -15,6 +15,11 @@
       className: 'pv2-last-reading-video',
       src: '/images/Screen Recording 2026-09-10 162450.mp4',
     },
+    {
+      selector: '.pv2-focus .pv2-visual--gig-duel.is-large',
+      className: 'pv2-gig-duel-video',
+      src: '/images/Screen Recording 2026-09-10 162707.mp4',
+    },
   ];
 
   let observer = null;
