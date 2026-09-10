@@ -1,7 +1,7 @@
 .pv2-overview__statement {
-  position: fixed;
-  top: 50vh;
-  left: 50vw;
+  position: absolute;
+  top: 50%;
+  left: 50%;
   right: auto;
   bottom: auto;
   width: min(650px, 48vw);
@@ -15,8 +15,6 @@
   z-index: 3;
   width: fit-content;
   max-width: calc(100% - 36px);
-  /* Physics owns left/top every frame. Do not transition those values or the
-     browser will continuously chase a moving target and make the bodies look locked. */
   transition: none;
   will-change: left, top;
 }
