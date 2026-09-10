@@ -97,16 +97,19 @@
   background: url('/images/sRdmVj.gif') center / cover no-repeat;
 }
 
-/* Letter River uses the supplied screen recording as a looping GIF-like preview. */
-.pv2-focus .pv2-visual--letter-river.is-large {
+/* Letter River and Rotogo use supplied screen recordings as looping GIF-like previews. */
+.pv2-focus .pv2-visual--letter-river.is-large,
+.pv2-focus .pv2-visual--rotogo.is-large {
   overflow: hidden;
 }
 
-.pv2-focus .pv2-visual--letter-river.is-large .pv2-letter-river-video {
+.pv2-focus .pv2-visual--letter-river.is-large .pv2-letter-river-video,
+.pv2-focus .pv2-visual--rotogo.is-large .pv2-rotogo-video {
   object-fit: cover;
 }
 
-.pv2-focus .pv2-visual--letter-river.is-large .pv2-visual__frame {
+.pv2-focus .pv2-visual--letter-river.is-large .pv2-visual__frame,
+.pv2-focus .pv2-visual--rotogo.is-large .pv2-visual__frame {
   background: transparent;
   pointer-events: none;
 }
@@ -125,7 +128,9 @@
 .pv2-focus .pv2-visual--get-to-the-cafe .pv2-visual__mark,
 .pv2-focus .pv2-visual--get-to-the-cafe .pv2-visual__status,
 .pv2-focus .pv2-visual--letter-river .pv2-visual__mark,
-.pv2-focus .pv2-visual--letter-river .pv2-visual__status {
+.pv2-focus .pv2-visual--letter-river .pv2-visual__status,
+.pv2-focus .pv2-visual--rotogo .pv2-visual__mark,
+.pv2-focus .pv2-visual--rotogo .pv2-visual__status {
   display: none;
 }
 
