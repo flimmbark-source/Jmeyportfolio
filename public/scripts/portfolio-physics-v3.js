@@ -1,6 +1,7 @@
 (() => {
   const MOBILE_BREAKPOINT = 720;
   const EDGE_PADDING = 16;
+  const NAV_CLEARANCE = 18;
   const BODY_GAP = 16;
   const STATEMENT_GAP = 30;
   const NORMAL_SPEED = 0.045;
@@ -32,6 +33,23 @@
     );
   }
 
+  function stageTopLimit(stageRect) {
+    const nav = document.querySelector('.pv2-nav');
+    if (!nav) return EDGE_PADDING;
+    const navRect = nav.getBoundingClientRect();
+    return Math.max(EDGE_PADDING, navRect.bottom - stageRect.top + NAV_CLEARANCE);
+  }
+
+  function centerStatementInViewport(stageRect) {
+    if (!statement) return;
+    statement.style.position = 'absolute';
+    statement.style.left = `${window.innerWidth / 2 - stageRect.left}px`;
+    statement.style.top = `${window.innerHeight / 2 - stageRect.top}px`;
+    statement.style.right = 'auto';
+    statement.style.bottom = 'auto';
+    statement.style.transform = 'translate(-50%, -50%)';
+  }
+
   function statementRect() {
     if (!stage || !statement) return null;
     const s = statement.getBoundingClientRect();
@@ -58,13 +76,14 @@
     return { x: width * x, y: height * y };
   }
 
-  function constrain(body, width, height) {
+  function constrain(body, stageRect) {
     if (body.isStatic) return;
-    const maxX = Math.max(EDGE_PADDING, width - body.w - EDGE_PADDING);
-    const maxY = Math.max(EDGE_PADDING, height - body.h - EDGE_PADDING);
+    const minY = stageTopLimit(stageRect);
+    const maxX = Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING);
+    const maxY = Math.max(minY, stageRect.height - body.h - EDGE_PADDING);
     if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx); }
     if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx); }
-    if (body.y < EDGE_PADDING) { body.y = EDGE_PADDING; body.vy = Math.abs(body.vy); }
+    if (body.y < minY) { body.y = minY; body.vy = Math.abs(body.vy); }
     if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy); }
   }
 
@@ -134,11 +153,13 @@
     const anchor = anchorFor(el, stageRect.width, stageRect.height);
     const w = rect.width;
     const h = rect.height;
+    const minY = stageTopLimit(stageRect);
     const x = clamp(anchor.x - w / 2, EDGE_PADDING, stageRect.width - w - EDGE_PADDING);
-    const y = clamp(anchor.y - h / 2, EDGE_PADDING, stageRect.height - h - EDGE_PADDING);
+    const y = clamp(anchor.y - h / 2, minY, stageRect.height - h - EDGE_PADDING);
     const angle = 0.55 + index * 1.19;
     const speed = reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED;
-    const isStatic = classString(el).includes('gateway-link--ux');
+    const classes = classString(el);
+    const isStatic = classes.includes('gateway-link--ux') || classes.includes('gateway-link--unfinished');
 
     el.style.position = 'absolute';
     el.style.right = 'auto';
@@ -182,6 +203,7 @@
     const dt = clamp(lastTime ? now - lastTime : 16.667, 8, 32);
     lastTime = now;
     const sr = stage.getBoundingClientRect();
+    centerStatementInViewport(sr);
     const obstacle = statementRect();
     const speedFloor = reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED;
     const t = now / 1000;
@@ -209,14 +231,14 @@
       body.x += body.vx * dt;
       body.y += body.vy * dt;
       separateStatement(body, obstacle);
-      constrain(body, sr.width, sr.height);
+      constrain(body, sr);
     }
 
     for (let pass = 0; pass < 2; pass += 1) {
       for (let i = 0; i < bodies.length; i += 1) {
         for (let j = i + 1; j < bodies.length; j += 1) separate(bodies[i], bodies[j]);
       }
-      bodies.forEach((b) => constrain(b, sr.width, sr.height));
+      bodies.forEach((b) => constrain(b, sr));
     }
 
     for (const body of bodies) {
@@ -249,6 +271,7 @@
     if (!elements.length) { mark('waiting-for-bodies'); return; }
 
     const sr = stage.getBoundingClientRect();
+    centerStatementInViewport(sr);
     bodies = elements.map((el, i) => makeBody(el, i, sr));
     const obstacle = statementRect();
 
@@ -257,7 +280,7 @@
       for (let i = 0; i < bodies.length; i += 1) {
         for (let j = i + 1; j < bodies.length; j += 1) separate(bodies[i], bodies[j]);
       }
-      bodies.forEach((body) => constrain(body, sr.width, sr.height));
+      bodies.forEach((body) => constrain(body, sr));
     }
 
     for (const body of bodies) {
