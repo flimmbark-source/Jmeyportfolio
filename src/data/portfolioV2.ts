@@ -17,6 +17,8 @@ export type PortfolioNode = {
   connections: PortfolioConnection[];
   repo?: string;
   playUrl?: string;
+  localPlayUrl?: string;
+  previewSrc?: string;
   route?: string;
   embed?: {
     mode: 'iframe';
@@ -108,7 +110,9 @@ export const portfolioV2Nodes: PortfolioNode[] = [
     purpose: 'Built to embody a specific aspect of disabled experience against a simulation of the ordinary world. Layered systems each express that experience differently, allowing players to engage with the idea at different depths.',
     connections: [c('embody', 3), c('disability', 3), c('perspective', 3), c('systems', 3), c('embodiment', 3), c('game-design', 3), c('interactive-art', 3)],
     repo: 'flimmbark-source/CrazyBod',
-    playUrl: 'https://whooble.itch.io/gettothecafe'
+    playUrl: 'https://whooble.itch.io/gettothecafe',
+    localPlayUrl: '/play/get-to-the-cafe',
+    previewSrc: '/previews/get-to-the-cafe.gif'
   },
   {
     id: 'letter-river',
