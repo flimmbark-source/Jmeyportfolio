@@ -16,7 +16,6 @@
   let statement = null;
   let bodies = [];
   let lastTime = 0;
-  let lastStageTop = null;
   let mutationTimer = 0;
   let statementX = null;
   let statementY = null;
@@ -118,6 +117,11 @@
     if (!nav) return EDGE_PADDING;
     const navRect = nav.getBoundingClientRect();
     return Math.max(EDGE_PADDING, navRect.bottom - stageRect.top + NAV_CLEARANCE);
+  }
+
+  function viewportTopLimit() {
+    const nav = document.querySelector('.pv2-nav');
+    return nav ? nav.getBoundingClientRect().bottom + NAV_CLEARANCE : EDGE_PADDING;
   }
 
   function centerStatementInViewport(stageRect, dt = 16.667, snap = false) {
@@ -267,9 +271,10 @@
       vx: isStatic ? 0 : Math.cos(angle) * speed,
       vy: isStatic ? 0 : Math.sin(angle) * speed,
       phase: index * 1.41 + 0.7,
-      scrollOffsetY: 0,
-      scrollCounter: 0.48 + Math.random() * 0.34,
-      scrollFollow: 0.025 + Math.random() * 0.05,
+      // Each block gets its own follow rate. This is the actual scroll inertia:
+      // we smooth its viewport position instead of partially cancelling scroll.
+      scrollFollow: 0.018 + Math.random() * 0.045,
+      visualViewportY: stageRect.top + y,
       target: el.querySelector('.pv2-project-tile, .pv2-gateway-link') || el,
     };
 
@@ -298,8 +303,6 @@
     const dt = clamp(lastTime ? now - lastTime : 16.667, 8, 32);
     lastTime = now;
     const sr = stage.getBoundingClientRect();
-    const stageDelta = lastStageTop === null ? 0 : sr.top - lastStageTop;
-    lastStageTop = sr.top;
 
     centerStatementInViewport(sr, dt, false);
     const obstacle = statementRect();
@@ -315,11 +318,11 @@
         body.vx *= Math.pow(DAMPING, dt);
         body.vy *= Math.pow(DAMPING, dt);
 
-        const speed = Math.hypot(body.vx, body.vy);
-        if (speed < speedFloor) {
+        const currentSpeed = Math.hypot(body.vx, body.vy);
+        if (currentSpeed < speedFloor) {
           const a = body.phase + t * 0.16;
-          body.vx += Math.cos(a) * (speedFloor - speed) * 0.18;
-          body.vy += Math.sin(a) * (speedFloor - speed) * 0.18;
+          body.vx += Math.cos(a) * (speedFloor - currentSpeed) * 0.18;
+          body.vy += Math.sin(a) * (speedFloor - currentSpeed) * 0.18;
         }
 
         const maxSpeed = reducedMotion() ? 0.0275 : 0.09;
@@ -331,14 +334,15 @@
         constrain(body, sr);
       }
 
-      // Counter some of the stage's immediate scroll movement, then let each body
-      // settle back at its own randomized rate. This creates a loose parallax-like
-      // follow instead of every block snapping with the page at the same velocity.
-      if (Math.abs(stageDelta) > 0.01) {
-        body.scrollOffsetY -= stageDelta * body.scrollCounter;
-      }
-      const scrollAlpha = 1 - Math.pow(1 - body.scrollFollow, dt / 16.667);
-      body.scrollOffsetY += (0 - body.scrollOffsetY) * scrollAlpha;
+      const targetViewportY = sr.top + body.y;
+      const follow = body.isStatic ? 1 : body.scrollFollow;
+      const alpha = 1 - Math.pow(1 - follow, dt / 16.667);
+      body.visualViewportY += (targetViewportY - body.visualViewportY) * alpha;
+
+      // Never let the eased visual position slide under the fixed navigation.
+      const minViewportY = viewportTopLimit();
+      const maxViewportY = Math.max(minViewportY, sr.bottom - body.h - EDGE_PADDING);
+      body.visualViewportY = clamp(body.visualViewportY, minViewportY, maxViewportY);
     }
 
     for (let pass = 0; pass < 2; pass += 1) {
@@ -348,10 +352,10 @@
       bodies.forEach((b) => constrain(b, sr));
     }
 
-    const minY = stageTopLimit(sr);
     for (const body of bodies) {
-      const maxY = Math.max(minY, sr.height - body.h - EDGE_PADDING);
-      const displayY = clamp(body.y + body.scrollOffsetY, minY, maxY);
+      // Convert the smoothly-following viewport coordinate back into the stage's
+      // coordinate system. This is what creates visible lag while the page scrolls.
+      const displayY = body.visualViewportY - sr.top;
       body.el.style.left = `${body.x.toFixed(2)}px`;
       body.el.style.top = `${displayY.toFixed(2)}px`;
     }
@@ -368,7 +372,6 @@
     }
     bodies = [];
     lastTime = 0;
-    lastStageTop = null;
     statementX = null;
     statementY = null;
   }
@@ -384,7 +387,6 @@
     if (!elements.length) { mark('waiting-for-bodies'); return; }
 
     const sr = stage.getBoundingClientRect();
-    lastStageTop = sr.top;
     centerStatementInViewport(sr, 16.667, true);
     bodies = elements.map((el, i) => makeBody(el, i, sr));
     const obstacle = statementRect();
@@ -400,6 +402,7 @@
     for (const body of bodies) {
       body.homeX = body.x;
       body.homeY = body.y;
+      body.visualViewportY = sr.top + body.y;
       body.el.style.left = `${body.x}px`;
       body.el.style.top = `${body.y}px`;
     }
