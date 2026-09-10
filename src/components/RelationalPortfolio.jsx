@@ -4,6 +4,7 @@ import { portfolioV2NodeMap } from '../data/portfolioV2';
 import '../styles/portfolio-v2.css';
 
 const spring = { type: 'spring', stiffness: 220, damping: 28, mass: 0.9 };
+const softSpring = { type: 'spring', stiffness: 180, damping: 24, mass: 0.85 };
 const publicProjectIds = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotogo', 'gig-duel'];
 const unfinishedProjectIds = ['phase-g', 'splitpulse', 'wash-dishes'];
 
@@ -34,18 +35,19 @@ function ProjectVisual({ node, large = false }) {
   );
 }
 
-function ProjectTile({ node, placement, onSelect, reducedMotion }) {
+function ProjectTile({ node, placement, index, onSelect, reducedMotion }) {
   return (
     <motion.button
       layoutId={`project-${node.id}`}
       type="button"
       className={`pv2-project-tile pv2-project-tile--${placement}`}
       onClick={() => onSelect(node.id)}
-      initial={false}
-      whileHover={reducedMotion ? undefined : { y: -8, rotate: placement === 'left' ? -1 : placement === 'right' ? 1 : 0 }}
-      whileFocus={reducedMotion ? undefined : { y: -6 }}
+      initial={reducedMotion ? false : { opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={reducedMotion ? undefined : { y: -7, rotate: placement === 'left' ? -0.55 : placement === 'right' ? 0.55 : 0 }}
+      whileFocus={reducedMotion ? undefined : { y: -4 }}
       whileTap={reducedMotion ? undefined : { scale: 0.985 }}
-      transition={reducedMotion ? { duration: 0 } : spring}
+      transition={reducedMotion ? { duration: 0 } : { ...softSpring, delay: 0.04 + index * 0.045 }}
       aria-label={`Open ${node.title}`}
     >
       <ProjectVisual node={node} />
@@ -53,6 +55,24 @@ function ProjectTile({ node, placement, onSelect, reducedMotion }) {
         <strong>{node.title}</strong>
         <span>{node.kicker?.replace('Playable · ', '').replace('Game · ', '') || 'Project'}</span>
       </span>
+    </motion.button>
+  );
+}
+
+function GatewayLink({ className, eyebrow, title, onClick, reducedMotion, delay = 0 }) {
+  return (
+    <motion.button
+      className={`pv2-gateway-link ${className}`}
+      type="button"
+      onClick={onClick}
+      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={reducedMotion ? undefined : { x: className.includes('unfinished') ? -4 : 4 }}
+      whileTap={reducedMotion ? undefined : { scale: 0.985 }}
+      transition={reducedMotion ? { duration: 0 } : { ...softSpring, delay }}
+    >
+      <span>{eyebrow}</span>
+      <strong>{title}</strong>
     </motion.button>
   );
 }
@@ -67,34 +87,48 @@ function Overview({ onSelect, reducedMotion }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={reducedMotion ? undefined : { opacity: 0 }}
-      transition={{ duration: reducedMotion ? 0 : 0.24 }}
+      transition={{ duration: reducedMotion ? 0 : 0.22 }}
     >
       <section className="pv2-overview__stage" aria-label="Selected work">
-        <div className="pv2-overview__statement">
+        <motion.div
+          className="pv2-overview__statement"
+          initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={reducedMotion ? { duration: 0 } : { duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+        >
           <p className="pv2-overline">Interactive work · systems · perspective</p>
           <h1>I make systems<br />you can step inside.</h1>
           <p>I create games, interactive art, learning experiments, and UX work to explore how people experience the world.</p>
-        </div>
+        </motion.div>
 
         {projects.map((node, index) => (
           <ProjectTile
             key={node.id}
             node={node}
             placement={placements[index]}
+            index={index}
             onSelect={onSelect}
             reducedMotion={reducedMotion}
           />
         ))}
 
-        <button className="pv2-gateway-link pv2-gateway-link--ux" type="button" onClick={() => onSelect('ux-work')}>
-          <span>Professional work</span>
-          <strong>UX Work ↗</strong>
-        </button>
+        <GatewayLink
+          className="pv2-gateway-link--ux"
+          eyebrow="Professional work"
+          title="UX Work ↗"
+          onClick={() => onSelect('ux-work')}
+          reducedMotion={reducedMotion}
+          delay={0.15}
+        />
 
-        <button className="pv2-gateway-link pv2-gateway-link--unfinished" type="button" onClick={() => onSelect('unfinished')}>
-          <span>Workshop</span>
-          <strong>Unfinished →</strong>
-        </button>
+        <GatewayLink
+          className="pv2-gateway-link--unfinished"
+          eyebrow="Workshop"
+          title="Unfinished →"
+          onClick={() => onSelect('unfinished')}
+          reducedMotion={reducedMotion}
+          delay={0.2}
+        />
       </section>
     </motion.main>
   );
@@ -109,16 +143,22 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
       initial={reducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={reducedMotion ? undefined : { opacity: 0 }}
+      transition={{ duration: reducedMotion ? 0 : 0.2 }}
     >
       <button className="pv2-back" type="button" onClick={onBack}>← {node.status === 'unfinished' ? 'Workshop' : 'All work'}</button>
 
       <section className="pv2-focus__layout">
-        <div className="pv2-focus__intro">
+        <motion.div
+          className="pv2-focus__intro"
+          initial={reducedMotion ? false : { opacity: 0, x: -14 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={reducedMotion ? { duration: 0 } : { duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        >
           <p className="pv2-overline">{node.kicker || 'Project'}</p>
           <motion.h1 layoutId={`title-${node.id}`}>{node.title}</motion.h1>
           <p className="pv2-focus__summary">{node.summary}</p>
           {node.purpose && <p className="pv2-focus__purpose">{node.purpose}</p>}
-        </div>
+        </motion.div>
 
         <motion.div className="pv2-focus__artifact" layoutId={`project-${node.id}`} transition={reducedMotion ? { duration: 0 } : spring}>
           <ProjectVisual node={node} large />
@@ -146,7 +186,7 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
   );
 }
 
-function Workshop({ onBack, onSelect }) {
+function Workshop({ onBack, onSelect, reducedMotion }) {
   const projects = unfinishedProjectIds.map((id) => portfolioV2NodeMap.get(id)).filter(Boolean);
   return (
     <motion.main className="pv2-workshop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -157,12 +197,22 @@ function Workshop({ onBack, onSelect }) {
         <p>Prototypes, slices, and ideas that are still being worked through.</p>
       </div>
       <div className="pv2-workshop__grid">
-        {projects.map((node) => (
-          <button key={node.id} type="button" className="pv2-workshop-card" onClick={() => onSelect(node.id)}>
+        {projects.map((node, index) => (
+          <motion.button
+            key={node.id}
+            type="button"
+            className="pv2-workshop-card"
+            onClick={() => onSelect(node.id)}
+            initial={reducedMotion ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={reducedMotion ? undefined : { y: -5 }}
+            whileTap={reducedMotion ? undefined : { scale: 0.99 }}
+            transition={reducedMotion ? { duration: 0 } : { ...softSpring, delay: index * 0.05 }}
+          >
             <ProjectVisual node={node} />
             <strong>{node.title}</strong>
             <span>{node.summary}</span>
-          </button>
+          </motion.button>
         ))}
       </div>
     </motion.main>
@@ -234,7 +284,7 @@ export default function RelationalPortfolio() {
       <AnimatePresence mode="wait">
         {!selected && <Overview key="overview" onSelect={select} reducedMotion={reducedMotion} />}
         {selected?.kind === 'project' && <ProjectFocus key={selected.id} node={selected} onBack={back} onSelect={select} reducedMotion={reducedMotion} />}
-        {selected?.id === 'unfinished' && <Workshop key="unfinished" onBack={back} onSelect={select} />}
+        {selected?.id === 'unfinished' && <Workshop key="unfinished" onBack={back} onSelect={select} reducedMotion={reducedMotion} />}
         {selected?.id === 'ux-work' && <UXGateway key="ux" onBack={back} />}
       </AnimatePresence>
     </div>
