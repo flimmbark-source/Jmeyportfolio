@@ -14,22 +14,49 @@
     return nav ? nav.getBoundingClientRect().bottom + NAV_CLEARANCE : NAV_CLEARANCE;
   }
 
-  function driftingSlots() {
-    return [...document.querySelectorAll('.pv2-float-slot')].filter((el) => {
-      if (!el.classList.contains('pv2-float-slot--gateway')) return true;
-      return Boolean(el.querySelector('.pv2-gateway-link--ux'));
-    });
+  function shouldDrift(el) {
+    // Project cards and the Professional Work / UX gateway should all trail the
+    // bio on scroll. Keep Workshop / Unfinished anchored in place.
+    if (el.querySelector('.pv2-gateway-link--unfinished')) return false;
+    return true;
   }
 
   function setup() {
-    items = driftingSlots().map((el, index) => ({
-      el,
-      lag: 0,
-      targetLag: 0,
-      counter: 0.82 + ((index * 0.073) % 0.14),
-      follow: 0.008 + ((index * 0.0047) % 0.014),
-    }));
+    items = [...document.querySelectorAll('.pv2-float-slot')]
+      .filter(shouldDrift)
+      .map((el, index) => ({
+        el,
+        lag: 0,
+        targetLag: 0,
+        // Cancel the document's immediate scroll movement entirely so there is
+        // no visible snap. The visible movement happens only through the slow
+        // catch-up below.
+        counter: 1,
+        // Very slow, slightly different rates so each block follows the bio
+        // with its own weight rather than moving as a rigid group.
+        follow: 0.0035 + ((index * 0.0021) % 0.0065),
+      }));
     lastScrollY = window.scrollY;
+  }
+
+  function applyScrollDelta(delta) {
+    if (window.innerWidth <= MOBILE_BREAKPOINT || Math.abs(delta) <= 0.01) return;
+
+    for (const item of items) {
+      const compensation = delta * item.counter;
+      item.targetLag += compensation;
+      item.lag += compensation;
+      item.targetLag = Math.max(-MAX_LAG, Math.min(MAX_LAG, item.targetLag));
+      item.lag = Math.max(-MAX_LAG, Math.min(MAX_LAG, item.lag));
+      item.el.style.setProperty('--pv2-scroll-drift-y', `${item.lag.toFixed(2)}px`);
+    }
+  }
+
+  function onScroll() {
+    const scrollY = window.scrollY;
+    const delta = scrollY - lastScrollY;
+    lastScrollY = scrollY;
+    applyScrollDelta(delta);
   }
 
   function tick() {
@@ -39,27 +66,16 @@
       return;
     }
 
-    const scrollY = window.scrollY;
-    const delta = scrollY - lastScrollY;
-    lastScrollY = scrollY;
-
-    if (Math.abs(delta) > 0.01) {
-      for (const item of items) {
-        item.targetLag += delta * item.counter;
-        item.targetLag = Math.max(-MAX_LAG, Math.min(MAX_LAG, item.targetLag));
-      }
-    }
-
     const minTop = navBottom();
     const maxBottom = window.innerHeight - EDGE_PADDING;
 
     for (const item of items) {
       item.targetLag += (0 - item.targetLag) * item.follow;
-      item.lag += (item.targetLag - item.lag) * 0.16;
+      item.lag += (item.targetLag - item.lag) * 0.08;
 
       item.el.style.setProperty('--pv2-scroll-drift-y', `${item.lag.toFixed(2)}px`);
 
-      // Clamp the drift itself so the visible block cannot leave the viewport.
+      // Keep every drifting block visible while it slowly catches up.
       const rect = item.el.getBoundingClientRect();
       if (rect.top < minTop) {
         const correction = minTop - rect.top;
@@ -81,10 +97,11 @@
   function start() {
     setup();
     observer = new MutationObserver(() => {
-      const current = driftingSlots().length;
+      const current = [...document.querySelectorAll('.pv2-float-slot')].filter(shouldDrift).length;
       if (current !== items.length) setup();
     });
     observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
     frame = requestAnimationFrame(tick);
   }
 
