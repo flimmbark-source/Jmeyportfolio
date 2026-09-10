@@ -70,10 +70,17 @@ const { title, description, mainClass = '', navLinks = defaultNavLinks } = Astro
       <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <a
           href="/"
-          class="text-lg font-semibold tracking-tight text-slate-900 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-white dark:focus-visible:ring-offset-slate-950"
+          title="Back to main screen"
+          aria-label="Jacob Meyerkopf — back to main screen"
+          class="inline-flex items-center text-lg font-semibold tracking-tight text-slate-900 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-white dark:focus-visible:ring-offset-slate-950"
         >
           <span class="rounded-full bg-gradient-to-r from-brand-500 to-brand-300 px-3 py-1 text-sm font-bold uppercase text-white">JM</span>
           <span class="ml-3">Jacob Meyerkopf</span>
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="ml-2 h-3.5 w-3.5 opacity-55" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+            <path d="m3 11 9-8 9 8" />
+            <path d="M5 10v10h14V10" />
+            <path d="M9 20v-6h6v6" />
+          </svg>
         </a>
         <div class="hidden items-center gap-8 text-sm font-medium text-slate-700 dark:text-slate-200 md:flex" aria-label="Primary navigation">
           {navLinks.map((link) => (
