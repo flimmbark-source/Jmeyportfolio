@@ -138,8 +138,8 @@ export const portfolioV2Nodes: PortfolioNode[] = [
     kind: 'project',
     status: 'public',
     kicker: 'Game · For Fun',
-    summary: 'A tarot-inspired card game concerned with interpretation and incomplete information.',
-    purpose: 'Connected to reading between the lines and trying to make sense of hidden patterns.',
+    summary: 'A solitaire-style horror roguelike built around constructing and interpreting five-card tarot readings. Cards score through patterns, Major Arcana can be discarded to trigger abilities, and upgrades let you increasingly manipulate the deck until a single draw can completely reshape a reading.',
+    purpose: 'Underneath the card game is a second layer about interpretation itself: reading between the lines, finding patterns in incomplete information, and gradually uncovering secrets hidden inside the deck.',
     connections: [c('patterns', 3), c('game-design', 3), c('play', 2), c('systems', 2), c('perspective', 2), c('explore', 2)],
     repo: 'flimmbark-source/TheLastReading'
   },
@@ -149,7 +149,8 @@ export const portfolioV2Nodes: PortfolioNode[] = [
     kind: 'project',
     status: 'public',
     kicker: 'Game · For Fun',
-    summary: 'A finished game/app project from the public roster.',
+    summary: 'Rotogo started as a physical game idea and became the project that pulled me into programming. I taught myself React by trying to make the system actually work as a playable digital experience.',
+    purpose: 'It matters to me less as a polished technical showcase than as the point where designing rules, interactions, and systems stopped being something I only described and became something I could build directly.',
     connections: [c('play', 2), c('game-design', 2)],
     route: 'https://rotogo.netlify.app/'
   },
@@ -159,7 +160,8 @@ export const portfolioV2Nodes: PortfolioNode[] = [
     kind: 'project',
     status: 'public',
     kicker: 'Game · For Fun',
-    summary: 'A public game project. Repository and playable source are still unresolved.',
+    summary: 'A small game experiment I came up with while sitting in a shelter, something for my mind to do while hiding from missiles.',
+    purpose: 'It is a compact example of how I use game design as a way to think: take an idea, give it rules, make it playable, and see what happens. The project is small on purpose, but the context it came out of is part of why it matters to me.',
     connections: [c('play', 2), c('game-design', 2)]
   },
 
