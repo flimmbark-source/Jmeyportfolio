@@ -2,11 +2,12 @@
   const MOBILE_BREAKPOINT = 720;
   const EDGE_PADDING = 14;
   const BODY_GAP = 14;
-  const MAX_SPEED = 0.11;
-  const DAMPING = 0.9986;
-  const HOME_PULL = 0.0000025;
-  const POINTER_IMPULSE = 0.035;
-  const IDLE_FORCE = 0.000012;
+  const MAX_SPEED = 0.14;
+  const DAMPING = 0.99925;
+  const HOME_PULL = 0.0000018;
+  const POINTER_IMPULSE = 0.04;
+  const IDLE_FORCE = 0.00005;
+  const MIN_SPEED = 0.026;
 
   let animationFrame = 0;
   let resizeObserver = null;
@@ -69,7 +70,8 @@
     const h = r.height;
     const x = clamp(home.x - w / 2, EDGE_PADDING, stageRect.width - w - EDGE_PADDING);
     const y = clamp(home.y - h / 2, EDGE_PADDING, stageRect.height - h - EDGE_PADDING);
-    const angle = (index / Math.max(1, document.querySelectorAll('.pv2-float-slot').length)) * Math.PI * 2;
+    const count = Math.max(1, document.querySelectorAll('.pv2-float-slot').length);
+    const angle = (index / count) * Math.PI * 2 + 0.45;
 
     clearInlinePosition(el);
     el.style.right = 'auto';
@@ -83,8 +85,8 @@
       y,
       w,
       h,
-      vx: Math.cos(angle + 0.7) * 0.045,
-      vy: Math.sin(angle + 0.7) * 0.045,
+      vx: Math.cos(angle) * 0.065,
+      vy: Math.sin(angle) * 0.065,
       homeX: x,
       homeY: y,
       phase: index * 1.73 + Math.random() * 1.2,
@@ -117,6 +119,14 @@
     return body;
   }
 
+  function ensureMotion(body, t) {
+    const speed = Math.hypot(body.vx, body.vy);
+    if (speed >= MIN_SPEED) return;
+    const angle = t * 0.21 + body.phase;
+    body.vx += Math.cos(angle) * (MIN_SPEED - speed) * 0.08;
+    body.vy += Math.sin(angle) * (MIN_SPEED - speed) * 0.08;
+  }
+
   function separateBodies(a, b) {
     if (!rectsOverlap(a, b, BODY_GAP)) return;
 
@@ -138,16 +148,16 @@
       a.x += push * sign;
       b.x -= push * sign;
       const av = a.vx;
-      a.vx = b.vx * 0.78;
-      b.vx = av * 0.78;
+      a.vx = b.vx * 0.82;
+      b.vx = av * 0.82;
     } else {
       const push = Math.max(0, overlapY) / 2;
       const sign = dy >= 0 ? 1 : -1;
       a.y += push * sign;
       b.y -= push * sign;
       const av = a.vy;
-      a.vy = b.vy * 0.78;
-      b.vy = av * 0.78;
+      a.vy = b.vy * 0.82;
+      b.vy = av * 0.82;
     }
   }
 
@@ -166,11 +176,11 @@
     if (overlapX < overlapY) {
       const sign = dx >= 0 ? 1 : -1;
       body.x += overlapX * sign;
-      body.vx += sign * 0.012;
+      body.vx += sign * 0.018;
     } else {
       const sign = dy >= 0 ? 1 : -1;
       body.y += overlapY * sign;
-      body.vy += sign * 0.012;
+      body.vy += sign * 0.018;
     }
   }
 
@@ -178,10 +188,10 @@
     const maxX = Math.max(EDGE_PADDING, width - body.w - EDGE_PADDING);
     const maxY = Math.max(EDGE_PADDING, height - body.h - EDGE_PADDING);
 
-    if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx) * 0.82; }
-    if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx) * 0.82; }
-    if (body.y < EDGE_PADDING) { body.y = EDGE_PADDING; body.vy = Math.abs(body.vy) * 0.82; }
-    if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy) * 0.82; }
+    if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx) * 0.88; }
+    if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx) * 0.88; }
+    if (body.y < EDGE_PADDING) { body.y = EDGE_PADDING; body.vy = Math.abs(body.vy) * 0.88; }
+    if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy) * 0.88; }
   }
 
   function tick(now) {
@@ -194,14 +204,13 @@
     const t = now * 0.001;
 
     for (const body of bodies) {
-      // Weak home attraction preserves the composition, while a tiny perpetual force
-      // keeps every object physically alive instead of allowing damping to settle it.
       body.vx += (body.homeX - body.x) * HOME_PULL * dt;
       body.vy += (body.homeY - body.y) * HOME_PULL * dt;
-      body.vx += Math.sin(t * 0.73 + body.phase) * IDLE_FORCE * dt;
-      body.vy += Math.cos(t * 0.61 + body.phase * 1.19) * IDLE_FORCE * dt;
+      body.vx += Math.sin(t * 0.57 + body.phase) * IDLE_FORCE * dt;
+      body.vy += Math.cos(t * 0.49 + body.phase * 1.19) * IDLE_FORCE * dt;
       body.vx *= Math.pow(DAMPING, dt);
       body.vy *= Math.pow(DAMPING, dt);
+      ensureMotion(body, t);
       body.vx = clamp(body.vx, -MAX_SPEED, MAX_SPEED);
       body.vy = clamp(body.vy, -MAX_SPEED, MAX_SPEED);
       body.x += body.vx * dt;
@@ -241,8 +250,6 @@
     statement = document.querySelector('.pv2-overview__statement');
     if (!stage || !statement || window.innerWidth <= MOBILE_BREAKPOINT || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    // The wrapper owns layout position. Framer Motion remains free to animate the
-    // button inside the wrapper for hover/press feedback without fighting physics.
     const elements = [...stage.querySelectorAll('.pv2-float-slot')];
     if (!elements.length) return;
 
