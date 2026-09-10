@@ -1,6 +1,8 @@
 (() => {
   const MOBILE_BREAKPOINT = 720;
   const GAP = 18;
+  const EDGE_PADDING = 16;
+  const NAV_CLEARANCE = 18;
   const SPRING_BACK = 0.018;
   const DAMPING = 0.88;
   const BOUNCE_KICK = 0.22;
@@ -19,6 +21,11 @@
     );
   }
 
+  function navBottom() {
+    const nav = document.querySelector('.pv2-nav');
+    return nav ? nav.getBoundingClientRect().bottom + NAV_CLEARANCE : EDGE_PADDING;
+  }
+
   function stateFor(el) {
     let state = states.get(el);
     if (!state) {
@@ -26,6 +33,37 @@
       states.set(el, state);
     }
     return state;
+  }
+
+  function applyTransform(el, state) {
+    el.style.transform = `translate3d(${state.x.toFixed(2)}px, calc(${state.y.toFixed(2)}px + var(--pv2-scroll-drift-y, 0px)), 0)`;
+  }
+
+  function clampToViewport(el, state) {
+    applyTransform(el, state);
+    const rect = el.getBoundingClientRect();
+    const minTop = navBottom();
+    const maxRight = window.innerWidth - EDGE_PADDING;
+    const maxBottom = window.innerHeight - EDGE_PADDING;
+
+    if (rect.left < EDGE_PADDING) {
+      state.x += EDGE_PADDING - rect.left;
+      state.vx = Math.abs(state.vx) * 0.25;
+    }
+    if (rect.right > maxRight) {
+      state.x -= rect.right - maxRight;
+      state.vx = -Math.abs(state.vx) * 0.25;
+    }
+    if (rect.top < minTop) {
+      state.y += minTop - rect.top;
+      state.vy = Math.abs(state.vy) * 0.25;
+    }
+    if (rect.bottom > maxBottom) {
+      state.y -= rect.bottom - maxBottom;
+      state.vy = -Math.abs(state.vy) * 0.25;
+    }
+
+    applyTransform(el, state);
   }
 
   function tick() {
@@ -90,7 +128,7 @@
         state.vy = 0;
       }
 
-      el.style.transform = `translate(${state.x.toFixed(2)}px, ${state.y.toFixed(2)}px)`;
+      clampToViewport(el, state);
     }
 
     frame = requestAnimationFrame(tick);
