@@ -1,0 +1,176 @@
+---
+const gameSrc = '/games/get-to-the-cafe/index.html';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Play Get to the Café in the browser." />
+    <title>Play Get to the Café</title>
+  </head>
+  <body>
+    <header class="playbar">
+      <a href="/?project=get-to-the-cafe">← Back to project</a>
+      <strong>Get to the Café</strong>
+      <button id="fullscreen" type="button" aria-pressed="false">Fullscreen</button>
+    </header>
+
+    <main class="game-shell" id="game-shell">
+      <iframe
+        id="game-frame"
+        src={gameSrc}
+        title="Get to the Café"
+        allow="autoplay; gamepad"
+      ></iframe>
+    </main>
+
+    <script is:inline>
+      const fullscreenButton = document.getElementById('fullscreen');
+      const gameFrame = document.getElementById('game-frame');
+
+      // Browser fullscreen always reserves Escape and exits before the embedded game
+      // can use it. Use an in-page immersive mode instead so Escape remains a game key.
+      const setImmersive = (active) => {
+        document.body.classList.toggle('is-immersive', active);
+        fullscreenButton?.setAttribute('aria-pressed', String(active));
+        if (fullscreenButton) fullscreenButton.textContent = active ? 'Exit fullscreen' : 'Fullscreen';
+        if (active) {
+          requestAnimationFrame(() => gameFrame?.contentWindow?.focus());
+        }
+      };
+
+      fullscreenButton?.addEventListener('click', () => {
+        setImmersive(!document.body.classList.contains('is-immersive'));
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  :global(*) { box-sizing: border-box; }
+  :global(html, body) {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: #111;
+    color: #f7f6f2;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  :global(body) {
+    display: grid;
+    grid-template-rows: 56px minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .playbar {
+    position: relative;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+    padding: 0 18px;
+    background: rgba(17, 17, 17, 0.94);
+    border-bottom: 1px solid rgba(255,255,255,.12);
+    backdrop-filter: blur(12px);
+  }
+
+  .playbar a,
+  .playbar button {
+    color: inherit;
+    font: inherit;
+  }
+
+  .playbar a {
+    justify-self: start;
+    text-decoration: none;
+    opacity: .72;
+  }
+
+  .playbar strong {
+    font-size: .9rem;
+    font-weight: 650;
+  }
+
+  .playbar button {
+    justify-self: end;
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 999px;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .playbar a:hover,
+  .playbar button:hover { opacity: 1; }
+
+  .game-shell {
+    min-width: 0;
+    min-height: 0;
+    background: #000;
+  }
+
+  .game-shell iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #000;
+  }
+
+  :global(body.is-immersive) {
+    display: block;
+  }
+
+  :global(body.is-immersive) .playbar {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 20;
+    width: auto;
+    height: auto;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    backdrop-filter: none;
+  }
+
+  :global(body.is-immersive) .playbar > a,
+  :global(body.is-immersive) .playbar > strong {
+    display: none;
+  }
+
+  :global(body.is-immersive) .playbar button {
+    min-height: 34px;
+    padding: 0 11px;
+    background: rgba(17,17,17,.72);
+    border-color: rgba(255,255,255,.22);
+    opacity: .55;
+  }
+
+  :global(body.is-immersive) .playbar button:hover,
+  :global(body.is-immersive) .playbar button:focus-visible {
+    opacity: 1;
+  }
+
+  :global(body.is-immersive) .game-shell {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  @media (max-width: 640px) {
+    :global(body) { grid-template-rows: 52px minmax(0, 1fr); }
+    .playbar {
+      grid-template-columns: 1fr auto;
+      padding-inline: 12px;
+    }
+    .playbar strong { display: none; }
+  }
+</style>

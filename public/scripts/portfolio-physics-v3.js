@@ -1,0 +1,438 @@
+(() => {
+  const MOBILE_BREAKPOINT = 720;
+  const EDGE_PADDING = 16;
+  const NAV_CLEARANCE = 18;
+  const BODY_GAP = 16;
+  const STATEMENT_GAP = 30;
+  const NORMAL_SPEED = 0.045;
+  const REDUCED_SPEED = 0.014;
+  const POINTER_IMPULSE = 0.035;
+  const HOME_PULL = 0.00000055;
+  const DAMPING = 0.9995;
+  const STATEMENT_FOLLOW = 0.055;
+
+  let frame = 0;
+  let stage = null;
+  let statement = null;
+  let bodies = [];
+  let lastTime = 0;
+  let mutationTimer = 0;
+  let statementX = null;
+  let statementY = null;
+  let fxLayer = null;
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function mark(state) {
+    document.documentElement.dataset.pv2Physics = state;
+  }
+
+  function overlaps(a, b, gap = 0) {
+    return !(
+      a.x + a.w + gap <= b.x ||
+      b.x + b.w + gap <= a.x ||
+      a.y + a.h + gap <= b.y ||
+      b.y + b.h + gap <= a.y
+    );
+  }
+
+  function ensureFxLayer() {
+    if (fxLayer?.isConnected) return fxLayer;
+    fxLayer = document.createElement('div');
+    fxLayer.setAttribute('aria-hidden', 'true');
+    Object.assign(fxLayer.style, {
+      position: 'fixed',
+      inset: '0',
+      pointerEvents: 'none',
+      overflow: 'hidden',
+      zIndex: '1200',
+    });
+    document.body.appendChild(fxLayer);
+    return fxLayer;
+  }
+
+  function impactBurst(event) {
+    if (window.innerWidth <= MOBILE_BREAKPOINT || reducedMotion()) return;
+    const layer = ensureFxLayer();
+    const lineCount = 5 + Math.floor(Math.random() * 3);
+
+    for (let i = 0; i < lineCount; i += 1) {
+      const angle = (Math.PI * 2 * i) / lineCount + (Math.random() - 0.5) * 0.6;
+      const distance = 10 + Math.random() * 12;
+      const length = 5 + Math.random() * 7;
+      const line = document.createElement('span');
+      Object.assign(line.style, {
+        position: 'absolute',
+        left: `${event.clientX}px`,
+        top: `${event.clientY}px`,
+        width: `${length}px`,
+        height: '1.5px',
+        borderRadius: '999px',
+        background: 'rgba(32, 32, 32, 0.78)',
+        transformOrigin: '0 50%',
+        transform: `translate(0, -50%) rotate(${angle}rad) scaleX(0.2)`,
+        opacity: '0',
+      });
+      layer.appendChild(line);
+
+      const dx = Math.cos(angle) * distance;
+      const dy = Math.sin(angle) * distance;
+      const animation = line.animate([
+        { opacity: 0, transform: `translate(0, -50%) rotate(${angle}rad) scaleX(0.2)` },
+        { opacity: 1, offset: 0.18, transform: `translate(${dx * 0.25}px, ${dy * 0.25}px) rotate(${angle}rad) scaleX(1)` },
+        { opacity: 0, transform: `translate(${dx}px, ${dy}px) rotate(${angle}rad) scaleX(0.35)` },
+      ], {
+        duration: 190 + Math.random() * 70,
+        easing: 'cubic-bezier(.2,.9,.25,1)',
+      });
+      animation.addEventListener('finish', () => line.remove(), { once: true });
+    }
+
+    const pop = document.createElement('span');
+    Object.assign(pop.style, {
+      position: 'absolute',
+      left: `${event.clientX}px`,
+      top: `${event.clientY}px`,
+      width: '5px',
+      height: '5px',
+      marginLeft: '-2.5px',
+      marginTop: '-2.5px',
+      border: '1.5px solid rgba(32, 32, 32, 0.72)',
+      borderRadius: '50%',
+      opacity: '0',
+      transform: 'scale(.25)',
+    });
+    layer.appendChild(pop);
+    const popAnimation = pop.animate([
+      { opacity: 0, transform: 'scale(.25)' },
+      { opacity: 0.9, offset: 0.18, transform: 'scale(.65)' },
+      { opacity: 0, transform: 'scale(2.2)' },
+    ], { duration: 180, easing: 'ease-out' });
+    popAnimation.addEventListener('finish', () => pop.remove(), { once: true });
+  }
+
+  function stageTopLimit(stageRect) {
+    const nav = document.querySelector('.pv2-nav');
+    if (!nav) return EDGE_PADDING;
+    const navRect = nav.getBoundingClientRect();
+    return Math.max(EDGE_PADDING, navRect.bottom - stageRect.top + NAV_CLEARANCE);
+  }
+
+  function viewportTopLimit() {
+    const nav = document.querySelector('.pv2-nav');
+    return nav ? nav.getBoundingClientRect().bottom + NAV_CLEARANCE : EDGE_PADDING;
+  }
+
+  function centerStatementInViewport(stageRect, dt = 16.667, snap = false) {
+    if (!statement) return;
+    const targetX = window.innerWidth / 2 - stageRect.left;
+    const targetY = window.innerHeight / 2 - stageRect.top;
+
+    if (snap || statementX === null || statementY === null) {
+      statementX = targetX;
+      statementY = targetY;
+    } else {
+      const alpha = 1 - Math.pow(1 - STATEMENT_FOLLOW, dt / 16.667);
+      statementX += (targetX - statementX) * alpha;
+      statementY += (targetY - statementY) * alpha;
+    }
+
+    statement.style.position = 'absolute';
+    statement.style.left = `${statementX}px`;
+    statement.style.top = `${statementY}px`;
+    statement.style.right = 'auto';
+    statement.style.bottom = 'auto';
+    statement.style.transform = 'translate(-50%, -50%)';
+  }
+
+  function statementRect() {
+    if (!stage || !statement) return null;
+    const s = statement.getBoundingClientRect();
+    const p = stage.getBoundingClientRect();
+    return { x: s.left - p.left, y: s.top - p.top, w: s.width, h: s.height };
+  }
+
+  function classString(slot) {
+    const child = slot.querySelector('.pv2-project-tile, .pv2-gateway-link');
+    return `${slot.className} ${child?.className || ''}`;
+  }
+
+  function anchorFor(slot, width, height) {
+    const c = classString(slot);
+    let x = 0.5;
+    let y = 0.5;
+    if (c.includes('project-tile--top')) { x = 0.50; y = 0.13; }
+    else if (c.includes('project-tile--left')) { x = 0.14; y = 0.47; }
+    else if (c.includes('project-tile--right')) { x = 0.86; y = 0.46; }
+    else if (c.includes('project-tile--bottom-left')) { x = 0.31; y = 0.80; }
+    else if (c.includes('project-tile--bottom-right')) { x = 0.69; y = 0.80; }
+    else if (c.includes('gateway-link--ux')) { x = 0.08; y = 0.20; }
+    else if (c.includes('gateway-link--unfinished')) { x = 0.90; y = 0.78; }
+    return { x: width * x, y: height * y };
+  }
+
+  function constrain(body, stageRect) {
+    if (body.isStatic) return;
+    const minY = stageTopLimit(stageRect);
+    const maxX = Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING);
+    const maxY = Math.max(minY, stageRect.height - body.h - EDGE_PADDING);
+    if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx); }
+    if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx); }
+    if (body.y < minY) { body.y = minY; body.vy = Math.abs(body.vy); }
+    if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy); }
+  }
+
+  function separate(a, b) {
+    if (!overlaps(a, b, BODY_GAP)) return;
+    if (a.isStatic && b.isStatic) return;
+
+    const dx = (a.x + a.w / 2) - (b.x + b.w / 2) || 0.01;
+    const dy = (a.y + a.h / 2) - (b.y + b.h / 2) || 0.01;
+    const overlapX = (a.w + b.w) / 2 + BODY_GAP - Math.abs(dx);
+    const overlapY = (a.h + b.h) / 2 + BODY_GAP - Math.abs(dy);
+
+    if (overlapX < overlapY) {
+      const sign = dx >= 0 ? 1 : -1;
+      const push = Math.max(0, overlapX);
+      if (a.isStatic) {
+        b.x -= push * sign;
+        b.vx = -Math.abs(b.vx) * sign;
+      } else if (b.isStatic) {
+        a.x += push * sign;
+        a.vx = Math.abs(a.vx) * sign;
+      } else {
+        a.x += (push / 2) * sign;
+        b.x -= (push / 2) * sign;
+        const av = a.vx;
+        a.vx = b.vx;
+        b.vx = av;
+      }
+    } else {
+      const sign = dy >= 0 ? 1 : -1;
+      const push = Math.max(0, overlapY);
+      if (a.isStatic) {
+        b.y -= push * sign;
+        b.vy = -Math.abs(b.vy) * sign;
+      } else if (b.isStatic) {
+        a.y += push * sign;
+        a.vy = Math.abs(a.vy) * sign;
+      } else {
+        a.y += (push / 2) * sign;
+        b.y -= (push / 2) * sign;
+        const av = a.vy;
+        a.vy = b.vy;
+        b.vy = av;
+      }
+    }
+  }
+
+  function separateStatement(body, obstacle) {
+    if (body.isStatic || !obstacle || !overlaps(body, obstacle, STATEMENT_GAP)) return;
+    const dx = (body.x + body.w / 2) - (obstacle.x + obstacle.w / 2) || 0.01;
+    const dy = (body.y + body.h / 2) - (obstacle.y + obstacle.h / 2) || 0.01;
+    const overlapX = (body.w + obstacle.w) / 2 + STATEMENT_GAP - Math.abs(dx);
+    const overlapY = (body.h + obstacle.h) / 2 + STATEMENT_GAP - Math.abs(dy);
+    if (overlapX < overlapY) {
+      const sign = dx >= 0 ? 1 : -1;
+      body.x += overlapX * sign;
+      body.vx = Math.abs(body.vx) * sign;
+    } else {
+      const sign = dy >= 0 ? 1 : -1;
+      body.y += overlapY * sign;
+      body.vy = Math.abs(body.vy) * sign;
+    }
+  }
+
+  function makeBody(el, index, stageRect) {
+    const rect = el.getBoundingClientRect();
+    const anchor = anchorFor(el, stageRect.width, stageRect.height);
+    const w = rect.width;
+    const h = rect.height;
+    const minY = stageTopLimit(stageRect);
+    const x = clamp(anchor.x - w / 2, EDGE_PADDING, stageRect.width - w - EDGE_PADDING);
+    const y = clamp(anchor.y - h / 2, minY, stageRect.height - h - EDGE_PADDING);
+    const angle = 0.55 + index * 1.19;
+    const speed = reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED;
+    const classes = classString(el);
+    const isStatic = classes.includes('gateway-link--ux') || classes.includes('gateway-link--unfinished');
+
+    el.style.position = 'absolute';
+    el.style.right = 'auto';
+    el.style.bottom = 'auto';
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+    el.style.transition = 'none';
+
+    const body = {
+      el, x, y, w, h, isStatic,
+      homeX: x,
+      homeY: y,
+      vx: isStatic ? 0 : Math.cos(angle) * speed,
+      vy: isStatic ? 0 : Math.sin(angle) * speed,
+      phase: index * 1.41 + 0.7,
+      // Each block gets its own follow rate. This is the actual scroll inertia:
+      // we smooth its viewport position instead of partially cancelling scroll.
+      scrollFollow: 0.018 + Math.random() * 0.045,
+      visualViewportY: stageRect.top + y,
+      target: el.querySelector('.pv2-project-tile, .pv2-gateway-link') || el,
+    };
+
+    body.enter = (event) => {
+      impactBurst(event);
+      if (isStatic) return;
+      const r = body.el.getBoundingClientRect();
+      let dx = r.left + r.width / 2 - event.clientX;
+      let dy = r.top + r.height / 2 - event.clientY;
+      const len = Math.hypot(dx, dy) || 1;
+      body.vx += (dx / len) * POINTER_IMPULSE;
+      body.vy += (dy / len) * POINTER_IMPULSE;
+    };
+    body.target.addEventListener('pointerenter', body.enter);
+
+    return body;
+  }
+
+  function tick(now) {
+    if (!stage || window.innerWidth <= MOBILE_BREAKPOINT) {
+      mark(window.innerWidth <= MOBILE_BREAKPOINT ? 'mobile-static' : 'waiting');
+      frame = 0;
+      return;
+    }
+
+    const dt = clamp(lastTime ? now - lastTime : 16.667, 8, 32);
+    lastTime = now;
+    const sr = stage.getBoundingClientRect();
+
+    centerStatementInViewport(sr, dt, false);
+    const obstacle = statementRect();
+    const speedFloor = reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED;
+    const t = now / 1000;
+
+    for (const body of bodies) {
+      if (!body.isStatic) {
+        body.vx += (body.homeX - body.x) * HOME_PULL * dt;
+        body.vy += (body.homeY - body.y) * HOME_PULL * dt;
+        body.vx += Math.sin(t * 0.41 + body.phase) * 0.0000175 * dt;
+        body.vy += Math.cos(t * 0.37 + body.phase * 1.23) * 0.0000175 * dt;
+        body.vx *= Math.pow(DAMPING, dt);
+        body.vy *= Math.pow(DAMPING, dt);
+
+        const currentSpeed = Math.hypot(body.vx, body.vy);
+        if (currentSpeed < speedFloor) {
+          const a = body.phase + t * 0.16;
+          body.vx += Math.cos(a) * (speedFloor - currentSpeed) * 0.18;
+          body.vy += Math.sin(a) * (speedFloor - currentSpeed) * 0.18;
+        }
+
+        const maxSpeed = reducedMotion() ? 0.0275 : 0.09;
+        body.vx = clamp(body.vx, -maxSpeed, maxSpeed);
+        body.vy = clamp(body.vy, -maxSpeed, maxSpeed);
+        body.x += body.vx * dt;
+        body.y += body.vy * dt;
+        separateStatement(body, obstacle);
+        constrain(body, sr);
+      }
+
+      const targetViewportY = sr.top + body.y;
+      const follow = body.isStatic ? 1 : body.scrollFollow;
+      const alpha = 1 - Math.pow(1 - follow, dt / 16.667);
+      body.visualViewportY += (targetViewportY - body.visualViewportY) * alpha;
+
+      // Never let the eased visual position slide under the fixed navigation.
+      const minViewportY = viewportTopLimit();
+      const maxViewportY = Math.max(minViewportY, sr.bottom - body.h - EDGE_PADDING);
+      body.visualViewportY = clamp(body.visualViewportY, minViewportY, maxViewportY);
+    }
+
+    for (let pass = 0; pass < 2; pass += 1) {
+      for (let i = 0; i < bodies.length; i += 1) {
+        for (let j = i + 1; j < bodies.length; j += 1) separate(bodies[i], bodies[j]);
+      }
+      bodies.forEach((b) => constrain(b, sr));
+    }
+
+    for (const body of bodies) {
+      // Convert the smoothly-following viewport coordinate back into the stage's
+      // coordinate system. This is what creates visible lag while the page scrolls.
+      const displayY = body.visualViewportY - sr.top;
+      body.el.style.left = `${body.x.toFixed(2)}px`;
+      body.el.style.top = `${displayY.toFixed(2)}px`;
+    }
+
+    mark(reducedMotion() ? 'running-reduced' : 'running');
+    frame = requestAnimationFrame(tick);
+  }
+
+  function teardown() {
+    if (frame) cancelAnimationFrame(frame);
+    frame = 0;
+    for (const body of bodies) {
+      if (body.enter) body.target.removeEventListener('pointerenter', body.enter);
+    }
+    bodies = [];
+    lastTime = 0;
+    statementX = null;
+    statementY = null;
+  }
+
+  function init() {
+    teardown();
+    stage = document.querySelector('.pv2-overview__stage');
+    statement = document.querySelector('.pv2-overview__statement');
+    if (!stage || !statement) { mark('waiting-for-overview'); return; }
+    if (window.innerWidth <= MOBILE_BREAKPOINT) { mark('mobile-static'); return; }
+
+    const elements = [...stage.querySelectorAll('.pv2-float-slot')];
+    if (!elements.length) { mark('waiting-for-bodies'); return; }
+
+    const sr = stage.getBoundingClientRect();
+    centerStatementInViewport(sr, 16.667, true);
+    bodies = elements.map((el, i) => makeBody(el, i, sr));
+    const obstacle = statementRect();
+
+    for (let pass = 0; pass < 16; pass += 1) {
+      bodies.forEach((body) => separateStatement(body, obstacle));
+      for (let i = 0; i < bodies.length; i += 1) {
+        for (let j = i + 1; j < bodies.length; j += 1) separate(bodies[i], bodies[j]);
+      }
+      bodies.forEach((body) => constrain(body, sr));
+    }
+
+    for (const body of bodies) {
+      body.homeX = body.x;
+      body.homeY = body.y;
+      body.visualViewportY = sr.top + body.y;
+      body.el.style.left = `${body.x}px`;
+      body.el.style.top = `${body.y}px`;
+    }
+
+    mark('initialized');
+    frame = requestAnimationFrame(tick);
+  }
+
+  const observer = new MutationObserver(() => {
+    clearTimeout(mutationTimer);
+    mutationTimer = window.setTimeout(() => {
+      const hasOverview = Boolean(document.querySelector('.pv2-overview__stage'));
+      if (hasOverview && (!stage || !stage.isConnected || !frame)) init();
+      if (!hasOverview && stage) { teardown(); stage = null; statement = null; mark('inactive'); }
+    }, 50);
+  });
+
+  function start() {
+    mark('script-loaded');
+    observer.observe(document.body, { childList: true, subtree: true });
+    init();
+    window.addEventListener('resize', () => {
+      clearTimeout(mutationTimer);
+      mutationTimer = window.setTimeout(init, 120);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+})();

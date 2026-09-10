@@ -4,7 +4,10 @@
   "description": "",
   "type": "module",
   "scripts": {
+    "prepare:gttc": "node scripts/prepare-gttc.mjs",
+    "predev": "npm run prepare:gttc",
     "dev": "astro dev",
+    "prebuild": "npm run prepare:gttc",
     "build": "astro build",
     "preview": "astro preview"
   },

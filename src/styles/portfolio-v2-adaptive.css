@@ -1,0 +1,115 @@
+.pv2-overview__statement {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  width: min(650px, 48vw);
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 2;
+}
+
+.pv2-float-slot {
+  position: absolute;
+  z-index: 3;
+  width: fit-content;
+  max-width: calc(100% - 36px);
+  transition: none;
+  will-change: left, top;
+}
+
+.pv2-float-slot--gateway {
+  z-index: 4;
+}
+
+.pv2-float-slot .pv2-project-tile,
+.pv2-float-slot .pv2-gateway-link {
+  position: relative;
+  inset: auto;
+}
+
+.pv2-float-slot .pv2-project-tile {
+  width: clamp(112px, min(11.5vw, 19vh), 184px);
+}
+
+.pv2-float-slot .pv2-gateway-link {
+  min-width: max-content;
+}
+
+@media (max-height: 760px) and (min-width: 721px) {
+  .pv2-overview__statement {
+    width: min(610px, 46vw);
+  }
+
+  .pv2-overview__statement h1 {
+    font-size: clamp(2.7rem, min(4.7vw, 8.2vh), 5.2rem);
+  }
+
+  .pv2-overview__statement > p:last-child {
+    max-width: 470px;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: clamp(.88rem, 1.15vw, 1.05rem);
+  }
+
+  .pv2-float-slot .pv2-project-tile {
+    width: clamp(104px, min(10.5vw, 17vh), 158px);
+  }
+}
+
+@media (max-width: 720px) {
+  .pv2-overview__stage {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 34px 18px;
+    min-height: auto;
+    height: auto;
+    padding: 70px 0 46px;
+    overflow: visible;
+  }
+
+  .pv2-overview__statement {
+    position: relative;
+    inset: auto;
+    grid-column: 1 / -1;
+    width: 100%;
+    transform: none;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .pv2-overview__statement > p:last-child {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .pv2-float-slot {
+    position: relative;
+    inset: auto !important;
+    width: 100%;
+    max-width: none;
+  }
+
+  .pv2-float-slot .pv2-project-tile,
+  .pv2-float-slot .pv2-gateway-link {
+    width: 100%;
+  }
+
+  .pv2-float-slot--gateway {
+    min-height: 120px;
+    border-top: 1px solid var(--pv2-line);
+    padding-top: 16px;
+  }
+
+  .pv2-float-slot--gateway .pv2-gateway-link {
+    min-height: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 460px) {
+  .pv2-overview__stage {
+    grid-template-columns: 1fr;
+  }
+}
