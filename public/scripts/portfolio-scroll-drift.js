@@ -1,6 +1,7 @@
 (() => {
   const MOBILE_BREAKPOINT = 720;
   const NAV_CLEARANCE = 18;
+  const EDGE_PADDING = 16;
   const MAX_LAG = 260;
 
   let items = [];
@@ -18,9 +19,7 @@
       el,
       lag: 0,
       targetLag: 0,
-      // Each project resists page-scroll movement by a different amount.
       counter: 0.82 + ((index * 0.073) % 0.14),
-      // Very slow randomized-feeling catch-up speeds.
       follow: 0.008 + ((index * 0.0047) % 0.014),
     }));
     lastScrollY = window.scrollY;
@@ -28,7 +27,7 @@
 
   function tick() {
     if (window.innerWidth <= MOBILE_BREAKPOINT) {
-      for (const item of items) item.el.style.transform = '';
+      for (const item of items) item.el.style.removeProperty('--pv2-scroll-drift-y');
       frame = requestAnimationFrame(tick);
       return;
     }
@@ -39,28 +38,34 @@
 
     if (Math.abs(delta) > 0.01) {
       for (const item of items) {
-        // Scrolling down moves document content upward. Positive translateY
-        // cancels most of that immediate movement so the tile visibly trails.
         item.targetLag += delta * item.counter;
         item.targetLag = Math.max(-MAX_LAG, Math.min(MAX_LAG, item.targetLag));
       }
     }
 
     const minTop = navBottom();
+    const maxBottom = window.innerHeight - EDGE_PADDING;
+
     for (const item of items) {
       item.targetLag += (0 - item.targetLag) * item.follow;
       item.lag += (item.targetLag - item.lag) * 0.16;
 
-      item.el.style.transform = `translate3d(0, ${item.lag.toFixed(2)}px, 0)`;
+      item.el.style.setProperty('--pv2-scroll-drift-y', `${item.lag.toFixed(2)}px`);
 
-      // Keep the visual body below the fixed navigation even while lagging.
+      // Clamp the drift itself so the visible block cannot leave the viewport.
       const rect = item.el.getBoundingClientRect();
       if (rect.top < minTop) {
         const correction = minTop - rect.top;
         item.lag += correction;
         item.targetLag = Math.max(item.targetLag, item.lag);
-        item.el.style.transform = `translate3d(0, ${item.lag.toFixed(2)}px, 0)`;
       }
+      if (rect.bottom > maxBottom) {
+        const correction = rect.bottom - maxBottom;
+        item.lag -= correction;
+        item.targetLag = Math.min(item.targetLag, item.lag);
+      }
+
+      item.el.style.setProperty('--pv2-scroll-drift-y', `${item.lag.toFixed(2)}px`);
     }
 
     frame = requestAnimationFrame(tick);
