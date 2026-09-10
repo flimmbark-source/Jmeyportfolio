@@ -6,7 +6,7 @@ import '../styles/portfolio-v2.css';
 const spring = { type: 'spring', stiffness: 220, damping: 28, mass: 0.9 };
 const softSpring = { type: 'spring', stiffness: 180, damping: 24, mass: 0.85 };
 const publicProjectIds = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotogo', 'gig-duel'];
-const unfinishedProjectIds = ['phase-g', 'splitpulse', 'wash-dishes'];
+const unfinishedProjectIds = ['phase-g', 'splitpulse'];
 
 const hoverMotion = {
   top: { y: -9, rotate: -0.35, scale: 1.018 },
@@ -30,6 +30,7 @@ function readProjectFromUrl() {
   if (typeof window === 'undefined') return null;
   const value = new URL(window.location.href).searchParams.get('project');
   const node = value ? portfolioV2NodeMap.get(value) : null;
+  if (value === 'wash-dishes') return null;
   return node?.kind === 'project' || node?.kind === 'gateway' || node?.id === 'unfinished' ? value : null;
 }
 
@@ -419,7 +420,7 @@ function UXGateway({ onBack }) {
         <p className="pv2-overline">Professional portfolio</p>
         <h1>UX Work</h1>
         <p>{node?.summary}</p>
-        <a href={node?.route || '/'}>Enter classic UX portfolio →</a>
+        <a href="/ux">Enter classic UX portfolio →</a>
       </div>
     </main>
   );
@@ -463,11 +464,11 @@ export default function RelationalPortfolio() {
   return (
     <div className="pv2-site">
       <header className="pv2-nav">
-        <a href="/v2" className="pv2-nav__name">Jacob Meyerkopf</a>
+        <a href="/" className="pv2-nav__name">Jacob Meyerkopf</a>
         <nav aria-label="Portfolio navigation">
           <button type="button" onClick={() => { setSelectedId(null); writeProjectToUrl(null); }}>Work</button>
           <button type="button" onClick={() => select('unfinished')}>Playground</button>
-          <a href="/">UX</a>
+          <a href="/ux">UX</a>
           <a href="mailto:jmeyerkopf@gmail.com">Contact</a>
         </nav>
       </header>
