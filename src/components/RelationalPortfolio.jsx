@@ -241,10 +241,10 @@ function Overview({ onSelect, reducedMotion }) {
     const recalculate = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
-        if (window.innerWidth <= 720) {
-          setPositions({});
-          return;
-        }
+        // Solve at all widths: the physics script (portfolio-physics-v3.js) now
+        // runs the floating game on mobile too, and relies on these absolute
+        // positions for the gateway bumpers. The static grid fallback ignores
+        // them via the html:not(.pv2-physics-live) CSS scope.
         setPositions(solveOverviewLayout(stage, statement, itemRefs.current));
       });
     };

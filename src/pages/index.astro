@@ -78,7 +78,7 @@ import '../styles/portfolio-incremental.css';
         window.setTimeout(finish, 4000);
       })();
     </script>
-    <script src="/scripts/portfolio-physics-v3.js?v=19" defer></script>
+    <script src="/scripts/portfolio-physics-v3.js?v=20" defer></script>
     <script src="/scripts/ux-direct-link.js?v=1" defer></script>
     <script src="/scripts/letter-river-preview.js?v=4" defer></script>
   </body>
@@ -112,7 +112,7 @@ import '../styles/portfolio-incremental.css';
   }
 
   @media (max-width: 720px) {
-    .pv2-overview__statement {
+    html:not(.pv2-physics-live) .pv2-overview__statement {
       position: relative !important;
       inset: auto !important;
       transform: none !important;

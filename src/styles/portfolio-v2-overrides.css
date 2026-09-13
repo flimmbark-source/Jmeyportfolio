@@ -259,8 +259,17 @@
     justify-content: flex-start;
   }
 
+  /* The floating game now runs on mobile, so the score/upgrades entry stays. */
   .pv2-score-counter {
-    display: none;
+    top: 70px;
+    right: 14px;
+    padding: 7px 10px;
+    gap: 7px;
+    z-index: 1180;
+  }
+
+  .pv2-score-counter__value {
+    font-size: 1rem;
   }
 }
 
