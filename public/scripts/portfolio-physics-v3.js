@@ -15,31 +15,31 @@
   const BUMPER_KICK = 0.48;
   const BUMPER_SCORE_COOLDOWN = 360;
   const WALL_SCORE_COOLDOWN = 220;
-  const TREE_WIDTH = 1220;
-  const TREE_HEIGHT = 880;
-  const TREE_CENTER = { x: 610, y: 440 };
+  const TREE_WIDTH = 1120;
+  const TREE_HEIGHT = 760;
+  const TREE_CENTER = { x: 560, y: 380 };
   const GHOST_COLORS = ['#ff3366', '#7c3cff', '#00b894', '#ff9f1a', '#1597ff', '#e843d5', '#ff5f00'];
 
   const UPGRADES = [
-    { id: 'speed-1', branch: 'velocity', x: 610, y: 340, title: 'Faster Drift', cost: 10, desc: '+20% base movement speed', requires: [] },
-    { id: 'speed-2', branch: 'velocity', x: 610, y: 240, title: 'More Velocity', cost: 25, desc: '+20% more base movement speed', requires: ['speed-1'] },
-    { id: 'speed-3', branch: 'velocity', x: 610, y: 140, title: 'Momentum', cost: 55, desc: '+25% maximum velocity', requires: ['speed-2'] },
-    { id: 'speed-4', branch: 'velocity', x: 610, y: 55, title: 'Launch Force', cost: 110, desc: '+30% mouse and bumper impulse', requires: ['speed-3'] },
+    { id: 'speed-1', branch: 'velocity', depth: 1, x: 560, y: 282, title: 'Faster Drift', effect: '+20% speed', cost: 10, requires: [] },
+    { id: 'speed-accel', branch: 'velocity', depth: 2, x: 455, y: 176, title: 'Acceleration', effect: '+25% speed floor', cost: 24, requires: ['speed-1'] },
+    { id: 'speed-top', branch: 'velocity', depth: 2, x: 665, y: 176, title: 'Top Speed', effect: '+25% velocity cap', cost: 28, requires: ['speed-1'] },
+    { id: 'speed-launch', branch: 'velocity', depth: 3, x: 455, y: 72, title: 'Quick Launch', effect: '+35% mouse impulse', cost: 62, requires: ['speed-accel'] },
 
-    { id: 'bounce-1', branch: 'bounce', x: 735, y: 440, title: 'Better Bounces', cost: 8, desc: '+1 point per text bounce', requires: [] },
-    { id: 'bounce-2', branch: 'bounce', x: 860, y: 440, title: 'More Bounce', cost: 18, desc: '+10% text bumper rebound', requires: ['bounce-1'] },
-    { id: 'bounce-3', branch: 'bounce', x: 985, y: 440, title: 'Bounce Value', cost: 40, desc: '+1 more point per text bounce', requires: ['bounce-2'] },
-    { id: 'bounce-4', branch: 'bounce', x: 1110, y: 440, title: 'Chain Bounce', cost: 95, desc: 'Text bounces launch 25% harder', requires: ['bounce-3'] },
+    { id: 'bounce-1', branch: 'bounce', depth: 1, x: 668, y: 380, title: 'Better Bounces', effect: '+1 / bumper', cost: 8, requires: [] },
+    { id: 'bounce-force', branch: 'bounce', depth: 2, x: 790, y: 302, title: 'Bumper Force', effect: '+18% rebound', cost: 20, requires: ['bounce-1'] },
+    { id: 'bounce-value', branch: 'bounce', depth: 2, x: 790, y: 458, title: 'Bounce Value', effect: '+1 / bumper', cost: 24, requires: ['bounce-1'] },
+    { id: 'bounce-combo', branch: 'bounce', depth: 3, x: 930, y: 458, title: 'Combo Bounce', effect: '+1 / bumper', cost: 58, requires: ['bounce-value'] },
 
-    { id: 'walls-1', branch: 'walls', x: 485, y: 440, title: 'Wall Points', cost: 14, desc: 'Wall bounces earn +1 point', requires: [] },
-    { id: 'walls-2', branch: 'walls', x: 360, y: 440, title: 'Harder Walls', cost: 30, desc: '+15% wall rebound strength', requires: ['walls-1'] },
-    { id: 'walls-3', branch: 'walls', x: 235, y: 440, title: 'Wall Value', cost: 52, desc: '+1 more point per wall bounce', requires: ['walls-2'] },
-    { id: 'walls-4', branch: 'walls', x: 110, y: 440, title: 'Ricochet', cost: 115, desc: 'Wall hits gain another 22% rebound', requires: ['walls-3'] },
+    { id: 'walls-1', branch: 'walls', depth: 1, x: 452, y: 380, title: 'Wall Points', effect: '+1 / wall', cost: 14, requires: [] },
+    { id: 'walls-force', branch: 'walls', depth: 2, x: 330, y: 302, title: 'Hard Walls', effect: '+18% rebound', cost: 30, requires: ['walls-1'] },
+    { id: 'walls-value', branch: 'walls', depth: 2, x: 330, y: 458, title: 'Wall Value', effect: '+1 / wall', cost: 32, requires: ['walls-1'] },
+    { id: 'walls-ricochet', branch: 'walls', depth: 3, x: 190, y: 302, title: 'Ricochet', effect: '+25% wall kick', cost: 70, requires: ['walls-force'] },
 
-    { id: 'friction-1', branch: 'friction', x: 610, y: 540, title: 'Less Friction', cost: 12, desc: '15% less velocity decay', requires: [] },
-    { id: 'friction-2', branch: 'friction', x: 610, y: 640, title: 'Glide', cost: 28, desc: 'Keep momentum much longer', requires: ['friction-1'] },
-    { id: 'friction-3', branch: 'friction', x: 610, y: 740, title: 'Retain Momentum', cost: 60, desc: 'Collisions preserve extra motion', requires: ['friction-2'] },
-    { id: 'friction-4', branch: 'friction', x: 610, y: 825, title: 'Low Drag', cost: 120, desc: 'Very low drag and a higher speed floor', requires: ['friction-3'] },
+    { id: 'friction-1', branch: 'friction', depth: 1, x: 560, y: 478, title: 'Less Friction', effect: '−15% drag', cost: 12, requires: [] },
+    { id: 'friction-glide', branch: 'friction', depth: 2, x: 455, y: 584, title: 'Glide', effect: '−20% drag', cost: 26, requires: ['friction-1'] },
+    { id: 'friction-collision', branch: 'friction', depth: 2, x: 665, y: 584, title: 'Collision Keep', effect: '+8% collision energy', cost: 30, requires: ['friction-1'] },
+    { id: 'friction-low', branch: 'friction', depth: 3, x: 455, y: 688, title: 'Low Drag', effect: '−30% drag', cost: 68, requires: ['friction-glide'] },
   ];
 
   let frame = 0;
@@ -95,33 +95,26 @@
     let collisionBoost = 1;
 
     if (hasUpgrade('speed-1')) speedMult *= 1.2;
-    if (hasUpgrade('speed-2')) speedMult *= 1.2;
-    if (hasUpgrade('speed-3')) maxSpeedMult *= 1.25;
-    if (hasUpgrade('speed-4')) {
-      pointerImpulseMult *= 1.3;
-      bumperKickMult *= 1.3;
-    }
+    if (hasUpgrade('speed-accel')) speedFloorMult *= 1.25;
+    if (hasUpgrade('speed-top')) maxSpeedMult *= 1.25;
+    if (hasUpgrade('speed-launch')) pointerImpulseMult *= 1.35;
 
     if (hasUpgrade('bounce-1')) bumperValue += 1;
-    if (hasUpgrade('bounce-2')) bumperKickMult *= 1.1;
-    if (hasUpgrade('bounce-3')) bumperValue += 1;
-    if (hasUpgrade('bounce-4')) bumperKickMult *= 1.25;
+    if (hasUpgrade('bounce-force')) bumperKickMult *= 1.18;
+    if (hasUpgrade('bounce-value')) bumperValue += 1;
+    if (hasUpgrade('bounce-combo')) bumperValue += 1;
 
     if (hasUpgrade('walls-1')) wallValue += 1;
-    if (hasUpgrade('walls-2')) wallKickMult *= 1.15;
-    if (hasUpgrade('walls-3')) wallValue += 1;
-    if (hasUpgrade('walls-4')) wallKickMult *= 1.22;
+    if (hasUpgrade('walls-force')) wallKickMult *= 1.18;
+    if (hasUpgrade('walls-value')) wallValue += 1;
+    if (hasUpgrade('walls-ricochet')) wallKickMult *= 1.25;
 
     if (hasUpgrade('friction-1')) damping = 0.99942;
-    if (hasUpgrade('friction-2')) damping = 0.99962;
-    if (hasUpgrade('friction-3')) {
-      damping = 0.99972;
-      collisionBoost = 1.06;
-    }
-    if (hasUpgrade('friction-4')) {
+    if (hasUpgrade('friction-glide')) damping = 0.99967;
+    if (hasUpgrade('friction-collision')) collisionBoost = 1.08;
+    if (hasUpgrade('friction-low')) {
       damping = 0.99984;
-      speedFloorMult = 1.15;
-      collisionBoost = 1.1;
+      speedFloorMult *= 1.12;
     }
 
     return {
@@ -198,23 +191,38 @@
   function makeUpgradeNode(upgrade) {
     const node = document.createElement('button');
     node.type = 'button';
-    node.className = `pv2-upgrade-node pv2-upgrade-node--${upgrade.branch}`;
+    node.className = `pv2-upgrade-node pv2-upgrade-node--${upgrade.branch} pv2-upgrade-node--depth-${upgrade.depth}`;
     node.dataset.upgradeId = upgrade.id;
-    node.style.left = `${upgrade.x}px`;
-    node.style.top = `${upgrade.y}px`;
+    node.dataset.branch = upgrade.branch;
+    node.style.setProperty('--node-x', `${upgrade.x}px`);
+    node.style.setProperty('--node-y', `${upgrade.y}px`);
     node.innerHTML = `
-      <span class="pv2-upgrade-node__title">${upgrade.title}</span>
-      <span class="pv2-upgrade-node__desc">${upgrade.desc}</span>
-      <span class="pv2-upgrade-node__cost">${upgrade.cost} PTS</span>
+      <span class="pv2-upgrade-node__branch" aria-hidden="true"></span>
+      <span class="pv2-upgrade-node__copy">
+        <strong class="pv2-upgrade-node__title">${upgrade.title}</strong>
+        <span class="pv2-upgrade-node__effect">${upgrade.effect}</span>
+      </span>
+      <span class="pv2-upgrade-node__cost">${upgrade.cost}</span>
     `;
     node.addEventListener('click', () => buyUpgrade(upgrade.id));
     return node;
   }
 
-  function connectorStart(upgrade) {
+  function parentPoint(upgrade) {
     if (!upgrade.requires.length) return TREE_CENTER;
     const parent = UPGRADES.find((item) => item.id === upgrade.requires[0]);
     return parent ? { x: parent.x, y: parent.y } : TREE_CENTER;
+  }
+
+  function curvedPath(start, end) {
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    if (Math.abs(dx) >= Math.abs(dy)) {
+      const mx = start.x + dx * .5;
+      return `M ${start.x} ${start.y} C ${mx} ${start.y}, ${mx} ${end.y}, ${end.x} ${end.y}`;
+    }
+    const my = start.y + dy * .5;
+    return `M ${start.x} ${start.y} C ${start.x} ${my}, ${end.x} ${my}, ${end.x} ${end.y}`;
   }
 
   function refreshUpgradeTree() {
@@ -232,9 +240,9 @@
       button.classList.toggle('is-locked', !unlocked);
       button.classList.toggle('is-affordable', affordable);
       button.disabled = bought || !unlocked || !affordable;
-      button.setAttribute('aria-label', bought ? `${upgrade.title}, purchased` : `${upgrade.title}, costs ${upgrade.cost} points`);
+      button.setAttribute('aria-label', bought ? `${upgrade.title}, purchased` : `${upgrade.title}, ${upgrade.effect}, costs ${upgrade.cost} points`);
       const cost = button.querySelector('.pv2-upgrade-node__cost');
-      if (cost) cost.textContent = bought ? 'BOUGHT' : `${upgrade.cost} PTS`;
+      if (cost) cost.textContent = bought ? '✓' : String(upgrade.cost);
 
       const connector = upgradeTree.querySelector(`[data-connector-to="${upgrade.id}"]`);
       if (connector) {
@@ -250,20 +258,29 @@
     upgradeOverlay = document.createElement('div');
     upgradeOverlay.className = 'pv2-upgrade-overlay';
     upgradeOverlay.innerHTML = `
-      <section class="pv2-upgrade-panel" role="dialog" aria-modal="true" aria-label="Incremental upgrade tree">
+      <section class="pv2-upgrade-panel" role="dialog" aria-modal="true" aria-label="Kinetic upgrade tree">
         <header class="pv2-upgrade-panel__header">
-          <div>
+          <div class="pv2-upgrade-panel__titleblock">
             <div class="pv2-upgrade-panel__eyebrow">Incremental Tree</div>
-            <h2>Kinetic upgrades.</h2>
+            <h2>Kinetic upgrades</h2>
           </div>
-          <div class="pv2-upgrade-panel__currency"><span data-upgrade-points>${points}</span> points</div>
+          <div class="pv2-upgrade-legend" aria-label="Upgrade branches">
+            <span class="pv2-upgrade-legend__item pv2-upgrade-legend__item--velocity">Velocity</span>
+            <span class="pv2-upgrade-legend__item pv2-upgrade-legend__item--bounce">Bounce</span>
+            <span class="pv2-upgrade-legend__item pv2-upgrade-legend__item--walls">Walls</span>
+            <span class="pv2-upgrade-legend__item pv2-upgrade-legend__item--friction">Friction</span>
+          </div>
+          <div class="pv2-upgrade-panel__currency"><span data-upgrade-points>${points}</span><small>PTS</small></div>
           <button class="pv2-upgrade-close" type="button" aria-label="Close upgrades">×</button>
         </header>
         <div class="pv2-upgrade-scroll">
-          <div class="pv2-upgrade-tree" style="width:${TREE_WIDTH}px;height:${TREE_HEIGHT}px">
+          <div class="pv2-upgrade-tree" style="--tree-width:${TREE_WIDTH}px;--tree-height:${TREE_HEIGHT}px">
             <svg class="pv2-upgrade-lines" viewBox="0 0 ${TREE_WIDTH} ${TREE_HEIGHT}" aria-hidden="true"></svg>
-            <div class="pv2-upgrade-root" style="left:${TREE_CENTER.x}px;top:${TREE_CENTER.y}px">
-              <span>Kinetic</span><strong>Basics</strong>
+            <div class="pv2-upgrade-root" style="--node-x:${TREE_CENTER.x}px;--node-y:${TREE_CENTER.y}px">
+              <span class="pv2-upgrade-root__ring" aria-hidden="true"></span>
+              <span class="pv2-upgrade-root__eyebrow">ROOT</span>
+              <strong>Kinetic<br>Basics</strong>
+              <span class="pv2-upgrade-root__owned">OWNED</span>
             </div>
           </div>
         </div>
@@ -274,15 +291,13 @@
     const lines = upgradeTree.querySelector('.pv2-upgrade-lines');
 
     UPGRADES.forEach((upgrade) => {
-      const start = connectorStart(upgrade);
-      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      line.setAttribute('x1', String(start.x));
-      line.setAttribute('y1', String(start.y));
-      line.setAttribute('x2', String(upgrade.x));
-      line.setAttribute('y2', String(upgrade.y));
-      line.setAttribute('data-connector-to', upgrade.id);
-      line.classList.add('pv2-upgrade-line');
-      lines.appendChild(line);
+      const start = parentPoint(upgrade);
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', curvedPath(start, { x: upgrade.x, y: upgrade.y }));
+      path.setAttribute('data-connector-to', upgrade.id);
+      path.setAttribute('data-branch', upgrade.branch);
+      path.classList.add('pv2-upgrade-line', `pv2-upgrade-line--${upgrade.branch}`);
+      lines.appendChild(path);
       upgradeTree.appendChild(makeUpgradeNode(upgrade));
     });
 
@@ -328,12 +343,13 @@
     scoreValue.textContent = String(points);
     refreshUpgradeCue();
     refreshUpgradeTree();
+    const node = upgradeTree?.querySelector(`[data-upgrade-id="${id}"]`);
     try {
-      scoreCounter.animate([
-        { transform: 'scale(1)' },
-        { transform: 'scale(.94)', offset: .42 },
-        { transform: 'scale(1)' },
-      ], { duration: 180, easing: 'ease-out' });
+      node?.animate([
+        { transform: 'translate(-50%, -50%) scale(1)' },
+        { transform: 'translate(-50%, -50%) scale(1.16)', offset: .45 },
+        { transform: 'translate(-50%, -50%) scale(1)' },
+      ], { duration: 260, easing: 'cubic-bezier(.2,.9,.25,1)' });
     } catch {}
   }
 
