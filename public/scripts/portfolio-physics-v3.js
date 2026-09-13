@@ -928,7 +928,9 @@
       mark('waiting-for-overview');
       return;
     }
-    const elements = [...stage.querySelectorAll('.pv2-float-slot')].filter((el) => el.querySelector('.pv2-project-tile'));
+    // offsetWidth 0 ⇒ the slot is display:none (e.g. tiles hidden on mobile),
+    // so it can't be a physics body.
+    const elements = [...stage.querySelectorAll('.pv2-float-slot')].filter((el) => el.querySelector('.pv2-project-tile') && el.offsetWidth > 0);
     if (!elements.length) { mark('waiting-for-bodies'); return; }
 
     // Switch CSS into floating-stage mode (desktop + mobile) before measuring so

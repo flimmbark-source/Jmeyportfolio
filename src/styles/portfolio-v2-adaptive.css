@@ -116,6 +116,15 @@
   }
 }
 
+/* On phones the floating game is tight, so thin the roster to make room.
+   These games stay reachable through the All Games gateway. */
+@media (max-width: 720px) {
+  .pv2-float-slot[data-node-id="last-reading"],
+  .pv2-float-slot[data-node-id="rotogo"] {
+    display: none;
+  }
+}
+
 /* Live floating game on mobile: the stage becomes a fixed-height play area
    sized to the viewport, and tiles are flicked by dragging through them. */
 @media (max-width: 720px) {

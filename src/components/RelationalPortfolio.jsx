@@ -175,7 +175,7 @@ function ProjectVisual({ node, large = false }) {
 
 function ProjectTile({ node, placement, index, onSelect, reducedMotion, register, position }) {
   return (
-    <div ref={(el) => register(node.id, el)} className="pv2-float-slot" style={position || undefined}>
+    <div ref={(el) => register(node.id, el)} className="pv2-float-slot" data-node-id={node.id} style={position || undefined}>
       <motion.button
         layoutId={`project-${node.id}`}
         type="button"
@@ -489,7 +489,7 @@ export default function RelationalPortfolio() {
           <button type="button" onClick={() => { setSelectedId(null); writeProjectToUrl(null); }}>Work</button>
           <button type="button" onClick={() => select('unfinished')}>Playground</button>
           <a href="/ux">UX</a>
-          <a href="mailto:jmeyerkopf@gmail.com">Contact</a>
+          <a href="/contact">Contact</a>
         </nav>
       </header>
 
