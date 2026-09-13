@@ -13,6 +13,7 @@
   const REDUCED_MAX_SPEED = 0.08;
   const POINTER_COOLDOWN = 85;
   const BUMPER_KICK = 0.48;
+  const GHOST_COLORS = ['#ff3366', '#7c3cff', '#00b894', '#ff9f1a', '#1597ff', '#e843d5', '#ff5f00'];
 
   let frame = 0;
   let stage = null;
@@ -23,6 +24,8 @@
   let scoreValue = null;
   let gameActive = false;
   let points = 0;
+  let ghostColorIndex = 0;
+  let fxLayer = null;
   let pointer = { x: -9999, y: -9999, t: 0 };
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -39,6 +42,21 @@
       a.y + a.h + gap <= b.y ||
       b.y + b.h + gap <= a.y
     );
+  }
+
+  function ensureFxLayer() {
+    if (fxLayer?.isConnected) return fxLayer;
+    fxLayer = document.createElement('div');
+    fxLayer.setAttribute('aria-hidden', 'true');
+    Object.assign(fxLayer.style, {
+      position: 'fixed',
+      inset: '0',
+      pointerEvents: 'none',
+      overflow: 'visible',
+      zIndex: '6000',
+    });
+    document.body.appendChild(fxLayer);
+    return fxLayer;
   }
 
   function ensureScoreCounter() {
@@ -71,35 +89,134 @@
     ensureScoreCounter();
     scoreValue.textContent = String(points);
     if (!reducedMotion()) {
-      scoreCounter.animate([
-        { transform: 'translateY(0) scale(1)' },
-        { transform: 'translateY(0) scale(1.08)', offset: 0.42 },
-        { transform: 'translateY(0) scale(1)' },
-      ], { duration: 170, easing: 'cubic-bezier(.2,.9,.25,1)' });
+      try {
+        scoreCounter.animate([
+          { transform: 'translateY(0) scale(1)' },
+          { transform: 'translateY(0) scale(1.08)', offset: 0.42 },
+          { transform: 'translateY(0) scale(1)' },
+        ], { duration: 170, easing: 'cubic-bezier(.2,.9,.25,1)' });
+      } catch {}
     }
     window.dispatchEvent(new CustomEvent('pv2:score', {
-      detail: {
-        points,
-        delta,
-        bumperId,
-        impactX: impact?.x,
-        impactY: impact?.y,
-      },
+      detail: { points, delta, bumperId, impactX: impact?.x, impactY: impact?.y },
     }));
   }
 
   function pulseBumper(el) {
     if (!el?.isConnected) return;
-    el.animate([
-      { scale: '1', filter: 'brightness(1)' },
-      { scale: '1.13', filter: 'brightness(.9)', offset: 0.24 },
-      { scale: '.965', filter: 'brightness(1.04)', offset: 0.55 },
-      { scale: '1.025', filter: 'brightness(.98)', offset: 0.78 },
-      { scale: '1', filter: 'brightness(1)' },
-    ], {
-      duration: reducedMotion() ? 180 : 440,
-      easing: 'cubic-bezier(.16,.88,.24,1)',
+    try {
+      el.animate([
+        { scale: '1', filter: 'brightness(1)' },
+        { scale: '1.14', filter: 'brightness(.9)', offset: 0.22 },
+        { scale: '.96', filter: 'brightness(1.04)', offset: 0.52 },
+        { scale: '1.025', filter: 'brightness(.98)', offset: 0.76 },
+        { scale: '1', filter: 'brightness(1)' },
+      ], {
+        duration: reducedMotion() ? 220 : 500,
+        easing: 'cubic-bezier(.16,.88,.24,1)',
+      });
+    } catch {}
+  }
+
+  function nearestEdgePoint(event, rect) {
+    const x = clamp(event.clientX, rect.left, rect.right);
+    const y = clamp(event.clientY, rect.top, rect.bottom);
+    const options = [
+      { edge: 'left', d: Math.abs(event.clientX - rect.left) },
+      { edge: 'right', d: Math.abs(rect.right - event.clientX) },
+      { edge: 'top', d: Math.abs(event.clientY - rect.top) },
+      { edge: 'bottom', d: Math.abs(rect.bottom - event.clientY) },
+    ].sort((a, b) => a.d - b.d);
+    const edge = options[0].edge;
+    if (edge === 'left') return { x: rect.left, y, outward: Math.PI };
+    if (edge === 'right') return { x: rect.right, y, outward: 0 };
+    if (edge === 'top') return { x, y: rect.top, outward: -Math.PI / 2 };
+    return { x, y: rect.bottom, outward: Math.PI / 2 };
+  }
+
+  function spawnImpactLines(event, rect) {
+    if (window.innerWidth <= MOBILE_BREAKPOINT || !rect) return;
+    const layer = ensureFxLayer();
+    const impact = nearestEdgePoint(event, rect);
+    const count = 8;
+
+    for (let i = 0; i < count; i += 1) {
+      const t = i / (count - 1);
+      const angle = impact.outward - Math.PI / 2 + t * Math.PI;
+      const distance = 24 + Math.random() * 12;
+      const length = 10 + Math.random() * 7;
+      const line = document.createElement('span');
+      Object.assign(line.style, {
+        position: 'fixed',
+        left: `${impact.x}px`,
+        top: `${impact.y}px`,
+        width: `${length}px`,
+        height: '2.5px',
+        background: 'rgba(24,24,24,.95)',
+        transformOrigin: '0 50%',
+        pointerEvents: 'none',
+        opacity: '0',
+      });
+      layer.appendChild(line);
+      const dx = Math.cos(angle) * distance;
+      const dy = Math.sin(angle) * distance;
+      try {
+        const animation = line.animate([
+          { opacity: 0, transform: `translate(0,-50%) rotate(${angle}rad) scaleX(.2)` },
+          { opacity: 1, offset: .08, transform: `translate(${dx * .12}px,calc(${dy * .12}px - 50%)) rotate(${angle}rad) scaleX(1)` },
+          { opacity: .9, offset: .78, transform: `translate(${dx * .68}px,calc(${dy * .68}px - 50%)) rotate(${angle}rad) scaleX(.86)` },
+          { opacity: 0, transform: `translate(${dx}px,calc(${dy}px - 50%)) rotate(${angle}rad) scaleX(.55)` },
+        ], { duration: 1500, easing: 'linear', fill: 'forwards' });
+        animation.addEventListener('finish', () => line.remove(), { once: true });
+      } catch {
+        line.style.opacity = '1';
+        window.setTimeout(() => line.remove(), 1500);
+      }
+    }
+  }
+
+  function spawnPointGhost(impact, amount = 1) {
+    if (!impact) return;
+    const layer = ensureFxLayer();
+    const ghost = document.createElement('span');
+    const color = GHOST_COLORS[ghostColorIndex % GHOST_COLORS.length];
+    ghostColorIndex += 1;
+    ghost.textContent = `+${amount}`;
+    Object.assign(ghost.style, {
+      position: 'fixed',
+      left: `${impact.x}px`,
+      top: `${impact.y}px`,
+      zIndex: '2',
+      color,
+      fontFamily: 'system-ui, sans-serif',
+      fontSize: 'clamp(2.4rem, 3.4vw, 3.6rem)',
+      fontWeight: '950',
+      lineHeight: '.9',
+      letterSpacing: '-.07em',
+      whiteSpace: 'nowrap',
+      pointerEvents: 'none',
+      WebkitTextStroke: '1px rgba(255,255,255,.78)',
+      textShadow: `0 2px 0 rgba(255,255,255,.95), 0 5px 18px ${color}66`,
+      transformOrigin: '50% 100%',
+      opacity: '0',
     });
+    layer.appendChild(ghost);
+
+    try {
+      const animation = ghost.animate([
+        { opacity: 0, transform: 'translate(-50%, 2px) scale(.3)' },
+        { opacity: 1, offset: .06, transform: 'translate(-50%, -30px) scale(1.42)' },
+        { opacity: 1, offset: .15, transform: 'translate(-50%, -38px) scale(1)' },
+        { opacity: 1, offset: .68, transform: 'translate(-50%, -42px) scale(1)' },
+        { opacity: 1, offset: .82, transform: 'translate(-50%, -50px) scale(1.03)' },
+        { opacity: 0, transform: 'translate(-50%, -126px) scale(.94)' },
+      ], { duration: reducedMotion() ? 3200 : 4800, easing: 'linear', fill: 'forwards' });
+      animation.addEventListener('finish', () => ghost.remove(), { once: true });
+    } catch {
+      ghost.style.opacity = '1';
+      ghost.style.transform = 'translate(-50%, -40px)';
+      window.setTimeout(() => ghost.remove(), 4800);
+    }
   }
 
   function classString(slot) {
@@ -168,15 +285,7 @@
       .filter(([, el]) => el?.isConnected)
       .map(([id, el]) => {
         const rect = el.getBoundingClientRect();
-        return {
-          id,
-          el,
-          x: rect.left - stageRect.left,
-          y: rect.top - stageRect.top,
-          w: rect.width,
-          h: rect.height,
-          viewport: rect,
-        };
+        return { id, el, x: rect.left - stageRect.left, y: rect.top - stageRect.top, w: rect.width, h: rect.height, viewport: rect };
       });
   }
 
@@ -207,8 +316,10 @@
     const poweredHit = entering && body.armed && gameActive;
 
     if (poweredHit) {
+      const impact = impactPoint(body, bumper, horizontal);
+      updateScore(1, bumper.id, impact);
+      spawnPointGhost(impact, 1);
       pulseBumper(bumper.el);
-      updateScore(1, bumper.id, impactPoint(body, bumper, horizontal));
     }
 
     const kick = poweredHit ? BUMPER_KICK : NORMAL_SPEED * 1.8;
@@ -281,6 +392,7 @@
         body.vy += (dy / length) * impulse;
         body.lastPointerHit = now;
         body.armed = true;
+        spawnImpactLines(event, rect);
         activateGame();
       }
       body.pointerInside = inside;
@@ -408,6 +520,7 @@
   function start() {
     mark('script-loaded');
     ensureScoreCounter();
+    ensureFxLayer();
     observer.observe(document.body, { childList: true, subtree: true });
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('resize', () => {
