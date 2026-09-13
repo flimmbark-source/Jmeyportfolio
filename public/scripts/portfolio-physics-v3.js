@@ -97,7 +97,10 @@
         ], { duration: 170, easing: 'cubic-bezier(.2,.9,.25,1)' });
       } catch {}
     }
-    window.dispatchEvent(new CustomEvent('pv2:score', {
+    // Deliberately use a new non-visual event name. Older point-ghost helper
+    // runtimes listened to pv2:score and could remain alive during HMR,
+    // producing a second ghost on every hit.
+    window.dispatchEvent(new CustomEvent('pv2:score-state', {
       detail: { points, delta, bumperId, impactX: impact?.x, impactY: impact?.y },
     }));
   }
@@ -166,11 +169,11 @@
           { opacity: 1, offset: .08, transform: `translate(${dx * .12}px,calc(${dy * .12}px - 50%)) rotate(${angle}rad) scaleX(1)` },
           { opacity: .9, offset: .78, transform: `translate(${dx * .68}px,calc(${dy * .68}px - 50%)) rotate(${angle}rad) scaleX(.86)` },
           { opacity: 0, transform: `translate(${dx}px,calc(${dy}px - 50%)) rotate(${angle}rad) scaleX(.55)` },
-        ], { duration: 1500, easing: 'linear', fill: 'forwards' });
+        ], { duration: 750, easing: 'linear', fill: 'forwards' });
         animation.addEventListener('finish', () => line.remove(), { once: true });
       } catch {
         line.style.opacity = '1';
-        window.setTimeout(() => line.remove(), 1500);
+        window.setTimeout(() => line.remove(), 750);
       }
     }
   }
