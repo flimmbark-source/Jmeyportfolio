@@ -2,29 +2,30 @@
   const MOBILE_BREAKPOINT = 720;
   const EDGE_PADDING = 16;
   const NAV_CLEARANCE = 18;
-  const BODY_GAP = 16;
-  const STATEMENT_GAP = 30;
-  const NORMAL_SPEED = 0.045;
-  const REDUCED_SPEED = 0.014;
-  const POINTER_IMPULSE = 0.035;
-  const HOME_PULL = 0.00000055;
-  const DAMPING = 0.9995;
-  const STATEMENT_FOLLOW = 0.055;
-  const BUMPER_COOLDOWN = 240;
+  const BODY_GAP = 10;
+  const BUMPER_GAP = 2;
+  const NORMAL_SPEED = 0.038;
+  const REDUCED_SPEED = 0.012;
+  const POINTER_IMPULSE = 0.16;
+  const POINTER_MIN_IMPULSE = 0.095;
+  const HOME_PULL = 0.00000042;
+  const DAMPING = 0.9992;
+  const MAX_SPEED = 0.34;
+  const REDUCED_MAX_SPEED = 0.06;
+  const BUMPER_COOLDOWN = 220;
+  const POINTER_COOLDOWN = 90;
 
   let frame = 0;
   let stage = null;
-  let statement = null;
   let bodies = [];
   let lastTime = 0;
   let mutationTimer = 0;
-  let statementX = null;
-  let statementY = null;
   let fxLayer = null;
   let scoreCounter = null;
   let scoreValue = null;
   let gameActive = false;
   let points = 0;
+  let pointer = { x: -9999, y: -9999, px: -9999, py: -9999, t: 0 };
 
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
   const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -65,13 +66,13 @@
     scoreCounter.setAttribute('aria-live', 'polite');
     scoreCounter.innerHTML = '<span class="pv2-score-counter__label">Points</span><strong class="pv2-score-counter__value">0</strong>';
     scoreValue = scoreCounter.querySelector('.pv2-score-counter__value');
+    scoreValue.textContent = String(points);
     document.body.appendChild(scoreCounter);
     return scoreCounter;
   }
 
   function setScoreVisible(visible) {
-    const counter = ensureScoreCounter();
-    counter.classList.toggle('is-visible', Boolean(visible));
+    ensureScoreCounter().classList.toggle('is-visible', Boolean(visible));
   }
 
   function activateGame() {
@@ -84,259 +85,206 @@
 
   function updateScore(delta, bumperId) {
     points += delta;
-    const counter = ensureScoreCounter();
-    if (scoreValue) scoreValue.textContent = String(points);
-    counter.animate([
-      { transform: 'scale(1)' },
-      { transform: 'scale(1.08)', offset: 0.42 },
-      { transform: 'scale(1)' },
-    ], { duration: 180, easing: 'cubic-bezier(.2,.9,.25,1)' });
+    ensureScoreCounter();
+    scoreValue.textContent = String(points);
+    if (!reducedMotion()) {
+      scoreCounter.animate([
+        { transform: 'translateY(0) scale(1)' },
+        { transform: 'translateY(0) scale(1.08)', offset: 0.42 },
+        { transform: 'translateY(0) scale(1)' },
+      ], { duration: 170, easing: 'cubic-bezier(.2,.9,.25,1)' });
+    }
     window.dispatchEvent(new CustomEvent('pv2:score', { detail: { points, delta, bumperId } }));
   }
 
-  function pointGhost(bumperEl, amount) {
-    if (!bumperEl?.isConnected) return;
-    const layer = ensureFxLayer();
-    const rect = bumperEl.getBoundingClientRect();
+  function pointGhost(el, amount) {
+    if (!el?.isConnected) return;
+    const rect = el.getBoundingClientRect();
     const ghost = document.createElement('span');
     ghost.className = 'pv2-point-ghost';
     ghost.textContent = `+${amount}`;
     ghost.style.left = `${rect.left + rect.width / 2}px`;
     ghost.style.top = `${rect.top - 2}px`;
-    layer.appendChild(ghost);
-
+    ensureFxLayer().appendChild(ghost);
     const animation = ghost.animate([
       { opacity: 0, transform: 'translate(-50%, 2px) scale(.9)' },
-      { opacity: 1, offset: 0.18, transform: 'translate(-50%, -5px) scale(1)' },
-      { opacity: 0, transform: 'translate(-50%, -28px) scale(.96)' },
-    ], {
-      duration: reducedMotion() ? 1 : 520,
-      easing: 'cubic-bezier(.2,.8,.25,1)',
-    });
+      { opacity: 1, offset: .18, transform: 'translate(-50%, -5px) scale(1)' },
+      { opacity: 0, transform: 'translate(-50%, -30px) scale(.96)' },
+    ], { duration: reducedMotion() ? 1 : 520, easing: 'cubic-bezier(.2,.8,.25,1)' });
     animation.addEventListener('finish', () => ghost.remove(), { once: true });
   }
 
-  function pulseBumper(bumperEl) {
-    if (!bumperEl?.isConnected || reducedMotion()) return;
-    bumperEl.animate([
-      { backgroundColor: 'rgba(36, 36, 36, 0)', boxShadow: '0 0 0 0 rgba(36,36,36,0)' },
-      { backgroundColor: 'rgba(36, 36, 36, 0.055)', boxShadow: '0 0 0 7px rgba(36,36,36,0.035)', offset: 0.38 },
-      { backgroundColor: 'rgba(36, 36, 36, 0)', boxShadow: '0 0 0 0 rgba(36,36,36,0)' },
-    ], {
-      duration: 260,
-      easing: 'cubic-bezier(.2,.9,.25,1)',
-    });
+  function pulseBumper(el) {
+    if (!el?.isConnected || reducedMotion()) return;
+    el.animate([
+      { transform: 'scale(1)', filter: 'brightness(1)' },
+      { transform: 'scale(1.025)', filter: 'brightness(.96)', offset: .34 },
+      { transform: 'scale(1)', filter: 'brightness(1)' },
+    ], { duration: 240, easing: 'cubic-bezier(.2,.9,.25,1)' });
   }
 
-  function registerBumperHit(body, bumperEl, bumperId, now) {
-    if (!gameActive || body.isStatic || !bumperEl) return;
-    const last = body.lastBumperHits.get(bumperId) || -Infinity;
+  function registerBumperHit(body, bumper, now) {
+    if (!gameActive || !bumper?.el) return;
+    const last = body.lastBumperHits.get(bumper.id) || -Infinity;
     if (now - last < BUMPER_COOLDOWN) return;
-    body.lastBumperHits.set(bumperId, now);
-    pulseBumper(bumperEl);
-    pointGhost(bumperEl, 1);
-    updateScore(1, bumperId);
+    body.lastBumperHits.set(bumper.id, now);
+    pulseBumper(bumper.el);
+    pointGhost(bumper.el, 1);
+    updateScore(1, bumper.id);
   }
 
-  function impactBurst(event, targetRect) {
+  function impactBurst(x, y, targetRect) {
     if (window.innerWidth <= MOBILE_BREAKPOINT || reducedMotion() || !targetRect) return;
     const layer = ensureFxLayer();
     const lineCount = 6;
     const centerX = targetRect.left + targetRect.width / 2;
     const centerY = targetRect.top + targetRect.height / 2;
-    const outwardAngle = Math.atan2(event.clientY - centerY, event.clientX - centerX);
+    const outwardAngle = Math.atan2(y - centerY, x - centerX);
 
     for (let i = 0; i < lineCount; i += 1) {
-      const progress = lineCount === 1 ? 0.5 : i / (lineCount - 1);
-      const angle = outwardAngle - Math.PI / 2 + progress * Math.PI + (Math.random() - 0.5) * 0.12;
-      const distance = 10 + Math.random() * 10;
+      const p = i / (lineCount - 1);
+      const angle = outwardAngle - Math.PI / 2 + p * Math.PI + (Math.random() - .5) * .1;
+      const distance = 11 + Math.random() * 10;
       const length = 6 + Math.random() * 5;
       const line = document.createElement('span');
       Object.assign(line.style, {
         position: 'absolute',
-        left: `${event.clientX}px`,
-        top: `${event.clientY}px`,
+        left: `${x}px`,
+        top: `${y}px`,
         width: `${length}px`,
         height: '1.5px',
-        background: 'rgba(32, 32, 32, 0.76)',
+        background: 'rgba(32,32,32,.76)',
         transformOrigin: '0 50%',
-        transform: `translate(0, -50%) rotate(${angle}rad) scaleX(0.15)`,
         opacity: '0',
       });
       layer.appendChild(line);
-
       const dx = Math.cos(angle) * distance;
       const dy = Math.sin(angle) * distance;
       const animation = line.animate([
-        { opacity: 0, transform: `translate(0, -50%) rotate(${angle}rad) scaleX(0.15)` },
-        { opacity: 0.92, offset: 0.16, transform: `translate(${dx * 0.22}px, ${dy * 0.22}px) rotate(${angle}rad) scaleX(1)` },
-        { opacity: 0, transform: `translate(${dx}px, ${dy}px) rotate(${angle}rad) scaleX(0.45)` },
-      ], {
-        duration: 175 + Math.random() * 55,
-        easing: 'cubic-bezier(.2,.9,.25,1)',
-      });
+        { opacity: 0, transform: `translate(0,-50%) rotate(${angle}rad) scaleX(.15)` },
+        { opacity: .95, offset: .16, transform: `translate(${dx * .22}px,${dy * .22}px) rotate(${angle}rad) scaleX(1)` },
+        { opacity: 0, transform: `translate(${dx}px,${dy}px) rotate(${angle}rad) scaleX(.42)` },
+      ], { duration: 175 + Math.random() * 55, easing: 'cubic-bezier(.2,.9,.25,1)' });
       animation.addEventListener('finish', () => line.remove(), { once: true });
     }
   }
 
-  function stageTopLimit(stageRect) {
-    const nav = document.querySelector('.pv2-nav');
-    if (!nav) return EDGE_PADDING;
-    const navRect = nav.getBoundingClientRect();
-    return Math.max(EDGE_PADDING, navRect.bottom - stageRect.top + NAV_CLEARANCE);
-  }
-
-  function viewportTopLimit() {
-    const nav = document.querySelector('.pv2-nav');
-    return nav ? nav.getBoundingClientRect().bottom + NAV_CLEARANCE : EDGE_PADDING;
-  }
-
-  function centerStatementInViewport(stageRect, dt = 16.667, snap = false) {
-    if (!statement) return;
-    const targetX = window.innerWidth / 2 - stageRect.left;
-    const targetY = window.innerHeight / 2 - stageRect.top;
-
-    if (snap || statementX === null || statementY === null) {
-      statementX = targetX;
-      statementY = targetY;
-    } else {
-      const alpha = 1 - Math.pow(1 - STATEMENT_FOLLOW, dt / 16.667);
-      statementX += (targetX - statementX) * alpha;
-      statementY += (targetY - statementY) * alpha;
-    }
-
-    statement.style.position = 'absolute';
-    statement.style.left = `${statementX}px`;
-    statement.style.top = `${statementY}px`;
-    statement.style.right = 'auto';
-    statement.style.bottom = 'auto';
-    statement.style.transform = 'translate(-50%, -50%)';
-  }
-
-  function statementRect() {
-    if (!stage || !statement) return null;
-    const s = statement.getBoundingClientRect();
-    const p = stage.getBoundingClientRect();
-    return { x: s.left - p.left, y: s.top - p.top, w: s.width, h: s.height };
-  }
-
   function classString(slot) {
-    const child = slot.querySelector('.pv2-project-tile, .pv2-gateway-link');
+    const child = slot.querySelector('.pv2-project-tile');
     return `${slot.className} ${child?.className || ''}`;
   }
 
   function anchorFor(slot, width, height) {
     const c = classString(slot);
-    let x = 0.5;
-    let y = 0.5;
-    if (c.includes('project-tile--top')) { x = 0.50; y = 0.18; }
-    else if (c.includes('project-tile--left')) { x = 0.14; y = 0.47; }
-    else if (c.includes('project-tile--right')) { x = 0.86; y = 0.46; }
-    else if (c.includes('project-tile--bottom-left')) { x = 0.31; y = 0.80; }
-    else if (c.includes('project-tile--bottom-right')) { x = 0.69; y = 0.80; }
-    else if (c.includes('gateway-link--ux')) { x = 0.08; y = 0.20; }
-    else if (c.includes('gateway-link--unfinished')) { x = 0.90; y = 0.78; }
-    return { x: width * x, y: height * y };
+    if (c.includes('project-tile--top')) return { x: width * .50, y: height * .18 };
+    if (c.includes('project-tile--left')) return { x: width * .14, y: height * .47 };
+    if (c.includes('project-tile--right')) return { x: width * .86, y: height * .46 };
+    if (c.includes('project-tile--bottom-left')) return { x: width * .31, y: height * .80 };
+    if (c.includes('project-tile--bottom-right')) return { x: width * .69, y: height * .80 };
+    return { x: width * .5, y: height * .5 };
   }
 
-  function constrain(body, stageRect) {
-    if (body.isStatic) return;
-    const minY = stageTopLimit(stageRect);
-    const maxX = Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING);
-    const maxY = Math.max(minY, stageRect.height - body.h - EDGE_PADDING);
-    if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx); }
-    if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx); }
-    if (body.y < minY) { body.y = minY; body.vy = Math.abs(body.vy); }
-    if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy); }
+  function stageTopLimit(stageRect) {
+    const nav = document.querySelector('.pv2-nav');
+    if (!nav) return EDGE_PADDING;
+    return Math.max(EDGE_PADDING, nav.getBoundingClientRect().bottom - stageRect.top + NAV_CLEARANCE);
   }
 
-  function separate(a, b, now = performance.now()) {
-    if (!overlaps(a, b, BODY_GAP)) return;
-    if (a.isStatic && b.isStatic) return;
+  function constrain(body, sr) {
+    const minY = stageTopLimit(sr);
+    const maxX = Math.max(EDGE_PADDING, sr.width - body.w - EDGE_PADDING);
+    const maxY = Math.max(minY, sr.height - body.h - EDGE_PADDING);
+    let bounced = false;
+    if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx); bounced = true; }
+    if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx); bounced = true; }
+    if (body.y < minY) { body.y = minY; body.vy = Math.abs(body.vy); bounced = true; }
+    if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy); bounced = true; }
+    return bounced;
+  }
 
-    if (a.isStatic !== b.isStatic) {
-      const mover = a.isStatic ? b : a;
-      const bumper = a.isStatic ? a : b;
-      registerBumperHit(mover, bumper.target, bumper.bumperId, now);
-    }
+  function bodyRect(body) {
+    return { x: body.x, y: body.y, w: body.w, h: body.h };
+  }
 
-    const dx = (a.x + a.w / 2) - (b.x + b.w / 2) || 0.01;
-    const dy = (a.y + a.h / 2) - (b.y + b.h / 2) || 0.01;
+  function resolveBodyPair(a, b) {
+    if (!overlaps(bodyRect(a), bodyRect(b), BODY_GAP)) return;
+    const dx = (a.x + a.w / 2) - (b.x + b.w / 2) || .01;
+    const dy = (a.y + a.h / 2) - (b.y + b.h / 2) || .01;
     const overlapX = (a.w + b.w) / 2 + BODY_GAP - Math.abs(dx);
     const overlapY = (a.h + b.h) / 2 + BODY_GAP - Math.abs(dy);
 
     if (overlapX < overlapY) {
       const sign = dx >= 0 ? 1 : -1;
-      const push = Math.max(0, overlapX);
-      if (a.isStatic) {
-        b.x -= push * sign;
-        b.vx = -Math.abs(b.vx) * sign;
-      } else if (b.isStatic) {
-        a.x += push * sign;
-        a.vx = Math.abs(a.vx) * sign;
-      } else {
-        a.x += (push / 2) * sign;
-        b.x -= (push / 2) * sign;
-        const av = a.vx;
-        a.vx = b.vx;
-        b.vx = av;
-      }
+      a.x += overlapX * .5 * sign;
+      b.x -= overlapX * .5 * sign;
+      const av = a.vx;
+      a.vx = b.vx;
+      b.vx = av;
     } else {
       const sign = dy >= 0 ? 1 : -1;
-      const push = Math.max(0, overlapY);
-      if (a.isStatic) {
-        b.y -= push * sign;
-        b.vy = -Math.abs(b.vy) * sign;
-      } else if (b.isStatic) {
-        a.y += push * sign;
-        a.vy = Math.abs(a.vy) * sign;
-      } else {
-        a.y += (push / 2) * sign;
-        b.y -= (push / 2) * sign;
-        const av = a.vy;
-        a.vy = b.vy;
-        b.vy = av;
-      }
+      a.y += overlapY * .5 * sign;
+      b.y -= overlapY * .5 * sign;
+      const av = a.vy;
+      a.vy = b.vy;
+      b.vy = av;
     }
   }
 
-  function separateStatement(body, obstacle, now = performance.now()) {
-    if (body.isStatic || !obstacle || !overlaps(body, obstacle, STATEMENT_GAP)) return;
-    registerBumperHit(body, statement, 'statement', now);
+  function bumperRects(sr) {
+    const candidates = [
+      ['statement', document.querySelector('.pv2-overview__statement')],
+      ['ux-work', document.querySelector('.pv2-gateway-link--ux')],
+      ['all-games', document.querySelector('.pv2-gateway-link--unfinished')],
+    ];
 
-    const dx = (body.x + body.w / 2) - (obstacle.x + obstacle.w / 2) || 0.01;
-    const dy = (body.y + body.h / 2) - (obstacle.y + obstacle.h / 2) || 0.01;
-    const overlapX = (body.w + obstacle.w) / 2 + STATEMENT_GAP - Math.abs(dx);
-    const overlapY = (body.h + obstacle.h) / 2 + STATEMENT_GAP - Math.abs(dy);
+    return candidates
+      .filter(([, el]) => el?.isConnected)
+      .map(([id, el]) => {
+        const r = el.getBoundingClientRect();
+        return {
+          id,
+          el,
+          x: r.left - sr.left,
+          y: r.top - sr.top,
+          w: r.width,
+          h: r.height,
+        };
+      });
+  }
+
+  function resolveBumper(body, bumper, now) {
+    if (!overlaps(bodyRect(body), bumper, BUMPER_GAP)) return false;
+
+    const dx = (body.x + body.w / 2) - (bumper.x + bumper.w / 2) || .01;
+    const dy = (body.y + body.h / 2) - (bumper.y + bumper.h / 2) || .01;
+    const overlapX = (body.w + bumper.w) / 2 + BUMPER_GAP - Math.abs(dx);
+    const overlapY = (body.h + bumper.h) / 2 + BUMPER_GAP - Math.abs(dy);
+
+    registerBumperHit(body, bumper, now);
+
     if (overlapX < overlapY) {
       const sign = dx >= 0 ? 1 : -1;
       body.x += overlapX * sign;
-      body.vx = Math.abs(body.vx) * sign;
+      body.vx = Math.max(Math.abs(body.vx), NORMAL_SPEED * 1.7) * sign;
     } else {
       const sign = dy >= 0 ? 1 : -1;
       body.y += overlapY * sign;
-      body.vy = Math.abs(body.vy) * sign;
+      body.vy = Math.max(Math.abs(body.vy), NORMAL_SPEED * 1.7) * sign;
     }
+    return true;
   }
 
-  function makeBody(el, index, stageRect) {
+  function makeBody(el, index, sr) {
+    el.style.transform = '';
+    el.style.removeProperty('--pv2-scroll-drift-y');
+
     const rect = el.getBoundingClientRect();
-    const anchor = anchorFor(el, stageRect.width, stageRect.height);
-    const w = rect.width;
-    const h = rect.height;
-    const minY = stageTopLimit(stageRect);
-    const x = clamp(anchor.x - w / 2, EDGE_PADDING, stageRect.width - w - EDGE_PADDING);
-    const y = clamp(anchor.y - h / 2, minY, stageRect.height - h - EDGE_PADDING);
-    const angle = 0.55 + index * 1.19;
+    const anchor = anchorFor(el, sr.width, sr.height);
+    const minY = stageTopLimit(sr);
+    const x = clamp(anchor.x - rect.width / 2, EDGE_PADDING, sr.width - rect.width - EDGE_PADDING);
+    const y = clamp(anchor.y - rect.height / 2, minY, sr.height - rect.height - EDGE_PADDING);
+    const angle = .55 + index * 1.19;
     const speed = reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED;
-    const classes = classString(el);
-    const isStatic = classes.includes('gateway-link--ux') || classes.includes('gateway-link--unfinished');
-    const isCafe = classes.includes('project-tile--top');
-    const bumperId = classes.includes('gateway-link--ux')
-      ? 'ux-work'
-      : classes.includes('gateway-link--unfinished')
-        ? 'all-games'
-        : null;
 
     el.style.position = 'absolute';
     el.style.right = 'auto';
@@ -345,41 +293,57 @@
     el.style.top = `${y}px`;
     el.style.transition = 'none';
 
-    const body = {
-      el, x, y, w, h, isStatic, isCafe, bumperId,
+    return {
+      el,
+      target: el.querySelector('.pv2-project-tile') || el,
+      x,
+      y,
+      w: rect.width,
+      h: rect.height,
       homeX: x,
       homeY: y,
-      vx: isStatic ? 0 : Math.cos(angle) * speed,
-      vy: isStatic ? 0 : Math.sin(angle) * speed,
-      phase: index * 1.41 + 0.7,
-      scrollFollow: 0.018 + Math.random() * 0.045,
-      visualViewportY: stageRect.top + y,
-      target: el.querySelector('.pv2-project-tile, .pv2-gateway-link') || el,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      phase: index * 1.41 + .7,
+      pointerInside: false,
+      lastPointerHit: -Infinity,
       lastBumperHits: new Map(),
     };
+  }
 
-    body.enter = (event) => {
+  function handlePointerMove(event) {
+    const now = performance.now();
+    const dt = Math.max(8, now - pointer.t || 16);
+    const vx = (event.clientX - pointer.x) / dt;
+    const vy = (event.clientY - pointer.y) / dt;
+    pointer = { x: event.clientX, y: event.clientY, px: pointer.x, py: pointer.y, t: now };
+
+    if (!stage || window.innerWidth <= MOBILE_BREAKPOINT) return;
+
+    for (const body of bodies) {
       const r = body.el.getBoundingClientRect();
-      impactBurst(event, r);
-      if (isStatic) return;
-      const centerX = r.left + r.width / 2;
-      const centerY = r.top + r.height / 2;
-      const dx = centerX - event.clientX;
-      const dy = centerY - event.clientY;
-      const len = Math.hypot(dx, dy) || 1;
-      body.vx += (dx / len) * POINTER_IMPULSE;
-      body.vy += (dy / len) * POINTER_IMPULSE;
+      const inside = event.clientX >= r.left && event.clientX <= r.right && event.clientY >= r.top && event.clientY <= r.bottom;
 
-      if (body.isCafe) {
-        const verticalDir = Math.abs(dy) > 2 ? Math.sign(dy) : (Math.random() < 0.5 ? -1 : 1);
-        body.vy += verticalDir * POINTER_IMPULSE * 0.65;
+      if (inside && !body.pointerInside && now - body.lastPointerHit >= POINTER_COOLDOWN) {
+        let dx = vx;
+        let dy = vy;
+        let len = Math.hypot(dx, dy);
+        if (len < .01) {
+          dx = r.left + r.width / 2 - event.clientX;
+          dy = r.top + r.height / 2 - event.clientY;
+          len = Math.hypot(dx, dy) || 1;
+        }
+        const pointerSpeed = Math.hypot(vx, vy);
+        const impulse = clamp(POINTER_MIN_IMPULSE + pointerSpeed * .22, POINTER_MIN_IMPULSE, POINTER_IMPULSE);
+        body.vx += (dx / len) * impulse;
+        body.vy += (dy / len) * impulse;
+        body.lastPointerHit = now;
+        impactBurst(event.clientX, event.clientY, r);
+        activateGame();
       }
 
-      activateGame();
-    };
-    body.target.addEventListener('pointerenter', body.enter);
-
-    return body;
+      body.pointerInside = inside;
+    }
   }
 
   function tick(now) {
@@ -392,105 +356,95 @@
     const dt = clamp(lastTime ? now - lastTime : 16.667, 8, 32);
     lastTime = now;
     const sr = stage.getBoundingClientRect();
-
-    centerStatementInViewport(sr, dt, false);
-    const obstacle = statementRect();
     const speedFloor = reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED;
+    const maxSpeed = reducedMotion() ? REDUCED_MAX_SPEED : MAX_SPEED;
     const t = now / 1000;
 
     for (const body of bodies) {
-      if (!body.isStatic) {
-        body.vx += (body.homeX - body.x) * HOME_PULL * dt;
-        body.vy += (body.homeY - body.y) * HOME_PULL * dt;
-        body.vx += Math.sin(t * 0.41 + body.phase) * 0.0000175 * dt;
-        body.vy += Math.cos(t * 0.37 + body.phase * 1.23) * 0.0000175 * dt;
-        if (body.isCafe) body.vy += Math.sin(t * 0.62 + body.phase) * 0.000025 * dt;
-        body.vx *= Math.pow(DAMPING, dt);
-        body.vy *= Math.pow(DAMPING, dt);
+      body.vx += (body.homeX - body.x) * HOME_PULL * dt;
+      body.vy += (body.homeY - body.y) * HOME_PULL * dt;
+      if (!reducedMotion()) {
+        body.vx += Math.sin(t * .41 + body.phase) * .000014 * dt;
+        body.vy += Math.cos(t * .37 + body.phase * 1.23) * .000014 * dt;
+      }
+      body.vx *= Math.pow(DAMPING, dt);
+      body.vy *= Math.pow(DAMPING, dt);
 
-        const currentSpeed = Math.hypot(body.vx, body.vy);
-        if (currentSpeed < speedFloor) {
-          const a = body.phase + t * 0.16;
-          body.vx += Math.cos(a) * (speedFloor - currentSpeed) * 0.18;
-          body.vy += Math.sin(a) * (speedFloor - currentSpeed) * 0.18;
-        }
-
-        const maxSpeed = reducedMotion() ? 0.0275 : 0.09;
-        body.vx = clamp(body.vx, -maxSpeed, maxSpeed);
-        body.vy = clamp(body.vy, -maxSpeed, maxSpeed);
-        body.x += body.vx * dt;
-        body.y += body.vy * dt;
-        separateStatement(body, obstacle, now);
-        constrain(body, sr);
+      const speed = Math.hypot(body.vx, body.vy);
+      if (speed < speedFloor) {
+        const a = body.phase + t * .16;
+        body.vx += Math.cos(a) * (speedFloor - speed) * .16;
+        body.vy += Math.sin(a) * (speedFloor - speed) * .16;
       }
 
-      const targetViewportY = sr.top + body.y;
-      const follow = body.isStatic ? 1 : body.scrollFollow;
-      const alpha = 1 - Math.pow(1 - follow, dt / 16.667);
-      body.visualViewportY += (targetViewportY - body.visualViewportY) * alpha;
-
-      const minViewportY = viewportTopLimit();
-      const maxViewportY = Math.max(minViewportY, sr.bottom - body.h - EDGE_PADDING);
-      body.visualViewportY = clamp(body.visualViewportY, minViewportY, maxViewportY);
+      body.vx = clamp(body.vx, -maxSpeed, maxSpeed);
+      body.vy = clamp(body.vy, -maxSpeed, maxSpeed);
+      body.x += body.vx * dt;
+      body.y += body.vy * dt;
+      constrain(body, sr);
     }
 
     for (let pass = 0; pass < 2; pass += 1) {
       for (let i = 0; i < bodies.length; i += 1) {
-        for (let j = i + 1; j < bodies.length; j += 1) separate(bodies[i], bodies[j], now);
+        for (let j = i + 1; j < bodies.length; j += 1) resolveBodyPair(bodies[i], bodies[j]);
       }
-      bodies.forEach((b) => constrain(b, sr));
+      const bumpers = bumperRects(sr);
+      for (const body of bodies) {
+        for (const bumper of bumpers) resolveBumper(body, bumper, now);
+        constrain(body, sr);
+      }
     }
 
     for (const body of bodies) {
-      const displayY = body.visualViewportY - sr.top;
       body.el.style.left = `${body.x.toFixed(2)}px`;
-      body.el.style.top = `${displayY.toFixed(2)}px`;
+      body.el.style.top = `${body.y.toFixed(2)}px`;
     }
 
-    mark(reducedMotion() ? 'running-reduced' : 'running');
+    mark(reducedMotion() ? 'running-reduced' : gameActive ? 'running-game' : 'running');
     frame = requestAnimationFrame(tick);
   }
 
   function teardown() {
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
-    for (const body of bodies) {
-      if (body.enter) body.target.removeEventListener('pointerenter', body.enter);
-    }
     bodies = [];
     lastTime = 0;
-    statementX = null;
-    statementY = null;
     setScoreVisible(false);
   }
 
   function init() {
     teardown();
     stage = document.querySelector('.pv2-overview__stage');
-    statement = document.querySelector('.pv2-overview__statement');
-    if (!stage || !statement) { mark('waiting-for-overview'); return; }
-    if (window.innerWidth <= MOBILE_BREAKPOINT) { mark('mobile-static'); return; }
+    if (!stage || window.innerWidth <= MOBILE_BREAKPOINT) {
+      mark(window.innerWidth <= MOBILE_BREAKPOINT ? 'mobile-static' : 'waiting-for-overview');
+      return;
+    }
 
-    const elements = [...stage.querySelectorAll('.pv2-float-slot')];
+    // Only project images are dynamic game bodies. The text remains fixed and
+    // is sampled directly from the DOM as scoring bumpers every frame.
+    const elements = [...stage.querySelectorAll('.pv2-float-slot')]
+      .filter((el) => el.querySelector('.pv2-project-tile'));
     if (!elements.length) { mark('waiting-for-bodies'); return; }
 
     const sr = stage.getBoundingClientRect();
-    centerStatementInViewport(sr, 16.667, true);
     bodies = elements.map((el, i) => makeBody(el, i, sr));
-    const obstacle = statementRect();
 
-    for (let pass = 0; pass < 16; pass += 1) {
-      bodies.forEach((body) => separateStatement(body, obstacle));
+    // Resolve any authored starting overlap without scoring. Rendering and
+    // collision now use the exact same x/y values from this single simulation.
+    for (let pass = 0; pass < 20; pass += 1) {
       for (let i = 0; i < bodies.length; i += 1) {
-        for (let j = i + 1; j < bodies.length; j += 1) separate(bodies[i], bodies[j]);
+        for (let j = i + 1; j < bodies.length; j += 1) resolveBodyPair(bodies[i], bodies[j]);
       }
-      bodies.forEach((body) => constrain(body, sr));
+      const bumpers = bumperRects(sr);
+      for (const body of bodies) {
+        for (const bumper of bumpers) resolveBumper(body, bumper, performance.now());
+        constrain(body, sr);
+      }
     }
 
     for (const body of bodies) {
       body.homeX = body.x;
       body.homeY = body.y;
-      body.visualViewportY = sr.top + body.y;
       body.el.style.left = `${body.x}px`;
       body.el.style.top = `${body.y}px`;
     }
@@ -505,19 +459,24 @@
     mutationTimer = window.setTimeout(() => {
       const hasOverview = Boolean(document.querySelector('.pv2-overview__stage'));
       if (hasOverview && (!stage || !stage.isConnected || !frame)) init();
-      if (!hasOverview && stage) { teardown(); stage = null; statement = null; mark('inactive'); }
-    }, 50);
+      if (!hasOverview && stage) {
+        teardown();
+        stage = null;
+        mark('inactive');
+      }
+    }, 40);
   });
 
   function start() {
     mark('script-loaded');
     ensureScoreCounter();
     observer.observe(document.body, { childList: true, subtree: true });
-    init();
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('resize', () => {
       clearTimeout(mutationTimer);
-      mutationTimer = window.setTimeout(init, 120);
+      mutationTimer = window.setTimeout(init, 100);
     });
+    init();
   }
 
   if (document.readyState === 'loading') {
