@@ -28,28 +28,57 @@ import '../styles/portfolio-loading.css';
         const loader = document.querySelector('.pv2-boot-loader');
         if (!loader) return;
 
+        const startedAt = performance.now();
+        const minimumVisibleMs = 600;
+        const criticalImages = [
+          '/images/oiz8uf.png',
+          '/images/letterriverscreen.png',
+          '/images/Thelastreadingscreen.png',
+          '/images/rotogoscreen.png',
+          '/images/VenueRivalsscreen .png',
+        ];
+
+        const preload = (src) => new Promise((resolve) => {
+          const image = new Image();
+          image.onload = resolve;
+          image.onerror = resolve;
+          image.src = src;
+        });
+
+        const waitForPortfolio = new Promise((resolve) => {
+          const check = () => {
+            if (document.querySelector('#portfolio-v2 .pv2-site')) {
+              requestAnimationFrame(() => requestAnimationFrame(resolve));
+              return;
+            }
+            requestAnimationFrame(check);
+          };
+          check();
+        });
+
+        const fontsReady = document.fonts?.ready?.catch?.(() => {}) || Promise.resolve();
+        const assetsReady = Promise.all([
+          waitForPortfolio,
+          fontsReady,
+          Promise.all(criticalImages.map(preload)),
+        ]);
+
         const finish = () => {
           if (!loader.isConnected) return;
-          loader.classList.add('is-done');
-          window.setTimeout(() => loader.remove(), 220);
+          const remaining = Math.max(0, minimumVisibleMs - (performance.now() - startedAt));
+          window.setTimeout(() => {
+            if (!loader.isConnected) return;
+            loader.classList.add('is-done');
+            window.setTimeout(() => loader.remove(), 220);
+          }, remaining);
         };
 
-        const waitForPortfolio = () => {
-          if (document.querySelector('#portfolio-v2 .pv2-site')) {
-            requestAnimationFrame(() => requestAnimationFrame(finish));
-            return;
-          }
-          requestAnimationFrame(waitForPortfolio);
-        };
-
-        waitForPortfolio();
-        window.setTimeout(finish, 5000);
+        assetsReady.then(finish);
+        window.setTimeout(finish, 4000);
       })();
     </script>
-    <script src="/scripts/portfolio-physics-v3.js?v=9" defer></script>
-    <script src="/scripts/portfolio-scroll-drift.js?v=5" defer></script>
+    <script src="/scripts/portfolio-physics-v3.js?v=10" defer></script>
     <script src="/scripts/ux-direct-link.js?v=1" defer></script>
-    <script src="/scripts/portfolio-bio-bounce.js?v=3" defer></script>
     <script src="/scripts/letter-river-preview.js?v=4" defer></script>
   </body>
 </html>
