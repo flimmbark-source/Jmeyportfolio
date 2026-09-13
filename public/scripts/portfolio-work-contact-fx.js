@@ -18,7 +18,7 @@
         background: rgba(24, 24, 24, .95);
         transform-origin: 0 50%;
         pointer-events: none;
-        animation: pv2ImpactLine 380ms cubic-bezier(.16,.84,.24,1) forwards;
+        animation: pv2ImpactLine 1520ms cubic-bezier(.16,.84,.24,1) forwards;
       }
 
       @keyframes pv2ImpactLine {
@@ -26,11 +26,11 @@
           opacity: 0;
           transform: translate(0, -50%) rotate(var(--impact-angle)) scaleX(.2);
         }
-        14% {
+        6% {
           opacity: 1;
-          transform: translate(calc(var(--impact-dx) * .18), calc(var(--impact-dy) * .18 - 50%)) rotate(var(--impact-angle)) scaleX(1);
+          transform: translate(calc(var(--impact-dx) * .12), calc(var(--impact-dy) * .12 - 50%)) rotate(var(--impact-angle)) scaleX(1);
         }
-        68% {
+        78% {
           opacity: .9;
         }
         100% {
@@ -42,22 +42,38 @@
     document.head.appendChild(style);
   }
 
+  function nearestEdgePoint(event, rect) {
+    const x = Math.max(rect.left, Math.min(rect.right, event.clientX));
+    const y = Math.max(rect.top, Math.min(rect.bottom, event.clientY));
+    const distances = [
+      { edge: 'left', value: Math.abs(event.clientX - rect.left) },
+      { edge: 'right', value: Math.abs(rect.right - event.clientX) },
+      { edge: 'top', value: Math.abs(event.clientY - rect.top) },
+      { edge: 'bottom', value: Math.abs(rect.bottom - event.clientY) },
+    ];
+    distances.sort((a, b) => a.value - b.value);
+    const edge = distances[0].edge;
+
+    if (edge === 'left') return { x: rect.left, y, outward: Math.PI };
+    if (edge === 'right') return { x: rect.right, y, outward: 0 };
+    if (edge === 'top') return { x, y: rect.top, outward: -Math.PI / 2 };
+    return { x, y: rect.bottom, outward: Math.PI / 2 };
+  }
+
   function burst(event, tile) {
     if (window.innerWidth <= MOBILE_BREAKPOINT) return;
     const rect = tile.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const outward = Math.atan2(event.clientY - centerY, event.clientX - centerX);
+    const impact = nearestEdgePoint(event, rect);
     const count = 8;
 
     for (let i = 0; i < count; i += 1) {
       const t = i / (count - 1);
-      const angle = outward - Math.PI / 2 + t * Math.PI;
+      const angle = impact.outward - Math.PI / 2 + t * Math.PI;
       const distance = 24 + Math.random() * 12;
       const line = document.createElement('span');
       line.className = 'pv2-impact-line';
-      line.style.setProperty('--impact-x', `${event.clientX}px`);
-      line.style.setProperty('--impact-y', `${event.clientY}px`);
+      line.style.setProperty('--impact-x', `${impact.x}px`);
+      line.style.setProperty('--impact-y', `${impact.y}px`);
       line.style.setProperty('--impact-angle', `${angle}rad`);
       line.style.setProperty('--impact-dx', `${Math.cos(angle) * distance}px`);
       line.style.setProperty('--impact-dy', `${Math.sin(angle) * distance}px`);
@@ -98,8 +114,6 @@
     observer.observe(document.body, { childList: true, subtree: true });
     window.addEventListener('resize', forceStatementCenter);
 
-    // Framer Motion may write an entrance transform during the first few frames.
-    // Reassert the authored center through the end of that entrance animation.
     let frames = 0;
     const settle = () => {
       forceStatementCenter();
