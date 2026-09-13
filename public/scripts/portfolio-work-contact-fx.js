@@ -18,7 +18,7 @@
         background: rgba(24, 24, 24, .95);
         transform-origin: 0 50%;
         pointer-events: none;
-        animation: pv2ImpactLine 1520ms cubic-bezier(.16,.84,.24,1) forwards;
+        animation: pv2ImpactLine 1500ms cubic-bezier(.16,.84,.24,1) forwards;
       }
 
       @keyframes pv2ImpactLine {
