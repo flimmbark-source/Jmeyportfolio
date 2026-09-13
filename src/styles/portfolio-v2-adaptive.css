@@ -58,8 +58,10 @@
   }
 }
 
+/* Static stacked grid — the fallback before the physics game hydrates, and
+   when it can't run (no JS). Scoped so the live floating game can take over. */
 @media (max-width: 720px) {
-  .pv2-overview__stage {
+  html:not(.pv2-physics-live) .pv2-overview__stage {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 34px 18px;
@@ -69,7 +71,7 @@
     overflow: visible;
   }
 
-  .pv2-overview__statement {
+  html:not(.pv2-physics-live) .pv2-overview__statement {
     position: relative;
     inset: auto;
     grid-column: 1 / -1;
@@ -79,37 +81,102 @@
     margin-bottom: 20px;
   }
 
-  .pv2-overview__statement > p:last-child {
+  html:not(.pv2-physics-live) .pv2-overview__statement > p:last-child {
     margin-left: auto;
     margin-right: auto;
   }
 
-  .pv2-float-slot {
+  html:not(.pv2-physics-live) .pv2-float-slot {
     position: relative;
     inset: auto !important;
     width: 100%;
     max-width: none;
   }
 
-  .pv2-float-slot .pv2-project-tile,
-  .pv2-float-slot .pv2-gateway-link {
+  html:not(.pv2-physics-live) .pv2-float-slot .pv2-project-tile,
+  html:not(.pv2-physics-live) .pv2-float-slot .pv2-gateway-link {
     width: 100%;
   }
 
-  .pv2-float-slot--gateway {
+  html:not(.pv2-physics-live) .pv2-float-slot--gateway {
     min-height: 120px;
     border-top: 1px solid var(--pv2-line);
     padding-top: 16px;
   }
 
-  .pv2-float-slot--gateway .pv2-gateway-link {
+  html:not(.pv2-physics-live) .pv2-float-slot--gateway .pv2-gateway-link {
     min-height: 100%;
     justify-content: flex-end;
   }
 }
 
 @media (max-width: 460px) {
-  .pv2-overview__stage {
+  html:not(.pv2-physics-live) .pv2-overview__stage {
     grid-template-columns: 1fr;
+  }
+}
+
+/* On phones the floating game is tight, so thin the roster to make room.
+   These games stay reachable through the All Games gateway. */
+@media (max-width: 720px) {
+  .pv2-float-slot[data-node-id="last-reading"],
+  .pv2-float-slot[data-node-id="rotogo"] {
+    display: none;
+  }
+}
+
+/* Live floating game on mobile: the stage becomes a fixed-height play area
+   sized to the viewport, and tiles are flicked by dragging through them. */
+@media (max-width: 720px) {
+  html.pv2-physics-live .pv2-overview {
+    min-height: 0;
+  }
+
+  html.pv2-physics-live .pv2-overview__stage {
+    display: block;
+    height: calc(100svh - 100px);
+    min-height: 360px;
+    max-height: none;
+    padding: 0;
+    overflow: hidden;
+    touch-action: none;
+  }
+
+  html.pv2-physics-live .pv2-overview__statement {
+    width: min(84vw, 340px);
+    margin: 0;
+    text-align: center;
+  }
+
+  html.pv2-physics-live .pv2-overview__statement h1 {
+    font-size: clamp(1.9rem, 8vw, 2.9rem);
+  }
+
+  html.pv2-physics-live .pv2-overview__statement > p:last-child {
+    margin: 10px auto 0;
+    font-size: .9rem;
+  }
+
+  html.pv2-physics-live .pv2-float-slot .pv2-project-tile {
+    width: clamp(84px, 26vw, 122px);
+  }
+
+  html.pv2-physics-live .pv2-float-slot--gateway {
+    min-height: 0;
+    border: 0;
+    padding: 0;
+  }
+
+  html.pv2-physics-live .pv2-float-slot .pv2-gateway-link {
+    width: auto;
+    min-width: max-content;
+    min-height: 0;
+    justify-content: center;
+    border: 0;
+    padding: 10px 12px;
+  }
+
+  html.pv2-physics-live .pv2-visual {
+    aspect-ratio: 1 / 1;
   }
 }

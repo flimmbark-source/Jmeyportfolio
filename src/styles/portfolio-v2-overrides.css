@@ -160,6 +160,60 @@
   display: none;
 }
 
+/* The incremental layer remains invisible until the player first bumps a game tile. */
+.pv2-score-counter {
+  position: fixed;
+  top: calc(var(--pv2-nav-height) + 14px);
+  right: clamp(18px, 3.8vw, 68px);
+  z-index: 1180;
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 8px 11px;
+  border: 1px solid rgba(36, 36, 36, 0.11);
+  background: rgba(247, 246, 242, 0.88);
+  box-shadow: 0 8px 22px rgba(36, 36, 36, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: opacity 180ms ease, transform 220ms var(--pv2-ease);
+}
+
+.pv2-score-counter.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pv2-score-counter__label {
+  color: var(--pv2-muted);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.pv2-score-counter__value {
+  min-width: 1.2ch;
+  font-size: 1.08rem;
+  font-weight: 720;
+  letter-spacing: -.035em;
+  font-variant-numeric: tabular-nums;
+}
+
+.pv2-point-ghost {
+  position: absolute;
+  z-index: 1;
+  color: var(--pv2-text);
+  font-size: .78rem;
+  font-weight: 760;
+  letter-spacing: -.02em;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 1px 10px rgba(247, 246, 242, .9);
+}
+
 .pv2-focus__actions {
   display: flex;
   flex-wrap: wrap;
@@ -204,13 +258,27 @@
   .pv2-focus__actions {
     justify-content: flex-start;
   }
+
+  /* The floating game now runs on mobile, so the score/upgrades entry stays. */
+  .pv2-score-counter {
+    top: 70px;
+    right: 14px;
+    padding: 7px 10px;
+    gap: 7px;
+    z-index: 1180;
+  }
+
+  .pv2-score-counter__value {
+    font-size: 1rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .pv2-project-tile,
   .pv2-project-tile .pv2-visual,
   .pv2-project-tile .pv2-project-tile__caption,
-  .pv2-focus__actions a {
+  .pv2-focus__actions a,
+  .pv2-score-counter {
     transition: none !important;
   }
 }

@@ -8,6 +8,13 @@ const softSpring = { type: 'spring', stiffness: 180, damping: 24, mass: 0.85 };
 const publicProjectIds = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotogo', 'gig-duel'];
 const unfinishedProjectIds = ['phase-g', 'splitpulse'];
 const allGameIds = [...publicProjectIds, ...unfinishedProjectIds];
+const preloadImageSources = [
+  '/images/oiz8uf.png',
+  '/images/letterriverscreen.png',
+  '/images/Thelastreadingscreen.png',
+  '/images/rotogoscreen.png',
+  '/images/VenueRivalsscreen .png',
+];
 
 const hoverMotion = {
   top: { y: -9, rotate: -0.35, scale: 1.018 },
@@ -168,7 +175,7 @@ function ProjectVisual({ node, large = false }) {
 
 function ProjectTile({ node, placement, index, onSelect, reducedMotion, register, position }) {
   return (
-    <div ref={(el) => register(node.id, el)} className="pv2-float-slot" style={position || undefined}>
+    <div ref={(el) => register(node.id, el)} className="pv2-float-slot" data-node-id={node.id} style={position || undefined}>
       <motion.button
         layoutId={`project-${node.id}`}
         type="button"
@@ -234,10 +241,10 @@ function Overview({ onSelect, reducedMotion }) {
     const recalculate = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
-        if (window.innerWidth <= 720) {
-          setPositions({});
-          return;
-        }
+        // Solve at all widths: the physics script (portfolio-physics-v3.js) now
+        // runs the floating game on mobile too, and relies on these absolute
+        // positions for the gateway bumpers. The static grid fallback ignores
+        // them via the html:not(.pv2-physics-live) CSS scope.
         setPositions(solveOverviewLayout(stage, statement, itemRefs.current));
       });
     };
@@ -262,7 +269,7 @@ function Overview({ onSelect, reducedMotion }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={reducedMotion ? undefined : { opacity: 0 }}
-      transition={{ duration: reducedMotion ? 0 : 0.22 }}
+      transition={{ duration: reducedMotion ? 0 : 0.12 }}
     >
       <section ref={stageRef} className="pv2-overview__stage" aria-label="Selected work">
         <motion.div
@@ -270,7 +277,7 @@ function Overview({ onSelect, reducedMotion }) {
           className="pv2-overview__statement"
           initial={reducedMotion ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={reducedMotion ? { duration: 0 } : { duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+          transition={reducedMotion ? { duration: 0 } : { duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
         >
           <p className="pv2-overline">Interactive work · systems · perspective</p>
           <h1>I make systems<br />you can step inside.</h1>
@@ -329,7 +336,7 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
       initial={reducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={reducedMotion ? undefined : { opacity: 0 }}
-      transition={{ duration: reducedMotion ? 0 : 0.2 }}
+      transition={{ duration: reducedMotion ? 0 : 0.16 }}
     >
       <button className="pv2-back" type="button" onClick={onBack}>← {node.status === 'unfinished' ? 'All Games' : 'All work'}</button>
 
@@ -338,7 +345,7 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
           className="pv2-focus__intro"
           initial={reducedMotion ? false : { opacity: 0, x: -14 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={reducedMotion ? { duration: 0 } : { duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          transition={reducedMotion ? { duration: 0 } : { duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
         >
           <p className="pv2-overline">{node.kicker || 'Project'}</p>
           <motion.h1 layoutId={`title-${node.id}`}>{node.title}</motion.h1>
@@ -382,7 +389,13 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
 function Workshop({ onBack, onSelect, reducedMotion }) {
   const projects = allGameIds.map((id) => portfolioV2NodeMap.get(id)).filter(Boolean);
   return (
-    <motion.main className="pv2-workshop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+    <motion.main
+      className="pv2-workshop"
+      initial={reducedMotion ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={reducedMotion ? undefined : { opacity: 0 }}
+      transition={{ duration: reducedMotion ? 0 : 0.14 }}
+    >
       <button className="pv2-back" type="button" onClick={onBack}>← All work</button>
       <div className="pv2-workshop__intro">
         <p className="pv2-overline">Workshop</p>
@@ -396,11 +409,11 @@ function Workshop({ onBack, onSelect, reducedMotion }) {
             type="button"
             className="pv2-workshop-card"
             onClick={() => onSelect(node.id)}
-            initial={reducedMotion ? false : { opacity: 0, y: 12 }}
+            initial={reducedMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             whileHover={reducedMotion ? undefined : { y: -5, rotate: index % 2 ? 0.3 : -0.3 }}
             whileTap={reducedMotion ? undefined : { scale: 0.99 }}
-            transition={reducedMotion ? { duration: 0 } : { ...softSpring, delay: index * 0.05 }}
+            transition={reducedMotion ? { duration: 0 } : { ...softSpring, delay: index * 0.012 }}
           >
             <ProjectVisual node={node} />
             <strong>{node.title}</strong>
@@ -432,6 +445,12 @@ export default function RelationalPortfolio() {
   const [selectedId, setSelectedId] = useState(null);
 
   useEffect(() => {
+    for (const src of preloadImageSources) {
+      const image = new Image();
+      image.decoding = 'async';
+      image.src = src;
+    }
+
     setSelectedId(readProjectFromUrl());
     const onPopState = () => setSelectedId(readProjectFromUrl());
     const onKeyDown = (event) => {
@@ -470,11 +489,11 @@ export default function RelationalPortfolio() {
           <button type="button" onClick={() => { setSelectedId(null); writeProjectToUrl(null); }}>Work</button>
           <button type="button" onClick={() => select('unfinished')}>Playground</button>
           <a href="/ux">UX</a>
-          <a href="mailto:jmeyerkopf@gmail.com">Contact</a>
+          <a href="/contact">Contact</a>
         </nav>
       </header>
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence initial={false} mode="sync">
         {!selected && <Overview key="overview" onSelect={select} reducedMotion={reducedMotion} />}
         {selected?.kind === 'project' && <ProjectFocus key={selected.id} node={selected} onBack={back} onSelect={select} reducedMotion={reducedMotion} />}
         {selected?.id === 'unfinished' && <Workshop key="unfinished" onBack={back} onSelect={select} reducedMotion={reducedMotion} />}

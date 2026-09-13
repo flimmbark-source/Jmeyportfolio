@@ -2,6 +2,8 @@
 import RelationalPortfolio from '../components/RelationalPortfolio.jsx';
 import '../styles/portfolio-v2-overrides.css';
 import '../styles/portfolio-v2-adaptive.css';
+import '../styles/portfolio-loading.css';
+import '../styles/portfolio-incremental.css';
 ---
 <!doctype html>
 <html lang="en">
@@ -16,14 +18,69 @@ import '../styles/portfolio-v2-adaptive.css';
   </head>
   <body class="pv2-body">
     <a class="pv2-skip" href="#portfolio-v2">Skip to work</a>
+    <div class="pv2-boot-loader" aria-label="Loading portfolio" role="status">
+      <div class="pv2-loader-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
     <div id="portfolio-v2">
       <RelationalPortfolio client:load />
     </div>
-    <script src="/scripts/portfolio-physics-v3.js?v=7" defer></script>
-    <script src="/scripts/portfolio-scroll-drift.js?v=5" defer></script>
+    <script is:inline>
+      (() => {
+        const loader = document.querySelector('.pv2-boot-loader');
+        if (!loader) return;
+
+        const startedAt = performance.now();
+        const minimumVisibleMs = 600;
+        const criticalImages = [
+          '/images/oiz8uf.png',
+          '/images/letterriverscreen.png',
+          '/images/Thelastreadingscreen.png',
+          '/images/rotogoscreen.png',
+          '/images/VenueRivalsscreen .png',
+        ];
+
+        const preload = (src) => new Promise((resolve) => {
+          const image = new Image();
+          image.onload = resolve;
+          image.onerror = resolve;
+          image.src = src;
+        });
+
+        const waitForPortfolio = new Promise((resolve) => {
+          const check = () => {
+            if (document.querySelector('#portfolio-v2 .pv2-site')) {
+              requestAnimationFrame(() => requestAnimationFrame(resolve));
+              return;
+            }
+            requestAnimationFrame(check);
+          };
+          check();
+        });
+
+        const fontsReady = document.fonts?.ready?.catch?.(() => {}) || Promise.resolve();
+        const assetsReady = Promise.all([
+          waitForPortfolio,
+          fontsReady,
+          Promise.all(criticalImages.map(preload)),
+        ]);
+
+        const finish = () => {
+          if (!loader.isConnected) return;
+          const remaining = Math.max(0, minimumVisibleMs - (performance.now() - startedAt));
+          window.setTimeout(() => {
+            if (!loader.isConnected) return;
+            loader.classList.add('is-done');
+            window.setTimeout(() => loader.remove(), 220);
+          }, remaining);
+        };
+
+        assetsReady.then(finish);
+        window.setTimeout(finish, 4000);
+      })();
+    </script>
+    <script src="/scripts/portfolio-physics-v3.js?v=20" defer></script>
     <script src="/scripts/ux-direct-link.js?v=1" defer></script>
-    <script src="/scripts/portfolio-bio-bounce.js?v=3" defer></script>
-    <script src="/scripts/letter-river-preview.js?v=3" defer></script>
+    <script src="/scripts/letter-river-preview.js?v=4" defer></script>
   </body>
 </html>
 
@@ -43,5 +100,22 @@ import '../styles/portfolio-v2-adaptive.css';
 
   .pv2-skip:focus {
     transform: translateY(0);
+  }
+
+  .pv2-overview__statement {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
+  }
+
+  @media (max-width: 720px) {
+    html:not(.pv2-physics-live) .pv2-overview__statement {
+      position: relative !important;
+      inset: auto !important;
+      transform: none !important;
+    }
   }
 </style>

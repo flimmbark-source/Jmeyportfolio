@@ -1,0 +1,326 @@
+---
+import '../styles/portfolio-v2.css';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta
+      name="description"
+      content="Get in touch with Jacob Meyerkopf — games, interactive work, learning systems, and UX."
+    />
+    <title>Contact — Jacob Meyerkopf</title>
+  </head>
+  <body class="pv2-body">
+    <div class="pv2-site">
+      <header class="pv2-nav">
+        <a href="/" class="pv2-nav__name">Jacob Meyerkopf</a>
+        <nav aria-label="Portfolio navigation">
+          <a href="/">Work</a>
+          <a href="/?project=unfinished">Playground</a>
+          <a href="/ux">UX</a>
+          <a href="/contact" aria-current="page">Contact</a>
+        </nav>
+      </header>
+
+      <main class="contact">
+        <section class="contact__intro">
+          <p class="pv2-overline">Contact</p>
+          <h1>Let&rsquo;s talk.</h1>
+          <p class="contact__lede">
+            I&rsquo;m open to collaborations, product and UX roles, playtests, and the occasional
+            odd experiment. Send a note and I&rsquo;ll get back within a couple of days.
+          </p>
+        </section>
+
+        <section class="contact__grid">
+          <aside class="contact__methods" aria-label="Direct contact">
+            <a class="contact__method" href="mailto:jmeyerkopf@gmail.com">
+              <span class="contact__method-label">Email</span>
+              <strong class="contact__method-value">jmeyerkopf@gmail.com</strong>
+            </a>
+            <a class="contact__method" href="https://www.linkedin.com/in/jacobmeyerkopf/" target="_blank" rel="noreferrer">
+              <span class="contact__method-label">LinkedIn</span>
+              <strong class="contact__method-value">in/jacobmeyerkopf ↗</strong>
+            </a>
+          </aside>
+
+          <div class="contact__form-wrap">
+            <form
+              class="contact__form"
+              name="contact"
+              method="POST"
+              action="/contact?sent=1"
+              data-netlify="true"
+              netlify-honeypot="bot-field"
+            >
+              <input type="hidden" name="form-name" value="contact" />
+              <p class="contact__hp" hidden>
+                <label>Leave this empty: <input name="bot-field" /></label>
+              </p>
+
+              <div class="contact__field">
+                <label for="c-name">Name</label>
+                <input id="c-name" name="name" type="text" autocomplete="name" required />
+              </div>
+
+              <div class="contact__field">
+                <label for="c-email">Email</label>
+                <input id="c-email" name="email" type="email" autocomplete="email" required />
+              </div>
+
+              <div class="contact__field">
+                <label for="c-message">Message</label>
+                <textarea id="c-message" name="message" rows="5" required></textarea>
+              </div>
+
+              <button class="contact__submit" type="submit">Send message</button>
+
+              <p class="contact__status" role="status" aria-live="polite" hidden></p>
+            </form>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script is:inline>
+      (() => {
+        const form = document.querySelector('.contact__form');
+        if (!form) return;
+        const status = form.querySelector('.contact__status');
+        const submit = form.querySelector('.contact__submit');
+
+        const showStatus = (message, ok) => {
+          if (!status) return;
+          status.textContent = message;
+          status.hidden = false;
+          status.classList.toggle('is-error', !ok);
+          status.classList.toggle('is-ok', ok);
+        };
+
+        const succeed = () => {
+          form.querySelectorAll('input, textarea, button').forEach((el) => { el.disabled = true; });
+          showStatus('Thanks — your message is on its way. I’ll reply soon.', true);
+        };
+
+        // Non-JS Netlify submits land back here with ?sent=1.
+        if (new URLSearchParams(window.location.search).get('sent') === '1') {
+          succeed();
+        }
+
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          if (submit) { submit.disabled = true; submit.textContent = 'Sending…'; }
+          const data = new FormData(form);
+          const body = new URLSearchParams(data).toString();
+          fetch('/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body,
+          })
+            .then((response) => {
+              if (response.ok) {
+                succeed();
+              } else {
+                throw new Error(`status ${response.status}`);
+              }
+            })
+            .catch(() => {
+              if (submit) { submit.disabled = false; submit.textContent = 'Send message'; }
+              showStatus('Couldn’t send that here. Please email jmeyerkopf@gmail.com directly.', false);
+            });
+        });
+      })();
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  .contact {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: clamp(28px, 6vh, 72px) 0 clamp(48px, 8vh, 96px);
+  }
+
+  .contact__intro {
+    max-width: 640px;
+  }
+
+  .contact__intro h1 {
+    margin: 0 0 clamp(14px, 2.4vh, 24px);
+    font-size: clamp(2.6rem, 6vw, 4.4rem);
+    line-height: .98;
+    letter-spacing: -.055em;
+    font-weight: 510;
+  }
+
+  .contact__lede {
+    margin: 0;
+    max-width: 52ch;
+    color: var(--pv2-muted);
+    font-size: clamp(1rem, 1.4vw, 1.18rem);
+    line-height: 1.55;
+  }
+
+  .contact__grid {
+    margin-top: clamp(32px, 6vh, 64px);
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(24px, 4vw, 56px);
+    align-items: start;
+  }
+
+  .contact__methods {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .contact__method {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 18px;
+    border: 1px solid var(--pv2-line);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, .5);
+    text-decoration: none;
+    color: var(--pv2-text);
+    transition: border-color var(--pv2-fast) ease, transform var(--pv2-medium) var(--pv2-ease), box-shadow var(--pv2-medium) var(--pv2-ease);
+  }
+
+  .contact__method:hover,
+  .contact__method:focus-visible {
+    border-color: rgba(36, 36, 36, .32);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px rgba(36, 36, 36, .08);
+    outline: none;
+  }
+
+  .contact__method-label {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--pv2-muted);
+  }
+
+  .contact__method-value {
+    font-size: 1.02rem;
+    font-weight: 640;
+    letter-spacing: -.01em;
+  }
+
+  .contact__form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: clamp(20px, 3vw, 30px);
+    border: 1px solid var(--pv2-line);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, .62);
+  }
+
+  .contact__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .contact__field label {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--pv2-muted);
+  }
+
+  .contact__field input,
+  .contact__field textarea {
+    width: 100%;
+    padding: 12px 13px;
+    border: 1px solid var(--pv2-line);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--pv2-text);
+    font: inherit;
+    font-size: .98rem;
+    transition: border-color var(--pv2-fast) ease, box-shadow var(--pv2-fast) ease;
+  }
+
+  .contact__field textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .contact__field input:focus,
+  .contact__field textarea:focus {
+    outline: none;
+    border-color: var(--pv2-text);
+    box-shadow: 0 0 0 3px rgba(36, 36, 36, .08);
+  }
+
+  .contact__submit {
+    align-self: flex-start;
+    margin-top: 4px;
+    padding: 12px 24px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--pv2-text);
+    color: #f7f6f2;
+    font-weight: 640;
+    font-size: .98rem;
+    cursor: pointer;
+    transition: transform var(--pv2-medium) var(--pv2-ease), box-shadow var(--pv2-medium) var(--pv2-ease), opacity var(--pv2-fast) ease;
+  }
+
+  .contact__submit:hover:not(:disabled),
+  .contact__submit:focus-visible:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(36, 36, 36, .18);
+    outline: none;
+  }
+
+  .contact__submit:disabled {
+    opacity: .6;
+    cursor: default;
+  }
+
+  .contact__status {
+    margin: 2px 0 0;
+    font-size: .92rem;
+    line-height: 1.45;
+  }
+
+  .contact__status.is-ok { color: #2d8a5b; }
+  .contact__status.is-error { color: #b4442f; }
+
+  @media (max-width: 760px) {
+    .contact__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .pv2-nav {
+      height: auto;
+      min-height: 64px;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+      padding: 16px 0 12px;
+    }
+
+    .pv2-nav nav {
+      flex-wrap: wrap;
+      gap: 12px 18px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .contact__method,
+    .contact__submit {
+      transition: none;
+    }
+  }
+</style>
