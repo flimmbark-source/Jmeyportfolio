@@ -1,7 +1,8 @@
 :root {
-  --pv2-upgrade-sheet: url('/images/Upgrade Tree Sprite Sheet.png');
-  --pv2-upgrade-sheet-w: 1536px;
-  --pv2-upgrade-sheet-h: 1024px;
+  --pv2-upgrade-sheet: url('/images/Upgrade Tree Sprite Sheet v2.png');
+  --pv2-upgrade-sheet-w: 384px;
+  --pv2-upgrade-sheet-h: 256px;
+  --pv2-upgrade-cell: 64px;
 }
 
 .pv2-upgrade-node {
@@ -11,7 +12,7 @@
 
 .pv2-upgrade-node__copy {
   display: grid;
-  grid-template-rows: 48px auto;
+  grid-template-rows: 46px auto;
   justify-items: center;
   align-items: center;
   gap: 4px;
@@ -23,20 +24,20 @@
 
 .pv2-upgrade-node__copy::before {
   content: '';
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 46px;
   display: block;
-  border-radius: 8px;
   background-image: var(--pv2-upgrade-sheet);
   background-repeat: no-repeat;
   background-size: var(--pv2-upgrade-sheet-w) var(--pv2-upgrade-sheet-h);
-  background-position: var(--sprite-x, -553px) var(--sprite-y, -242px);
+  background-position:
+    calc((var(--sprite-col, 1) * var(--pv2-upgrade-cell) * -1) - 6px)
+    calc((var(--sprite-row, 0) * var(--pv2-upgrade-cell) * -1) - 5px);
   image-rendering: pixelated;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 3px 8px rgba(20,28,40,.16);
 }
 
 .pv2-upgrade-node__effect {
-  max-width: 92px;
+  max-width: 96px;
   overflow: visible;
   text-overflow: clip;
   white-space: nowrap;
@@ -50,38 +51,37 @@
   min-height: 98px;
 }
 
-/* Velocity sprites */
-.pv2-upgrade-node[data-upgrade-id='speed-1'] { --sprite-x: -553px; --sprite-y: -242px; }
-.pv2-upgrade-node[data-upgrade-id='speed-accel'] { --sprite-x: -664px; --sprite-y: -242px; }
-.pv2-upgrade-node[data-upgrade-id='speed-top'] { --sprite-x: -771px; --sprite-y: -242px; }
-.pv2-upgrade-node[data-upgrade-id='speed-launch'] { --sprite-x: -873px; --sprite-y: -242px; }
+/* Velocity: cells 2, 3, 4, 5 */
+.pv2-upgrade-node[data-upgrade-id='speed-1'] { --sprite-col: 1; --sprite-row: 0; }
+.pv2-upgrade-node[data-upgrade-id='speed-accel'] { --sprite-col: 2; --sprite-row: 0; }
+.pv2-upgrade-node[data-upgrade-id='speed-top'] { --sprite-col: 3; --sprite-row: 0; }
+.pv2-upgrade-node[data-upgrade-id='speed-launch'] { --sprite-col: 4; --sprite-row: 0; }
 
-/* Bounce sprites */
-.pv2-upgrade-node[data-upgrade-id='bounce-1'] { --sprite-x: -1103px; --sprite-y: -242px; }
-.pv2-upgrade-node[data-upgrade-id='bounce-force'] { --sprite-x: -1211px; --sprite-y: -242px; }
-.pv2-upgrade-node[data-upgrade-id='bounce-value'] { --sprite-x: -1319px; --sprite-y: -242px; }
-.pv2-upgrade-node[data-upgrade-id='bounce-combo'] { --sprite-x: -1424px; --sprite-y: -242px; }
+/* Bounce: cells 7, 8, 9, 10 */
+.pv2-upgrade-node[data-upgrade-id='bounce-1'] { --sprite-col: 0; --sprite-row: 1; }
+.pv2-upgrade-node[data-upgrade-id='bounce-force'] { --sprite-col: 1; --sprite-row: 1; }
+.pv2-upgrade-node[data-upgrade-id='bounce-value'] { --sprite-col: 2; --sprite-row: 1; }
+.pv2-upgrade-node[data-upgrade-id='bounce-combo'] { --sprite-col: 3; --sprite-row: 1; }
 
-/* Wall sprites */
-.pv2-upgrade-node[data-upgrade-id='walls-1'] { --sprite-x: -553px; --sprite-y: -356px; }
-.pv2-upgrade-node[data-upgrade-id='walls-force'] { --sprite-x: -662px; --sprite-y: -356px; }
-.pv2-upgrade-node[data-upgrade-id='walls-value'] { --sprite-x: -553px; --sprite-y: -356px; }
-.pv2-upgrade-node[data-upgrade-id='walls-ricochet'] { --sprite-x: -771px; --sprite-y: -356px; }
+/* Walls: cells 13, 14, 17, 15 */
+.pv2-upgrade-node[data-upgrade-id='walls-1'] { --sprite-col: 0; --sprite-row: 2; }
+.pv2-upgrade-node[data-upgrade-id='walls-force'] { --sprite-col: 1; --sprite-row: 2; }
+.pv2-upgrade-node[data-upgrade-id='walls-value'] { --sprite-col: 4; --sprite-row: 2; }
+.pv2-upgrade-node[data-upgrade-id='walls-ricochet'] { --sprite-col: 2; --sprite-row: 2; }
 
-/* Friction sprites */
-.pv2-upgrade-node[data-upgrade-id='friction-1'] { --sprite-x: -979px; --sprite-y: -356px; }
-.pv2-upgrade-node[data-upgrade-id='friction-glide'] { --sprite-x: -1093px; --sprite-y: -356px; }
-.pv2-upgrade-node[data-upgrade-id='friction-collision'] { --sprite-x: -1424px; --sprite-y: -356px; }
-.pv2-upgrade-node[data-upgrade-id='friction-low'] { --sprite-x: -1319px; --sprite-y: -356px; }
+/* Friction: cells 19, 20, 22, 21 */
+.pv2-upgrade-node[data-upgrade-id='friction-1'] { --sprite-col: 0; --sprite-row: 3; }
+.pv2-upgrade-node[data-upgrade-id='friction-glide'] { --sprite-col: 1; --sprite-row: 3; }
+.pv2-upgrade-node[data-upgrade-id='friction-collision'] { --sprite-col: 3; --sprite-row: 3; }
+.pv2-upgrade-node[data-upgrade-id='friction-low'] { --sprite-col: 2; --sprite-row: 3; }
 
 .pv2-upgrade-node.is-locked .pv2-upgrade-node__copy::before {
-  filter: grayscale(.75) saturate(.35) brightness(.8);
-  opacity: .7;
+  filter: grayscale(.72) saturate(.38) brightness(.82);
+  opacity: .72;
 }
 
 .pv2-upgrade-node.is-affordable .pv2-upgrade-node__copy::before {
-  filter: saturate(1.12) brightness(1.06);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), 0 0 0 2px rgba(255,216,79,.18), 0 4px 12px rgba(20,28,40,.2);
+  filter: saturate(1.12) brightness(1.07);
 }
 
 .pv2-upgrade-node.is-bought .pv2-upgrade-node__copy::before {
