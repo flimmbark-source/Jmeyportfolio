@@ -1,7 +1,7 @@
 (() => {
   const MOBILE_BREAKPOINT = 720;
   const EDGE_PADDING = 16;
-  const NAV_CLEARANCE = 18;
+  const NAV_CLEARANCE = 10;
   const BODY_GAP = 10;
   const NORMAL_SPEED = 0.038;
   const REDUCED_SPEED = 0.012;
@@ -22,6 +22,10 @@
   const COMBO_WINDOW = 2200;
   const AUTO_FLICK_INTERVAL = 2600;
   const GRAVITY_ACCEL = 0.00007;
+  // Mobile has a tiny stage, so blocks otherwise ping-pong forever. Extra drag
+  // (damping raised to this power) and a lower drift floor let them settle.
+  const MOBILE_DRAG_EXP = 2.6;
+  const MOBILE_FLOOR_SCALE = 0.28;
 
   // Genre labels flavor the incremental tree; `soon` marks nodes whose deeper
   // mechanic (the RPG Battle) is scaffolded in the tree now and wired later.
@@ -846,7 +850,9 @@
     lastTime = now;
     const stageRect = stage.getBoundingClientRect();
     const effects = currentEffects();
-    const speedFloor = (reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED) * effects.speedMult * effects.speedFloorMult;
+    const mobile = window.innerWidth <= MOBILE_BREAKPOINT;
+    const damping = mobile ? Math.pow(effects.damping, MOBILE_DRAG_EXP) : effects.damping;
+    const speedFloor = (reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED) * effects.speedMult * effects.speedFloorMult * (mobile ? MOBILE_FLOOR_SCALE : 1);
     const maxSpeed = (reducedMotion() ? REDUCED_MAX_SPEED : MAX_SPEED) * effects.maxSpeedMult;
     const t = now / 1000;
 
@@ -882,8 +888,8 @@
         body.vx += Math.sin(t * .41 + body.phase) * .000014 * dt;
         body.vy += Math.cos(t * .37 + body.phase * 1.23) * .000014 * dt;
       }
-      body.vx *= Math.pow(effects.damping, dt);
-      body.vy *= Math.pow(effects.damping, dt);
+      body.vx *= Math.pow(damping, dt);
+      body.vy *= Math.pow(damping, dt);
       const speed = Math.hypot(body.vx, body.vy);
       if (speed < speedFloor) {
         const angle = body.phase + t * .16;
