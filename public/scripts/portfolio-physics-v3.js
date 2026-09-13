@@ -122,6 +122,7 @@
   let comboExpire = 0;
   let idleBank = 0;
   let autoFlickTimer = 0;
+  let battlePaused = false;
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -742,6 +743,9 @@
       const impact = impactPoint(body, bumper, horizontal);
       award(effects.bumperValue, bumper.id, impact);
       pulseBumper(bumper.el);
+      // Battle mode (portfolio-battle.js) listens for these to detect a
+      // Critical Combo (5 bumper hits within 1s) and trigger a battle.
+      window.dispatchEvent(new CustomEvent('pv2:bumper-hit', { detail: { id: bumper.id, x: impact.x, y: impact.y } }));
     }
 
     const kick = poweredHit ? BUMPER_KICK * effects.bumperKickMult : NORMAL_SPEED * 1.8;
@@ -828,6 +832,13 @@
     if (!stage) {
       mark('waiting');
       frame = 0;
+      return;
+    }
+
+    // Freeze the simulation while a battle is on top, but keep the loop alive.
+    if (battlePaused) {
+      lastTime = now;
+      frame = requestAnimationFrame(tick);
       return;
     }
 
@@ -921,6 +932,34 @@
     setScoreVisible(false);
   }
 
+  // Position-only push that guarantees a freshly spawned block sits clear of
+  // every text block (bumper), preferring whichever axis has room.
+  function ejectFromBumpers(body, stageRect, bumpers) {
+    const minY = stageTopLimit(stageRect);
+    const maxX = Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING);
+    const maxY = Math.max(minY, stageRect.height - body.h - EDGE_PADDING);
+    for (let iter = 0; iter < 30; iter += 1) {
+      let moved = false;
+      for (const bumper of bumpers) {
+        if (!overlaps(bodyRect(body), bumper, BODY_GAP)) continue;
+        let dx = (body.x + body.w / 2) - (bumper.x + bumper.w / 2);
+        let dy = (body.y + body.h / 2) - (bumper.y + bumper.h / 2);
+        if (Math.abs(dx) < 1 && Math.abs(dy) < 1) dy = -1;
+        const overlapX = (body.w + bumper.w) / 2 + BODY_GAP - Math.abs(dx);
+        const overlapY = (body.h + bumper.h) / 2 + BODY_GAP - Math.abs(dy);
+        // Take the shorter escape, but never one the walls can't fit.
+        const canX = overlapX <= (dx >= 0 ? maxX - body.x : body.x - EDGE_PADDING) + 0.5;
+        const preferX = overlapX < overlapY ? canX : false;
+        if (preferX) body.x += (dx >= 0 ? 1 : -1) * overlapX;
+        else body.y += (dy >= 0 ? 1 : -1) * overlapY;
+        moved = true;
+      }
+      body.x = clamp(body.x, EDGE_PADDING, maxX);
+      body.y = clamp(body.y, minY, maxY);
+      if (!moved) break;
+    }
+  }
+
   function init() {
     teardown();
     stage = document.querySelector('.pv2-overview__stage');
@@ -949,6 +988,10 @@
         constrain(body, stageRect, false);
       }
     }
+
+    // Final guarantee: no block starts overlapping a text block.
+    const spawnBumpers = bumperRects(stageRect);
+    for (const body of bodies) ejectFromBumpers(body, stageRect, spawnBumpers);
 
     for (const body of bodies) {
       body.homeX = body.x;
@@ -983,6 +1026,13 @@
     ensureScoreCounter();
     ensureFxLayer();
     observer.observe(document.body, { childList: true, subtree: true });
+    // Battle-mode bridge (portfolio-battle.js drives these).
+    window.addEventListener('pv2:battle-pause', () => { battlePaused = true; });
+    window.addEventListener('pv2:battle-resume', () => { battlePaused = false; lastTime = 0; });
+    window.addEventListener('pv2:add-points', (event) => {
+      const n = Math.max(0, Math.round(Number(event.detail?.n) || 0));
+      if (n) { activateGame(); addIdlePoints(n); }
+    });
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && upgradeOverlay?.classList.contains('is-open')) closeUpgradeTree();

@@ -1,0 +1,296 @@
+/* Battle mode (scaffold) — the RPG genre-bend overlay. */
+.pv2-battle {
+  position: fixed;
+  inset: 0;
+  z-index: 8000;
+  display: grid;
+  place-items: center;
+  padding: clamp(10px, 2vw, 24px);
+  background: radial-gradient(circle at 50% 30%, rgba(60, 40, 90, .55), rgba(14, 13, 18, .92) 70%);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 320ms ease;
+  color: #f2efe7;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.pv2-battle.is-open {
+  opacity: 1;
+}
+
+.pv2-battle__flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  animation: pv2BattleFlash 520ms ease-out;
+}
+
+@keyframes pv2BattleFlash {
+  0% { opacity: .85; }
+  100% { opacity: 0; }
+}
+
+.pv2-battle__stage {
+  position: relative;
+  width: min(880px, 100%);
+  max-height: 100%;
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto;
+  gap: clamp(12px, 2vh, 20px);
+  padding: clamp(16px, 2.4vw, 26px);
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(38, 34, 46, .92), rgba(22, 20, 27, .96));
+  box-shadow: 0 30px 90px rgba(0, 0, 0, .5);
+  transform: translateY(14px) scale(.98);
+  transition: transform 320ms cubic-bezier(.2, .9, .25, 1);
+}
+
+.pv2-battle.is-open .pv2-battle__stage {
+  transform: translateY(0) scale(1);
+}
+
+.pv2-battle__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pv2-battle__eyebrow {
+  font-size: .62rem;
+  font-weight: 800;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #cbb6ff;
+}
+
+.pv2-battle__flee {
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: transparent;
+  color: #f2efe7;
+  font: inherit;
+  font-size: .8rem;
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.pv2-battle__flee:hover { background: rgba(255, 255, 255, .1); }
+
+.pv2-battle__boss {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  padding: clamp(14px, 2.4vw, 22px);
+  border: 1px solid rgba(255, 120, 140, .3);
+  border-radius: 16px;
+  background: radial-gradient(circle at 50% 0%, rgba(120, 40, 70, .5), rgba(40, 24, 34, .7));
+  text-align: center;
+}
+
+.pv2-battle__boss-parts {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.pv2-battle__boss-parts span {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .1);
+  font-size: .56rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.pv2-battle__boss-name {
+  font-size: clamp(1.3rem, 3vw, 1.9rem);
+  letter-spacing: -.02em;
+}
+
+.pv2-battle__hp {
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .38);
+  overflow: hidden;
+}
+
+.pv2-battle__boss .pv2-battle__hp { height: 14px; }
+
+.pv2-battle__hp-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff5f6d, #ffc371);
+  transition: width 320ms cubic-bezier(.2, .9, .25, 1);
+}
+
+.pv2-battle__fighter .pv2-battle__hp-fill {
+  background: linear-gradient(90deg, #57e08e, #b6ff8f);
+}
+
+.pv2-battle__hp-num {
+  font-size: .68rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: rgba(242, 239, 231, .8);
+}
+
+.pv2-battle__log {
+  min-height: 1.4em;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, .28);
+  font-size: .9rem;
+  text-align: center;
+}
+
+.pv2-battle__party {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.pv2-battle__fighter {
+  flex: 1 1 120px;
+  max-width: 160px;
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .05);
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: default;
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+}
+
+.pv2-battle__fighter.is-ready {
+  cursor: pointer;
+  border-color: rgba(216, 255, 99, .6);
+  box-shadow: 0 0 0 3px rgba(216, 255, 99, .12);
+}
+
+.pv2-battle__fighter.is-ready:hover,
+.pv2-battle__fighter.is-ready:focus-visible {
+  transform: translateY(-3px);
+  border-color: #d8ff63;
+  outline: none;
+}
+
+.pv2-battle__fighter.is-down {
+  opacity: .4;
+  filter: grayscale(.7);
+}
+
+.pv2-battle__fighter-role {
+  font-size: .54rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #cbb6ff;
+}
+
+.pv2-battle__fighter-name {
+  font-size: .96rem;
+  letter-spacing: -.01em;
+}
+
+.pv2-battle__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pv2-battle__turn {
+  font-size: .82rem;
+  color: rgba(242, 239, 231, .75);
+}
+
+.pv2-battle__endturn,
+.pv2-battle__end {
+  margin-left: auto;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 20px;
+  background: #d8ff63;
+  color: #14140f;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.pv2-battle__endturn:hover,
+.pv2-battle__end:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(216, 255, 99, .25);
+}
+
+.pv2-battle.is-victory .pv2-battle__boss {
+  opacity: .5;
+  filter: grayscale(.5);
+}
+
+.pv2-battle.is-defeat .pv2-battle__stage {
+  border-color: rgba(255, 90, 90, .4);
+}
+
+.pv2-battle__pop {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  transform: translate(-50%, 0);
+  font-size: 1.5rem;
+  font-weight: 950;
+  letter-spacing: -.03em;
+  pointer-events: none;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, .5);
+  animation: pv2BattlePop 720ms ease-out forwards;
+}
+
+.pv2-battle__pop--dmg { color: #ffd76a; }
+.pv2-battle__pop--hurt { color: #ff8a8a; top: 8px; }
+
+@keyframes pv2BattlePop {
+  0% { opacity: 0; transform: translate(-50%, 6px) scale(.6); }
+  18% { opacity: 1; transform: translate(-50%, -10px) scale(1.15); }
+  70% { opacity: 1; transform: translate(-50%, -18px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -40px) scale(.9); }
+}
+
+.pv2-battle__fighter { position: relative; }
+
+@media (max-width: 560px) {
+  .pv2-battle__stage {
+    grid-template-rows: auto auto auto auto auto;
+  }
+  .pv2-battle__fighter {
+    flex: 1 1 100px;
+    padding: 9px;
+  }
+  .pv2-battle__fighter-name { font-size: .84rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pv2-battle,
+  .pv2-battle__stage,
+  .pv2-battle__hp-fill,
+  .pv2-battle__fighter,
+  .pv2-battle__endturn,
+  .pv2-battle__end { transition: none; }
+  .pv2-battle__flash,
+  .pv2-battle__pop { animation-duration: 1ms; }
+}

@@ -157,8 +157,31 @@
     font-size: .9rem;
   }
 
+  /* Half-size blocks on phones so they read as compact tokens orbiting the
+     text blocks. The title still shows inside the square, so the caption
+     below is dropped to keep each block's footprint tight. */
   html.pv2-physics-live .pv2-float-slot .pv2-project-tile {
-    width: clamp(84px, 26vw, 122px);
+    width: clamp(46px, 14vw, 64px);
+    gap: 0;
+  }
+
+  html.pv2-physics-live .pv2-float-slot .pv2-project-tile__caption {
+    display: none;
+  }
+
+  html.pv2-physics-live .pv2-float-slot .pv2-visual__frame {
+    padding: 5px;
+  }
+
+  html.pv2-physics-live .pv2-float-slot .pv2-visual__mark {
+    max-width: 100%;
+    font-size: .48rem;
+    line-height: 1;
+    font-weight: 760;
+  }
+
+  html.pv2-physics-live .pv2-float-slot .pv2-visual__status {
+    display: none;
   }
 
   html.pv2-physics-live .pv2-float-slot--gateway {
