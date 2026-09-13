@@ -211,12 +211,12 @@
         { opacity: 1, offset: .68, transform: 'translate(-50%, -42px) scale(1)' },
         { opacity: 1, offset: .82, transform: 'translate(-50%, -50px) scale(1.03)' },
         { opacity: 0, transform: 'translate(-50%, -126px) scale(.94)' },
-      ], { duration: reducedMotion() ? 3200 : 4800, easing: 'linear', fill: 'forwards' });
+      ], { duration: reducedMotion() ? 1600 : 2400, easing: 'linear', fill: 'forwards' });
       animation.addEventListener('finish', () => ghost.remove(), { once: true });
     } catch {
       ghost.style.opacity = '1';
       ghost.style.transform = 'translate(-50%, -40px)';
-      window.setTimeout(() => ghost.remove(), 4800);
+      window.setTimeout(() => ghost.remove(), 2400);
     }
   }
 
