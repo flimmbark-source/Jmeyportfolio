@@ -624,11 +624,11 @@
 
   function anchorFor(slot, width, height) {
     const classes = classString(slot);
-    if (classes.includes('project-tile--top')) return { x: width * .50, y: height * .13 };
-    if (classes.includes('project-tile--left')) return { x: width * .14, y: height * .47 };
-    if (classes.includes('project-tile--right')) return { x: width * .86, y: height * .46 };
-    if (classes.includes('project-tile--bottom-left')) return { x: width * .31, y: height * .80 };
-    if (classes.includes('project-tile--bottom-right')) return { x: width * .69, y: height * .80 };
+    if (classes.includes('project-tile--top')) return { x: width * .50, y: height * .12 };
+    if (classes.includes('project-tile--left')) return { x: width * .13, y: height * .44 };
+    if (classes.includes('project-tile--right')) return { x: width * .87, y: height * .44 };
+    if (classes.includes('project-tile--bottom-left')) return { x: width * .20, y: height * .80 };
+    if (classes.includes('project-tile--bottom-right')) return { x: width * .80, y: height * .80 };
     return { x: width * .5, y: height * .5 };
   }
 
