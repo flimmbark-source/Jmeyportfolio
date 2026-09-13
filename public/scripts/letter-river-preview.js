@@ -24,10 +24,27 @@
 
   let observer = null;
 
+  function addLoader(visual) {
+    if (visual.querySelector('.pv2-media-loader')) return visual.querySelector('.pv2-media-loader');
+    const loader = document.createElement('div');
+    loader.className = 'pv2-media-loader';
+    loader.setAttribute('aria-hidden', 'true');
+    loader.innerHTML = '<span></span><span></span><span></span>';
+    visual.appendChild(loader);
+    return loader;
+  }
+
+  function removeLoader(loader) {
+    if (!loader?.isConnected) return;
+    loader.classList.add('is-done');
+    window.setTimeout(() => loader.remove(), 180);
+  }
+
   function mountPreview({ selector, className, src }) {
     const visual = document.querySelector(selector);
     if (!visual || visual.querySelector(`.${className}`)) return;
 
+    const loader = addLoader(visual);
     const video = document.createElement('video');
     video.className = `pv2-visual__media ${className}`;
     video.src = src;
@@ -35,8 +52,13 @@
     video.muted = true;
     video.loop = true;
     video.playsInline = true;
-    video.preload = 'metadata';
+    video.preload = 'auto';
     video.setAttribute('aria-hidden', 'true');
+
+    const ready = () => removeLoader(loader);
+    video.addEventListener('canplay', ready, { once: true });
+    video.addEventListener('loadeddata', ready, { once: true });
+    video.addEventListener('error', ready, { once: true });
 
     visual.prepend(video);
     visual.querySelector('.pv2-visual__frame')?.classList.add('has-media');
