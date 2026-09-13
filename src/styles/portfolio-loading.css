@@ -1,0 +1,81 @@
+.pv2-boot-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  background: var(--pv2-bg, #f7f6f2);
+  opacity: 1;
+  transition: opacity 180ms ease;
+}
+
+.pv2-boot-loader.is-done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pv2-loader-dots,
+.pv2-media-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.pv2-loader-dots span,
+.pv2-media-loader span {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pv2-loader-pulse 760ms ease-in-out infinite;
+}
+
+.pv2-loader-dots span:nth-child(2),
+.pv2-media-loader span:nth-child(2) {
+  animation-delay: 90ms;
+}
+
+.pv2-loader-dots span:nth-child(3),
+.pv2-media-loader span:nth-child(3) {
+  animation-delay: 180ms;
+}
+
+.pv2-boot-loader .pv2-loader-dots {
+  color: #76726b;
+}
+
+.pv2-media-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  color: rgba(36, 36, 36, 0.62);
+  background: rgba(247, 246, 242, 0.78);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 160ms ease;
+}
+
+.pv2-media-loader.is-done {
+  opacity: 0;
+}
+
+@keyframes pv2-loader-pulse {
+  0%, 100% {
+    opacity: 0.28;
+    transform: translateY(0) scale(0.82);
+  }
+  50% {
+    opacity: 0.95;
+    transform: translateY(-3px) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pv2-loader-dots span,
+  .pv2-media-loader span {
+    animation: none;
+    opacity: 0.72;
+  }
+}
