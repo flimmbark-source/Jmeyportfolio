@@ -1,9 +1,9 @@
 :root {
-  --pv2-upgrade-node-w: 132px;
-  --pv2-upgrade-node-h: 66px;
-  --pv2-upgrade-root-size: 118px;
-  --pv2-upgrade-line: rgba(36, 36, 36, .11);
-  --pv2-upgrade-locked-opacity: .20;
+  --pv2-upgrade-node-w: 126px;
+  --pv2-upgrade-node-h: 58px;
+  --pv2-upgrade-root-size: 84px;
+  --pv2-upgrade-line: rgba(36, 36, 36, .14);
+  --pv2-upgrade-locked-opacity: .34;
   --pv2-upgrade-affordable: #ffd84f;
   --pv2-upgrade-velocity: #5b74ee;
   --pv2-upgrade-bounce: #e75b87;
@@ -47,7 +47,7 @@
   z-index: 7000;
   display: grid;
   place-items: center;
-  padding: clamp(12px, 2vw, 28px);
+  padding: clamp(10px, 1.6vw, 22px);
   background: rgba(19, 19, 17, .30);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -64,8 +64,8 @@
 }
 
 .pv2-upgrade-panel {
-  width: min(1180px, 97vw);
-  height: min(860px, 92vh);
+  width: min(1180px, 98vw);
+  height: min(840px, 94vh);
   display: grid;
   grid-template-rows: auto 1fr;
   overflow: hidden;
@@ -87,20 +87,20 @@
   display: grid;
   grid-template-columns: auto 1fr auto auto;
   align-items: center;
-  gap: 20px;
-  padding: 18px 20px 16px;
+  gap: 16px;
+  padding: 13px 18px 12px;
   border-bottom: 1px solid rgba(36,36,36,.08);
-  background: rgba(247,246,242,.96);
+  background: rgba(247,246,242,.97);
 }
 
 .pv2-upgrade-panel__titleblock {
-  min-width: 190px;
+  min-width: 178px;
 }
 
 .pv2-upgrade-panel__eyebrow {
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   color: var(--pv2-muted);
-  font-size: .60rem;
+  font-size: .57rem;
   font-weight: 800;
   letter-spacing: .13em;
   text-transform: uppercase;
@@ -108,7 +108,7 @@
 
 .pv2-upgrade-panel h2 {
   margin: 0;
-  font-size: clamp(1.3rem, 2vw, 1.8rem);
+  font-size: clamp(1.2rem, 1.8vw, 1.6rem);
   line-height: 1;
   letter-spacing: -.045em;
 }
@@ -117,18 +117,18 @@
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 7px;
+  gap: 6px;
 }
 
 .pv2-upgrade-legend__item {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 8px;
+  padding: 4px 7px;
   border-radius: 999px;
-  background: rgba(255,255,255,.52);
+  background: rgba(255,255,255,.58);
   color: var(--pv2-muted);
-  font-size: .60rem;
+  font-size: .57rem;
   font-weight: 780;
   letter-spacing: .035em;
 }
@@ -151,7 +151,7 @@
   grid-template-columns: auto auto;
   align-items: baseline;
   gap: 5px;
-  padding: 8px 12px;
+  padding: 7px 11px;
   border: 1px solid rgba(36,36,36,.12);
   border-radius: 999px;
   background: #fff;
@@ -160,24 +160,24 @@
 }
 
 .pv2-upgrade-panel__currency [data-upgrade-points] {
-  font-size: 1rem;
+  font-size: .96rem;
   color: var(--pv2-text);
 }
 
 .pv2-upgrade-panel__currency small {
   color: var(--pv2-muted);
-  font-size: .55rem;
+  font-size: .52rem;
   letter-spacing: .10em;
 }
 
 .pv2-upgrade-close {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border: 1px solid rgba(36,36,36,.12);
   border-radius: 50%;
   background: transparent;
   color: var(--pv2-text);
-  font: 500 1.6rem/1 system-ui, sans-serif;
+  font: 500 1.5rem/1 system-ui, sans-serif;
   cursor: pointer;
 }
 
@@ -190,12 +190,12 @@
 .pv2-upgrade-scroll {
   position: relative;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
   overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(36,36,36,.22) transparent;
   background:
-    radial-gradient(circle at 50% 50%, rgba(36,36,36,.028) 0 2px, transparent 2.5px) 0 0 / 22px 22px,
+    radial-gradient(circle at 50% 50%, rgba(91,116,238,.055), transparent 26%),
     linear-gradient(#f7f6f2, #f7f6f2);
 }
 
@@ -204,7 +204,8 @@
   width: var(--tree-width);
   height: var(--tree-height);
   flex: 0 0 auto;
-  margin: 0 auto;
+  transform: scale(.89);
+  transform-origin: center;
 }
 
 .pv2-upgrade-lines {
@@ -219,7 +220,7 @@
 .pv2-upgrade-line {
   fill: none;
   stroke: var(--pv2-upgrade-line);
-  stroke-width: 2;
+  stroke-width: 2.2;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
   transition: stroke 160ms ease, stroke-width 160ms ease, opacity 160ms ease;
@@ -231,13 +232,13 @@
 .pv2-upgrade-line--friction { --line-branch: var(--pv2-upgrade-friction); }
 
 .pv2-upgrade-line.is-live {
-  stroke: color-mix(in srgb, var(--line-branch) 42%, transparent);
-  stroke-width: 2.5;
+  stroke: color-mix(in srgb, var(--line-branch) 50%, transparent);
+  stroke-width: 3;
 }
 
 .pv2-upgrade-line.is-bought {
   stroke: var(--line-branch);
-  stroke-width: 4;
+  stroke-width: 4.5;
 }
 
 .pv2-upgrade-root,
@@ -258,13 +259,13 @@
   border: 2px solid #292a27;
   border-radius: 50%;
   background: #fbfaf6;
-  box-shadow: 0 12px 28px rgba(36,36,36,.11), inset 0 0 0 7px rgba(36,36,36,.035);
+  box-shadow: 0 10px 22px rgba(36,36,36,.10), inset 0 0 0 5px rgba(36,36,36,.035);
 }
 
 .pv2-upgrade-root__ring {
   position: absolute;
-  inset: -10px;
-  border: 1px dashed rgba(36,36,36,.18);
+  inset: -6px;
+  border: 1px dashed rgba(36,36,36,.16);
   border-radius: 50%;
 }
 
@@ -272,17 +273,17 @@
 .pv2-upgrade-root__owned {
   display: block;
   color: var(--pv2-muted);
-  font-size: .52rem;
+  font-size: .46rem;
   font-weight: 850;
   letter-spacing: .12em;
 }
 
 .pv2-upgrade-root strong {
   display: block;
-  margin: 4px 0;
-  font-size: 1rem;
+  margin: 3px 0;
+  font-size: .82rem;
   line-height: .92;
-  letter-spacing: -.04em;
+  letter-spacing: -.035em;
 }
 
 .pv2-upgrade-root__owned {
@@ -296,13 +297,13 @@
   display: grid;
   grid-template-columns: 7px 1fr auto;
   align-items: center;
-  gap: 8px;
-  padding: 9px 9px 9px 8px;
+  gap: 7px;
+  padding: 8px 8px 8px 7px;
   border: 1px solid rgba(36,36,36,.14);
-  border-radius: 12px;
-  background: rgba(253,252,248,.97);
+  border-radius: 15px;
+  background: rgba(253,252,248,.98);
   color: var(--pv2-text);
-  box-shadow: 0 5px 13px rgba(36,36,36,.045);
+  box-shadow: 0 4px 11px rgba(36,36,36,.04);
   text-align: left;
   transition: transform 140ms ease, border-color 140ms ease, background 140ms ease, box-shadow 140ms ease, opacity 140ms ease, filter 140ms ease;
 }
@@ -314,10 +315,11 @@
 
 .pv2-upgrade-node__branch {
   width: 7px;
-  height: 28px;
+  height: 30px;
   border-radius: 999px;
   background: var(--branch-color);
-  opacity: .72;
+  opacity: .78;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--branch-color) 18%, transparent);
 }
 
 .pv2-upgrade-node__copy {
@@ -327,53 +329,69 @@
 }
 
 .pv2-upgrade-node__title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: .74rem;
-  font-weight: 860;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  font-size: .70rem;
+  font-weight: 880;
+  line-height: 1.02;
   letter-spacing: -.025em;
 }
 
 .pv2-upgrade-node__effect {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
   color: var(--pv2-muted);
-  font-size: .58rem;
-  font-weight: 650;
-  line-height: 1.1;
+  font-size: .55rem;
+  font-weight: 680;
+  line-height: 1.08;
 }
 
 .pv2-upgrade-node__cost {
-  min-width: 28px;
+  min-width: 27px;
   padding: 5px 6px;
   border-radius: 999px;
   background: rgba(36,36,36,.055);
   text-align: center;
-  font-size: .57rem;
+  font-size: .55rem;
   font-weight: 900;
   letter-spacing: -.01em;
   font-variant-numeric: tabular-nums;
 }
 
 .pv2-upgrade-node--depth-1 {
-  width: 144px;
-  min-height: 72px;
+  width: 124px;
+  min-height: 62px;
   border-width: 2px;
+  background: color-mix(in srgb, var(--branch-color) 5%, #fbfaf6);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--branch-color) 7%, transparent);
+}
+
+.pv2-upgrade-node--depth-2 {
+  width: 122px;
+}
+
+.pv2-upgrade-node--depth-3 {
+  width: 116px;
+  min-height: 54px;
 }
 
 .pv2-upgrade-node.is-locked {
   opacity: var(--pv2-upgrade-locked-opacity);
-  filter: grayscale(.9) saturate(.35);
+  filter: grayscale(.72) saturate(.45);
 }
 
 .pv2-upgrade-node.is-locked .pv2-upgrade-node__branch {
-  opacity: .30;
+  opacity: .38;
+}
+
+.pv2-upgrade-node:not(.is-locked):not(.is-bought) {
+  border-color: color-mix(in srgb, var(--branch-color) 28%, rgba(36,36,36,.16));
 }
 
 .pv2-upgrade-node.is-affordable {
-  border-color: color-mix(in srgb, var(--branch-color) 55%, #c69200);
+  border-color: color-mix(in srgb, var(--branch-color) 58%, #c69200);
   background: #fff8c9;
   box-shadow: 0 7px 18px rgba(211,164,17,.13), 0 0 0 3px rgba(255,216,79,.10);
   cursor: pointer;
@@ -387,17 +405,17 @@
 
 .pv2-upgrade-node.is-affordable:hover,
 .pv2-upgrade-node.is-affordable:focus-visible {
-  transform: translate(-50%, calc(-50% - 3px)) scale(1.045);
+  transform: translate(-50%, calc(-50% - 3px)) scale(1.055);
   border-color: var(--branch-color);
   outline: none;
 }
 
 .pv2-upgrade-node.is-bought {
   border-color: var(--branch-color);
-  background: color-mix(in srgb, var(--branch-color) 11%, #fbfaf6);
+  background: color-mix(in srgb, var(--branch-color) 13%, #fbfaf6);
   opacity: 1;
   filter: none;
-  box-shadow: 0 5px 15px color-mix(in srgb, var(--branch-color) 12%, transparent);
+  box-shadow: 0 5px 15px color-mix(in srgb, var(--branch-color) 16%, transparent);
 }
 
 .pv2-upgrade-node.is-bought .pv2-upgrade-node__branch {
@@ -411,6 +429,12 @@
 
 .pv2-upgrade-node:disabled {
   cursor: default;
+}
+
+@media (max-width: 1000px) {
+  .pv2-upgrade-tree {
+    transform: scale(.80);
+  }
 }
 
 @media (max-width: 900px) {
