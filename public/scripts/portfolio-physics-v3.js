@@ -712,16 +712,41 @@
     return true;
   }
 
+  // Tight bounding box of an element's rendered text lines, so a wide, mostly
+  // empty text block collides only where its words actually are.
+  function textBounds(el) {
+    try {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const rects = range.getClientRects();
+      let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+      for (const r of rects) {
+        if (r.width < 1 || r.height < 1) continue;
+        left = Math.min(left, r.left);
+        top = Math.min(top, r.top);
+        right = Math.max(right, r.right);
+        bottom = Math.max(bottom, r.bottom);
+      }
+      if (!Number.isFinite(left)) return el.getBoundingClientRect();
+      return { left, top, right, bottom, width: right - left, height: bottom - top };
+    } catch {
+      return el.getBoundingClientRect();
+    }
+  }
+
   function bumperRects(stageRect) {
+    // The statement collides against just its heading text (the "I make systems"
+    // line), not the full padded block with its eyebrow and paragraph.
     const candidates = [
-      ['statement', document.querySelector('.pv2-overview__statement')],
-      ['ux-work', document.querySelector('.pv2-gateway-link--ux')],
-      ['all-games', document.querySelector('.pv2-gateway-link--unfinished')],
+      ['statement', document.querySelector('.pv2-overview__statement'), '.pv2-overview__statement h1'],
+      ['ux-work', document.querySelector('.pv2-gateway-link--ux'), null],
+      ['all-games', document.querySelector('.pv2-gateway-link--unfinished'), null],
     ];
     return candidates
       .filter(([, el]) => el?.isConnected)
-      .map(([id, el]) => {
-        const rect = el.getBoundingClientRect();
+      .map(([id, el, textSel]) => {
+        const measureEl = textSel && document.querySelector(textSel);
+        const rect = measureEl ? textBounds(measureEl) : el.getBoundingClientRect();
         return { id, el, x: rect.left - stageRect.left, y: rect.top - stageRect.top, w: rect.width, h: rect.height, viewport: rect };
       });
   }
