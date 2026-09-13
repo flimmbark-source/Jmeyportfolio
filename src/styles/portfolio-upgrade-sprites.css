@@ -1,0 +1,89 @@
+:root {
+  --pv2-upgrade-sheet: url('/images/Upgrade Tree Sprite Sheet.png');
+  --pv2-upgrade-sheet-w: 1536px;
+  --pv2-upgrade-sheet-h: 1024px;
+}
+
+.pv2-upgrade-node {
+  min-height: 92px;
+  grid-template-columns: 7px 1fr auto;
+}
+
+.pv2-upgrade-node__copy {
+  display: grid;
+  grid-template-rows: 48px auto;
+  justify-items: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.pv2-upgrade-node__title {
+  display: none;
+}
+
+.pv2-upgrade-node__copy::before {
+  content: '';
+  width: 48px;
+  height: 48px;
+  display: block;
+  border-radius: 8px;
+  background-image: var(--pv2-upgrade-sheet);
+  background-repeat: no-repeat;
+  background-size: var(--pv2-upgrade-sheet-w) var(--pv2-upgrade-sheet-h);
+  background-position: var(--sprite-x, -553px) var(--sprite-y, -242px);
+  image-rendering: pixelated;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 3px 8px rgba(20,28,40,.16);
+}
+
+.pv2-upgrade-node__effect {
+  max-width: 92px;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
+  text-align: center;
+  font-size: .56rem;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.pv2-upgrade-node--depth-1 {
+  min-height: 98px;
+}
+
+/* Velocity sprites */
+.pv2-upgrade-node[data-upgrade-id='speed-1'] { --sprite-x: -553px; --sprite-y: -242px; }
+.pv2-upgrade-node[data-upgrade-id='speed-accel'] { --sprite-x: -664px; --sprite-y: -242px; }
+.pv2-upgrade-node[data-upgrade-id='speed-top'] { --sprite-x: -771px; --sprite-y: -242px; }
+.pv2-upgrade-node[data-upgrade-id='speed-launch'] { --sprite-x: -873px; --sprite-y: -242px; }
+
+/* Bounce sprites */
+.pv2-upgrade-node[data-upgrade-id='bounce-1'] { --sprite-x: -1103px; --sprite-y: -242px; }
+.pv2-upgrade-node[data-upgrade-id='bounce-force'] { --sprite-x: -1211px; --sprite-y: -242px; }
+.pv2-upgrade-node[data-upgrade-id='bounce-value'] { --sprite-x: -1319px; --sprite-y: -242px; }
+.pv2-upgrade-node[data-upgrade-id='bounce-combo'] { --sprite-x: -1424px; --sprite-y: -242px; }
+
+/* Wall sprites */
+.pv2-upgrade-node[data-upgrade-id='walls-1'] { --sprite-x: -553px; --sprite-y: -356px; }
+.pv2-upgrade-node[data-upgrade-id='walls-force'] { --sprite-x: -662px; --sprite-y: -356px; }
+.pv2-upgrade-node[data-upgrade-id='walls-value'] { --sprite-x: -553px; --sprite-y: -356px; }
+.pv2-upgrade-node[data-upgrade-id='walls-ricochet'] { --sprite-x: -771px; --sprite-y: -356px; }
+
+/* Friction sprites */
+.pv2-upgrade-node[data-upgrade-id='friction-1'] { --sprite-x: -979px; --sprite-y: -356px; }
+.pv2-upgrade-node[data-upgrade-id='friction-glide'] { --sprite-x: -1093px; --sprite-y: -356px; }
+.pv2-upgrade-node[data-upgrade-id='friction-collision'] { --sprite-x: -1424px; --sprite-y: -356px; }
+.pv2-upgrade-node[data-upgrade-id='friction-low'] { --sprite-x: -1319px; --sprite-y: -356px; }
+
+.pv2-upgrade-node.is-locked .pv2-upgrade-node__copy::before {
+  filter: grayscale(.75) saturate(.35) brightness(.8);
+  opacity: .7;
+}
+
+.pv2-upgrade-node.is-affordable .pv2-upgrade-node__copy::before {
+  filter: saturate(1.12) brightness(1.06);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), 0 0 0 2px rgba(255,216,79,.18), 0 4px 12px rgba(20,28,40,.2);
+}
+
+.pv2-upgrade-node.is-bought .pv2-upgrade-node__copy::before {
+  filter: saturate(1.08) brightness(1.04);
+}
