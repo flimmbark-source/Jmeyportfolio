@@ -77,9 +77,9 @@ import '../styles/portfolio-loading.css';
         window.setTimeout(finish, 4000);
       })();
     </script>
-    <script src="/scripts/portfolio-physics-v3.js?v=11" defer></script>
-    <script src="/scripts/portfolio-work-contact-fx.js?v=2" defer></script>
-    <script src="/scripts/portfolio-point-ghost-fx.js?v=1" defer></script>
+    <script src="/scripts/portfolio-physics-v3.js?v=12" defer></script>
+    <script src="/scripts/portfolio-work-contact-fx.js?v=3" defer></script>
+    <script src="/scripts/portfolio-point-ghost-fx.js?v=2" defer></script>
     <script src="/scripts/ux-direct-link.js?v=1" defer></script>
     <script src="/scripts/letter-river-preview.js?v=4" defer></script>
   </body>
@@ -103,8 +103,6 @@ import '../styles/portfolio-loading.css';
     transform: translateY(0);
   }
 
-  /* Keep the hero statement physically centered even while Framer writes
-     entrance-animation styles during hydration. */
   .pv2-overview__statement {
     position: absolute !important;
     left: 50% !important;
@@ -114,7 +112,6 @@ import '../styles/portfolio-loading.css';
     transform: translate(-50%, -50%) !important;
   }
 
-  /* The richer score ghost runtime replaces the original short monochrome ghost. */
   .pv2-point-ghost {
     display: none !important;
   }
