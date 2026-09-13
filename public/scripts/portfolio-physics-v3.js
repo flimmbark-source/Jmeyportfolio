@@ -47,7 +47,7 @@
     { id: 'bounce-chain', branch: 'bounce', depth: 4, x: 1150, y: 450, title: 'Combo Chain', effect: 'Hits stack up to ×3', icon: 'link', cost: 190, requires: ['bounce-charge', 'bounce-combo'] },
 
     // ── Walls (leftward spine) ─────────────────────────────────────────────
-    { id: 'walls-1', branch: 'walls', depth: 1, x: 492, y: 450, title: 'Wall Points', effect: '+1 / wall', icon: 'brick', cost: 14, requires: [] },
+    { id: 'walls-1', branch: 'walls', depth: 1, x: 492, y: 450, title: 'Wall Points', effect: '+1 / wall', icon: 'brick', cost: 30, requires: [] },
     { id: 'walls-hard', branch: 'walls', depth: 2, x: 356, y: 360, title: 'Hard Walls', effect: '+18% wall kick', icon: 'shield', cost: 30, requires: ['walls-1'] },
     { id: 'walls-value', branch: 'walls', depth: 2, x: 356, y: 540, title: 'Wall Value', effect: '+1 / wall', icon: 'coin', cost: 32, requires: ['walls-1'] },
     { id: 'walls-ricochet', branch: 'walls', depth: 3, x: 188, y: 360, title: 'Ricochet', effect: '+25% wall kick', icon: 'zigzag', cost: 70, requires: ['walls-hard'] },
@@ -150,6 +150,14 @@
 
   function upgradeUnlocked(upgrade) {
     return upgrade.requires.every((id) => purchased.has(id));
+  }
+
+  // Fog-of-war reveal: a node shows only once it is bought, connects to the
+  // centre (root) node, or connects to an already-bought upgrade.
+  function upgradeVisible(upgrade) {
+    if (purchased.has(upgrade.id)) return true;
+    if (!upgrade.requires.length) return true;
+    return upgrade.requires.some((id) => purchased.has(id));
   }
 
   function currentEffects() {
@@ -338,7 +346,9 @@
       const soon = Boolean(upgrade.soon);
       const bought = purchased.has(upgrade.id);
       const unlocked = upgradeUnlocked(upgrade);
+      const visible = upgradeVisible(upgrade);
       const affordable = !soon && unlocked && !bought && points >= upgrade.cost;
+      button.classList.toggle('is-hidden', !visible);
       button.classList.toggle('is-bought', bought);
       button.classList.toggle('is-locked', !unlocked);
       button.classList.toggle('is-affordable', affordable);
@@ -353,7 +363,10 @@
 
       upgradeTree.querySelectorAll(`[data-connector-to="${upgrade.id}"]`).forEach((connector) => {
         const from = connector.getAttribute('data-connector-from');
+        const parent = from === 'root' ? null : UPGRADE_BY_ID.get(from);
+        const fromVisible = from === 'root' || (parent && upgradeVisible(parent));
         const parentLive = from === 'root' || purchased.has(from);
+        connector.classList.toggle('is-hidden', !(visible && fromVisible));
         connector.classList.toggle('is-live', parentLive || unlocked || bought);
         connector.classList.toggle('is-bought', bought);
       });

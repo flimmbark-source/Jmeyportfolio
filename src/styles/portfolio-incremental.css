@@ -473,6 +473,12 @@
   cursor: default;
 }
 
+/* Fog-of-war: nodes and connectors not yet reached stay hidden. */
+.pv2-upgrade-node.is-hidden,
+.pv2-upgrade-line.is-hidden {
+  display: none;
+}
+
 @media (max-width: 1000px) {
   .pv2-upgrade-tree {
     transform: scale(.66);
