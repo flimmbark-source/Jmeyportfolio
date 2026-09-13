@@ -734,19 +734,33 @@
     }
   }
 
+  function unionTextBounds(selectors) {
+    let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+    for (const sel of selectors) {
+      const el = document.querySelector(sel);
+      if (!el) continue;
+      const r = textBounds(el);
+      left = Math.min(left, r.left);
+      top = Math.min(top, r.top);
+      right = Math.max(right, r.right);
+      bottom = Math.max(bottom, r.bottom);
+    }
+    if (!Number.isFinite(left)) return null;
+    return { left, top, right, bottom, width: right - left, height: bottom - top };
+  }
+
   function bumperRects(stageRect) {
-    // The statement collides against just its heading text (the "I make systems"
-    // line), not the full padded block with its eyebrow and paragraph.
+    // The statement collides against its heading + paragraph text, not the full
+    // padded block (its eyebrow line and the empty corners are excluded).
     const candidates = [
-      ['statement', document.querySelector('.pv2-overview__statement'), '.pv2-overview__statement h1'],
+      ['statement', document.querySelector('.pv2-overview__statement'), ['.pv2-overview__statement h1', '.pv2-overview__statement > p:last-child']],
       ['ux-work', document.querySelector('.pv2-gateway-link--ux'), null],
       ['all-games', document.querySelector('.pv2-gateway-link--unfinished'), null],
     ];
     return candidates
       .filter(([, el]) => el?.isConnected)
-      .map(([id, el, textSel]) => {
-        const measureEl = textSel && document.querySelector(textSel);
-        const rect = measureEl ? textBounds(measureEl) : el.getBoundingClientRect();
+      .map(([id, el, textSels]) => {
+        const rect = (textSels && unionTextBounds(textSels)) || el.getBoundingClientRect();
         return { id, el, x: rect.left - stageRect.left, y: rect.top - stageRect.top, w: rect.width, h: rect.height, viewport: rect };
       });
   }
