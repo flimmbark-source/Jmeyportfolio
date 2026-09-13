@@ -13,6 +13,7 @@
   const REDUCED_MAX_SPEED = 0.08;
   const POINTER_COOLDOWN = 85;
   const BUMPER_KICK = 0.48;
+  const BUMPER_SCORE_COOLDOWN = 360;
   const GHOST_COLORS = ['#ff3366', '#7c3cff', '#00b894', '#ff9f1a', '#1597ff', '#e843d5', '#ff5f00'];
 
   let frame = 0;
@@ -97,9 +98,6 @@
         ], { duration: 170, easing: 'cubic-bezier(.2,.9,.25,1)' });
       } catch {}
     }
-    // Deliberately use a new non-visual event name. Older point-ghost helper
-    // runtimes listened to pv2:score and could remain alive during HMR,
-    // producing a second ghost on every hit.
     window.dispatchEvent(new CustomEvent('pv2:score-state', {
       detail: { points, delta, bumperId, impactX: impact?.x, impactY: impact?.y },
     }));
@@ -169,11 +167,11 @@
           { opacity: 1, offset: .08, transform: `translate(${dx * .12}px,calc(${dy * .12}px - 50%)) rotate(${angle}rad) scaleX(1)` },
           { opacity: .9, offset: .78, transform: `translate(${dx * .68}px,calc(${dy * .68}px - 50%)) rotate(${angle}rad) scaleX(.86)` },
           { opacity: 0, transform: `translate(${dx}px,calc(${dy}px - 50%)) rotate(${angle}rad) scaleX(.55)` },
-        ], { duration: 750, easing: 'linear', fill: 'forwards' });
+        ], { duration: 375, easing: 'linear', fill: 'forwards' });
         animation.addEventListener('finish', () => line.remove(), { once: true });
       } catch {
         line.style.opacity = '1';
-        window.setTimeout(() => line.remove(), 750);
+        window.setTimeout(() => line.remove(), 375);
       }
     }
   }
@@ -316,9 +314,12 @@
     const overlapX = (body.w + bumper.w) / 2 - Math.abs(dx);
     const overlapY = (body.h + bumper.h) / 2 - Math.abs(dy);
     const horizontal = overlapX < overlapY;
-    const poweredHit = entering && body.armed && gameActive;
+    const now = performance.now();
+    const lastBumperHit = body.bumperHits.get(bumper.id) ?? -Infinity;
+    const poweredHit = entering && body.armed && gameActive && now - lastBumperHit >= BUMPER_SCORE_COOLDOWN;
 
     if (poweredHit) {
+      body.bumperHits.set(bumper.id, now);
       const impact = impactPoint(body, bumper, horizontal);
       updateScore(1, bumper.id, impact);
       spawnPointGhost(impact, 1);
@@ -365,6 +366,7 @@
       pointerInside: false,
       lastPointerHit: -Infinity,
       contacts: new Set(),
+      bumperHits: new Map(),
       armed: false,
     };
   }
@@ -498,6 +500,7 @@
       body.homeX = body.x;
       body.homeY = body.y;
       body.contacts.clear();
+      body.bumperHits.clear();
       body.el.style.left = `${body.x}px`;
       body.el.style.top = `${body.y}px`;
     }
