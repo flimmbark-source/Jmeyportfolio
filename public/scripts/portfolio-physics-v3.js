@@ -10,6 +10,7 @@
   const HOME_PULL = 0.00000055;
   const DAMPING = 0.9995;
   const STATEMENT_FOLLOW = 0.055;
+  const BUMPER_COOLDOWN = 240;
 
   let frame = 0;
   let stage = null;
@@ -20,6 +21,10 @@
   let statementX = null;
   let statementY = null;
   let fxLayer = null;
+  let scoreCounter = null;
+  let scoreValue = null;
+  let gameActive = false;
+  let points = 0;
 
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
   const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -50,6 +55,87 @@
     });
     document.body.appendChild(fxLayer);
     return fxLayer;
+  }
+
+  function ensureScoreCounter() {
+    if (scoreCounter?.isConnected) return scoreCounter;
+    scoreCounter = document.createElement('div');
+    scoreCounter.className = 'pv2-score-counter';
+    scoreCounter.setAttribute('role', 'status');
+    scoreCounter.setAttribute('aria-live', 'polite');
+    scoreCounter.innerHTML = '<span class="pv2-score-counter__label">Points</span><strong class="pv2-score-counter__value">0</strong>';
+    scoreValue = scoreCounter.querySelector('.pv2-score-counter__value');
+    document.body.appendChild(scoreCounter);
+    return scoreCounter;
+  }
+
+  function setScoreVisible(visible) {
+    const counter = ensureScoreCounter();
+    counter.classList.toggle('is-visible', Boolean(visible));
+  }
+
+  function activateGame() {
+    if (gameActive) return;
+    gameActive = true;
+    document.documentElement.classList.add('pv2-game-active');
+    setScoreVisible(Boolean(stage?.isConnected));
+    window.dispatchEvent(new CustomEvent('pv2:game-start', { detail: { points } }));
+  }
+
+  function updateScore(delta, bumperId) {
+    points += delta;
+    const counter = ensureScoreCounter();
+    if (scoreValue) scoreValue.textContent = String(points);
+    counter.animate([
+      { transform: 'scale(1)' },
+      { transform: 'scale(1.08)', offset: 0.42 },
+      { transform: 'scale(1)' },
+    ], { duration: 180, easing: 'cubic-bezier(.2,.9,.25,1)' });
+    window.dispatchEvent(new CustomEvent('pv2:score', { detail: { points, delta, bumperId } }));
+  }
+
+  function pointGhost(bumperEl, amount) {
+    if (!bumperEl?.isConnected) return;
+    const layer = ensureFxLayer();
+    const rect = bumperEl.getBoundingClientRect();
+    const ghost = document.createElement('span');
+    ghost.className = 'pv2-point-ghost';
+    ghost.textContent = `+${amount}`;
+    ghost.style.left = `${rect.left + rect.width / 2}px`;
+    ghost.style.top = `${rect.top - 2}px`;
+    layer.appendChild(ghost);
+
+    const animation = ghost.animate([
+      { opacity: 0, transform: 'translate(-50%, 2px) scale(.9)' },
+      { opacity: 1, offset: 0.18, transform: 'translate(-50%, -5px) scale(1)' },
+      { opacity: 0, transform: 'translate(-50%, -28px) scale(.96)' },
+    ], {
+      duration: reducedMotion() ? 1 : 520,
+      easing: 'cubic-bezier(.2,.8,.25,1)',
+    });
+    animation.addEventListener('finish', () => ghost.remove(), { once: true });
+  }
+
+  function pulseBumper(bumperEl) {
+    if (!bumperEl?.isConnected || reducedMotion()) return;
+    bumperEl.animate([
+      { backgroundColor: 'rgba(36, 36, 36, 0)', boxShadow: '0 0 0 0 rgba(36,36,36,0)' },
+      { backgroundColor: 'rgba(36, 36, 36, 0.055)', boxShadow: '0 0 0 7px rgba(36,36,36,0.035)', offset: 0.38 },
+      { backgroundColor: 'rgba(36, 36, 36, 0)', boxShadow: '0 0 0 0 rgba(36,36,36,0)' },
+    ], {
+      duration: 260,
+      easing: 'cubic-bezier(.2,.9,.25,1)',
+    });
+  }
+
+  function registerBumperHit(body, bumperEl, bumperId, now) {
+    if (!gameActive || body.isStatic || !bumperEl) return;
+    const last = body.lastBumperHits.get(bumperId) || -Infinity;
+    if (now - last < BUMPER_COOLDOWN) return;
+    body.lastBumperHits.set(bumperId, now);
+    pulseBumper(bumperEl);
+    pointGhost(bumperEl, 1);
+    updateScore(1, bumperId);
   }
 
   function impactBurst(event, targetRect) {
@@ -164,9 +250,15 @@
     if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy); }
   }
 
-  function separate(a, b) {
+  function separate(a, b, now = performance.now()) {
     if (!overlaps(a, b, BODY_GAP)) return;
     if (a.isStatic && b.isStatic) return;
+
+    if (a.isStatic !== b.isStatic) {
+      const mover = a.isStatic ? b : a;
+      const bumper = a.isStatic ? a : b;
+      registerBumperHit(mover, bumper.target, bumper.bumperId, now);
+    }
 
     const dx = (a.x + a.w / 2) - (b.x + b.w / 2) || 0.01;
     const dy = (a.y + a.h / 2) - (b.y + b.h / 2) || 0.01;
@@ -208,8 +300,10 @@
     }
   }
 
-  function separateStatement(body, obstacle) {
+  function separateStatement(body, obstacle, now = performance.now()) {
     if (body.isStatic || !obstacle || !overlaps(body, obstacle, STATEMENT_GAP)) return;
+    registerBumperHit(body, statement, 'statement', now);
+
     const dx = (body.x + body.w / 2) - (obstacle.x + obstacle.w / 2) || 0.01;
     const dy = (body.y + body.h / 2) - (obstacle.y + obstacle.h / 2) || 0.01;
     const overlapX = (body.w + obstacle.w) / 2 + STATEMENT_GAP - Math.abs(dx);
@@ -238,6 +332,11 @@
     const classes = classString(el);
     const isStatic = classes.includes('gateway-link--ux') || classes.includes('gateway-link--unfinished');
     const isCafe = classes.includes('project-tile--top');
+    const bumperId = classes.includes('gateway-link--ux')
+      ? 'ux-work'
+      : classes.includes('gateway-link--unfinished')
+        ? 'all-games'
+        : null;
 
     el.style.position = 'absolute';
     el.style.right = 'auto';
@@ -247,7 +346,7 @@
     el.style.transition = 'none';
 
     const body = {
-      el, x, y, w, h, isStatic, isCafe,
+      el, x, y, w, h, isStatic, isCafe, bumperId,
       homeX: x,
       homeY: y,
       vx: isStatic ? 0 : Math.cos(angle) * speed,
@@ -256,6 +355,7 @@
       scrollFollow: 0.018 + Math.random() * 0.045,
       visualViewportY: stageRect.top + y,
       target: el.querySelector('.pv2-project-tile, .pv2-gateway-link') || el,
+      lastBumperHits: new Map(),
     };
 
     body.enter = (event) => {
@@ -270,13 +370,12 @@
       body.vx += (dx / len) * POINTER_IMPULSE;
       body.vy += (dy / len) * POINTER_IMPULSE;
 
-      // The top Café block used to feel mostly horizontal because it lived so
-      // close to the top boundary. Give it a small explicit vertical kick so
-      // pointer contact can bump it both upward and downward.
       if (body.isCafe) {
         const verticalDir = Math.abs(dy) > 2 ? Math.sign(dy) : (Math.random() < 0.5 ? -1 : 1);
         body.vy += verticalDir * POINTER_IMPULSE * 0.65;
       }
+
+      activateGame();
     };
     body.target.addEventListener('pointerenter', body.enter);
 
@@ -321,7 +420,7 @@
         body.vy = clamp(body.vy, -maxSpeed, maxSpeed);
         body.x += body.vx * dt;
         body.y += body.vy * dt;
-        separateStatement(body, obstacle);
+        separateStatement(body, obstacle, now);
         constrain(body, sr);
       }
 
@@ -337,7 +436,7 @@
 
     for (let pass = 0; pass < 2; pass += 1) {
       for (let i = 0; i < bodies.length; i += 1) {
-        for (let j = i + 1; j < bodies.length; j += 1) separate(bodies[i], bodies[j]);
+        for (let j = i + 1; j < bodies.length; j += 1) separate(bodies[i], bodies[j], now);
       }
       bodies.forEach((b) => constrain(b, sr));
     }
@@ -362,6 +461,7 @@
     lastTime = 0;
     statementX = null;
     statementY = null;
+    setScoreVisible(false);
   }
 
   function init() {
@@ -395,6 +495,7 @@
       body.el.style.top = `${body.y}px`;
     }
 
+    if (gameActive) setScoreVisible(true);
     mark('initialized');
     frame = requestAnimationFrame(tick);
   }
@@ -410,6 +511,7 @@
 
   function start() {
     mark('script-loaded');
+    ensureScoreCounter();
     observer.observe(document.body, { childList: true, subtree: true });
     init();
     window.addEventListener('resize', () => {
