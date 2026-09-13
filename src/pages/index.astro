@@ -107,13 +107,17 @@ import '../styles/portfolio-battle.css';
   .pv2-overview__statement {
     position: absolute !important;
     left: 50% !important;
-    top: 50% !important;
+    top: 63% !important;
     right: auto !important;
     bottom: auto !important;
     transform: translate(-50%, -50%) !important;
   }
 
   @media (max-width: 720px) {
+    html.pv2-physics-live .pv2-overview__statement {
+      top: 50% !important;
+    }
+
     html:not(.pv2-physics-live) .pv2-overview__statement {
       position: relative !important;
       inset: auto !important;
