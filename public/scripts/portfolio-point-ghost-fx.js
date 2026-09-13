@@ -1,6 +1,6 @@
 (() => {
-  const STYLE_ID = 'pv2-point-ghost-v2-style';
-  const palette = ['#ff5c7a', '#6d5dfc', '#00a67e', '#f59e0b', '#0ea5e9', '#d946ef'];
+  const STYLE_ID = 'pv2-point-ghost-v3-style';
+  const palette = ['#ff3366', '#7c3cff', '#00b894', '#ff9f1a', '#1597ff', '#e843d5', '#ff5f00'];
   let colorIndex = 0;
 
   function ensureStyles() {
@@ -8,53 +8,58 @@
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-      .pv2-point-ghost-v2 {
+      .pv2-point-ghost-v3 {
         position: fixed;
-        z-index: 5200;
+        z-index: 5400;
         left: var(--ghost-x);
         top: var(--ghost-y);
         color: var(--ghost-color);
-        font: 850 1.45rem/1 system-ui, sans-serif;
-        letter-spacing: -.04em;
+        font-family: system-ui, sans-serif;
+        font-size: clamp(2.15rem, 3vw, 3.2rem);
+        font-weight: 950;
+        line-height: .9;
+        letter-spacing: -.07em;
         white-space: nowrap;
         pointer-events: none;
-        text-shadow:
-          0 1px 0 rgba(255,255,255,.95),
-          0 3px 14px color-mix(in srgb, var(--ghost-color) 28%, transparent);
         transform-origin: 50% 100%;
-        animation: pv2PointGhostV2 2700ms cubic-bezier(.18,.8,.22,1) forwards;
+        -webkit-text-stroke: 1px rgba(255,255,255,.72);
+        text-shadow:
+          0 2px 0 rgba(255,255,255,.9),
+          0 5px 18px color-mix(in srgb, var(--ghost-color) 42%, transparent),
+          0 0 2px color-mix(in srgb, var(--ghost-color) 78%, black);
+        animation: pv2PointGhostV3 4800ms linear forwards;
       }
 
-      @keyframes pv2PointGhostV2 {
+      @keyframes pv2PointGhostV3 {
         0% {
           opacity: 0;
-          transform: translate(-50%, 8px) scale(.45);
+          transform: translate(-50%, 4px) scale(.35);
         }
-        10% {
+        7% {
           opacity: 1;
-          transform: translate(-50%, -20px) scale(1.28);
+          transform: translate(-50%, -26px) scale(1.38);
         }
-        20% {
+        15% {
           opacity: 1;
-          transform: translate(-50%, -26px) scale(1);
+          transform: translate(-50%, -34px) scale(1);
         }
-        68% {
+        67% {
           opacity: 1;
-          transform: translate(-50%, -31px) scale(1);
+          transform: translate(-50%, -38px) scale(1);
         }
         82% {
-          opacity: .94;
-          transform: translate(-50%, -39px) scale(1.02);
+          opacity: 1;
+          transform: translate(-50%, -46px) scale(1.02);
         }
         100% {
           opacity: 0;
-          transform: translate(-50%, -78px) scale(.96);
+          transform: translate(-50%, -118px) scale(.94);
         }
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .pv2-point-ghost-v2 {
-          animation-duration: 1700ms;
+        .pv2-point-ghost-v3 {
+          animation-duration: 3200ms;
         }
       }
     `;
@@ -69,16 +74,18 @@
   }
 
   function spawn(detail) {
-    const bumper = bumperFor(detail?.bumperId);
-    if (!bumper?.isConnected) return;
-
     ensureStyles();
-    const rect = bumper.getBoundingClientRect();
+    const bumper = bumperFor(detail?.bumperId);
+    const rect = bumper?.getBoundingClientRect();
+    const x = Number.isFinite(detail?.impactX) ? detail.impactX : rect ? rect.left + rect.width / 2 : null;
+    const y = Number.isFinite(detail?.impactY) ? detail.impactY : rect ? rect.top : null;
+    if (x == null || y == null) return;
+
     const ghost = document.createElement('span');
-    ghost.className = 'pv2-point-ghost-v2';
+    ghost.className = 'pv2-point-ghost-v3';
     ghost.textContent = `+${detail?.delta ?? 1}`;
-    ghost.style.setProperty('--ghost-x', `${rect.left + rect.width / 2}px`);
-    ghost.style.setProperty('--ghost-y', `${rect.top - 8}px`);
+    ghost.style.setProperty('--ghost-x', `${x}px`);
+    ghost.style.setProperty('--ghost-y', `${y - 4}px`);
     ghost.style.setProperty('--ghost-color', palette[colorIndex % palette.length]);
     colorIndex += 1;
     document.body.appendChild(ghost);
@@ -90,9 +97,6 @@
     window.addEventListener('pv2:score', (event) => spawn(event.detail));
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', start, { once: true });
-  } else {
-    start();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+  else start();
 })();
