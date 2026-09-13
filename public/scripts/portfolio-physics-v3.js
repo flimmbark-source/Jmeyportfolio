@@ -52,15 +52,19 @@
     return fxLayer;
   }
 
-  function impactBurst(event) {
-    if (window.innerWidth <= MOBILE_BREAKPOINT || reducedMotion()) return;
+  function impactBurst(event, targetRect) {
+    if (window.innerWidth <= MOBILE_BREAKPOINT || reducedMotion() || !targetRect) return;
     const layer = ensureFxLayer();
-    const lineCount = 5 + Math.floor(Math.random() * 3);
+    const lineCount = 6;
+    const centerX = targetRect.left + targetRect.width / 2;
+    const centerY = targetRect.top + targetRect.height / 2;
+    const outwardAngle = Math.atan2(event.clientY - centerY, event.clientX - centerX);
 
     for (let i = 0; i < lineCount; i += 1) {
-      const angle = (Math.PI * 2 * i) / lineCount + (Math.random() - 0.5) * 0.6;
-      const distance = 10 + Math.random() * 12;
-      const length = 5 + Math.random() * 7;
+      const progress = lineCount === 1 ? 0.5 : i / (lineCount - 1);
+      const angle = outwardAngle - Math.PI / 2 + progress * Math.PI + (Math.random() - 0.5) * 0.12;
+      const distance = 10 + Math.random() * 10;
+      const length = 6 + Math.random() * 5;
       const line = document.createElement('span');
       Object.assign(line.style, {
         position: 'absolute',
@@ -68,10 +72,9 @@
         top: `${event.clientY}px`,
         width: `${length}px`,
         height: '1.5px',
-        borderRadius: '999px',
-        background: 'rgba(32, 32, 32, 0.78)',
+        background: 'rgba(32, 32, 32, 0.76)',
         transformOrigin: '0 50%',
-        transform: `translate(0, -50%) rotate(${angle}rad) scaleX(0.2)`,
+        transform: `translate(0, -50%) rotate(${angle}rad) scaleX(0.15)`,
         opacity: '0',
       });
       layer.appendChild(line);
@@ -79,37 +82,15 @@
       const dx = Math.cos(angle) * distance;
       const dy = Math.sin(angle) * distance;
       const animation = line.animate([
-        { opacity: 0, transform: `translate(0, -50%) rotate(${angle}rad) scaleX(0.2)` },
-        { opacity: 1, offset: 0.18, transform: `translate(${dx * 0.25}px, ${dy * 0.25}px) rotate(${angle}rad) scaleX(1)` },
-        { opacity: 0, transform: `translate(${dx}px, ${dy}px) rotate(${angle}rad) scaleX(0.35)` },
+        { opacity: 0, transform: `translate(0, -50%) rotate(${angle}rad) scaleX(0.15)` },
+        { opacity: 0.92, offset: 0.16, transform: `translate(${dx * 0.22}px, ${dy * 0.22}px) rotate(${angle}rad) scaleX(1)` },
+        { opacity: 0, transform: `translate(${dx}px, ${dy}px) rotate(${angle}rad) scaleX(0.45)` },
       ], {
-        duration: 190 + Math.random() * 70,
+        duration: 175 + Math.random() * 55,
         easing: 'cubic-bezier(.2,.9,.25,1)',
       });
       animation.addEventListener('finish', () => line.remove(), { once: true });
     }
-
-    const pop = document.createElement('span');
-    Object.assign(pop.style, {
-      position: 'absolute',
-      left: `${event.clientX}px`,
-      top: `${event.clientY}px`,
-      width: '5px',
-      height: '5px',
-      marginLeft: '-2.5px',
-      marginTop: '-2.5px',
-      border: '1.5px solid rgba(32, 32, 32, 0.72)',
-      borderRadius: '50%',
-      opacity: '0',
-      transform: 'scale(.25)',
-    });
-    layer.appendChild(pop);
-    const popAnimation = pop.animate([
-      { opacity: 0, transform: 'scale(.25)' },
-      { opacity: 0.9, offset: 0.18, transform: 'scale(.65)' },
-      { opacity: 0, transform: 'scale(2.2)' },
-    ], { duration: 180, easing: 'ease-out' });
-    popAnimation.addEventListener('finish', () => pop.remove(), { once: true });
   }
 
   function stageTopLimit(stageRect) {
@@ -162,7 +143,7 @@
     const c = classString(slot);
     let x = 0.5;
     let y = 0.5;
-    if (c.includes('project-tile--top')) { x = 0.50; y = 0.13; }
+    if (c.includes('project-tile--top')) { x = 0.50; y = 0.18; }
     else if (c.includes('project-tile--left')) { x = 0.14; y = 0.47; }
     else if (c.includes('project-tile--right')) { x = 0.86; y = 0.46; }
     else if (c.includes('project-tile--bottom-left')) { x = 0.31; y = 0.80; }
@@ -256,6 +237,7 @@
     const speed = reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED;
     const classes = classString(el);
     const isStatic = classes.includes('gateway-link--ux') || classes.includes('gateway-link--unfinished');
+    const isCafe = classes.includes('project-tile--top');
 
     el.style.position = 'absolute';
     el.style.right = 'auto';
@@ -265,28 +247,36 @@
     el.style.transition = 'none';
 
     const body = {
-      el, x, y, w, h, isStatic,
+      el, x, y, w, h, isStatic, isCafe,
       homeX: x,
       homeY: y,
       vx: isStatic ? 0 : Math.cos(angle) * speed,
       vy: isStatic ? 0 : Math.sin(angle) * speed,
       phase: index * 1.41 + 0.7,
-      // Each block gets its own follow rate. This is the actual scroll inertia:
-      // we smooth its viewport position instead of partially cancelling scroll.
       scrollFollow: 0.018 + Math.random() * 0.045,
       visualViewportY: stageRect.top + y,
       target: el.querySelector('.pv2-project-tile, .pv2-gateway-link') || el,
     };
 
     body.enter = (event) => {
-      impactBurst(event);
-      if (isStatic) return;
       const r = body.el.getBoundingClientRect();
-      let dx = r.left + r.width / 2 - event.clientX;
-      let dy = r.top + r.height / 2 - event.clientY;
+      impactBurst(event, r);
+      if (isStatic) return;
+      const centerX = r.left + r.width / 2;
+      const centerY = r.top + r.height / 2;
+      const dx = centerX - event.clientX;
+      const dy = centerY - event.clientY;
       const len = Math.hypot(dx, dy) || 1;
       body.vx += (dx / len) * POINTER_IMPULSE;
       body.vy += (dy / len) * POINTER_IMPULSE;
+
+      // The top Café block used to feel mostly horizontal because it lived so
+      // close to the top boundary. Give it a small explicit vertical kick so
+      // pointer contact can bump it both upward and downward.
+      if (body.isCafe) {
+        const verticalDir = Math.abs(dy) > 2 ? Math.sign(dy) : (Math.random() < 0.5 ? -1 : 1);
+        body.vy += verticalDir * POINTER_IMPULSE * 0.65;
+      }
     };
     body.target.addEventListener('pointerenter', body.enter);
 
@@ -315,6 +305,7 @@
         body.vy += (body.homeY - body.y) * HOME_PULL * dt;
         body.vx += Math.sin(t * 0.41 + body.phase) * 0.0000175 * dt;
         body.vy += Math.cos(t * 0.37 + body.phase * 1.23) * 0.0000175 * dt;
+        if (body.isCafe) body.vy += Math.sin(t * 0.62 + body.phase) * 0.000025 * dt;
         body.vx *= Math.pow(DAMPING, dt);
         body.vy *= Math.pow(DAMPING, dt);
 
@@ -339,7 +330,6 @@
       const alpha = 1 - Math.pow(1 - follow, dt / 16.667);
       body.visualViewportY += (targetViewportY - body.visualViewportY) * alpha;
 
-      // Never let the eased visual position slide under the fixed navigation.
       const minViewportY = viewportTopLimit();
       const maxViewportY = Math.max(minViewportY, sr.bottom - body.h - EDGE_PADDING);
       body.visualViewportY = clamp(body.visualViewportY, minViewportY, maxViewportY);
@@ -353,8 +343,6 @@
     }
 
     for (const body of bodies) {
-      // Convert the smoothly-following viewport coordinate back into the stage's
-      // coordinate system. This is what creates visible lag while the page scrolls.
       const displayY = body.visualViewportY - sr.top;
       body.el.style.left = `${body.x.toFixed(2)}px`;
       body.el.style.top = `${displayY.toFixed(2)}px`;
