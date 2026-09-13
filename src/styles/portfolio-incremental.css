@@ -1,0 +1,249 @@
+.pv2-score-counter.is-visible {
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pv2-score-counter.is-visible:hover,
+.pv2-score-counter.is-visible:focus-visible {
+  border-color: rgba(36, 36, 36, .24);
+  box-shadow: 0 10px 26px rgba(36, 36, 36, .1);
+  outline: none;
+}
+
+.pv2-score-counter.has-upgrade {
+  border-color: rgba(230, 181, 32, .5);
+  background: rgba(255, 244, 174, .93);
+  animation: pv2UpgradeReady 1.45s ease-in-out infinite;
+}
+
+@keyframes pv2UpgradeReady {
+  0%, 100% {
+    box-shadow: 0 8px 22px rgba(36, 36, 36, .06), 0 0 0 0 rgba(242, 197, 51, 0);
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    box-shadow: 0 8px 22px rgba(36, 36, 36, .06), 0 0 0 5px rgba(242, 197, 51, .14);
+    transform: translateY(0) scale(1.035);
+  }
+}
+
+.pv2-upgrade-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 7000;
+  display: grid;
+  place-items: center;
+  padding: clamp(18px, 4vw, 54px);
+  background: rgba(22, 22, 20, .26);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 180ms ease, visibility 180ms ease;
+}
+
+.pv2-upgrade-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.pv2-upgrade-panel {
+  width: min(960px, 94vw);
+  max-height: min(82vh, 760px);
+  overflow: auto;
+  padding: clamp(20px, 3vw, 34px);
+  border: 1px solid rgba(36, 36, 36, .16);
+  border-radius: 18px;
+  background: rgba(247, 246, 242, .98);
+  box-shadow: 0 30px 90px rgba(25, 25, 22, .22);
+  transform: translateY(12px) scale(.985);
+  transition: transform 220ms cubic-bezier(.2,.9,.25,1);
+}
+
+.pv2-upgrade-overlay.is-open .pv2-upgrade-panel {
+  transform: translateY(0) scale(1);
+}
+
+.pv2-upgrade-panel__header {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: start;
+  gap: 18px;
+  margin-bottom: 26px;
+}
+
+.pv2-upgrade-panel__eyebrow {
+  margin-bottom: 4px;
+  color: var(--pv2-muted);
+  font-size: .66rem;
+  font-weight: 760;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.pv2-upgrade-panel h2 {
+  margin: 0;
+  font-size: clamp(1.65rem, 3vw, 2.45rem);
+  line-height: .96;
+  letter-spacing: -.055em;
+}
+
+.pv2-upgrade-panel__currency {
+  padding: 9px 12px;
+  border: 1px solid rgba(36,36,36,.12);
+  border-radius: 999px;
+  background: rgba(255,255,255,.58);
+  font-size: .75rem;
+  font-weight: 760;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+
+.pv2-upgrade-panel__currency [data-upgrade-points] {
+  font-size: 1rem;
+  color: var(--pv2-text);
+}
+
+.pv2-upgrade-close {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(36,36,36,.12);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--pv2-text);
+  font: 500 1.6rem/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.pv2-upgrade-close:hover,
+.pv2-upgrade-close:focus-visible {
+  background: rgba(36,36,36,.06);
+  outline: none;
+}
+
+.pv2-upgrade-tree {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 6px 2px 14px;
+}
+
+.pv2-upgrade-tier {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: clamp(10px, 2.2vw, 22px);
+}
+
+.pv2-upgrade-connector {
+  position: relative;
+  height: 34px;
+}
+
+.pv2-upgrade-connector::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(36,36,36,.22);
+}
+
+.pv2-upgrade-connector::after {
+  content: '';
+  position: absolute;
+  left: 26%;
+  right: 26%;
+  top: 50%;
+  height: 1px;
+  background: rgba(36,36,36,.15);
+}
+
+.pv2-upgrade-node {
+  width: min(210px, 28vw);
+  min-height: 112px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 8px;
+  padding: 14px 15px 12px;
+  border: 1px solid rgba(36,36,36,.15);
+  border-radius: 12px;
+  background: #fbfaf6;
+  color: var(--pv2-text);
+  text-align: left;
+  box-shadow: 0 5px 14px rgba(36,36,36,.045);
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+}
+
+.pv2-upgrade-node__title {
+  font-size: .92rem;
+  font-weight: 820;
+  letter-spacing: -.035em;
+}
+
+.pv2-upgrade-node__desc {
+  color: var(--pv2-muted);
+  font-size: .72rem;
+  line-height: 1.35;
+}
+
+.pv2-upgrade-node__cost {
+  font-size: .64rem;
+  font-weight: 820;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.pv2-upgrade-node.is-locked {
+  opacity: .34;
+  filter: grayscale(1);
+}
+
+.pv2-upgrade-node.is-affordable {
+  border-color: rgba(210, 162, 12, .58);
+  background: #fff4ae;
+  box-shadow: 0 8px 22px rgba(211, 164, 17, .13);
+  cursor: pointer;
+}
+
+.pv2-upgrade-node.is-affordable:hover,
+.pv2-upgrade-node.is-affordable:focus-visible {
+  transform: translateY(-3px) scale(1.015);
+  border-color: rgba(176, 130, 0, .78);
+  outline: none;
+}
+
+.pv2-upgrade-node.is-bought {
+  border-color: rgba(33, 128, 82, .35);
+  background: #e3f5e8;
+  opacity: 1;
+}
+
+.pv2-upgrade-node:disabled {
+  cursor: default;
+}
+
+@media (max-width: 720px) {
+  .pv2-upgrade-overlay {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pv2-score-counter.has-upgrade {
+    animation: none;
+    box-shadow: 0 0 0 4px rgba(242, 197, 51, .16);
+  }
+
+  .pv2-upgrade-overlay,
+  .pv2-upgrade-panel,
+  .pv2-upgrade-node {
+    transition: none;
+  }
+}
