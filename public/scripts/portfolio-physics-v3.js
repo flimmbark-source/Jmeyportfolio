@@ -15,19 +15,31 @@
   const BUMPER_KICK = 0.48;
   const BUMPER_SCORE_COOLDOWN = 360;
   const WALL_SCORE_COOLDOWN = 220;
+  const TREE_WIDTH = 1220;
+  const TREE_HEIGHT = 880;
+  const TREE_CENTER = { x: 610, y: 440 };
   const GHOST_COLORS = ['#ff3366', '#7c3cff', '#00b894', '#ff9f1a', '#1597ff', '#e843d5', '#ff5f00'];
 
   const UPGRADES = [
-    { id: 'bounce-1', tier: 0, title: 'Better Bounces', cost: 5, desc: '+1 point per text bounce', requires: [] },
-    { id: 'speed-1', tier: 1, title: 'Faster Drift', cost: 12, desc: '+25% movement speed', requires: ['bounce-1'] },
-    { id: 'walls-1', tier: 1, title: 'Wall Points', cost: 16, desc: 'Wall bounces earn +1 point', requires: ['bounce-1'] },
-    { id: 'bounce-2', tier: 2, title: 'More Bounce', cost: 28, desc: '+1 point per text bounce', requires: ['speed-1'] },
-    { id: 'velocity-1', tier: 2, title: 'More Velocity', cost: 32, desc: '+30% top speed and harder bumper kicks', requires: ['speed-1'] },
-    { id: 'walls-2', tier: 2, title: 'Harder Walls', cost: 36, desc: '+1 point per wall bounce', requires: ['walls-1'] },
-    { id: 'bounce-3', tier: 3, title: 'Bounce Value', cost: 65, desc: '+2 points per text bounce', requires: ['bounce-2'] },
-    { id: 'friction-1', tier: 3, title: 'Less Friction', cost: 55, desc: 'Blocks keep their speed much longer', requires: ['velocity-1'] },
-    { id: 'walls-3', tier: 3, title: 'Wall Value', cost: 70, desc: '+2 points per wall bounce', requires: ['walls-2'] },
-    { id: 'momentum-1', tier: 4, title: 'Momentum', cost: 110, desc: '+25% movement speed and +20% top speed', requires: ['bounce-3', 'friction-1'] },
+    { id: 'speed-1', branch: 'velocity', x: 610, y: 340, title: 'Faster Drift', cost: 10, desc: '+20% base movement speed', requires: [] },
+    { id: 'speed-2', branch: 'velocity', x: 610, y: 240, title: 'More Velocity', cost: 25, desc: '+20% more base movement speed', requires: ['speed-1'] },
+    { id: 'speed-3', branch: 'velocity', x: 610, y: 140, title: 'Momentum', cost: 55, desc: '+25% maximum velocity', requires: ['speed-2'] },
+    { id: 'speed-4', branch: 'velocity', x: 610, y: 55, title: 'Launch Force', cost: 110, desc: '+30% mouse and bumper impulse', requires: ['speed-3'] },
+
+    { id: 'bounce-1', branch: 'bounce', x: 735, y: 440, title: 'Better Bounces', cost: 8, desc: '+1 point per text bounce', requires: [] },
+    { id: 'bounce-2', branch: 'bounce', x: 860, y: 440, title: 'More Bounce', cost: 18, desc: '+10% text bumper rebound', requires: ['bounce-1'] },
+    { id: 'bounce-3', branch: 'bounce', x: 985, y: 440, title: 'Bounce Value', cost: 40, desc: '+1 more point per text bounce', requires: ['bounce-2'] },
+    { id: 'bounce-4', branch: 'bounce', x: 1110, y: 440, title: 'Chain Bounce', cost: 95, desc: 'Text bounces launch 25% harder', requires: ['bounce-3'] },
+
+    { id: 'walls-1', branch: 'walls', x: 485, y: 440, title: 'Wall Points', cost: 14, desc: 'Wall bounces earn +1 point', requires: [] },
+    { id: 'walls-2', branch: 'walls', x: 360, y: 440, title: 'Harder Walls', cost: 30, desc: '+15% wall rebound strength', requires: ['walls-1'] },
+    { id: 'walls-3', branch: 'walls', x: 235, y: 440, title: 'Wall Value', cost: 52, desc: '+1 more point per wall bounce', requires: ['walls-2'] },
+    { id: 'walls-4', branch: 'walls', x: 110, y: 440, title: 'Ricochet', cost: 115, desc: 'Wall hits gain another 22% rebound', requires: ['walls-3'] },
+
+    { id: 'friction-1', branch: 'friction', x: 610, y: 540, title: 'Less Friction', cost: 12, desc: '15% less velocity decay', requires: [] },
+    { id: 'friction-2', branch: 'friction', x: 610, y: 640, title: 'Glide', cost: 28, desc: 'Keep momentum much longer', requires: ['friction-1'] },
+    { id: 'friction-3', branch: 'friction', x: 610, y: 740, title: 'Retain Momentum', cost: 60, desc: 'Collisions preserve extra motion', requires: ['friction-2'] },
+    { id: 'friction-4', branch: 'friction', x: 610, y: 825, title: 'Low Drag', cost: 120, desc: 'Very low drag and a higher speed floor', requires: ['friction-3'] },
   ];
 
   let frame = 0;
@@ -76,29 +88,57 @@
     let speedMult = 1;
     let maxSpeedMult = 1;
     let bumperKickMult = 1;
+    let pointerImpulseMult = 1;
+    let wallKickMult = 1;
     let damping = DAMPING;
+    let speedFloorMult = 1;
+    let collisionBoost = 1;
 
-    if (hasUpgrade('bounce-1')) bumperValue += 1;
-    if (hasUpgrade('bounce-2')) bumperValue += 1;
-    if (hasUpgrade('bounce-3')) bumperValue += 2;
-    if (hasUpgrade('walls-1')) wallValue += 1;
-    if (hasUpgrade('walls-2')) wallValue += 1;
-    if (hasUpgrade('walls-3')) wallValue += 2;
-    if (hasUpgrade('speed-1')) speedMult *= 1.25;
-    if (hasUpgrade('velocity-1')) {
-      maxSpeedMult *= 1.3;
+    if (hasUpgrade('speed-1')) speedMult *= 1.2;
+    if (hasUpgrade('speed-2')) speedMult *= 1.2;
+    if (hasUpgrade('speed-3')) maxSpeedMult *= 1.25;
+    if (hasUpgrade('speed-4')) {
+      pointerImpulseMult *= 1.3;
       bumperKickMult *= 1.3;
     }
-    if (hasUpgrade('friction-1')) damping = 0.99972;
-    if (hasUpgrade('momentum-1')) {
-      speedMult *= 1.25;
-      maxSpeedMult *= 1.2;
+
+    if (hasUpgrade('bounce-1')) bumperValue += 1;
+    if (hasUpgrade('bounce-2')) bumperKickMult *= 1.1;
+    if (hasUpgrade('bounce-3')) bumperValue += 1;
+    if (hasUpgrade('bounce-4')) bumperKickMult *= 1.25;
+
+    if (hasUpgrade('walls-1')) wallValue += 1;
+    if (hasUpgrade('walls-2')) wallKickMult *= 1.15;
+    if (hasUpgrade('walls-3')) wallValue += 1;
+    if (hasUpgrade('walls-4')) wallKickMult *= 1.22;
+
+    if (hasUpgrade('friction-1')) damping = 0.99942;
+    if (hasUpgrade('friction-2')) damping = 0.99962;
+    if (hasUpgrade('friction-3')) {
+      damping = 0.99972;
+      collisionBoost = 1.06;
+    }
+    if (hasUpgrade('friction-4')) {
+      damping = 0.99984;
+      speedFloorMult = 1.15;
+      collisionBoost = 1.1;
     }
 
-    return { bumperValue, wallValue, speedMult, maxSpeedMult, bumperKickMult, damping };
+    return {
+      bumperValue,
+      wallValue,
+      speedMult,
+      maxSpeedMult,
+      bumperKickMult,
+      pointerImpulseMult,
+      wallKickMult,
+      damping,
+      speedFloorMult,
+      collisionBoost,
+    };
   }
 
-  function lowestAffordableUpgrade() {
+  function cheapestAvailableUpgrade() {
     return UPGRADES
       .filter((upgrade) => !purchased.has(upgrade.id) && upgradeUnlocked(upgrade))
       .sort((a, b) => a.cost - b.cost)[0] || null;
@@ -106,7 +146,7 @@
 
   function refreshUpgradeCue() {
     if (!scoreCounter?.isConnected) return;
-    const next = lowestAffordableUpgrade();
+    const next = cheapestAvailableUpgrade();
     scoreCounter.classList.toggle('has-upgrade', Boolean(next && points >= next.cost));
   }
 
@@ -115,11 +155,7 @@
     fxLayer = document.createElement('div');
     fxLayer.setAttribute('aria-hidden', 'true');
     Object.assign(fxLayer.style, {
-      position: 'fixed',
-      inset: '0',
-      pointerEvents: 'none',
-      overflow: 'visible',
-      zIndex: '6000',
+      position: 'fixed', inset: '0', pointerEvents: 'none', overflow: 'visible', zIndex: '6000',
     });
     document.body.appendChild(fxLayer);
     return fxLayer;
@@ -159,9 +195,31 @@
     window.dispatchEvent(new CustomEvent('pv2:game-start', { detail: { points } }));
   }
 
+  function makeUpgradeNode(upgrade) {
+    const node = document.createElement('button');
+    node.type = 'button';
+    node.className = `pv2-upgrade-node pv2-upgrade-node--${upgrade.branch}`;
+    node.dataset.upgradeId = upgrade.id;
+    node.style.left = `${upgrade.x}px`;
+    node.style.top = `${upgrade.y}px`;
+    node.innerHTML = `
+      <span class="pv2-upgrade-node__title">${upgrade.title}</span>
+      <span class="pv2-upgrade-node__desc">${upgrade.desc}</span>
+      <span class="pv2-upgrade-node__cost">${upgrade.cost} PTS</span>
+    `;
+    node.addEventListener('click', () => buyUpgrade(upgrade.id));
+    return node;
+  }
+
+  function connectorStart(upgrade) {
+    if (!upgrade.requires.length) return TREE_CENTER;
+    const parent = UPGRADES.find((item) => item.id === upgrade.requires[0]);
+    return parent ? { x: parent.x, y: parent.y } : TREE_CENTER;
+  }
+
   function refreshUpgradeTree() {
     if (!upgradeTree?.isConnected) return;
-    const pointsDisplay = upgradeTree.querySelector('[data-upgrade-points]');
+    const pointsDisplay = upgradeOverlay?.querySelector('[data-upgrade-points]');
     if (pointsDisplay) pointsDisplay.textContent = String(points);
 
     upgradeTree.querySelectorAll('[data-upgrade-id]').forEach((button) => {
@@ -177,6 +235,12 @@
       button.setAttribute('aria-label', bought ? `${upgrade.title}, purchased` : `${upgrade.title}, costs ${upgrade.cost} points`);
       const cost = button.querySelector('.pv2-upgrade-node__cost');
       if (cost) cost.textContent = bought ? 'BOUGHT' : `${upgrade.cost} PTS`;
+
+      const connector = upgradeTree.querySelector(`[data-connector-to="${upgrade.id}"]`);
+      if (connector) {
+        connector.classList.toggle('is-live', unlocked || bought);
+        connector.classList.toggle('is-bought', bought);
+      }
     });
   }
 
@@ -190,43 +254,37 @@
         <header class="pv2-upgrade-panel__header">
           <div>
             <div class="pv2-upgrade-panel__eyebrow">Incremental Tree</div>
-            <h2>Make the blocks go brrr.</h2>
+            <h2>Kinetic upgrades.</h2>
           </div>
           <div class="pv2-upgrade-panel__currency"><span data-upgrade-points>${points}</span> points</div>
           <button class="pv2-upgrade-close" type="button" aria-label="Close upgrades">×</button>
         </header>
-        <div class="pv2-upgrade-tree"></div>
+        <div class="pv2-upgrade-scroll">
+          <div class="pv2-upgrade-tree" style="width:${TREE_WIDTH}px;height:${TREE_HEIGHT}px">
+            <svg class="pv2-upgrade-lines" viewBox="0 0 ${TREE_WIDTH} ${TREE_HEIGHT}" aria-hidden="true"></svg>
+            <div class="pv2-upgrade-root" style="left:${TREE_CENTER.x}px;top:${TREE_CENTER.y}px">
+              <span>Kinetic</span><strong>Basics</strong>
+            </div>
+          </div>
+        </div>
       </section>
     `;
 
     upgradeTree = upgradeOverlay.querySelector('.pv2-upgrade-tree');
-    const maxTier = Math.max(...UPGRADES.map((upgrade) => upgrade.tier));
-    for (let tier = 0; tier <= maxTier; tier += 1) {
-      const row = document.createElement('div');
-      row.className = 'pv2-upgrade-tier';
-      row.dataset.tier = String(tier);
-      const tierUpgrades = UPGRADES.filter((upgrade) => upgrade.tier === tier);
-      tierUpgrades.forEach((upgrade) => {
-        const node = document.createElement('button');
-        node.type = 'button';
-        node.className = 'pv2-upgrade-node';
-        node.dataset.upgradeId = upgrade.id;
-        node.innerHTML = `
-          <span class="pv2-upgrade-node__title">${upgrade.title}</span>
-          <span class="pv2-upgrade-node__desc">${upgrade.desc}</span>
-          <span class="pv2-upgrade-node__cost">${upgrade.cost} PTS</span>
-        `;
-        node.addEventListener('click', () => buyUpgrade(upgrade.id));
-        row.appendChild(node);
-      });
-      upgradeTree.appendChild(row);
-      if (tier < maxTier) {
-        const connector = document.createElement('div');
-        connector.className = 'pv2-upgrade-connector';
-        connector.setAttribute('aria-hidden', 'true');
-        upgradeTree.appendChild(connector);
-      }
-    }
+    const lines = upgradeTree.querySelector('.pv2-upgrade-lines');
+
+    UPGRADES.forEach((upgrade) => {
+      const start = connectorStart(upgrade);
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', String(start.x));
+      line.setAttribute('y1', String(start.y));
+      line.setAttribute('x2', String(upgrade.x));
+      line.setAttribute('y2', String(upgrade.y));
+      line.setAttribute('data-connector-to', upgrade.id);
+      line.classList.add('pv2-upgrade-line');
+      lines.appendChild(line);
+      upgradeTree.appendChild(makeUpgradeNode(upgrade));
+    });
 
     upgradeOverlay.querySelector('.pv2-upgrade-close').addEventListener('click', closeUpgradeTree);
     upgradeOverlay.addEventListener('pointerdown', (event) => {
@@ -236,12 +294,22 @@
     refreshUpgradeTree();
   }
 
+  function centerUpgradeScroll() {
+    const scroller = upgradeOverlay?.querySelector('.pv2-upgrade-scroll');
+    if (!scroller) return;
+    scroller.scrollLeft = Math.max(0, TREE_CENTER.x - scroller.clientWidth / 2);
+    scroller.scrollTop = Math.max(0, TREE_CENTER.y - scroller.clientHeight / 2);
+  }
+
   function openUpgradeTree() {
     buildUpgradeTree();
     refreshUpgradeTree();
     upgradeOverlay.classList.add('is-open');
     document.documentElement.classList.add('pv2-upgrades-open');
-    requestAnimationFrame(() => upgradeOverlay.querySelector('.pv2-upgrade-close')?.focus());
+    requestAnimationFrame(() => {
+      centerUpgradeScroll();
+      upgradeOverlay.querySelector('.pv2-upgrade-close')?.focus();
+    });
   }
 
   function closeUpgradeTree() {
@@ -269,7 +337,7 @@
     } catch {}
   }
 
-  function updateScore(delta, bumperId, impact) {
+  function updateScore(delta, sourceId, impact) {
     points += delta;
     ensureScoreCounter();
     scoreValue.textContent = String(points);
@@ -279,13 +347,13 @@
       try {
         scoreCounter.animate([
           { transform: 'translateY(0) scale(1)' },
-          { transform: 'translateY(0) scale(1.08)', offset: 0.42 },
+          { transform: 'translateY(0) scale(1.08)', offset: .42 },
           { transform: 'translateY(0) scale(1)' },
         ], { duration: 170, easing: 'cubic-bezier(.2,.9,.25,1)' });
       } catch {}
     }
     window.dispatchEvent(new CustomEvent('pv2:score-state', {
-      detail: { points, delta, bumperId, impactX: impact?.x, impactY: impact?.y },
+      detail: { points, delta, sourceId, impactX: impact?.x, impactY: impact?.y },
     }));
   }
 
@@ -294,14 +362,11 @@
     try {
       el.animate([
         { scale: '1', filter: 'brightness(1)' },
-        { scale: '1.14', filter: 'brightness(.9)', offset: 0.22 },
-        { scale: '.96', filter: 'brightness(1.04)', offset: 0.52 },
-        { scale: '1.025', filter: 'brightness(.98)', offset: 0.76 },
+        { scale: '1.14', filter: 'brightness(.9)', offset: .22 },
+        { scale: '.96', filter: 'brightness(1.04)', offset: .52 },
+        { scale: '1.025', filter: 'brightness(.98)', offset: .76 },
         { scale: '1', filter: 'brightness(1)' },
-      ], {
-        duration: reducedMotion() ? 220 : 500,
-        easing: 'cubic-bezier(.16,.88,.24,1)',
-      });
+      ], { duration: reducedMotion() ? 220 : 500, easing: 'cubic-bezier(.16,.88,.24,1)' });
     } catch {}
   }
 
@@ -325,24 +390,15 @@
     if (window.innerWidth <= MOBILE_BREAKPOINT || !rect) return;
     const layer = ensureFxLayer();
     const impact = nearestEdgePoint(event, rect);
-    const count = 8;
-
-    for (let i = 0; i < count; i += 1) {
-      const t = i / (count - 1);
+    for (let i = 0; i < 8; i += 1) {
+      const t = i / 7;
       const angle = impact.outward - Math.PI / 2 + t * Math.PI;
       const distance = 24 + Math.random() * 12;
       const length = 10 + Math.random() * 7;
       const line = document.createElement('span');
       Object.assign(line.style, {
-        position: 'fixed',
-        left: `${impact.x}px`,
-        top: `${impact.y}px`,
-        width: `${length}px`,
-        height: '2.5px',
-        background: 'rgba(24,24,24,.95)',
-        transformOrigin: '0 50%',
-        pointerEvents: 'none',
-        opacity: '0',
+        position: 'fixed', left: `${impact.x}px`, top: `${impact.y}px`, width: `${length}px`, height: '2.5px',
+        background: 'rgba(24,24,24,.95)', transformOrigin: '0 50%', pointerEvents: 'none', opacity: '0',
       });
       layer.appendChild(line);
       const dx = Math.cos(angle) * distance;
@@ -370,25 +426,13 @@
     ghostColorIndex += 1;
     ghost.textContent = `+${amount}`;
     Object.assign(ghost.style, {
-      position: 'fixed',
-      left: `${impact.x}px`,
-      top: `${impact.y}px`,
-      zIndex: '2',
-      color,
-      fontFamily: 'system-ui, sans-serif',
-      fontSize: 'clamp(2.4rem, 3.4vw, 3.6rem)',
-      fontWeight: '950',
-      lineHeight: '.9',
-      letterSpacing: '-.07em',
-      whiteSpace: 'nowrap',
-      pointerEvents: 'none',
-      WebkitTextStroke: '1px rgba(255,255,255,.78)',
-      textShadow: `0 2px 0 rgba(255,255,255,.95), 0 5px 18px ${color}66`,
-      transformOrigin: '50% 100%',
-      opacity: '0',
+      position: 'fixed', left: `${impact.x}px`, top: `${impact.y}px`, zIndex: '2', color,
+      fontFamily: 'system-ui, sans-serif', fontSize: 'clamp(2.4rem, 3.4vw, 3.6rem)', fontWeight: '950',
+      lineHeight: '.9', letterSpacing: '-.07em', whiteSpace: 'nowrap', pointerEvents: 'none',
+      WebkitTextStroke: '1px rgba(255,255,255,.78)', textShadow: `0 2px 0 rgba(255,255,255,.95), 0 5px 18px ${color}66`,
+      transformOrigin: '50% 100%', opacity: '0',
     });
     layer.appendChild(ghost);
-
     try {
       const animation = ghost.animate([
         { opacity: 0, transform: 'translate(-50%, 2px) scale(.3)' },
@@ -447,14 +491,15 @@
   }
 
   function constrain(body, stageRect, allowScore = true) {
+    const effects = currentEffects();
     const minY = stageTopLimit(stageRect);
     const maxX = Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING);
     const maxY = Math.max(minY, stageRect.height - body.h - EDGE_PADDING);
     let hit = null;
-    if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx); hit = 'left'; }
-    if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx); hit = 'right'; }
-    if (body.y < minY) { body.y = minY; body.vy = Math.abs(body.vy); hit = 'top'; }
-    if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy); hit = 'bottom'; }
+    if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx) * effects.wallKickMult; hit = 'left'; }
+    if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx) * effects.wallKickMult; hit = 'right'; }
+    if (body.y < minY) { body.y = minY; body.vy = Math.abs(body.vy) * effects.wallKickMult; hit = 'top'; }
+    if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy) * effects.wallKickMult; hit = 'bottom'; }
     if (hit && allowScore) scoreWallBounce(body, hit, stageRect);
   }
 
@@ -464,6 +509,7 @@
 
   function resolveBodyPair(a, b) {
     if (!overlaps(bodyRect(a), bodyRect(b), BODY_GAP)) return false;
+    const effects = currentEffects();
     const dx = (a.x + a.w / 2) - (b.x + b.w / 2) || .01;
     const dy = (a.y + a.h / 2) - (b.y + b.h / 2) || .01;
     const overlapX = (a.w + b.w) / 2 + BODY_GAP - Math.abs(dx);
@@ -472,12 +518,16 @@
       const sign = dx >= 0 ? 1 : -1;
       a.x += overlapX * .5 * sign;
       b.x -= overlapX * .5 * sign;
-      const av = a.vx; a.vx = b.vx; b.vx = av;
+      const av = a.vx;
+      a.vx = b.vx * effects.collisionBoost;
+      b.vx = av * effects.collisionBoost;
     } else {
       const sign = dy >= 0 ? 1 : -1;
       a.y += overlapY * .5 * sign;
       b.y -= overlapY * .5 * sign;
-      const av = a.vy; a.vy = b.vy; b.vy = av;
+      const av = a.vy;
+      a.vy = b.vy * effects.collisionBoost;
+      b.vy = av * effects.collisionBoost;
     }
     if (a.armed || b.armed) { a.armed = true; b.armed = true; }
     return true;
@@ -568,8 +618,7 @@
     return {
       el, x, y, w: rect.width, h: rect.height,
       homeX: x, homeY: y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
+      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
       phase: index * 1.41 + .7,
       pointerInside: false,
       lastPointerHit: -Infinity,
@@ -588,6 +637,7 @@
     pointer = { x: event.clientX, y: event.clientY, t: now };
     if (!stage || window.innerWidth <= MOBILE_BREAKPOINT || document.documentElement.classList.contains('pv2-upgrades-open')) return;
 
+    const effects = currentEffects();
     for (const body of bodies) {
       const rect = body.el.getBoundingClientRect();
       const inside = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
@@ -601,7 +651,7 @@
           length = Math.hypot(dx, dy) || 1;
         }
         const pointerSpeed = Math.hypot(mouseVx, mouseVy);
-        const impulse = clamp(POINTER_MIN_IMPULSE + pointerSpeed * .24, POINTER_MIN_IMPULSE, POINTER_IMPULSE);
+        const impulse = clamp(POINTER_MIN_IMPULSE + pointerSpeed * .24, POINTER_MIN_IMPULSE, POINTER_IMPULSE) * effects.pointerImpulseMult;
         body.vx += (dx / length) * impulse;
         body.vy += (dy / length) * impulse;
         body.lastPointerHit = now;
@@ -624,7 +674,7 @@
     lastTime = now;
     const stageRect = stage.getBoundingClientRect();
     const effects = currentEffects();
-    const speedFloor = (reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED) * effects.speedMult;
+    const speedFloor = (reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED) * effects.speedMult * effects.speedFloorMult;
     const maxSpeed = (reducedMotion() ? REDUCED_MAX_SPEED : MAX_SPEED) * effects.maxSpeedMult;
     const t = now / 1000;
 
