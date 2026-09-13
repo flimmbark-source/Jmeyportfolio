@@ -79,6 +79,7 @@ import '../styles/portfolio-loading.css';
     </script>
     <script src="/scripts/portfolio-physics-v3.js?v=11" defer></script>
     <script src="/scripts/portfolio-work-contact-fx.js?v=2" defer></script>
+    <script src="/scripts/portfolio-point-ghost-fx.js?v=1" defer></script>
     <script src="/scripts/ux-direct-link.js?v=1" defer></script>
     <script src="/scripts/letter-river-preview.js?v=4" defer></script>
   </body>
@@ -111,6 +112,11 @@ import '../styles/portfolio-loading.css';
     right: auto !important;
     bottom: auto !important;
     transform: translate(-50%, -50%) !important;
+  }
+
+  /* The richer score ghost runtime replaces the original short monochrome ghost. */
+  .pv2-point-ghost {
+    display: none !important;
   }
 
   @media (max-width: 720px) {
