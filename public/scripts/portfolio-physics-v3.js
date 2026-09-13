@@ -14,7 +14,21 @@
   const POINTER_COOLDOWN = 85;
   const BUMPER_KICK = 0.48;
   const BUMPER_SCORE_COOLDOWN = 360;
+  const WALL_SCORE_COOLDOWN = 220;
   const GHOST_COLORS = ['#ff3366', '#7c3cff', '#00b894', '#ff9f1a', '#1597ff', '#e843d5', '#ff5f00'];
+
+  const UPGRADES = [
+    { id: 'bounce-1', tier: 0, title: 'Better Bounces', cost: 5, desc: '+1 point per text bounce', requires: [] },
+    { id: 'speed-1', tier: 1, title: 'Faster Drift', cost: 12, desc: '+25% movement speed', requires: ['bounce-1'] },
+    { id: 'walls-1', tier: 1, title: 'Wall Points', cost: 16, desc: 'Wall bounces earn +1 point', requires: ['bounce-1'] },
+    { id: 'bounce-2', tier: 2, title: 'More Bounce', cost: 28, desc: '+1 point per text bounce', requires: ['speed-1'] },
+    { id: 'velocity-1', tier: 2, title: 'More Velocity', cost: 32, desc: '+30% top speed and harder bumper kicks', requires: ['speed-1'] },
+    { id: 'walls-2', tier: 2, title: 'Harder Walls', cost: 36, desc: '+1 point per wall bounce', requires: ['walls-1'] },
+    { id: 'bounce-3', tier: 3, title: 'Bounce Value', cost: 65, desc: '+2 points per text bounce', requires: ['bounce-2'] },
+    { id: 'friction-1', tier: 3, title: 'Less Friction', cost: 55, desc: 'Blocks keep their speed much longer', requires: ['velocity-1'] },
+    { id: 'walls-3', tier: 3, title: 'Wall Value', cost: 70, desc: '+2 points per wall bounce', requires: ['walls-2'] },
+    { id: 'momentum-1', tier: 4, title: 'Momentum', cost: 110, desc: '+25% movement speed and +20% top speed', requires: ['bounce-3', 'friction-1'] },
+  ];
 
   let frame = 0;
   let stage = null;
@@ -27,6 +41,9 @@
   let points = 0;
   let ghostColorIndex = 0;
   let fxLayer = null;
+  let upgradeOverlay = null;
+  let upgradeTree = null;
+  const purchased = new Set();
   let pointer = { x: -9999, y: -9999, t: 0 };
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -43,6 +60,54 @@
       a.y + a.h + gap <= b.y ||
       b.y + b.h + gap <= a.y
     );
+  }
+
+  function hasUpgrade(id) {
+    return purchased.has(id);
+  }
+
+  function upgradeUnlocked(upgrade) {
+    return upgrade.requires.every((id) => purchased.has(id));
+  }
+
+  function currentEffects() {
+    let bumperValue = 1;
+    let wallValue = 0;
+    let speedMult = 1;
+    let maxSpeedMult = 1;
+    let bumperKickMult = 1;
+    let damping = DAMPING;
+
+    if (hasUpgrade('bounce-1')) bumperValue += 1;
+    if (hasUpgrade('bounce-2')) bumperValue += 1;
+    if (hasUpgrade('bounce-3')) bumperValue += 2;
+    if (hasUpgrade('walls-1')) wallValue += 1;
+    if (hasUpgrade('walls-2')) wallValue += 1;
+    if (hasUpgrade('walls-3')) wallValue += 2;
+    if (hasUpgrade('speed-1')) speedMult *= 1.25;
+    if (hasUpgrade('velocity-1')) {
+      maxSpeedMult *= 1.3;
+      bumperKickMult *= 1.3;
+    }
+    if (hasUpgrade('friction-1')) damping = 0.99972;
+    if (hasUpgrade('momentum-1')) {
+      speedMult *= 1.25;
+      maxSpeedMult *= 1.2;
+    }
+
+    return { bumperValue, wallValue, speedMult, maxSpeedMult, bumperKickMult, damping };
+  }
+
+  function lowestAffordableUpgrade() {
+    return UPGRADES
+      .filter((upgrade) => !purchased.has(upgrade.id) && upgradeUnlocked(upgrade))
+      .sort((a, b) => a.cost - b.cost)[0] || null;
+  }
+
+  function refreshUpgradeCue() {
+    if (!scoreCounter?.isConnected) return;
+    const next = lowestAffordableUpgrade();
+    scoreCounter.classList.toggle('has-upgrade', Boolean(next && points >= next.cost));
   }
 
   function ensureFxLayer() {
@@ -64,12 +129,21 @@
     if (scoreCounter?.isConnected) return scoreCounter;
     scoreCounter = document.createElement('div');
     scoreCounter.className = 'pv2-score-counter';
-    scoreCounter.setAttribute('role', 'status');
-    scoreCounter.setAttribute('aria-live', 'polite');
+    scoreCounter.setAttribute('role', 'button');
+    scoreCounter.setAttribute('tabindex', '0');
+    scoreCounter.setAttribute('aria-label', 'Open upgrades');
     scoreCounter.innerHTML = '<span class="pv2-score-counter__label">Points</span><strong class="pv2-score-counter__value">0</strong>';
     scoreValue = scoreCounter.querySelector('.pv2-score-counter__value');
     scoreValue.textContent = String(points);
+    scoreCounter.addEventListener('click', openUpgradeTree);
+    scoreCounter.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openUpgradeTree();
+      }
+    });
     document.body.appendChild(scoreCounter);
+    refreshUpgradeCue();
     return scoreCounter;
   }
 
@@ -85,10 +159,122 @@
     window.dispatchEvent(new CustomEvent('pv2:game-start', { detail: { points } }));
   }
 
+  function refreshUpgradeTree() {
+    if (!upgradeTree?.isConnected) return;
+    const pointsDisplay = upgradeTree.querySelector('[data-upgrade-points]');
+    if (pointsDisplay) pointsDisplay.textContent = String(points);
+
+    upgradeTree.querySelectorAll('[data-upgrade-id]').forEach((button) => {
+      const upgrade = UPGRADES.find((item) => item.id === button.dataset.upgradeId);
+      if (!upgrade) return;
+      const bought = purchased.has(upgrade.id);
+      const unlocked = upgradeUnlocked(upgrade);
+      const affordable = unlocked && !bought && points >= upgrade.cost;
+      button.classList.toggle('is-bought', bought);
+      button.classList.toggle('is-locked', !unlocked);
+      button.classList.toggle('is-affordable', affordable);
+      button.disabled = bought || !unlocked || !affordable;
+      button.setAttribute('aria-label', bought ? `${upgrade.title}, purchased` : `${upgrade.title}, costs ${upgrade.cost} points`);
+      const cost = button.querySelector('.pv2-upgrade-node__cost');
+      if (cost) cost.textContent = bought ? 'BOUGHT' : `${upgrade.cost} PTS`;
+    });
+  }
+
+  function buildUpgradeTree() {
+    if (upgradeOverlay?.isConnected) return;
+
+    upgradeOverlay = document.createElement('div');
+    upgradeOverlay.className = 'pv2-upgrade-overlay';
+    upgradeOverlay.innerHTML = `
+      <section class="pv2-upgrade-panel" role="dialog" aria-modal="true" aria-label="Incremental upgrade tree">
+        <header class="pv2-upgrade-panel__header">
+          <div>
+            <div class="pv2-upgrade-panel__eyebrow">Incremental Tree</div>
+            <h2>Make the blocks go brrr.</h2>
+          </div>
+          <div class="pv2-upgrade-panel__currency"><span data-upgrade-points>${points}</span> points</div>
+          <button class="pv2-upgrade-close" type="button" aria-label="Close upgrades">×</button>
+        </header>
+        <div class="pv2-upgrade-tree"></div>
+      </section>
+    `;
+
+    upgradeTree = upgradeOverlay.querySelector('.pv2-upgrade-tree');
+    const maxTier = Math.max(...UPGRADES.map((upgrade) => upgrade.tier));
+    for (let tier = 0; tier <= maxTier; tier += 1) {
+      const row = document.createElement('div');
+      row.className = 'pv2-upgrade-tier';
+      row.dataset.tier = String(tier);
+      const tierUpgrades = UPGRADES.filter((upgrade) => upgrade.tier === tier);
+      tierUpgrades.forEach((upgrade) => {
+        const node = document.createElement('button');
+        node.type = 'button';
+        node.className = 'pv2-upgrade-node';
+        node.dataset.upgradeId = upgrade.id;
+        node.innerHTML = `
+          <span class="pv2-upgrade-node__title">${upgrade.title}</span>
+          <span class="pv2-upgrade-node__desc">${upgrade.desc}</span>
+          <span class="pv2-upgrade-node__cost">${upgrade.cost} PTS</span>
+        `;
+        node.addEventListener('click', () => buyUpgrade(upgrade.id));
+        row.appendChild(node);
+      });
+      upgradeTree.appendChild(row);
+      if (tier < maxTier) {
+        const connector = document.createElement('div');
+        connector.className = 'pv2-upgrade-connector';
+        connector.setAttribute('aria-hidden', 'true');
+        upgradeTree.appendChild(connector);
+      }
+    }
+
+    upgradeOverlay.querySelector('.pv2-upgrade-close').addEventListener('click', closeUpgradeTree);
+    upgradeOverlay.addEventListener('pointerdown', (event) => {
+      if (event.target === upgradeOverlay) closeUpgradeTree();
+    });
+    document.body.appendChild(upgradeOverlay);
+    refreshUpgradeTree();
+  }
+
+  function openUpgradeTree() {
+    buildUpgradeTree();
+    refreshUpgradeTree();
+    upgradeOverlay.classList.add('is-open');
+    document.documentElement.classList.add('pv2-upgrades-open');
+    requestAnimationFrame(() => upgradeOverlay.querySelector('.pv2-upgrade-close')?.focus());
+  }
+
+  function closeUpgradeTree() {
+    if (!upgradeOverlay?.isConnected) return;
+    upgradeOverlay.classList.remove('is-open');
+    document.documentElement.classList.remove('pv2-upgrades-open');
+    scoreCounter?.focus();
+  }
+
+  function buyUpgrade(id) {
+    const upgrade = UPGRADES.find((item) => item.id === id);
+    if (!upgrade || purchased.has(id) || !upgradeUnlocked(upgrade) || points < upgrade.cost) return;
+    points -= upgrade.cost;
+    purchased.add(id);
+    ensureScoreCounter();
+    scoreValue.textContent = String(points);
+    refreshUpgradeCue();
+    refreshUpgradeTree();
+    try {
+      scoreCounter.animate([
+        { transform: 'scale(1)' },
+        { transform: 'scale(.94)', offset: .42 },
+        { transform: 'scale(1)' },
+      ], { duration: 180, easing: 'ease-out' });
+    } catch {}
+  }
+
   function updateScore(delta, bumperId, impact) {
     points += delta;
     ensureScoreCounter();
     scoreValue.textContent = String(points);
+    refreshUpgradeCue();
+    refreshUpgradeTree();
     if (!reducedMotion()) {
       try {
         scoreCounter.animate([
@@ -241,14 +427,35 @@
     return Math.max(EDGE_PADDING, nav.getBoundingClientRect().bottom - stageRect.top + NAV_CLEARANCE);
   }
 
-  function constrain(body, stageRect) {
+  function wallImpact(body, side, stageRect) {
+    const rect = stage.getBoundingClientRect();
+    if (side === 'left') return { x: rect.left + EDGE_PADDING, y: rect.top + body.y + body.h / 2 };
+    if (side === 'right') return { x: rect.left + stageRect.width - EDGE_PADDING, y: rect.top + body.y + body.h / 2 };
+    if (side === 'top') return { x: rect.left + body.x + body.w / 2, y: rect.top + stageTopLimit(stageRect) };
+    return { x: rect.left + body.x + body.w / 2, y: rect.top + stageRect.height - EDGE_PADDING };
+  }
+
+  function scoreWallBounce(body, side, stageRect) {
+    const effects = currentEffects();
+    if (!gameActive || !body.armed || effects.wallValue <= 0) return;
+    const now = performance.now();
+    if (now - body.lastWallScore < WALL_SCORE_COOLDOWN) return;
+    body.lastWallScore = now;
+    const impact = wallImpact(body, side, stageRect);
+    updateScore(effects.wallValue, `wall-${side}`, impact);
+    spawnPointGhost(impact, effects.wallValue);
+  }
+
+  function constrain(body, stageRect, allowScore = true) {
     const minY = stageTopLimit(stageRect);
     const maxX = Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING);
     const maxY = Math.max(minY, stageRect.height - body.h - EDGE_PADDING);
-    if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx); }
-    if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx); }
-    if (body.y < minY) { body.y = minY; body.vy = Math.abs(body.vy); }
-    if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy); }
+    let hit = null;
+    if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx); hit = 'left'; }
+    if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx); hit = 'right'; }
+    if (body.y < minY) { body.y = minY; body.vy = Math.abs(body.vy); hit = 'top'; }
+    if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy); hit = 'bottom'; }
+    if (hit && allowScore) scoreWallBounce(body, hit, stageRect);
   }
 
   function bodyRect(body) {
@@ -309,6 +516,7 @@
 
   function resolveBumper(body, bumper, entering) {
     if (!overlaps(bodyRect(body), bumper, 0)) return false;
+    const effects = currentEffects();
     const dx = (body.x + body.w / 2) - (bumper.x + bumper.w / 2) || .01;
     const dy = (body.y + body.h / 2) - (bumper.y + bumper.h / 2) || .01;
     const overlapX = (body.w + bumper.w) / 2 - Math.abs(dx);
@@ -321,12 +529,12 @@
     if (poweredHit) {
       body.bumperHits.set(bumper.id, now);
       const impact = impactPoint(body, bumper, horizontal);
-      updateScore(1, bumper.id, impact);
-      spawnPointGhost(impact, 1);
+      updateScore(effects.bumperValue, bumper.id, impact);
+      spawnPointGhost(impact, effects.bumperValue);
       pulseBumper(bumper.el);
     }
 
-    const kick = poweredHit ? BUMPER_KICK : NORMAL_SPEED * 1.8;
+    const kick = poweredHit ? BUMPER_KICK * effects.bumperKickMult : NORMAL_SPEED * 1.8;
     if (horizontal) {
       const sign = dx >= 0 ? 1 : -1;
       body.x += Math.max(0, overlapX) * sign;
@@ -365,6 +573,7 @@
       phase: index * 1.41 + .7,
       pointerInside: false,
       lastPointerHit: -Infinity,
+      lastWallScore: -Infinity,
       contacts: new Set(),
       bumperHits: new Map(),
       armed: false,
@@ -377,7 +586,7 @@
     const mouseVx = (event.clientX - pointer.x) / dt;
     const mouseVy = (event.clientY - pointer.y) / dt;
     pointer = { x: event.clientX, y: event.clientY, t: now };
-    if (!stage || window.innerWidth <= MOBILE_BREAKPOINT) return;
+    if (!stage || window.innerWidth <= MOBILE_BREAKPOINT || document.documentElement.classList.contains('pv2-upgrades-open')) return;
 
     for (const body of bodies) {
       const rect = body.el.getBoundingClientRect();
@@ -414,8 +623,9 @@
     const dt = clamp(lastTime ? now - lastTime : 16.667, 8, 32);
     lastTime = now;
     const stageRect = stage.getBoundingClientRect();
-    const speedFloor = reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED;
-    const maxSpeed = reducedMotion() ? REDUCED_MAX_SPEED : MAX_SPEED;
+    const effects = currentEffects();
+    const speedFloor = (reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED) * effects.speedMult;
+    const maxSpeed = (reducedMotion() ? REDUCED_MAX_SPEED : MAX_SPEED) * effects.maxSpeedMult;
     const t = now / 1000;
 
     for (const body of bodies) {
@@ -425,8 +635,8 @@
         body.vx += Math.sin(t * .41 + body.phase) * .000014 * dt;
         body.vy += Math.cos(t * .37 + body.phase * 1.23) * .000014 * dt;
       }
-      body.vx *= Math.pow(DAMPING, dt);
-      body.vy *= Math.pow(DAMPING, dt);
+      body.vx *= Math.pow(effects.damping, dt);
+      body.vy *= Math.pow(effects.damping, dt);
       const speed = Math.hypot(body.vx, body.vy);
       if (speed < speedFloor) {
         const angle = body.phase + t * .16;
@@ -437,7 +647,7 @@
       body.vy = clamp(body.vy, -maxSpeed, maxSpeed);
       body.x += body.vx * dt;
       body.y += body.vy * dt;
-      constrain(body, stageRect);
+      constrain(body, stageRect, true);
     }
 
     for (let pass = 0; pass < 2; pass += 1) {
@@ -456,7 +666,7 @@
         resolveBumper(body, bumper, entering);
       }
       body.contacts = nextContacts;
-      constrain(body, stageRect);
+      constrain(body, stageRect, true);
       body.el.style.left = `${body.x.toFixed(2)}px`;
       body.el.style.top = `${body.y.toFixed(2)}px`;
     }
@@ -492,7 +702,7 @@
       const bumpers = bumperRects(stageRect);
       for (const body of bodies) {
         for (const bumper of bumpers) resolveBumper(body, bumper, false);
-        constrain(body, stageRect);
+        constrain(body, stageRect, false);
       }
     }
 
@@ -501,6 +711,7 @@
       body.homeY = body.y;
       body.contacts.clear();
       body.bumperHits.clear();
+      body.lastWallScore = -Infinity;
       body.el.style.left = `${body.x}px`;
       body.el.style.top = `${body.y}px`;
     }
@@ -529,6 +740,9 @@
     ensureFxLayer();
     observer.observe(document.body, { childList: true, subtree: true });
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && upgradeOverlay?.classList.contains('is-open')) closeUpgradeTree();
+    });
     window.addEventListener('resize', () => {
       clearTimeout(mutationTimer);
       mutationTimer = window.setTimeout(init, 100);
