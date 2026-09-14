@@ -280,7 +280,7 @@ function Overview({ onSelect, reducedMotion }) {
           transition={reducedMotion ? { duration: 0 } : { duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
         >
           <p className="pv2-overline">Interactive work · systems · perspective</p>
-          <h1>I design forn<br />emotional experiences.</h1>
+          <h1>I design for<br />emotions.</h1>
           <p>I create games, interactive art, learning experiments, and UX work to explore how people experience the world.</p>
         </motion.div>
 
