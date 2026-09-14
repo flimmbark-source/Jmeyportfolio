@@ -26,6 +26,9 @@
   // (damping raised to this power) and a lower drift floor let them settle.
   const MOBILE_DRAG_EXP = 2.6;
   const MOBILE_FLOOR_SCALE = 0.28;
+  const TREE_ZOOM_MIN = 0.45;
+  const TREE_ZOOM_MAX = 1.9;
+  const TREE_DEFAULT_ZOOM = 1.18;
 
   // Genre labels flavor the incremental tree; `soon` marks nodes whose deeper
   // mechanic (the RPG Battle) is scaffolded in the tree now and wired later.
@@ -127,6 +130,11 @@
   let idleBank = 0;
   let autoFlickTimer = 0;
   let battlePaused = false;
+  let treeZoom = TREE_DEFAULT_ZOOM;
+  let treePanX = 0;
+  let treePanY = 0;
+  let treeDrag = null;
+  let suppressTreeClick = false;
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -431,15 +439,108 @@
     upgradeOverlay.addEventListener('pointerdown', (event) => {
       if (event.target === upgradeOverlay) closeUpgradeTree();
     });
+
+    // Click-drag to pan, wheel to zoom, around the tree.
+    const scroller = upgradeOverlay.querySelector('.pv2-upgrade-scroll');
+    scroller.addEventListener('pointerdown', onTreePointerDown);
+    scroller.addEventListener('pointermove', onTreePointerMove);
+    scroller.addEventListener('pointerup', onTreePointerUp);
+    scroller.addEventListener('pointercancel', onTreePointerUp);
+    scroller.addEventListener('wheel', onTreeWheel, { passive: false });
+    scroller.addEventListener('click', (event) => {
+      if (suppressTreeClick) { event.stopPropagation(); event.preventDefault(); suppressTreeClick = false; }
+    }, true);
+
     document.body.appendChild(upgradeOverlay);
     refreshUpgradeTree();
   }
 
+  function treeViewport() {
+    const el = upgradeOverlay?.querySelector('.pv2-upgrade-scroll');
+    return el ? { el, w: el.clientWidth, h: el.clientHeight } : null;
+  }
+
+  function clampTreePan() {
+    const vp = treeViewport();
+    if (!vp) return;
+    const sw = TREE_WIDTH * treeZoom;
+    const sh = TREE_HEIGHT * treeZoom;
+    const slack = 120 * treeZoom; // let the edges drift a little past the frame
+    treePanX = sw <= vp.w ? (vp.w - sw) / 2 : clamp(treePanX, vp.w - sw - slack, slack);
+    treePanY = sh <= vp.h ? (vp.h - sh) / 2 : clamp(treePanY, vp.h - sh - slack, slack);
+  }
+
+  function applyTreeTransform() {
+    if (upgradeTree) upgradeTree.style.transform = `translate(${treePanX}px, ${treePanY}px) scale(${treeZoom})`;
+  }
+
+  function centerTreeOn(treeX, treeY) {
+    const vp = treeViewport();
+    if (!vp) return;
+    treePanX = vp.w / 2 - treeX * treeZoom;
+    treePanY = vp.h / 2 - treeY * treeZoom;
+    clampTreePan();
+    applyTreeTransform();
+  }
+
+  // Resets zoom and centres the view on the root when the tree opens.
   function centerUpgradeScroll() {
-    const scroller = upgradeOverlay?.querySelector('.pv2-upgrade-scroll');
-    if (!scroller) return;
-    scroller.scrollLeft = Math.max(0, TREE_CENTER.x - scroller.clientWidth / 2);
-    scroller.scrollTop = Math.max(0, TREE_CENTER.y - scroller.clientHeight / 2);
+    treeZoom = window.innerWidth <= MOBILE_BREAKPOINT ? 1 : TREE_DEFAULT_ZOOM;
+    centerTreeOn(TREE_CENTER.x, TREE_CENTER.y);
+  }
+
+  function onTreePointerDown(event) {
+    if (event.button != null && event.button > 0) return; // primary / touch only
+    if (!treeViewport()) return;
+    // Don't capture yet: capturing on pointerdown would steal the click from a
+    // node and break tap-to-buy. Capture only once an actual drag begins.
+    treeDrag = { id: event.pointerId, startX: event.clientX, startY: event.clientY, panX: treePanX, panY: treePanY, moved: false };
+  }
+
+  function onTreePointerMove(event) {
+    if (!treeDrag || event.pointerId !== treeDrag.id) return;
+    const dx = event.clientX - treeDrag.startX;
+    const dy = event.clientY - treeDrag.startY;
+    if (!treeDrag.moved && Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+    if (!treeDrag.moved) {
+      treeDrag.moved = true;
+      const vp = treeViewport();
+      try { vp?.el.setPointerCapture(event.pointerId); } catch {}
+      vp?.el.classList.add('is-grabbing');
+    }
+    treePanX = treeDrag.panX + dx;
+    treePanY = treeDrag.panY + dy;
+    clampTreePan();
+    applyTreeTransform();
+  }
+
+  function onTreePointerUp(event) {
+    if (!treeDrag || event.pointerId !== treeDrag.id) return;
+    const moved = treeDrag.moved;
+    const vp = treeViewport();
+    try { if (moved) vp?.el.releasePointerCapture(event.pointerId); } catch {}
+    vp?.el.classList.remove('is-grabbing');
+    treeDrag = null;
+    // A drag shouldn't also register as a click that buys an upgrade.
+    suppressTreeClick = moved;
+    if (moved) window.setTimeout(() => { suppressTreeClick = false; }, 60);
+  }
+
+  function onTreeWheel(event) {
+    const vp = treeViewport();
+    if (!vp) return;
+    event.preventDefault();
+    const rect = vp.el.getBoundingClientRect();
+    const px = event.clientX - rect.left;
+    const py = event.clientY - rect.top;
+    const tx = (px - treePanX) / treeZoom;
+    const ty = (py - treePanY) / treeZoom;
+    const factor = event.deltaY < 0 ? 1.12 : 1 / 1.12;
+    treeZoom = clamp(treeZoom * factor, TREE_ZOOM_MIN, TREE_ZOOM_MAX);
+    treePanX = px - tx * treeZoom;
+    treePanY = py - ty * treeZoom;
+    clampTreePan();
+    applyTreeTransform();
   }
 
   function openUpgradeTree() {
@@ -1098,6 +1199,7 @@
     window.addEventListener('resize', () => {
       clearTimeout(mutationTimer);
       mutationTimer = window.setTimeout(init, 100);
+      if (upgradeOverlay?.classList.contains('is-open')) { clampTreePan(); applyTreeTransform(); }
     });
     init();
   }
