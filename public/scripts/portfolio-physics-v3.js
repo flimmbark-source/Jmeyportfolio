@@ -22,9 +22,13 @@
   const ARMED_DURATION = 3200;
   // The SAME bumper won't full-power-kick the SAME block again within this
   // window. Longer than a mobile stage round-trip, so a block launched into a
-  // wall and rebounding straight back gets a gentle nudge instead of being
+  // wall and rebounding straight back gets a soft bounce instead of being
   // re-rocketed — which is what caused the wall<->bumper resonance on touch.
   const BUMPER_KICK_LOCKOUT = 1200;
+  // A non-launch bumper contact reflects this fraction of the incoming speed
+  // (floored by the gentle kick) so the block eases away and drag settles it,
+  // rather than snapping to a fixed low speed in a single frame.
+  const SOFT_BUMPER_RESTITUTION = 0.5;
   const TREE_WIDTH = 1240;
   const TREE_HEIGHT = 900;
   const TREE_CENTER = { x: 620, y: 450 };
@@ -1043,18 +1047,23 @@
       window.dispatchEvent(new CustomEvent('pv2:bumper-hit', { detail: { id: bumper.id, x: impact.x, y: impact.y } }));
     }
 
-    const kick = strongKick
-      ? BUMPER_KICK * effects.bumperKickMult
-      : window.innerWidth <= MOBILE_BREAKPOINT ? MOBILE_UNARMED_BUMPER_KICK : NORMAL_SPEED * 1.8;
+    const softFloor = window.innerWidth <= MOBILE_BREAKPOINT ? MOBILE_UNARMED_BUMPER_KICK : NORMAL_SPEED * 1.8;
+    // Strong hit = a fixed launch. Otherwise reflect a fraction of the incoming
+    // speed (never below the gentle floor) so a fast rebound eases away and
+    // coasts to rest under drag instead of stopping dead against the bumper.
     if (horizontal) {
       const sign = dx >= 0 ? 1 : -1;
       body.x += Math.max(0, overlapX) * sign;
-      body.vx = kick * sign;
+      body.vx = (strongKick
+        ? BUMPER_KICK * effects.bumperKickMult
+        : Math.max(softFloor, Math.abs(body.vx) * SOFT_BUMPER_RESTITUTION)) * sign;
       if (poweredHit) body.vy *= 1.12;
     } else {
       const sign = dy >= 0 ? 1 : -1;
       body.y += Math.max(0, overlapY) * sign;
-      body.vy = kick * sign;
+      body.vy = (strongKick
+        ? BUMPER_KICK * effects.bumperKickMult
+        : Math.max(softFloor, Math.abs(body.vy) * SOFT_BUMPER_RESTITUTION)) * sign;
       if (poweredHit) body.vx *= 1.12;
     }
     return true;
