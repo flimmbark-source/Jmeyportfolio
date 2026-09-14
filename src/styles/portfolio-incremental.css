@@ -26,9 +26,9 @@
 }
 
 .pv2-score-counter.has-upgrade {
-  border-color: rgba(230, 181, 32, .58);
+  border-color: rgba(230, 181, 32, .72);
   background: rgba(255, 244, 174, .95);
-  animation: pv2UpgradeReady 1.45s ease-in-out infinite;
+  animation: pv2UpgradeReady 1.25s ease-in-out infinite;
 }
 
 @keyframes pv2UpgradeReady {
@@ -37,8 +37,8 @@
     transform: translateY(0) scale(1);
   }
   50% {
-    box-shadow: 0 8px 22px rgba(36, 36, 36, .06), 0 0 0 6px rgba(242, 197, 51, .14);
-    transform: translateY(0) scale(1.035);
+    box-shadow: 0 8px 22px rgba(36, 36, 36, .06), 0 0 0 9px rgba(242, 197, 51, .26);
+    transform: translateY(0) scale(1.06);
   }
 }
 
@@ -534,7 +534,7 @@
   }
 
   .pv2-score-counter.has-upgrade {
-    box-shadow: 0 0 0 4px rgba(242,197,51,.16);
+    box-shadow: 0 0 0 6px rgba(242,197,51,.24);
   }
 
   .pv2-upgrade-overlay,
