@@ -15,16 +15,10 @@
   const REDUCED_MAX_SPEED = 0.08;
   const POINTER_COOLDOWN = 85;
   const BUMPER_KICK = 0.48;
-  const BUMPER_SCORE_COOLDOWN = 360;
   const WALL_SCORE_COOLDOWN = 220;
   // A flick's "armed" state is finite: after this it decays so a single flick
   // can't power a block off bumpers forever (player input / autoflick re-arm).
   const ARMED_DURATION = 3200;
-  // The SAME bumper won't full-power-kick the SAME block again within this
-  // window. Longer than a mobile stage round-trip, so a block launched into a
-  // wall and rebounding straight back gets a soft bounce instead of being
-  // re-rocketed — which is what caused the wall<->bumper resonance on touch.
-  const BUMPER_KICK_LOCKOUT = 1200;
   // A non-launch bumper contact reflects this fraction of the incoming speed
   // (floored by the gentle kick) so the block eases away and drag settles it,
   // rather than snapping to a fixed low speed in a single frame.
@@ -1138,16 +1132,15 @@
     const overlapY = (body.h + bumper.h) / 2 - Math.abs(dy);
     const horizontal = overlapX < overlapY;
     const now = performance.now();
-    const lastBumperHit = body.bumperHits.get(bumper.id) ?? -Infinity;
     const isArmed = body.armed && now < body.armedUntil;
-    const poweredHit = entering && isArmed && gameActive && now - lastBumperHit >= BUMPER_SCORE_COOLDOWN;
-    // A full-power launch only for a genuine (re)strike — not for a block
-    // rebounding off a wall straight back into the bumper it just left. That
-    // return trip scores (above) but is nudged gently, killing the resonance.
-    const strongKick = poweredHit && now - lastBumperHit >= BUMPER_KICK_LOCKOUT;
+    // A bounce and a point are one and the same: a bumper only reacts to a
+    // genuine armed strike during play. `entering` already dedupes a multi-frame
+    // overlap, so a block that leaves and returns is a fresh strike — a tight
+    // wall<->bumper loop therefore scores (and re-launches) every lap, which is
+    // exactly the perpetual loop the speed / bounce upgrades are meant to enable.
+    const poweredHit = entering && isArmed && gameActive;
 
     if (poweredHit) {
-      body.bumperHits.set(bumper.id, now);
       const impact = impactPoint(body, bumper, horizontal);
       // Velocity is read before the bumper kick below flips it, so this is the
       // block's incoming travel direction — the way it was heading on impact.
@@ -1156,23 +1149,27 @@
       // Battle mode (portfolio-battle.js) listens for these to detect a
       // Critical Combo (5 bumper hits within 1s) and trigger a battle.
       window.dispatchEvent(new CustomEvent('pv2:bumper-hit', { detail: { id: bumper.id, x: impact.x, y: impact.y } }));
+    } else if (gameActive) {
+      // Mid-game a contact that doesn't score doesn't bounce either: the block
+      // phases through so it can never be knocked back without a point. (Idle,
+      // below, keeps bumpers solid so the resting layout stays tidy.)
+      return true;
     }
 
     const softFloor = window.innerWidth <= MOBILE_BREAKPOINT ? MOBILE_UNARMED_BUMPER_KICK : NORMAL_SPEED * 1.8;
-    // Strong hit = a fixed launch. Otherwise reflect a fraction of the incoming
-    // speed (never below the gentle floor) so a fast rebound eases away and
-    // coasts to rest under drag instead of stopping dead against the bumper.
+    // A scored strike = a fixed launch. The soft path only runs while idle, so
+    // drifting blocks reflect gently off the text instead of stopping dead.
     if (horizontal) {
       const sign = dx >= 0 ? 1 : -1;
       body.x += Math.max(0, overlapX) * sign;
-      body.vx = (strongKick
+      body.vx = (poweredHit
         ? BUMPER_KICK * effects.bumperKickMult
         : Math.max(softFloor, Math.abs(body.vx) * SOFT_BUMPER_RESTITUTION)) * sign;
       if (poweredHit) body.vy *= 1.12;
     } else {
       const sign = dy >= 0 ? 1 : -1;
       body.y += Math.max(0, overlapY) * sign;
-      body.vy = (strongKick
+      body.vy = (poweredHit
         ? BUMPER_KICK * effects.bumperKickMult
         : Math.max(softFloor, Math.abs(body.vy) * SOFT_BUMPER_RESTITUTION)) * sign;
       if (poweredHit) body.vx *= 1.12;
@@ -1207,7 +1204,6 @@
       lastPointerHit: -Infinity,
       lastWallScore: -Infinity,
       contacts: new Set(),
-      bumperHits: new Map(),
       armed: false,
       armedUntil: 0,
       friction: 0,
@@ -1497,7 +1493,6 @@
       body.homeX = body.x;
       body.homeY = body.y;
       body.contacts.clear();
-      body.bumperHits.clear();
       body.lastWallScore = -Infinity;
       body.el.style.left = `${body.x}px`;
       body.el.style.top = `${body.y}px`;
