@@ -698,7 +698,8 @@
 
   // Fraction of a 180° half-turn the number tumbles through before it stops
   // and pops. 0.75 * 180° = 135°.
-  const GHOST_ARC_STOP = 180 * 0.75;
+  const GHOST_MIN_LAUNCH = 0.45;
+  const GHOST_POP_SPEED = 0.06;
   // Per-millisecond friction applied to the launch velocity.
   const GHOST_FRICTION = 0.9925;
   // Safety cap on the drift/tumble phase (ms) in case angular speed is tiny.
@@ -757,24 +758,9 @@
     });
     layer.appendChild(ghost);
 
-    // Reduced motion: keep it calm — a quick fade-in, brief hold, drift up.
-    if (reducedMotion()) {
-      try {
-        const anim = ghost.animate([
-          { opacity: 0, transform: 'translate(-50%, 4px) scale(.6)' },
-          { opacity: 1, offset: .2, transform: 'translate(-50%, -18px) scale(1)' },
-          { opacity: 1, offset: .7, transform: 'translate(-50%, -22px) scale(1)' },
-          { opacity: 0, transform: 'translate(-50%, -64px) scale(.94)' },
-        ], { duration: 1500, easing: 'ease-out', fill: 'forwards' });
-        anim.addEventListener('finish', () => ghost.remove(), { once: true });
-      } catch {
-        ghost.style.opacity = '1';
-        window.setTimeout(() => ghost.remove(), 1500);
-      }
-      return;
-    }
-
     // --- Energy proportional to how fast the game block was travelling. ---
+    const motionReduced = reducedMotion();
+    const motionScale = motionReduced ? 0.5 : 1;
     const vx0 = velocity && Number.isFinite(velocity.vx) ? velocity.vx : 0;
     const vy0 = velocity && Number.isFinite(velocity.vy) ? velocity.vy : 0;
     const blockSpeed = Math.hypot(vx0, vy0);
@@ -786,22 +772,17 @@
     if (blockSpeed > 1e-4) { dirX = vx0 / blockSpeed; dirY = vy0 / blockSpeed; }
 
     // Launch velocity (px/ms) in the block's travel direction.
-    const launch = 0.05 + energy * 0.45;
+    const launch = Math.max(GHOST_MIN_LAUNCH, (0.05 + energy * 0.45) * motionScale);
     let velX = dirX * launch;
     let velY = dirY * launch;
 
-    // Spin in the direction of travel: clockwise heading right, ccw heading
-    // left. Angular speed (deg/ms) scales with the block's energy too.
-    const spinDir = Math.abs(vx0) > 1e-4 ? Math.sign(vx0) : (Math.sign(vy0) || 1);
-    const angSpeed = (0.22 + energy * 0.73) * spinDir;
-
-    let offX = 0, offY = 0, rot = 0, scale = 0.35, opacity = 0;
+    let offX = 0, offY = 0, scale = 0.35, opacity = 0;
     let last = null, elapsed = 0;
 
     const paint = () => {
       ghost.style.opacity = String(opacity);
       ghost.style.transform =
-        `translate(calc(-50% + ${offX}px), calc(-50% + ${offY}px)) rotate(${rot}deg) scale(${scale})`;
+        `translate(calc(-50% + ${offX}px), calc(-50% + ${offY}px)) scale(${scale})`;
     };
     paint();
 
@@ -813,14 +794,12 @@
       const tx = `calc(-50% + ${offX}px)`;
       try {
         const pop = ghost.animate([
-          { transform: `translate(${tx}, calc(-50% + ${offY}px)) rotate(${rot}deg) scale(1)`, opacity: 1 },
-          { transform: `translate(${tx}, calc(-50% + ${offY - 18}px)) rotate(${spinDir * 7}deg) scale(1.34)`, opacity: 1, offset: .3 },
-          { transform: `translate(${tx}, calc(-50% + ${offY - 9}px)) rotate(0deg) scale(1)`, opacity: 1, offset: .55 },
-          // brief hold (identical frame) so it rests for a moment
-          { transform: `translate(${tx}, calc(-50% + ${offY - 9}px)) rotate(0deg) scale(1)`, opacity: 1, offset: .74 },
-          // vanish upwards
-          { transform: `translate(${tx}, calc(-50% + ${offY - 82}px)) rotate(0deg) scale(.9)`, opacity: 0 },
-        ], { duration: 900, easing: 'cubic-bezier(.22,.9,.28,1)', fill: 'forwards' });
+          { transform: `translate(${tx}, calc(-50% + ${offY}px)) scale(1)`, opacity: 1 },
+          { transform: `translate(${tx}, calc(-50% + ${offY - 18}px)) scale(1.34)`, opacity: 1, offset: .3 },
+          { transform: `translate(${tx}, calc(-50% + ${offY - 9}px)) scale(1)`, opacity: 1, offset: .55 },
+          { transform: `translate(${tx}, calc(-50% + ${offY - 9}px)) scale(1)`, opacity: 1, offset: .74 },
+          { transform: `translate(${tx}, calc(-50% + ${offY - 82}px)) scale(.9)`, opacity: 0 },
+        ], { duration: motionReduced ? 700 : 900, easing: 'cubic-bezier(.22,.9,.28,1)', fill: 'forwards' });
         pop.addEventListener('finish', () => ghost.remove(), { once: true });
       } catch {
         ghost.remove();
@@ -846,15 +825,14 @@
         scale += (1 - scale) * Math.min(1, dt / 90);
       }
 
-      // Friction on translation; rotation keeps a steady sweep to the stop.
+      // Friction slows the translation until the pop can take over.
       const damp = Math.pow(GHOST_FRICTION, dt);
       velX *= damp; velY *= damp;
       offX += velX * dt;
       offY += velY * dt;
-      rot += angSpeed * dt;
 
-      if (Math.abs(rot) >= GHOST_ARC_STOP || elapsed >= GHOST_DRIFT_MAX_MS) {
-        rot = GHOST_ARC_STOP * spinDir; // snap to exactly 135°
+      const nearingStop = elapsed > 100 && Math.hypot(velX, velY) <= GHOST_POP_SPEED;
+      if (nearingStop || elapsed >= GHOST_DRIFT_MAX_MS) {
         paint();
         popAndVanish();
         return;
