@@ -29,6 +29,22 @@
   // (floored by the gentle kick) so the block eases away and drag settles it,
   // rather than snapping to a fixed low speed in a single frame.
   const SOFT_BUMPER_RESTITUTION = 0.5;
+  // --- Friction / heat mechanic --------------------------------------------
+  // A block "heats" while it moves faster than the ambient drift. Heat runs
+  // 0→1: as it climbs it adds drag and suppresses the drift floor, so a
+  // launched block eases to a stop instead of snapping, and a full meter pays
+  // out a "friction burn" before the block cools back into the ambient float.
+  // Idle drift stays below HEAT_THRESHOLD, so only launched blocks ever settle.
+  const HEAT_THRESHOLD = 0.06;      // floor for the heat-build speed cutoff (px/ms)
+  const HEAT_MARGIN = 1.8;          // …but never below this ×the live drift floor,
+                                    // so idle drift never heats however upgraded
+  const FRICTION_GAIN = 0.0016;     // heat gained per (speed − threshold) per ms
+  const FRICTION_RELIEF = 0.00045;  // heat shed per ms while below threshold
+  const FRICTION_DAMP_BASE = 0.988; // extra per-ms damping, exponent-scaled by heat
+  const FRICTION_REARM = 0.35;      // heat must fall below this before it can burn again
+  const FRICTION_BURN_BASE = 6;     // base points for a full-meter burn (× upgrades)
+  const FLICK_COOL = 0.6;           // heat a player flick sheds (wakes a settled block)
+  const HEAT_MIN_VISIBLE = 0.04;    // below this the heat halo stays hidden
   const TREE_WIDTH = 1240;
   const TREE_HEIGHT = 900;
   const TREE_CENTER = { x: 620, y: 450 };
@@ -202,6 +218,7 @@
     let idlePerSec = 0;
     let autoFlick = false;
     let gravity = 0;
+    let frictionBurnMult = 1;
 
     // Velocity branch
     if (hasUpgrade('vel-1')) speedMult *= 1.2;
@@ -226,12 +243,14 @@
     if (hasUpgrade('walls-ricochet')) wallKickMult *= 1.25;
     if (hasUpgrade('walls-echo')) wallValue += 2;
 
-    // Friction branch (ordered weakest→strongest so the deepest drag wins)
+    // Friction branch (ordered weakest→strongest so the deepest drag wins).
+    // Less drag = blocks stay fast longer = they heat faster (emergent), and
+    // these nodes also scale the friction-burn payout so the branch has teeth.
     if (hasUpgrade('fric-1')) damping = 0.99942;
-    if (hasUpgrade('fric-glide')) damping = 0.99967;
-    if (hasUpgrade('fric-keep')) collisionBoost = 1.08;
-    if (hasUpgrade('fric-low')) { damping = 0.99984; speedFloorMult *= 1.12; }
-    if (hasUpgrade('fric-perpetual')) { damping = 0.99994; speedFloorMult *= 1.2; }
+    if (hasUpgrade('fric-glide')) { damping = 0.99967; frictionBurnMult *= 1.4; }
+    if (hasUpgrade('fric-keep')) { collisionBoost = 1.08; frictionBurnMult *= 1.5; }
+    if (hasUpgrade('fric-low')) { damping = 0.99984; speedFloorMult *= 1.12; frictionBurnMult *= 1.8; }
+    if (hasUpgrade('fric-perpetual')) { damping = 0.99994; speedFloorMult *= 1.2; frictionBurnMult *= 2; }
 
     // Flux branch (genre-bending)
     if (hasUpgrade('flux-mult')) pointMult *= 2;
@@ -260,6 +279,7 @@
       idlePerSec,
       autoFlick,
       gravity,
+      frictionBurnMult,
     };
   }
 
@@ -647,6 +667,51 @@
     window.dispatchEvent(new CustomEvent('pv2:score-state', {
       detail: { points, delta: n, sourceId: 'idle' },
     }));
+  }
+
+  // Warm ramp for the heat halo: amber when barely warm → deep orange at burn.
+  function heatColor(f) {
+    const g = Math.round(190 - f * 120);
+    const b = Math.round(70 - f * 55);
+    return `255, ${g}, ${b}`;
+  }
+
+  // Paint a block's heat ring from its current friction (0→1). The halo center
+  // is transparent, so the tile's text stays legible; only the border glows.
+  function updateHeatVisual(body) {
+    const halo = body.halo;
+    if (!halo) return;
+    const f = body.friction;
+    if (f < HEAT_MIN_VISIBLE) {
+      if (halo.style.opacity !== '0') halo.style.opacity = '0';
+      return;
+    }
+    const c = heatColor(f);
+    const ring = (1 + f * 2.5).toFixed(1);
+    halo.style.opacity = '1';
+    halo.style.boxShadow =
+      `inset 0 0 0 ${ring}px rgba(${c}, ${(0.22 + f * 0.5).toFixed(2)}), ` +
+      `inset 0 0 ${(8 + f * 22).toFixed(0)}px rgba(${c}, ${(0.10 + f * 0.38).toFixed(2)}), ` +
+      `0 0 ${(f * 26).toFixed(0)}px rgba(${c}, ${(f * 0.45).toFixed(2)})`;
+  }
+
+  // Full meter → cash in a "friction burn" through the normal scoring path
+  // (so point mult / combo / crit all apply) and flash the halo.
+  function frictionBurn(body) {
+    const effects = currentEffects();
+    const rect = body.el.getBoundingClientRect();
+    const impact = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    award(FRICTION_BURN_BASE * effects.frictionBurnMult, 'friction', impact, { vx: body.vx, vy: body.vy });
+    window.dispatchEvent(new CustomEvent('pv2:friction-burn', { detail: { x: impact.x, y: impact.y } }));
+    if (reducedMotion() || !body.halo) return;
+    try {
+      const rest = body.halo.style.boxShadow;
+      body.halo.animate([
+        { boxShadow: rest, transform: 'scale(1)' },
+        { boxShadow: 'inset 0 0 0 3px rgba(255,240,205,.92), 0 0 42px 9px rgba(255,150,45,.78)', transform: 'scale(1.06)', offset: .3 },
+        { boxShadow: rest, transform: 'scale(1)' },
+      ], { duration: 520, easing: 'cubic-bezier(.16,.84,.3,1)' });
+    } catch {}
   }
 
   function pulseBumper(el) {
@@ -1099,7 +1164,30 @@
       bumperHits: new Map(),
       armed: false,
       armedUntil: 0,
+      friction: 0,
+      frictionSpent: false,
+      halo: ensureHeatHalo(el),
     };
+  }
+
+  // A transparent-centered overlay pinned to the block; its glowing border is
+  // the heat readout. Reused across re-inits so we never stack duplicates.
+  function ensureHeatHalo(el) {
+    let halo = el.querySelector(':scope > .pv2-heat-halo');
+    if (halo) return halo;
+    const tile = el.querySelector('.pv2-project-tile') || el;
+    halo = document.createElement('div');
+    halo.className = 'pv2-heat-halo';
+    halo.setAttribute('aria-hidden', 'true');
+    let radius = '16px';
+    try { radius = getComputedStyle(tile).borderRadius || radius; } catch {}
+    Object.assign(halo.style, {
+      position: 'absolute', inset: '0', pointerEvents: 'none',
+      borderRadius: radius, opacity: '0', zIndex: '3',
+      transition: 'opacity 120ms linear', willChange: 'box-shadow, opacity',
+    });
+    el.appendChild(halo);
+    return halo;
   }
 
   function collideWithPointer(event, pointerVx = 0, pointerVy = 0) {
@@ -1126,6 +1214,10 @@
         body.lastPointerHit = now;
         body.armed = true;
         body.armedUntil = now + ARMED_DURATION;
+        // A flick sheds heat, so a settled (fully-heated) block wakes and moves
+        // again. Autopilot flicks (in tick) deliberately don't, letting an
+        // idle-driven block keep heating toward a burn.
+        body.friction = Math.max(0, body.friction - FLICK_COOL);
         spawnImpactLines(event, rect);
         activateGame();
       }
@@ -1177,6 +1269,9 @@
     const mobile = window.innerWidth <= MOBILE_BREAKPOINT;
     const damping = mobile ? Math.pow(effects.damping, MOBILE_DRAG_EXP) : effects.damping;
     const speedFloor = (reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED) * effects.speedMult * effects.speedFloorMult * (mobile ? MOBILE_FLOOR_SCALE : 1);
+    // Heat only builds above the live drift floor, so ambient drift never heats
+    // (and never self-settles) no matter how high upgrades push the floor.
+    const heatThreshold = Math.max(HEAT_THRESHOLD, speedFloor * HEAT_MARGIN);
     const maxSpeed = (reducedMotion() ? REDUCED_MAX_SPEED : MAX_SPEED) * effects.maxSpeedMult;
     const t = now / 1000;
 
@@ -1218,11 +1313,32 @@
       }
       body.vx *= Math.pow(damping, dt);
       body.vy *= Math.pow(damping, dt);
+      // Heat adds its own drag on top, growing as the meter fills.
+      if (body.friction > 0) {
+        const fDamp = Math.pow(FRICTION_DAMP_BASE, body.friction * dt);
+        body.vx *= fDamp;
+        body.vy *= fDamp;
+      }
       const speed = Math.hypot(body.vx, body.vy);
-      if (speed < speedFloor) {
+      // Build heat while moving faster than the ambient drift, shed it below —
+      // so idle blocks stay cool and only launched ones heat toward a stop.
+      const heat = speed - heatThreshold;
+      if (heat > 0) body.friction = Math.min(1, body.friction + heat * FRICTION_GAIN * dt);
+      else body.friction = Math.max(0, body.friction - FRICTION_RELIEF * dt);
+      if (body.friction >= 1 && !body.frictionSpent) {
+        body.frictionSpent = true;
+        if (gameActive && body.armed) frictionBurn(body);
+      } else if (body.friction < FRICTION_REARM) {
+        body.frictionSpent = false;
+      }
+      updateHeatVisual(body);
+      // Heat suppresses the drift floor so a hot block can actually come to rest
+      // (at full heat the floor is zero); it returns as the block cools.
+      const effFloor = speedFloor * (1 - body.friction);
+      if (speed < effFloor) {
         const angle = body.phase + t * .16;
-        body.vx += Math.cos(angle) * (speedFloor - speed) * .16;
-        body.vy += Math.sin(angle) * (speedFloor - speed) * .16;
+        body.vx += Math.cos(angle) * (effFloor - speed) * .16;
+        body.vy += Math.sin(angle) * (effFloor - speed) * .16;
       }
       body.vx = clamp(body.vx, -maxSpeed, maxSpeed);
       body.vy = clamp(body.vy, -maxSpeed, maxSpeed);
@@ -1259,6 +1375,7 @@
   function teardown() {
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
+    for (const body of bodies) if (body.halo) body.halo.style.opacity = '0';
     bodies = [];
     lastTime = 0;
     autoFlickTimer = 0;
