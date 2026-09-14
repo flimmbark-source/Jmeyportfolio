@@ -45,6 +45,7 @@
   const FRICTION_BURN_BASE = 6;     // base points for a full-meter burn (× upgrades)
   const FLICK_COOL = 0.6;           // heat a player flick sheds (wakes a settled block)
   const HEAT_MIN_VISIBLE = 0.04;    // below this the heat halo stays hidden
+  const HEAT_TIERS = 5;             // box-shadow color steps (rewritten only on change)
   const TREE_WIDTH = 1240;
   const TREE_HEIGHT = 900;
   const TREE_CENTER = { x: 620, y: 450 };
@@ -154,6 +155,8 @@
   let upgradeOverlay = null;
   let upgradeTree = null;
   const purchased = new Set();
+  let effectsCache = null;   // currentEffects() memo; nulled when a purchase changes it
+  let bumperGeom = null;     // cached stage-local bumper geometry; nulled on reflow
   let pointer = { x: -9999, y: -9999, t: 0 };
   let comboCount = 0;
   let comboExpire = 0;
@@ -167,10 +170,19 @@
   let suppressTreeClick = false;
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-  const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // One persistent MediaQueryList instead of rebuilding it on every call (this
+  // is read several times per frame per body).
+  const reducedMotionMQL = typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)')
+    : null;
+  const reducedMotion = () => (reducedMotionMQL ? reducedMotionMQL.matches : false);
 
   function mark(state) {
-    document.documentElement.dataset.pv2Physics = state;
+    // Called every frame; skip the attribute write (and any CSS recalc it
+    // triggers) when the state string hasn't actually changed.
+    if (document.documentElement.dataset.pv2Physics !== state) {
+      document.documentElement.dataset.pv2Physics = state;
+    }
   }
 
   function overlaps(a, b, gap = 0) {
@@ -199,6 +211,9 @@
   }
 
   function currentEffects() {
+    // Effects only change when an upgrade is bought (buyUpgrade nulls the memo),
+    // so cache the built object — it's read many times per frame otherwise.
+    if (effectsCache) return effectsCache;
     let bumperValue = 1;
     let wallValue = 0;
     let speedMult = 1;
@@ -259,7 +274,7 @@
     if (hasUpgrade('flux-auto')) autoFlick = true;
     if (hasUpgrade('flux-gravity')) gravity = GRAVITY_ACCEL;
 
-    return {
+    return (effectsCache = {
       bumperValue,
       wallValue,
       speedMult,
@@ -280,7 +295,7 @@
       autoFlick,
       gravity,
       frictionBurnMult,
-    };
+    });
   }
 
   function cheapestAvailableUpgrade() {
@@ -600,6 +615,7 @@
     if (!upgrade || upgrade.soon || purchased.has(id) || !upgradeUnlocked(upgrade) || points < upgrade.cost) return;
     points -= upgrade.cost;
     purchased.add(id);
+    effectsCache = null;
     ensureScoreCounter();
     scoreValue.textContent = String(points);
     refreshUpgradeCue();
@@ -676,23 +692,36 @@
     return `255, ${g}, ${b}`;
   }
 
-  // Paint a block's heat ring from its current friction (0→1). The halo center
-  // is transparent, so the tile's text stays legible; only the border glows.
+  // The (expensive, blurred) box-shadow at a given heat tier, at full strength —
+  // overall intensity is applied cheaply via opacity, so this string is only
+  // rebuilt when a block crosses a tier boundary, not every frame.
+  function heatShadow(f) {
+    const c = heatColor(f);
+    const ring = (1 + f * 2.5).toFixed(1);
+    return `inset 0 0 0 ${ring}px rgba(${c},0.72), ` +
+      `inset 0 0 ${(8 + f * 16).toFixed(0)}px rgba(${c},0.5), ` +
+      `0 0 ${(6 + f * 14).toFixed(0)}px rgba(${c},0.5)`;
+  }
+
+  // Paint a block's heat ring from its friction (0→1). Center stays transparent
+  // so the tile text is legible. Cost control: the blurred box-shadow is only
+  // rewritten on a tier change; the smooth ramp rides on `opacity` (composited),
+  // and both writes are skipped when the quantized value is unchanged.
   function updateHeatVisual(body) {
     const halo = body.halo;
     if (!halo) return;
     const f = body.friction;
     if (f < HEAT_MIN_VISIBLE) {
-      if (halo.style.opacity !== '0') halo.style.opacity = '0';
+      if (body.heatOpacity !== 0) { halo.style.opacity = '0'; body.heatOpacity = 0; body.heatTier = -1; }
       return;
     }
-    const c = heatColor(f);
-    const ring = (1 + f * 2.5).toFixed(1);
-    halo.style.opacity = '1';
-    halo.style.boxShadow =
-      `inset 0 0 0 ${ring}px rgba(${c}, ${(0.22 + f * 0.5).toFixed(2)}), ` +
-      `inset 0 0 ${(8 + f * 22).toFixed(0)}px rgba(${c}, ${(0.10 + f * 0.38).toFixed(2)}), ` +
-      `0 0 ${(f * 26).toFixed(0)}px rgba(${c}, ${(f * 0.45).toFixed(2)})`;
+    const tier = Math.min(HEAT_TIERS - 1, Math.floor(f * HEAT_TIERS));
+    if (tier !== body.heatTier) {
+      halo.style.boxShadow = heatShadow((tier + 0.5) / HEAT_TIERS);
+      body.heatTier = tier;
+    }
+    const op = Math.round(f * 40) / 40; // quantize to ~0.025 to skip redundant writes
+    if (op !== body.heatOpacity) { halo.style.opacity = String(op); body.heatOpacity = op; }
   }
 
   // Full meter → cash in a "friction burn" through the normal scoring path
@@ -1050,7 +1079,11 @@
     return { left, top, right, bottom, width: right - left, height: bottom - top };
   }
 
-  function bumperRects(stageRect) {
+  // Measure the bumpers' stage-LOCAL geometry. This is the expensive part —
+  // querySelector + Range.getClientRects (forced layout) — so it runs only when
+  // the cache is cold (init/resize/reflow), not every frame. Local coords are
+  // scroll-stable because the bumpers scroll with the stage.
+  function measureBumperGeom(stageRect) {
     // The statement collides against its heading + paragraph text, not the full
     // padded block (its eyebrow line and the empty corners are excluded).
     const candidates = [
@@ -1062,8 +1095,21 @@
       .filter(([, el]) => el?.isConnected)
       .map(([id, el, textSels]) => {
         const rect = (textSels && unionTextBounds(textSels)) || el.getBoundingClientRect();
-        return { id, el, x: rect.left - stageRect.left, y: rect.top - stageRect.top, w: rect.width, h: rect.height, viewport: rect };
+        return { id, el, x: rect.left - stageRect.left, y: rect.top - stageRect.top, w: rect.width, h: rect.height };
       });
+  }
+
+  function invalidateBumpers() { bumperGeom = null; }
+
+  function bumperRects(stageRect) {
+    if (!bumperGeom) bumperGeom = measureBumperGeom(stageRect);
+    // Rebuild each caller's absolute `viewport` from cached local coords + the
+    // current stageRect (cheap arithmetic, no layout), so scrolling stays exact.
+    return bumperGeom.map((g) => {
+      const left = stageRect.left + g.x;
+      const top = stageRect.top + g.y;
+      return { ...g, viewport: { left, top, right: left + g.w, bottom: top + g.h, width: g.w, height: g.h } };
+    });
   }
 
   function impactPoint(body, bumper, horizontal) {
@@ -1167,6 +1213,8 @@
       friction: 0,
       frictionSpent: false,
       halo: ensureHeatHalo(el),
+      heatTier: -1,
+      heatOpacity: 0,
     };
   }
 
@@ -1184,7 +1232,7 @@
     Object.assign(halo.style, {
       position: 'absolute', inset: '0', pointerEvents: 'none',
       borderRadius: radius, opacity: '0', zIndex: '3',
-      transition: 'opacity 120ms linear', willChange: 'box-shadow, opacity',
+      transition: 'opacity 120ms linear', willChange: 'opacity',
     });
     el.appendChild(halo);
     return halo;
@@ -1377,6 +1425,7 @@
     frame = 0;
     for (const body of bodies) if (body.halo) body.halo.style.opacity = '0';
     bodies = [];
+    invalidateBumpers();
     lastTime = 0;
     autoFlickTimer = 0;
     document.documentElement.classList.remove('pv2-physics-live');
@@ -1492,6 +1541,7 @@
       if (event.key === 'Escape' && upgradeOverlay?.classList.contains('is-open')) closeUpgradeTree();
     });
     window.addEventListener('resize', () => {
+      invalidateBumpers();
       clearTimeout(mutationTimer);
       mutationTimer = window.setTimeout(init, 100);
       if (upgradeOverlay?.classList.contains('is-open')) { clampTreePan(); applyTreeTransform(); }
