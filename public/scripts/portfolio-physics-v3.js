@@ -17,6 +17,14 @@
   const BUMPER_KICK = 0.48;
   const BUMPER_SCORE_COOLDOWN = 360;
   const WALL_SCORE_COOLDOWN = 220;
+  // A flick's "armed" state is finite: after this it decays so a single flick
+  // can't power a block off bumpers forever (player input / autoflick re-arm).
+  const ARMED_DURATION = 3200;
+  // The SAME bumper won't full-power-kick the SAME block again within this
+  // window. Longer than a mobile stage round-trip, so a block launched into a
+  // wall and rebounding straight back gets a gentle nudge instead of being
+  // re-rocketed — which is what caused the wall<->bumper resonance on touch.
+  const BUMPER_KICK_LOCKOUT = 1200;
   const TREE_WIDTH = 1240;
   const TREE_HEIGHT = 900;
   const TREE_CENTER = { x: 620, y: 450 };
@@ -928,7 +936,11 @@
       a.vy = b.vy * effects.collisionBoost;
       b.vy = av * effects.collisionBoost;
     }
-    if (a.armed || b.armed) { a.armed = true; b.armed = true; }
+    if (a.armed || b.armed) {
+      const until = Math.max(a.armedUntil, b.armedUntil);
+      a.armed = true; b.armed = true;
+      a.armedUntil = until; b.armedUntil = until;
+    }
     return true;
   }
 
@@ -1012,7 +1024,12 @@
     const horizontal = overlapX < overlapY;
     const now = performance.now();
     const lastBumperHit = body.bumperHits.get(bumper.id) ?? -Infinity;
-    const poweredHit = entering && body.armed && gameActive && now - lastBumperHit >= BUMPER_SCORE_COOLDOWN;
+    const isArmed = body.armed && now < body.armedUntil;
+    const poweredHit = entering && isArmed && gameActive && now - lastBumperHit >= BUMPER_SCORE_COOLDOWN;
+    // A full-power launch only for a genuine (re)strike — not for a block
+    // rebounding off a wall straight back into the bumper it just left. That
+    // return trip scores (above) but is nudged gently, killing the resonance.
+    const strongKick = poweredHit && now - lastBumperHit >= BUMPER_KICK_LOCKOUT;
 
     if (poweredHit) {
       body.bumperHits.set(bumper.id, now);
@@ -1026,7 +1043,7 @@
       window.dispatchEvent(new CustomEvent('pv2:bumper-hit', { detail: { id: bumper.id, x: impact.x, y: impact.y } }));
     }
 
-    const kick = poweredHit
+    const kick = strongKick
       ? BUMPER_KICK * effects.bumperKickMult
       : window.innerWidth <= MOBILE_BREAKPOINT ? MOBILE_UNARMED_BUMPER_KICK : NORMAL_SPEED * 1.8;
     if (horizontal) {
@@ -1072,6 +1089,7 @@
       contacts: new Set(),
       bumperHits: new Map(),
       armed: false,
+      armedUntil: 0,
     };
   }
 
@@ -1098,6 +1116,7 @@
         body.vy += (dy / length) * impulse;
         body.lastPointerHit = now;
         body.armed = true;
+        body.armedUntil = now + ARMED_DURATION;
         spawnImpactLines(event, rect);
         activateGame();
       }
@@ -1173,10 +1192,14 @@
         body.vx += Math.cos(angle) * impulse;
         body.vy += Math.sin(angle) * impulse;
         body.armed = true;
+        body.armedUntil = now + ARMED_DURATION;
       }
     }
 
     for (const body of bodies) {
+      // Let a flick's armed state lapse so blocks eventually settle instead of
+      // scoring off bumpers (and re-launching) indefinitely.
+      if (body.armed && now >= body.armedUntil) body.armed = false;
       body.vx += (body.homeX - body.x) * HOME_PULL * dt;
       body.vy += (body.homeY - body.y) * HOME_PULL * dt;
       if (effects.gravity) body.vy += effects.gravity * dt;
