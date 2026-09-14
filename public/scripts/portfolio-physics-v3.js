@@ -5,6 +5,8 @@
   const BODY_GAP = 10;
   const NORMAL_SPEED = 0.038;
   const REDUCED_SPEED = 0.012;
+  const MOBILE_START_SPEED = 0.018;
+  const MOBILE_UNARMED_BUMPER_KICK = 0.024;
   const POINTER_IMPULSE = 0.18;
   const POINTER_MIN_IMPULSE = 0.11;
   const HOME_PULL = 0.00000042;
@@ -1024,7 +1026,9 @@
       window.dispatchEvent(new CustomEvent('pv2:bumper-hit', { detail: { id: bumper.id, x: impact.x, y: impact.y } }));
     }
 
-    const kick = poweredHit ? BUMPER_KICK * effects.bumperKickMult : NORMAL_SPEED * 1.8;
+    const kick = poweredHit
+      ? BUMPER_KICK * effects.bumperKickMult
+      : window.innerWidth <= MOBILE_BREAKPOINT ? MOBILE_UNARMED_BUMPER_KICK : NORMAL_SPEED * 1.8;
     if (horizontal) {
       const sign = dx >= 0 ? 1 : -1;
       body.x += Math.max(0, overlapX) * sign;
@@ -1048,7 +1052,9 @@
     const x = clamp(anchor.x - rect.width / 2, EDGE_PADDING, stageRect.width - rect.width - EDGE_PADDING);
     const y = clamp(anchor.y - rect.height / 2, minY, stageRect.height - rect.height - EDGE_PADDING);
     const angle = .55 + index * 1.19;
-    const speed = reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED;
+    const speed = reducedMotion()
+      ? REDUCED_SPEED
+      : window.innerWidth <= MOBILE_BREAKPOINT ? MOBILE_START_SPEED : NORMAL_SPEED;
     el.style.position = 'absolute';
     el.style.right = 'auto';
     el.style.bottom = 'auto';
@@ -1069,29 +1075,24 @@
     };
   }
 
-  function handlePointerMove(event) {
+  function collideWithPointer(event, pointerVx = 0, pointerVy = 0) {
     const now = performance.now();
-    const firstSample = pointer.x <= -9000;
-    const dt = Math.max(8, now - pointer.t || 16);
-    const mouseVx = firstSample ? 0 : (event.clientX - pointer.x) / dt;
-    const mouseVy = firstSample ? 0 : (event.clientY - pointer.y) / dt;
-    pointer = { x: event.clientX, y: event.clientY, t: now };
-    if (firstSample || !stage || document.documentElement.classList.contains('pv2-upgrades-open')) return;
+    if (!stage || document.documentElement.classList.contains('pv2-upgrades-open')) return;
 
     const effects = currentEffects();
     for (const body of bodies) {
       const rect = body.el.getBoundingClientRect();
       const inside = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
       if (inside && !body.pointerInside && now - body.lastPointerHit >= POINTER_COOLDOWN) {
-        let dx = mouseVx;
-        let dy = mouseVy;
+        let dx = pointerVx;
+        let dy = pointerVy;
         let length = Math.hypot(dx, dy);
         if (length < .01) {
           dx = rect.left + rect.width / 2 - event.clientX;
           dy = rect.top + rect.height / 2 - event.clientY;
           length = Math.hypot(dx, dy) || 1;
         }
-        const pointerSpeed = Math.hypot(mouseVx, mouseVy);
+        const pointerSpeed = Math.hypot(pointerVx, pointerVy);
         const impulse = clamp(POINTER_MIN_IMPULSE + pointerSpeed * .24, POINTER_MIN_IMPULSE, POINTER_IMPULSE) * effects.pointerImpulseMult;
         body.vx += (dx / length) * impulse;
         body.vy += (dy / length) * impulse;
@@ -1102,6 +1103,29 @@
       }
       body.pointerInside = inside;
     }
+  }
+
+  function handlePointerDown(event) {
+    if (event.pointerType !== 'touch') return;
+    pointer = { x: event.clientX, y: event.clientY, t: performance.now() };
+    collideWithPointer(event);
+  }
+
+  function handlePointerMove(event) {
+    const now = performance.now();
+    const firstSample = pointer.x <= -9000;
+    const dt = Math.max(8, now - pointer.t || 16);
+    const pointerVx = firstSample ? 0 : (event.clientX - pointer.x) / dt;
+    const pointerVy = firstSample ? 0 : (event.clientY - pointer.y) / dt;
+    pointer = { x: event.clientX, y: event.clientY, t: now };
+    if (firstSample) return;
+    collideWithPointer(event, pointerVx, pointerVy);
+  }
+
+  function handlePointerEnd(event) {
+    if (event.pointerType !== 'touch') return;
+    pointer = { x: -9999, y: -9999, t: 0 };
+    for (const body of bodies) body.pointerInside = false;
   }
 
   function tick(now) {
@@ -1311,7 +1335,10 @@
       const n = Math.max(0, Math.round(Number(event.detail?.n) || 0));
       if (n) { activateGame(); addIdlePoints(n); }
     });
+    window.addEventListener('pointerdown', handlePointerDown, { passive: true });
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('pointerup', handlePointerEnd, { passive: true });
+    window.addEventListener('pointercancel', handlePointerEnd, { passive: true });
     window.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && upgradeOverlay?.classList.contains('is-open')) closeUpgradeTree();
     });
