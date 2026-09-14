@@ -65,33 +65,33 @@
   // mechanic (the RPG Battle) is scaffolded in the tree now and wired later.
   const UPGRADES = [
     // ── Velocity (upward spine) ────────────────────────────────────────────
-    { id: 'vel-1', branch: 'velocity', depth: 1, x: 620, y: 336, title: 'Faster Drift', effect: '+35% drift speed', icon: 'wind', cost: 10, requires: [] },
-    { id: 'vel-accel', branch: 'velocity', depth: 2, x: 498, y: 236, title: 'Acceleration', effect: '+45% speed floor', icon: 'chevrons-up', cost: 24, requires: ['vel-1'] },
-    { id: 'vel-cap', branch: 'velocity', depth: 2, x: 742, y: 236, title: 'Top Speed', effect: '+45% velocity cap', icon: 'gauge', cost: 28, requires: ['vel-1'] },
-    { id: 'vel-launch', branch: 'velocity', depth: 3, x: 476, y: 132, title: 'Quick Launch', effect: '+60% flick impulse', icon: 'rocket', cost: 62, requires: ['vel-accel'] },
-    { id: 'vel-momentum', branch: 'velocity', depth: 3, x: 742, y: 132, title: 'Momentum', effect: '+40% velocity cap', icon: 'trending', cost: 66, requires: ['vel-cap'] },
-    { id: 'vel-overdrive', branch: 'velocity', depth: 4, x: 609, y: 44, title: 'Overdrive', effect: '+70% speed · +40% flick', icon: 'flame', cost: 180, requires: ['vel-launch', 'vel-momentum'] },
+    { id: 'vel-1', branch: 'velocity', depth: 1, x: 620, y: 336, title: 'Faster Drift', effect: '+60% drift speed', icon: 'wind', cost: 10, requires: [] },
+    { id: 'vel-accel', branch: 'velocity', depth: 2, x: 498, y: 236, title: 'Acceleration', effect: '+80% speed floor', icon: 'chevrons-up', cost: 24, requires: ['vel-1'] },
+    { id: 'vel-cap', branch: 'velocity', depth: 2, x: 742, y: 236, title: 'Top Speed', effect: '+80% velocity cap', icon: 'gauge', cost: 28, requires: ['vel-1'] },
+    { id: 'vel-launch', branch: 'velocity', depth: 3, x: 476, y: 132, title: 'Quick Launch', effect: '+110% flick impulse', icon: 'rocket', cost: 62, requires: ['vel-accel'] },
+    { id: 'vel-momentum', branch: 'velocity', depth: 3, x: 742, y: 132, title: 'Momentum', effect: '+75% velocity cap', icon: 'trending', cost: 66, requires: ['vel-cap'] },
+    { id: 'vel-overdrive', branch: 'velocity', depth: 4, x: 609, y: 44, title: 'Overdrive', effect: '+120% speed · +80% flick', icon: 'flame', cost: 180, requires: ['vel-launch', 'vel-momentum'] },
 
     // ── Bounce (rightward spine) ───────────────────────────────────────────
     { id: 'bounce-1', branch: 'bounce', depth: 1, x: 748, y: 450, title: 'Better Bounces', effect: '+1 / bumper', icon: 'bounce', cost: 8, requires: [] },
-    { id: 'bounce-force', branch: 'bounce', depth: 2, x: 884, y: 360, title: 'Bumper Force', effect: '+35% rebound', icon: 'burst', cost: 20, requires: ['bounce-1'] },
+    { id: 'bounce-force', branch: 'bounce', depth: 2, x: 884, y: 360, title: 'Bumper Force', effect: '+70% rebound', icon: 'burst', cost: 20, requires: ['bounce-1'] },
     { id: 'bounce-value', branch: 'bounce', depth: 2, x: 884, y: 540, title: 'Bounce Value', effect: '+1 / bumper', icon: 'coin', cost: 24, requires: ['bounce-1'] },
-    { id: 'bounce-charge', branch: 'bounce', depth: 3, x: 1052, y: 360, title: 'Kinetic Charge', effect: '+45% rebound', icon: 'bolt', cost: 58, requires: ['bounce-force'] },
+    { id: 'bounce-charge', branch: 'bounce', depth: 3, x: 1052, y: 360, title: 'Kinetic Charge', effect: '+85% rebound', icon: 'bolt', cost: 58, requires: ['bounce-force'] },
     { id: 'bounce-combo', branch: 'bounce', depth: 3, x: 1052, y: 540, title: 'Combo Bounce', effect: '+2 / bumper', icon: 'layers', cost: 60, requires: ['bounce-value'] },
     { id: 'bounce-chain', branch: 'bounce', depth: 4, x: 1150, y: 450, title: 'Combo Chain', effect: 'Hits stack up to ×3', icon: 'link', cost: 190, requires: ['bounce-charge', 'bounce-combo'] },
 
     // ── Walls (leftward spine) ─────────────────────────────────────────────
     { id: 'walls-1', branch: 'walls', depth: 1, x: 492, y: 450, title: 'Wall Points', effect: '+1 / wall', icon: 'brick', cost: 30, requires: [] },
-    { id: 'walls-hard', branch: 'walls', depth: 2, x: 356, y: 360, title: 'Hard Walls', effect: '+35% wall kick', icon: 'shield', cost: 30, requires: ['walls-1'] },
+    { id: 'walls-hard', branch: 'walls', depth: 2, x: 356, y: 360, title: 'Hard Walls', effect: '+70% wall kick', icon: 'shield', cost: 30, requires: ['walls-1'] },
     { id: 'walls-value', branch: 'walls', depth: 2, x: 356, y: 540, title: 'Wall Value', effect: '+1 / wall', icon: 'coin', cost: 32, requires: ['walls-1'] },
-    { id: 'walls-ricochet', branch: 'walls', depth: 3, x: 188, y: 360, title: 'Ricochet', effect: '+45% wall kick', icon: 'zigzag', cost: 70, requires: ['walls-hard'] },
+    { id: 'walls-ricochet', branch: 'walls', depth: 3, x: 188, y: 360, title: 'Ricochet', effect: '+85% wall kick', icon: 'zigzag', cost: 70, requires: ['walls-hard'] },
     { id: 'walls-echo', branch: 'walls', depth: 3, x: 188, y: 540, title: 'Echo Walls', effect: '+2 / wall', icon: 'echo', cost: 74, requires: ['walls-value'] },
 
     // ── Friction (downward spine) ──────────────────────────────────────────
-    { id: 'fric-1', branch: 'friction', depth: 1, x: 620, y: 564, title: 'Less Friction', effect: '−22% drag', icon: 'droplet', cost: 12, requires: [] },
-    { id: 'fric-glide', branch: 'friction', depth: 2, x: 498, y: 664, title: 'Glide', effect: '−30% drag', icon: 'feather', cost: 26, requires: ['fric-1'] },
-    { id: 'fric-keep', branch: 'friction', depth: 2, x: 742, y: 664, title: 'Collision Keep', effect: '+16% collision energy', icon: 'refresh', cost: 30, requires: ['fric-1'] },
-    { id: 'fric-low', branch: 'friction', depth: 3, x: 476, y: 768, title: 'Low Drag', effect: '−45% drag', icon: 'snow', cost: 68, requires: ['fric-glide'] },
+    { id: 'fric-1', branch: 'friction', depth: 1, x: 620, y: 564, title: 'Less Friction', effect: '−40% drag', icon: 'droplet', cost: 12, requires: [] },
+    { id: 'fric-glide', branch: 'friction', depth: 2, x: 498, y: 664, title: 'Glide', effect: '−55% drag', icon: 'feather', cost: 26, requires: ['fric-1'] },
+    { id: 'fric-keep', branch: 'friction', depth: 2, x: 742, y: 664, title: 'Collision Keep', effect: '+28% collision energy', icon: 'refresh', cost: 30, requires: ['fric-1'] },
+    { id: 'fric-low', branch: 'friction', depth: 3, x: 476, y: 768, title: 'Low Drag', effect: '−65% drag', icon: 'snow', cost: 68, requires: ['fric-glide'] },
     { id: 'fric-perpetual', branch: 'friction', depth: 3, x: 742, y: 768, title: 'Perpetual Motion', effect: 'Near-zero drag', icon: 'infinity', cost: 150, requires: ['fric-keep'] },
 
     // ── Flux (genre-bending cross-branch tech) ─────────────────────────────
@@ -236,36 +236,36 @@
     let frictionBurnMult = 1;
 
     // Velocity branch
-    if (hasUpgrade('vel-1')) speedMult *= 1.35;
-    if (hasUpgrade('vel-accel')) speedFloorMult *= 1.45;
-    if (hasUpgrade('vel-cap')) maxSpeedMult *= 1.45;
-    if (hasUpgrade('vel-launch')) pointerImpulseMult *= 1.6;
-    if (hasUpgrade('vel-momentum')) maxSpeedMult *= 1.4;
-    if (hasUpgrade('vel-overdrive')) { speedMult *= 1.7; pointerImpulseMult *= 1.4; }
+    if (hasUpgrade('vel-1')) speedMult *= 1.6;
+    if (hasUpgrade('vel-accel')) speedFloorMult *= 1.8;
+    if (hasUpgrade('vel-cap')) maxSpeedMult *= 1.8;
+    if (hasUpgrade('vel-launch')) pointerImpulseMult *= 2.1;
+    if (hasUpgrade('vel-momentum')) maxSpeedMult *= 1.75;
+    if (hasUpgrade('vel-overdrive')) { speedMult *= 2.2; pointerImpulseMult *= 1.8; }
 
     // Bounce branch
     if (hasUpgrade('bounce-1')) bumperValue += 1;
-    if (hasUpgrade('bounce-force')) bumperKickMult *= 1.35;
+    if (hasUpgrade('bounce-force')) bumperKickMult *= 1.7;
     if (hasUpgrade('bounce-value')) bumperValue += 1;
-    if (hasUpgrade('bounce-charge')) bumperKickMult *= 1.45;
+    if (hasUpgrade('bounce-charge')) bumperKickMult *= 1.85;
     if (hasUpgrade('bounce-combo')) bumperValue += 2;
     if (hasUpgrade('bounce-chain')) { comboEnabled = true; comboStep = 0.25; comboMax = 3; }
 
     // Walls branch
     if (hasUpgrade('walls-1')) wallValue += 1;
-    if (hasUpgrade('walls-hard')) wallKickMult *= 1.35;
+    if (hasUpgrade('walls-hard')) wallKickMult *= 1.7;
     if (hasUpgrade('walls-value')) wallValue += 1;
-    if (hasUpgrade('walls-ricochet')) wallKickMult *= 1.45;
+    if (hasUpgrade('walls-ricochet')) wallKickMult *= 1.85;
     if (hasUpgrade('walls-echo')) wallValue += 2;
 
     // Friction branch (ordered weakest→strongest so the deepest drag wins).
     // Less drag = blocks stay fast longer = they heat faster (emergent), and
     // these nodes also scale the friction-burn payout so the branch has teeth.
-    if (hasUpgrade('fric-1')) damping = 0.99958;
-    if (hasUpgrade('fric-glide')) { damping = 0.99978; frictionBurnMult *= 1.4; }
-    if (hasUpgrade('fric-keep')) { collisionBoost = 1.16; frictionBurnMult *= 1.5; }
-    if (hasUpgrade('fric-low')) { damping = 0.9999; speedFloorMult *= 1.22; frictionBurnMult *= 1.8; }
-    if (hasUpgrade('fric-perpetual')) { damping = 0.99997; speedFloorMult *= 1.35; frictionBurnMult *= 2; }
+    if (hasUpgrade('fric-1')) damping = 0.9997;
+    if (hasUpgrade('fric-glide')) { damping = 0.99986; frictionBurnMult *= 1.4; }
+    if (hasUpgrade('fric-keep')) { collisionBoost = 1.28; frictionBurnMult *= 1.5; }
+    if (hasUpgrade('fric-low')) { damping = 0.99994; speedFloorMult *= 1.4; frictionBurnMult *= 1.8; }
+    if (hasUpgrade('fric-perpetual')) { damping = 0.999985; speedFloorMult *= 1.6; frictionBurnMult *= 2; }
 
     // Flux branch (genre-bending)
     if (hasUpgrade('flux-mult')) pointMult *= 2;
