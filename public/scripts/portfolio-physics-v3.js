@@ -602,7 +602,7 @@
 
   // Central scoring path: applies point multiplier, combo chain, and crit, then
   // updates the counter and spawns a floating ghost showing what was earned.
-  function award(base, sourceId, impact) {
+  function award(base, sourceId, impact, velocity) {
     const fx = currentEffects();
     let mult = fx.pointMult;
     let comboMult = 1;
@@ -620,7 +620,7 @@
     }
     const gained = Math.max(1, Math.round(base * mult));
     updateScore(gained, sourceId, impact);
-    spawnPointGhost(impact, gained, { crit, comboMult });
+    spawnPointGhost(impact, gained, { crit, comboMult }, velocity);
   }
 
   function addIdlePoints(n) {
@@ -696,7 +696,50 @@
     }
   }
 
-  function spawnPointGhost(impact, amount = 1, opts = {}) {
+  // Fraction of a 180° half-turn the number tumbles through before it stops
+  // and pops. 0.75 * 180° = 135°.
+  const GHOST_MIN_LAUNCH = 0.45;
+  const GHOST_POP_SPEED = 0.06;
+  // Per-millisecond friction applied to the launch velocity.
+  const GHOST_FRICTION = 0.9925;
+  // Safety cap on the drift/tumble phase (ms) in case angular speed is tiny.
+  const GHOST_DRIFT_MAX_MS = 1500;
+
+  // A short burst of straight lines radiating from a point, tinted in the
+  // ghost's own color (plus a few white sparks). Used for the "pop".
+  function spawnRadiatingLines(cx, cy, color) {
+    const layer = ensureFxLayer();
+    const burst = document.createElement('div');
+    Object.assign(burst.style, {
+      position: 'fixed', left: `${cx}px`, top: `${cy}px`, width: '0', height: '0',
+      zIndex: '1', pointerEvents: 'none',
+    });
+    const count = 9;
+    for (let i = 0; i < count; i++) {
+      const angle = (360 / count) * i + (Math.random() * 12 - 6);
+      const len = 15 + Math.random() * 11;
+      const line = document.createElement('span');
+      const lineColor = i % 3 === 0 ? 'rgba(255,255,255,.92)' : color;
+      Object.assign(line.style, {
+        position: 'absolute', left: '0', top: '0', width: '3px', height: `${len}px`,
+        borderRadius: '3px', background: lineColor, transformOrigin: '50% 0%',
+        boxShadow: `0 0 6px ${color}`, opacity: '0',
+        transform: `rotate(${angle}deg) translateY(6px) scaleY(.2)`,
+      });
+      burst.appendChild(line);
+      try {
+        line.animate([
+          { transform: `rotate(${angle}deg) translateY(6px) scaleY(.2)`, opacity: 0 },
+          { transform: `rotate(${angle}deg) translateY(11px) scaleY(1)`, opacity: 1, offset: .32 },
+          { transform: `rotate(${angle}deg) translateY(32px) scaleY(.55)`, opacity: 0 },
+        ], { duration: 540, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards' });
+      } catch {}
+    }
+    layer.appendChild(burst);
+    window.setTimeout(() => burst.remove(), 640);
+  }
+
+  function spawnPointGhost(impact, amount = 1, opts = {}, velocity = null) {
     if (!impact) return;
     const layer = ensureFxLayer();
     const ghost = document.createElement('span');
@@ -711,23 +754,97 @@
       fontFamily: 'system-ui, sans-serif', fontSize: crit ? 'clamp(2.9rem, 4.2vw, 4.4rem)' : 'clamp(2.4rem, 3.4vw, 3.6rem)', fontWeight: '950',
       lineHeight: '.9', letterSpacing: '-.07em', whiteSpace: 'nowrap', pointerEvents: 'none',
       WebkitTextStroke: '1px rgba(255,255,255,.78)', textShadow: `0 2px 0 rgba(255,255,255,.95), 0 5px 18px ${color}66`,
-      transformOrigin: '50% 100%', opacity: '0',
+      transformOrigin: '50% 50%', opacity: '0', willChange: 'transform, opacity',
     });
     layer.appendChild(ghost);
-    try {
-      const animation = ghost.animate([
-        { opacity: 0, transform: 'translate(-50%, 2px) scale(.3)' },
-        { opacity: 1, offset: .06, transform: 'translate(-50%, -30px) scale(1.42)' },
-        { opacity: 1, offset: .15, transform: 'translate(-50%, -38px) scale(1)' },
-        { opacity: 1, offset: .68, transform: 'translate(-50%, -42px) scale(1)' },
-        { opacity: 1, offset: .82, transform: 'translate(-50%, -50px) scale(1.03)' },
-        { opacity: 0, transform: 'translate(-50%, -126px) scale(.94)' },
-      ], { duration: reducedMotion() ? 1600 : 2400, easing: 'linear', fill: 'forwards' });
-      animation.addEventListener('finish', () => ghost.remove(), { once: true });
-    } catch {
-      ghost.style.opacity = '1';
-      ghost.style.transform = 'translate(-50%, -40px)';
-      window.setTimeout(() => ghost.remove(), 2400);
+
+    // --- Energy proportional to how fast the game block was travelling. ---
+    const motionReduced = reducedMotion();
+    const motionScale = motionReduced ? 0.5 : 1;
+    const vx0 = velocity && Number.isFinite(velocity.vx) ? velocity.vx : 0;
+    const vy0 = velocity && Number.isFinite(velocity.vy) ? velocity.vy : 0;
+    const blockSpeed = Math.hypot(vx0, vy0);
+    // 0..1, with a small floor so a nearly-still block still animates.
+    const energy = clamp(blockSpeed / (MAX_SPEED * 0.62), 0.16, 1);
+
+    // Direction the block was heading (default: gentle upward if it was still).
+    let dirX = 0, dirY = -1;
+    if (blockSpeed > 1e-4) { dirX = vx0 / blockSpeed; dirY = vy0 / blockSpeed; }
+
+    // Launch velocity (px/ms) in the block's travel direction.
+    const launch = Math.max(GHOST_MIN_LAUNCH, (0.05 + energy * 0.45) * motionScale);
+    let velX = dirX * launch;
+    let velY = dirY * launch;
+
+    let offX = 0, offY = 0, scale = 0.35, opacity = 0;
+    let last = null, elapsed = 0;
+
+    const paint = () => {
+      ghost.style.opacity = String(opacity);
+      ghost.style.transform =
+        `translate(calc(-50% + ${offX}px), calc(-50% + ${offY}px)) scale(${scale})`;
+    };
+    paint();
+
+    // Phase 2/3: the number stops, pops up with a burst of lines, holds for a
+    // beat, then vanishes upwards.
+    const popAndVanish = () => {
+      const rect = ghost.getBoundingClientRect();
+      spawnRadiatingLines(rect.left + rect.width / 2, rect.top + rect.height / 2, color);
+      const tx = `calc(-50% + ${offX}px)`;
+      try {
+        const pop = ghost.animate([
+          { transform: `translate(${tx}, calc(-50% + ${offY}px)) scale(1)`, opacity: 1 },
+          { transform: `translate(${tx}, calc(-50% + ${offY - 18}px)) scale(1.34)`, opacity: 1, offset: .3 },
+          { transform: `translate(${tx}, calc(-50% + ${offY - 9}px)) scale(1)`, opacity: 1, offset: .55 },
+          { transform: `translate(${tx}, calc(-50% + ${offY - 9}px)) scale(1)`, opacity: 1, offset: .74 },
+          { transform: `translate(${tx}, calc(-50% + ${offY - 82}px)) scale(.9)`, opacity: 0 },
+        ], { duration: motionReduced ? 700 : 900, easing: 'cubic-bezier(.22,.9,.28,1)', fill: 'forwards' });
+        pop.addEventListener('finish', () => ghost.remove(), { once: true });
+      } catch {
+        ghost.remove();
+      }
+    };
+
+    // Phase 1: fling out with friction while tumbling, until the number has
+    // swept 75% of a half-turn (135°).
+    const step = (now) => {
+      if (last == null) last = now;
+      let dt = now - last;
+      last = now;
+      if (dt > 48) dt = 48; // clamp large gaps (e.g. tab switch)
+      elapsed += dt;
+
+      // Spawn-in ramp, then settle scale toward 1.
+      if (elapsed < 130) {
+        const t = elapsed / 130;
+        opacity = Math.min(1, t * 1.3);
+        scale = 0.35 + (1.12 - 0.35) * t;
+      } else {
+        opacity = 1;
+        scale += (1 - scale) * Math.min(1, dt / 90);
+      }
+
+      // Friction slows the translation until the pop can take over.
+      const damp = Math.pow(GHOST_FRICTION, dt);
+      velX *= damp; velY *= damp;
+      offX += velX * dt;
+      offY += velY * dt;
+
+      const nearingStop = elapsed > 100 && Math.hypot(velX, velY) <= GHOST_POP_SPEED;
+      if (nearingStop || elapsed >= GHOST_DRIFT_MAX_MS) {
+        paint();
+        popAndVanish();
+        return;
+      }
+      paint();
+      requestAnimationFrame(step);
+    };
+
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(step);
+    } else {
+      popAndVanish();
     }
   }
 
@@ -767,7 +884,7 @@
     if (now - body.lastWallScore < WALL_SCORE_COOLDOWN) return;
     body.lastWallScore = now;
     const impact = wallImpact(body, side, stageRect);
-    award(effects.wallValue, `wall-${side}`, impact);
+    award(effects.wallValue, `wall-${side}`, impact, { vx: body.vx, vy: body.vy });
   }
 
   function constrain(body, stageRect, allowScore = true) {
@@ -898,7 +1015,9 @@
     if (poweredHit) {
       body.bumperHits.set(bumper.id, now);
       const impact = impactPoint(body, bumper, horizontal);
-      award(effects.bumperValue, bumper.id, impact);
+      // Velocity is read before the bumper kick below flips it, so this is the
+      // block's incoming travel direction — the way it was heading on impact.
+      award(effects.bumperValue, bumper.id, impact, { vx: body.vx, vy: body.vy });
       pulseBumper(bumper.el);
       // Battle mode (portfolio-battle.js) listens for these to detect a
       // Critical Combo (5 bumper hits within 1s) and trigger a battle.
