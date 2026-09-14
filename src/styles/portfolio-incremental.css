@@ -193,21 +193,29 @@
   position: relative;
   min-height: 0;
   overflow: hidden;
-  display: grid;
-  place-items: center;
   overscroll-behavior: contain;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
   background:
     radial-gradient(circle at 50% 50%, rgba(91,116,238,.055), transparent 26%),
     linear-gradient(#f7f6f2, #f7f6f2);
 }
 
+.pv2-upgrade-scroll.is-grabbing {
+  cursor: grabbing;
+}
+
+/* Pan/zoom is driven by JS: the tree is transformed from its top-left. */
 .pv2-upgrade-tree {
-  position: relative;
+  position: absolute;
+  left: 0;
+  top: 0;
   width: var(--tree-width);
   height: var(--tree-height);
-  flex: 0 0 auto;
-  transform: scale(.82);
-  transform-origin: center;
+  transform-origin: 0 0;
+  will-change: transform;
 }
 
 .pv2-upgrade-lines {
@@ -479,12 +487,6 @@
   display: none;
 }
 
-@media (max-width: 1000px) {
-  .pv2-upgrade-tree {
-    transform: scale(.66);
-  }
-}
-
 @media (max-width: 900px) {
   .pv2-upgrade-panel__header {
     grid-template-columns: 1fr auto auto;
@@ -518,18 +520,6 @@
   .pv2-upgrade-panel__header {
     padding: calc(env(safe-area-inset-top, 0px) + 12px) 14px 12px;
     gap: 10px;
-  }
-
-  .pv2-upgrade-scroll {
-    overflow: auto;
-    place-items: start;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x pan-y;
-  }
-
-  .pv2-upgrade-tree {
-    transform: none;
-    margin: 24px;
   }
 
   .pv2-upgrade-panel__eyebrow {
