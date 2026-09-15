@@ -30,15 +30,20 @@
   // out a "friction burn" before the block cools back into the ambient float.
   // Idle drift stays below HEAT_THRESHOLD, so only launched blocks ever settle.
   const HEAT_THRESHOLD = 0.06;      // floor for the heat-build speed cutoff (px/ms)
-  const HEAT_MARGIN = 1.8;          // …but never below this ×the live drift floor,
-                                    // so idle drift never heats however upgraded
-  const FRICTION_GAIN = 0.0016;     // heat gained per (speed − threshold) per ms
+  const HEAT_MARGIN = 0.05;         // …and always this much (px/ms) ABOVE the live
+                                    // drift floor. Additive, not a multiplier, so the
+                                    // "hot" window stays a constant width no matter how
+                                    // high speed upgrades push the floor — idle drift
+                                    // still sits just under it, but launches/bumper
+                                    // kicks clear it and heat again (a ×margin scaled
+                                    // with the floor and swallowed every launch speed).
+  const FRICTION_GAIN = 0.0024;     // heat gained per (speed − threshold) per ms
   const FRICTION_RELIEF = 0.00045;  // heat shed per ms while below threshold
   const FRICTION_DAMP_BASE = 0.988; // extra per-ms damping, exponent-scaled by heat
   const FRICTION_REARM = 0.35;      // heat must fall below this before it can burn again
   const FRICTION_BURN_BASE = 6;     // base points for a full-meter burn (× upgrades)
   const FLICK_COOL = 0.6;           // heat a player flick sheds (wakes a settled block)
-  const HEAT_MIN_VISIBLE = 0.04;    // below this the heat halo stays hidden
+  const HEAT_MIN_VISIBLE = 0.02;    // below this the heat halo stays hidden
   const HEAT_TIERS = 5;             // box-shadow color steps (rewritten only on change)
   const TREE_WIDTH = 1240;
   const TREE_HEIGHT = 900;
@@ -47,6 +52,12 @@
   const COMBO_WINDOW = 2200;
   const AUTO_FLICK_INTERVAL = 2600;
   const GRAVITY_ACCEL = 0.00007;
+  // --- Bushido (double-click slice-time ability) ---------------------------
+  const BUSHIDO_DURATION = 3000;   // slicing window (ms) — matches the red bar
+  const BUSHIDO_COOLDOWN = 45000;  // ms before Bushido can be triggered again
+  const BUSHIDO_MAX_CUTS = 6;      // per box, so piece counts stay bounded
+  const BUSHIDO_SHATTER_MAX = 3000;// hard cap on the fling phase before settle
+  const BUSHIDO_SETTLE_SPEED = 0.02; // px/ms — below this (all pieces) = settled
   // Mobile has a tiny stage, so blocks otherwise ping-pong forever. Extra drag
   // (damping raised to this power) and a lower drift floor let them settle.
   const MOBILE_DRAG_EXP = 2.6;
@@ -55,8 +66,9 @@
   const TREE_ZOOM_MAX = 1.9;
   const TREE_DEFAULT_ZOOM = 1.18;
 
-  // Genre labels flavor the incremental tree; `soon` marks nodes whose deeper
-  // mechanic (the RPG Battle) is scaffolded in the tree now and wired later.
+  // Genre labels flavor the incremental tree. The `soon` flag (none set now)
+  // still greys a node out and blocks its purchase, kept for any future
+  // scaffold-ahead node; every listed node currently affects the block game.
   const UPGRADES = [
     // ── Velocity (upward spine) ────────────────────────────────────────────
     { id: 'vel-1', branch: 'velocity', depth: 1, x: 620, y: 336, title: 'Faster Drift', effect: '+60% drift speed', icon: 'wind', cost: 10, requires: [] },
@@ -89,8 +101,9 @@
     { id: 'fric-perpetual', branch: 'friction', depth: 3, x: 742, y: 768, title: 'Perpetual Motion', effect: 'Near-zero drag', icon: 'infinity', cost: 150, requires: ['fric-keep'] },
 
     // ── Flux (genre-bending cross-branch tech) ─────────────────────────────
-    { id: 'flux-crit', branch: 'flux', depth: 3, x: 300, y: 168, title: 'Critical Hit', effect: 'RPG · 15% ×5', icon: 'target', cost: 150, requires: ['vel-accel', 'walls-hard'] },
-    { id: 'flux-battle', branch: 'flux', depth: 4, x: 150, y: 58, title: 'Critical Combo', effect: 'RPG · combo → Battle', icon: 'swords', cost: 320, requires: ['flux-crit'], soon: true },
+    { id: 'flux-crit', branch: 'flux', depth: 3, x: 300, y: 168, title: 'Critical Hit', effect: '15% crit · ×5 points', icon: 'target', cost: 150, requires: ['vel-accel', 'walls-hard'] },
+    { id: 'flux-battle', branch: 'flux', depth: 4, x: 150, y: 58, title: 'Critical Combo', effect: '30% crit · chains ×4', icon: 'swords', cost: 320, requires: ['flux-crit'] },
+    { id: 'flux-bushido', branch: 'flux', depth: 4, x: 120, y: 300, title: 'Bushido', effect: 'Dbl-click → slice time', icon: 'katana', cost: 280, requires: ['flux-crit'] },
     { id: 'flux-mult', branch: 'flux', depth: 3, x: 940, y: 168, title: 'Compound Interest', effect: 'Idle · ×2 points', icon: 'multiply', cost: 120, requires: ['vel-cap', 'bounce-force'] },
     { id: 'flux-idle', branch: 'flux', depth: 3, x: 940, y: 732, title: 'Idle Engine', effect: 'Idle · +2 / sec', icon: 'clock', cost: 110, requires: ['bounce-value', 'fric-keep'] },
     { id: 'flux-auto', branch: 'flux', depth: 4, x: 1064, y: 828, title: 'Autopilot', effect: 'Auto · flicks a block', icon: 'cpu', cost: 220, requires: ['flux-idle'] },
@@ -124,6 +137,7 @@
     multiply: '<path d="M6 6l12 12M18 6L6 18"/>',
     target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
     swords: '<path d="M4 4l8 8M4 4l1 4 4 1M14 12l6 6-1 1-6-6M20 4l-8 8M20 4l-1 4-4 1M10 12l-6 6 1 1 6-6"/>',
+    katana: '<path d="M20 3l-1.5 1.5M18.5 4.5L7 16M7 16l-3 4 4-3M7 16l1.4 1.4M5.6 17.4L4 20"/><path d="M8.4 17.4l1.6-1.6"/>',
     clock: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',
     cpu: '<rect x="7" y="7" width="10" height="10" rx="2"/><path d="M10 7V4M14 7V4M10 20v-3M14 20v-3M7 10H4M7 14H4M20 10h-3M20 14h-3"/>',
     gravity: '<path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/>',
@@ -154,9 +168,15 @@
   let pointer = { x: -9999, y: -9999, t: 0 };
   let comboCount = 0;
   let comboExpire = 0;
+  let critComboCount = 0;
+  let critComboExpire = 0;
   let idleBank = 0;
   let autoFlickTimer = 0;
   let battlePaused = false;
+  let bushido = null;        // active Bushido session state (null when idle)
+  let bushidoCooldownUntil = 0;   // performance.now() timestamp cooldown ends
+  let bushidoBadge = null;        // persistent cooldown badge element
+  let bushidoRing = null;         // the badge's progress ring <circle>
   let treeZoom = TREE_DEFAULT_ZOOM;
   let treePanX = 0;
   let treePanY = 0;
@@ -221,6 +241,9 @@
     let pointMult = 1;
     let critChance = 0;
     let critMult = 1;
+    let critCombo = false;
+    let critComboStep = 0;
+    let critComboMax = 1;
     let comboEnabled = false;
     let comboStep = 0;
     let comboMax = 1;
@@ -261,9 +284,12 @@
     if (hasUpgrade('fric-low')) { damping = 0.99994; speedFloorMult *= 1.4; frictionBurnMult *= 1.8; }
     if (hasUpgrade('fric-perpetual')) { damping = 0.999985; speedFloorMult *= 1.6; frictionBurnMult *= 2; }
 
-    // Flux branch (genre-bending)
+    // Flux branch (genre-bending). The "RPG" crit nodes apply to the block game
+    // itself: any scored hit (bumper, wall, friction burn) can crit, and Critical
+    // Combo makes back-to-back crits escalate.
     if (hasUpgrade('flux-mult')) pointMult *= 2;
     if (hasUpgrade('flux-crit')) { critChance = 0.15; critMult = 5; }
+    if (hasUpgrade('flux-battle')) { critChance = 0.3; critMult = Math.max(critMult, 5); critCombo = true; critComboStep = 0.6; critComboMax = 4; }
     if (hasUpgrade('flux-idle')) idlePerSec += 2;
     if (hasUpgrade('flux-auto')) autoFlick = true;
     if (hasUpgrade('flux-gravity')) gravity = GRAVITY_ACCEL;
@@ -282,6 +308,9 @@
       pointMult,
       critChance,
       critMult,
+      critCombo,
+      critComboStep,
+      critComboMax,
       comboEnabled,
       comboStep,
       comboMax,
@@ -346,6 +375,7 @@
     gameActive = true;
     document.documentElement.classList.add('pv2-game-active');
     setScoreVisible(Boolean(stage?.isConnected));
+    refreshBushidoBadge();
     window.dispatchEvent(new CustomEvent('pv2:game-start', { detail: { points } }));
   }
 
@@ -614,6 +644,7 @@
     scoreValue.textContent = String(points);
     refreshUpgradeCue();
     refreshUpgradeTree();
+    refreshBushidoBadge();
     const node = upgradeTree?.querySelector(`[data-upgrade-id="${id}"]`);
     try {
       node?.animate([
@@ -648,10 +679,10 @@
   // updates the counter and spawns a floating ghost showing what was earned.
   function award(base, sourceId, impact, velocity) {
     const fx = currentEffects();
+    const now = performance.now();
     let mult = fx.pointMult;
     let comboMult = 1;
     if (fx.comboEnabled) {
-      const now = performance.now();
       comboCount = now <= comboExpire ? comboCount + 1 : 1;
       comboExpire = now + COMBO_WINDOW;
       comboMult = Math.min(fx.comboMax, 1 + fx.comboStep * (comboCount - 1));
@@ -661,6 +692,12 @@
     if (fx.critChance > 0 && Math.random() < fx.critChance) {
       crit = true;
       mult *= fx.critMult;
+      // Critical Combo: back-to-back crits within the combo window escalate.
+      if (fx.critCombo) {
+        critComboCount = now <= critComboExpire ? critComboCount + 1 : 1;
+        critComboExpire = now + COMBO_WINDOW;
+        mult *= Math.min(fx.critComboMax, 1 + fx.critComboStep * (critComboCount - 1));
+      }
     }
     const gained = Math.max(1, Math.round(base * mult));
     updateScore(gained, sourceId, impact);
@@ -714,7 +751,9 @@
       halo.style.boxShadow = heatShadow((tier + 0.5) / HEAT_TIERS);
       body.heatTier = tier;
     }
-    const op = Math.round(f * 40) / 40; // quantize to ~0.025 to skip redundant writes
+    // Front-load the opacity ramp (√f) so even light heat reads clearly instead
+    // of fading in from near-invisible; quantize to skip redundant writes.
+    const op = Math.round(Math.min(1, Math.sqrt(f)) * 40) / 40;
     if (op !== body.heatOpacity) { halo.style.opacity = String(op); body.heatOpacity = op; }
   }
 
@@ -1133,11 +1172,12 @@
     const horizontal = overlapX < overlapY;
     const now = performance.now();
     const isArmed = body.armed && now < body.armedUntil;
-    // A bounce and a point are one and the same: a bumper only reacts to a
-    // genuine armed strike during play. `entering` already dedupes a multi-frame
-    // overlap, so a block that leaves and returns is a fresh strike — a tight
-    // wall<->bumper loop therefore scores (and re-launches) every lap, which is
-    // exactly the perpetual loop the speed / bounce upgrades are meant to enable.
+    // Blocks always physically hit a bumper — they never slide on top of it.
+    // A *scored* strike (an armed block on a fresh contact) also pays points and
+    // launches at full power; `entering` dedupes a multi-frame overlap, so a
+    // block that leaves and returns is a fresh strike and a tight wall<->bumper
+    // loop scores every lap. Any other contact (unarmed / idle drift) still
+    // bounces, just gently and without points.
     const poweredHit = entering && isArmed && gameActive;
 
     if (poweredHit) {
@@ -1149,16 +1189,12 @@
       // Battle mode (portfolio-battle.js) listens for these to detect a
       // Critical Combo (5 bumper hits within 1s) and trigger a battle.
       window.dispatchEvent(new CustomEvent('pv2:bumper-hit', { detail: { id: bumper.id, x: impact.x, y: impact.y } }));
-    } else if (gameActive) {
-      // Mid-game a contact that doesn't score doesn't bounce either: the block
-      // phases through so it can never be knocked back without a point. (Idle,
-      // below, keeps bumpers solid so the resting layout stays tidy.)
-      return true;
     }
 
     const softFloor = window.innerWidth <= MOBILE_BREAKPOINT ? MOBILE_UNARMED_BUMPER_KICK : NORMAL_SPEED * 1.8;
-    // A scored strike = a fixed launch. The soft path only runs while idle, so
-    // drifting blocks reflect gently off the text instead of stopping dead.
+    // A scored strike = a fixed launch. Otherwise reflect a fraction of the
+    // incoming speed (never below the gentle floor) so the block bounces off the
+    // bumper and eases away instead of gliding over it or stopping dead.
     if (horizontal) {
       const sign = dx >= 0 ? 1 : -1;
       body.x += Math.max(0, overlapX) * sign;
@@ -1270,12 +1306,14 @@
   }
 
   function handlePointerDown(event) {
+    if (bushido) return;
     if (event.pointerType !== 'touch') return;
     pointer = { x: event.clientX, y: event.clientY, t: performance.now() };
     collideWithPointer(event);
   }
 
   function handlePointerMove(event) {
+    if (bushido) return; // Bushido tracks the pointer itself for slicing
     const now = performance.now();
     const firstSample = pointer.x <= -9000;
     const dt = Math.max(8, now - pointer.t || 16);
@@ -1292,6 +1330,340 @@
     for (const body of bodies) body.pointerInside = false;
   }
 
+  // ===================== Bushido: double-click slice time ==================
+  // Slice-time ability. Double-clicking the work-area whitespace freezes the
+  // games as white boxes; the player's mouse strokes across a box record cut
+  // lines; when the timer ends the boxes become the real game blocks sliced
+  // along those cuts, and the shards explode around the stage before the games
+  // fade back in. Piece motion is a light particle sim (bounding-circle
+  // collisions + visual spin), not a full rigid-body solver.
+
+  // Signed area (shoelace) of a polygon given as [{x,y},…] — box-local px.
+  function polyArea(pts) {
+    let a = 0;
+    for (let i = 0; i < pts.length; i += 1) {
+      const p = pts[i], q = pts[(i + 1) % pts.length];
+      a += p.x * q.y - q.x * p.y;
+    }
+    return Math.abs(a) / 2;
+  }
+
+  function polyCentroid(pts) {
+    let a = 0, cx = 0, cy = 0;
+    for (let i = 0; i < pts.length; i += 1) {
+      const p = pts[i], q = pts[(i + 1) % pts.length];
+      const cross = p.x * q.y - q.x * p.y;
+      a += cross; cx += (p.x + q.x) * cross; cy += (p.y + q.y) * cross;
+    }
+    if (Math.abs(a) < 1e-6) {
+      const n = pts.length || 1;
+      return { x: pts.reduce((s, p) => s + p.x, 0) / n, y: pts.reduce((s, p) => s + p.y, 0) / n };
+    }
+    a *= 0.5;
+    return { x: cx / (6 * a), y: cy / (6 * a) };
+  }
+
+  // Split a convex polygon by the infinite line through a→b into ≤2 polygons.
+  function splitPolygon(poly, a, b) {
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const side = (p) => (p.x - a.x) * dy - (p.y - a.y) * dx;
+    const left = [], right = [];
+    for (let i = 0; i < poly.length; i += 1) {
+      const cur = poly[i], nxt = poly[(i + 1) % poly.length];
+      const sc = side(cur), sn = side(nxt);
+      if (sc >= 0) left.push(cur);
+      if (sc <= 0) right.push(cur);
+      if ((sc > 0 && sn < 0) || (sc < 0 && sn > 0)) {
+        const t = sc / (sc - sn);
+        const ip = { x: cur.x + t * (nxt.x - cur.x), y: cur.y + t * (nxt.y - cur.y) };
+        left.push(ip); right.push(ip);
+      }
+    }
+    const out = [];
+    if (left.length >= 3 && polyArea(left) > 4) out.push(left);
+    if (right.length >= 3 && polyArea(right) > 4) out.push(right);
+    return out.length ? out : [poly];
+  }
+
+  // The persistent cooldown badge: a small ring with the katana icon + label.
+  // The ring is full when ready; on activation it empties and fills clockwise
+  // over the cooldown via an SVG stroke-dashoffset transition (pathLength=100).
+  function ensureBushidoBadge() {
+    if (bushidoBadge?.isConnected) return bushidoBadge;
+    bushidoBadge = document.createElement('div');
+    bushidoBadge.className = 'pv2-bushido-badge';
+    bushidoBadge.setAttribute('aria-hidden', 'true');
+    bushidoBadge.innerHTML =
+      '<span class="pv2-bushido-badge__ring">'
+      + '<svg viewBox="0 0 36 36">'
+      + '<circle class="pv2-bushido-badge__track" cx="18" cy="18" r="15.5"></circle>'
+      + '<circle class="pv2-bushido-badge__prog" cx="18" cy="18" r="15.5" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"></circle>'
+      + '</svg>'
+      + `<span class="pv2-bushido-badge__icon">${iconSvg('katana')}</span>`
+      + '</span>'
+      + '<span class="pv2-bushido-badge__label">Bushido</span>';
+    bushidoRing = bushidoBadge.querySelector('.pv2-bushido-badge__prog');
+    document.body.appendChild(bushidoBadge);
+    return bushidoBadge;
+  }
+
+  function refreshBushidoBadge() {
+    ensureBushidoBadge().classList.toggle('is-visible', hasUpgrade('flux-bushido') && gameActive);
+  }
+
+  function startBushidoCooldown(now) {
+    bushidoCooldownUntil = now + BUSHIDO_COOLDOWN;
+    if (!bushidoRing) return;
+    // Empty the ring instantly, then let it refill over the cooldown window.
+    bushidoRing.style.transition = 'none';
+    bushidoRing.style.strokeDashoffset = '100';
+    requestAnimationFrame(() => {
+      if (!bushidoRing) return;
+      bushidoRing.style.transition = `stroke-dashoffset ${BUSHIDO_COOLDOWN}ms linear`;
+      bushidoRing.style.strokeDashoffset = '0';
+    });
+  }
+
+  function pulseBushidoBadge() {
+    refreshBushidoBadge();
+    if (!bushidoBadge) return;
+    bushidoBadge.classList.remove('is-denied');
+    // Force reflow so re-adding the class restarts the animation.
+    void bushidoBadge.offsetWidth;
+    bushidoBadge.classList.add('is-denied');
+    window.setTimeout(() => bushidoBadge?.classList.remove('is-denied'), 1000);
+  }
+
+  function handleBushidoDblClick(event) {
+    if (battlePaused || !gameActive || !stage) return;
+    if (!hasUpgrade('flux-bushido')) return;
+    if (upgradeOverlay?.classList.contains('is-open')) return;
+    // Leave real interactive targets alone; only the work-area whitespace arms it.
+    if (event.target.closest?.('a, button, input, textarea, .pv2-score-counter, .pv2-upgrade-overlay, .pv2-bushido-badge')) return;
+    const r = stage.getBoundingClientRect();
+    if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) return;
+    if (bushido) return;                                   // already mid-ability
+    if (performance.now() < bushidoCooldownUntil) { pulseBushidoBadge(); return; } // on cooldown
+    startBushido();
+  }
+
+  function startBushido() {
+    if (bushido || !stage || !gameActive || !bodies.length) return;
+    refreshBushidoBadge();
+    startBushidoCooldown(performance.now());
+    const stageRect = stage.getBoundingClientRect();
+    const overlay = document.createElement('div');
+    overlay.className = 'pv2-bushido-black';
+    overlay.setAttribute('aria-hidden', 'true');
+    stage.appendChild(overlay);
+
+    const boxes = bodies.map((body) => {
+      const el = document.createElement('div');
+      el.className = 'pv2-bushido-box';
+      el.style.left = `${body.x}px`;
+      el.style.top = `${body.y}px`;
+      el.style.width = `${body.w}px`;
+      el.style.height = `${body.h}px`;
+      overlay.appendChild(el);
+      body.el.style.visibility = 'hidden'; // freeze + hide the real block
+      return { body, x: body.x, y: body.y, w: body.w, h: body.h, el, inside: false, entry: null, cuts: [] };
+    });
+
+    const hud = document.createElement('div');
+    hud.className = 'pv2-bushido-hud';
+    hud.innerHTML = '<span class="pv2-bushido-hud__label">BUSHIDO</span>'
+      + '<span class="pv2-bushido-hud__track"><span class="pv2-bushido-hud__fill"></span></span>';
+    document.body.appendChild(hud);
+    const fill = hud.querySelector('.pv2-bushido-hud__fill');
+    requestAnimationFrame(() => {
+      fill.style.transition = `width ${BUSHIDO_DURATION}ms linear`;
+      fill.style.width = '0%';
+    });
+
+    document.documentElement.classList.add('pv2-bushido-on');
+    bushido = { phase: 'slice', start: performance.now(), shatterStart: 0, stageRect, overlay, hud, boxes, pieces: [] };
+    window.addEventListener('pointermove', bushidoPointerMove, { passive: true });
+  }
+
+  function drawCut(box, a, b) {
+    const line = document.createElement('span');
+    line.className = 'pv2-bushido-cut';
+    line.style.width = `${Math.hypot(b.x - a.x, b.y - a.y)}px`;
+    line.style.left = `${a.x}px`;
+    line.style.top = `${a.y}px`;
+    line.style.transform = `rotate(${Math.atan2(b.y - a.y, b.x - a.x)}rad)`;
+    box.el.appendChild(line);
+  }
+
+  // Record a cut whenever the pointer crosses a box and leaves it: the chord
+  // from where it entered to where it exited defines the slice line.
+  function bushidoPointerMove(event) {
+    if (!bushido || bushido.phase !== 'slice') return;
+    const r = stage.getBoundingClientRect();
+    const px = event.clientX - r.left;
+    const py = event.clientY - r.top;
+    for (const box of bushido.boxes) {
+      const inside = px >= box.x && px <= box.x + box.w && py >= box.y && py <= box.y + box.h;
+      if (inside && !box.inside) {
+        box.inside = true;
+        box.entry = { x: clamp(px - box.x, 0, box.w), y: clamp(py - box.y, 0, box.h) };
+      } else if (!inside && box.inside) {
+        box.inside = false;
+        if (box.entry && box.cuts.length < BUSHIDO_MAX_CUTS) {
+          const exit = { x: clamp(px - box.x, 0, box.w), y: clamp(py - box.y, 0, box.h) };
+          if (Math.hypot(exit.x - box.entry.x, exit.y - box.entry.y) > 6) {
+            box.cuts.push({ a: box.entry, b: exit });
+            drawCut(box, box.entry, exit);
+          }
+        }
+        box.entry = null;
+      }
+    }
+  }
+
+  // Slice window over: turn each white box into the real block, cut along the
+  // recorded chords, and hand the shards outward velocities + spin.
+  function endSlicing() {
+    const stageRect = bushido.stageRect;
+    const centerX = stageRect.width / 2, centerY = stageRect.height / 2;
+    for (const box of bushido.boxes) {
+      let polys = [[
+        { x: 0, y: 0 }, { x: box.w, y: 0 }, { x: box.w, y: box.h }, { x: 0, y: box.h },
+      ]];
+      for (const cut of box.cuts) {
+        const next = [];
+        for (const poly of polys) for (const part of splitPolygon(poly, cut.a, cut.b)) next.push(part);
+        polys = next;
+      }
+      box.el.remove();
+      const boxCX = box.x + box.w / 2, boxCY = box.y + box.h / 2;
+      for (const poly of polys) {
+        const c = polyCentroid(poly);
+        const area = polyArea(poly);
+        const el = box.body.el.cloneNode(true);
+        el.classList.add('pv2-bushido-piece');
+        el.removeAttribute('data-node-id');
+        Object.assign(el.style, {
+          position: 'absolute', left: `${box.x}px`, top: `${box.y}px`,
+          width: `${box.w}px`, height: `${box.h}px`, margin: '0', visibility: 'visible',
+          transition: 'none', pointerEvents: 'none', opacity: '1',
+          clipPath: `polygon(${poly.map((p) => `${p.x.toFixed(1)}px ${p.y.toFixed(1)}px`).join(',')})`,
+          transformOrigin: `${c.x.toFixed(1)}px ${c.y.toFixed(1)}px`,
+        });
+        bushido.overlay.appendChild(el);
+        const cx = box.x + c.x, cy = box.y + c.y;
+        const ox = cx - boxCX, oy = cy - boxCY, ol = Math.hypot(ox, oy) || 1;
+        const bx = boxCX - centerX, by = boxCY - centerY, bl = Math.hypot(bx, by) || 1;
+        const speed = 0.18 + Math.random() * 0.32;
+        bushido.pieces.push({
+          el, cx, cy, homeCx: cx, homeCy: cy,
+          vx: (ox / ol) * speed + (bx / bl) * 0.06 + (Math.random() - 0.5) * 0.12,
+          vy: (oy / ol) * speed + (by / bl) * 0.06 + (Math.random() - 0.5) * 0.12,
+          angle: 0, va: (Math.random() - 0.5) * (reducedMotion() ? 0.006 : 0.03),
+          r: Math.max(6, 0.42 * Math.sqrt(Math.max(1, area))),
+        });
+      }
+    }
+    bushido.phase = 'shatter';
+    bushido.shatterStart = performance.now();
+    window.removeEventListener('pointermove', bushidoPointerMove);
+  }
+
+  function updateBushido(now, dt) {
+    if (bushido.phase === 'slice') {
+      if (now - bushido.start >= BUSHIDO_DURATION) endSlicing();
+      return;
+    }
+    if (bushido.phase !== 'shatter') return;
+    const { width: W, height: H } = bushido.stageRect;
+    const bumpers = bumperRects(bushido.stageRect);
+    const pieces = bushido.pieces;
+    let maxSpeed = 0;
+    for (const p of pieces) {
+      p.vy += 0.00004 * dt;                 // faint gravity so shards settle low
+      p.vx *= Math.pow(0.9975, dt);
+      p.vy *= Math.pow(0.9975, dt);
+      p.cx += p.vx * dt;
+      p.cy += p.vy * dt;
+      p.angle += p.va * dt;
+      if (p.cx < p.r) { p.cx = p.r; p.vx = Math.abs(p.vx) * 0.62; p.va += 0.004; }
+      else if (p.cx > W - p.r) { p.cx = W - p.r; p.vx = -Math.abs(p.vx) * 0.62; p.va -= 0.004; }
+      if (p.cy < p.r) { p.cy = p.r; p.vy = Math.abs(p.vy) * 0.62; }
+      else if (p.cy > H - p.r) { p.cy = H - p.r; p.vy = -Math.abs(p.vy) * 0.62; p.vx *= 0.92; }
+      for (const bm of bumpers) {
+        const nx = clamp(p.cx, bm.x, bm.x + bm.w);
+        const ny = clamp(p.cy, bm.y, bm.y + bm.h);
+        let ddx = p.cx - nx, ddy = p.cy - ny, d = Math.hypot(ddx, ddy);
+        if (d < p.r) {
+          if (d < 0.01) { ddx = p.cx - (bm.x + bm.w / 2); ddy = p.cy - (bm.y + bm.h / 2); d = Math.hypot(ddx, ddy) || 1; }
+          const nxn = ddx / d, nyn = ddy / d;
+          p.cx += nxn * (p.r - d); p.cy += nyn * (p.r - d);
+          const vn = p.vx * nxn + p.vy * nyn;
+          if (vn < 0) { p.vx -= 1.4 * vn * nxn; p.vy -= 1.4 * vn * nyn; p.va += (Math.random() - 0.5) * 0.01; }
+        }
+      }
+      maxSpeed = Math.max(maxSpeed, Math.hypot(p.vx, p.vy));
+    }
+    for (let i = 0; i < pieces.length; i += 1) {
+      for (let j = i + 1; j < pieces.length; j += 1) {
+        const a = pieces[i], b = pieces[j];
+        const ddx = b.cx - a.cx, ddy = b.cy - a.cy, d = Math.hypot(ddx, ddy), min = a.r + b.r;
+        if (d < min && d > 0.01) {
+          const nxn = ddx / d, nyn = ddy / d, push = (min - d) / 2;
+          a.cx -= nxn * push; a.cy -= nyn * push;
+          b.cx += nxn * push; b.cy += nyn * push;
+          const rel = (b.vx - a.vx) * nxn + (b.vy - a.vy) * nyn;
+          if (rel < 0) { const imp = rel * 0.5; a.vx += imp * nxn; a.vy += imp * nyn; b.vx -= imp * nxn; b.vy -= imp * nyn; }
+        }
+      }
+    }
+    for (const p of pieces) {
+      p.el.style.transform = `translate(${(p.cx - p.homeCx).toFixed(2)}px, ${(p.cy - p.homeCy).toFixed(2)}px) rotate(${p.angle.toFixed(3)}rad)`;
+    }
+    const elapsed = now - bushido.shatterStart;
+    if (elapsed > 500 && (maxSpeed < BUSHIDO_SETTLE_SPEED || elapsed > BUSHIDO_SHATTER_MAX)) finishBushido();
+  }
+
+  function finishBushido() {
+    if (!bushido || bushido.phase === 'restore') return;
+    bushido.phase = 'restore';
+    const b = bushido;
+    for (const p of b.pieces) { p.el.style.transition = 'opacity 600ms ease'; p.el.style.opacity = '0'; }
+    b.overlay.style.transition = 'opacity 600ms ease';
+    b.overlay.style.opacity = '0';
+    if (b.hud) { b.hud.style.transition = 'opacity 400ms ease'; b.hud.style.opacity = '0'; }
+    for (const box of b.boxes) {
+      const el = box.body.el;
+      el.style.visibility = 'visible';
+      el.style.opacity = '0';
+      el.style.transition = 'opacity 600ms ease';
+      requestAnimationFrame(() => { el.style.opacity = '1'; });
+    }
+    window.setTimeout(() => {
+      b.overlay.remove();
+      b.hud?.remove();
+      for (const box of b.boxes) { box.body.el.style.transition = ''; box.body.el.style.opacity = ''; }
+      document.documentElement.classList.remove('pv2-bushido-on');
+      if (bushido === b) bushido = null;
+      lastTime = 0;
+    }, 680);
+  }
+
+  // Tear down a Bushido session immediately (e.g. the stage is being rebuilt).
+  function abortBushido() {
+    if (!bushido) return;
+    window.removeEventListener('pointermove', bushidoPointerMove);
+    bushido.overlay?.remove();
+    bushido.hud?.remove();
+    for (const box of bushido.boxes) {
+      box.body.el.style.visibility = '';
+      box.body.el.style.transition = '';
+      box.body.el.style.opacity = '';
+    }
+    document.documentElement.classList.remove('pv2-bushido-on');
+    bushido = null;
+  }
+
   function tick(now) {
     if (!stage) {
       mark('waiting');
@@ -1306,6 +1678,15 @@
       return;
     }
 
+    // Bushido runs its own particle sim in place of the normal simulation.
+    if (bushido) {
+      const bdt = clamp(lastTime ? now - lastTime : 16.667, 8, 32);
+      lastTime = now;
+      updateBushido(now, bdt);
+      frame = requestAnimationFrame(tick);
+      return;
+    }
+
     const dt = clamp(lastTime ? now - lastTime : 16.667, 8, 32);
     lastTime = now;
     const stageRect = stage.getBoundingClientRect();
@@ -1315,7 +1696,7 @@
     const speedFloor = (reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED) * effects.speedMult * effects.speedFloorMult * (mobile ? MOBILE_FLOOR_SCALE : 1);
     // Heat only builds above the live drift floor, so ambient drift never heats
     // (and never self-settles) no matter how high upgrades push the floor.
-    const heatThreshold = Math.max(HEAT_THRESHOLD, speedFloor * HEAT_MARGIN);
+    const heatThreshold = Math.max(HEAT_THRESHOLD, speedFloor + HEAT_MARGIN);
     const maxSpeed = (reducedMotion() ? REDUCED_MAX_SPEED : MAX_SPEED) * effects.maxSpeedMult;
     const t = now / 1000;
 
@@ -1417,6 +1798,7 @@
   }
 
   function teardown() {
+    abortBushido();
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
     for (const body of bodies) if (body.halo) body.halo.style.opacity = '0';
@@ -1499,6 +1881,7 @@
     }
 
     if (gameActive) setScoreVisible(true);
+    refreshBushidoBadge();
     mark('initialized');
     frame = requestAnimationFrame(tick);
   }
@@ -1520,6 +1903,8 @@
     mark('script-loaded');
     ensureScoreCounter();
     ensureFxLayer();
+    ensureBushidoBadge();
+    refreshBushidoBadge();
     observer.observe(document.body, { childList: true, subtree: true });
     // Battle-mode bridge (portfolio-battle.js drives these).
     window.addEventListener('pv2:battle-pause', () => { battlePaused = true; });
@@ -1528,6 +1913,7 @@
       const n = Math.max(0, Math.round(Number(event.detail?.n) || 0));
       if (n) { activateGame(); addIdlePoints(n); }
     });
+    window.addEventListener('dblclick', handleBushidoDblClick);
     window.addEventListener('pointerdown', handlePointerDown, { passive: true });
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('pointerup', handlePointerEnd, { passive: true });
