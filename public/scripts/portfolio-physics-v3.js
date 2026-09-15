@@ -1172,11 +1172,12 @@
     const horizontal = overlapX < overlapY;
     const now = performance.now();
     const isArmed = body.armed && now < body.armedUntil;
-    // A bounce and a point are one and the same: a bumper only reacts to a
-    // genuine armed strike during play. `entering` already dedupes a multi-frame
-    // overlap, so a block that leaves and returns is a fresh strike — a tight
-    // wall<->bumper loop therefore scores (and re-launches) every lap, which is
-    // exactly the perpetual loop the speed / bounce upgrades are meant to enable.
+    // Blocks always physically hit a bumper — they never slide on top of it.
+    // A *scored* strike (an armed block on a fresh contact) also pays points and
+    // launches at full power; `entering` dedupes a multi-frame overlap, so a
+    // block that leaves and returns is a fresh strike and a tight wall<->bumper
+    // loop scores every lap. Any other contact (unarmed / idle drift) still
+    // bounces, just gently and without points.
     const poweredHit = entering && isArmed && gameActive;
 
     if (poweredHit) {
@@ -1188,16 +1189,12 @@
       // Battle mode (portfolio-battle.js) listens for these to detect a
       // Critical Combo (5 bumper hits within 1s) and trigger a battle.
       window.dispatchEvent(new CustomEvent('pv2:bumper-hit', { detail: { id: bumper.id, x: impact.x, y: impact.y } }));
-    } else if (gameActive) {
-      // Mid-game a contact that doesn't score doesn't bounce either: the block
-      // phases through so it can never be knocked back without a point. (Idle,
-      // below, keeps bumpers solid so the resting layout stays tidy.)
-      return true;
     }
 
     const softFloor = window.innerWidth <= MOBILE_BREAKPOINT ? MOBILE_UNARMED_BUMPER_KICK : NORMAL_SPEED * 1.8;
-    // A scored strike = a fixed launch. The soft path only runs while idle, so
-    // drifting blocks reflect gently off the text instead of stopping dead.
+    // A scored strike = a fixed launch. Otherwise reflect a fraction of the
+    // incoming speed (never below the gentle floor) so the block bounces off the
+    // bumper and eases away instead of gliding over it or stopping dead.
     if (horizontal) {
       const sign = dx >= 0 ? 1 : -1;
       body.x += Math.max(0, overlapX) * sign;
