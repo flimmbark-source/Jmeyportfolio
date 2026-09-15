@@ -49,6 +49,7 @@
   const GRAVITY_ACCEL = 0.00007;
   // --- Bushido (double-click slice-time ability) ---------------------------
   const BUSHIDO_DURATION = 3000;   // slicing window (ms) — matches the red bar
+  const BUSHIDO_COOLDOWN = 45000;  // ms before Bushido can be triggered again
   const BUSHIDO_MAX_CUTS = 6;      // per box, so piece counts stay bounded
   const BUSHIDO_SHATTER_MAX = 3000;// hard cap on the fling phase before settle
   const BUSHIDO_SETTLE_SPEED = 0.02; // px/ms — below this (all pieces) = settled
@@ -165,6 +166,9 @@
   let autoFlickTimer = 0;
   let battlePaused = false;
   let bushido = null;        // active Bushido session state (null when idle)
+  let bushidoCooldownUntil = 0;   // performance.now() timestamp cooldown ends
+  let bushidoBadge = null;        // persistent cooldown badge element
+  let bushidoRing = null;         // the badge's progress ring <circle>
   let treeZoom = TREE_DEFAULT_ZOOM;
   let treePanX = 0;
   let treePanY = 0;
@@ -354,6 +358,7 @@
     gameActive = true;
     document.documentElement.classList.add('pv2-game-active');
     setScoreVisible(Boolean(stage?.isConnected));
+    refreshBushidoBadge();
     window.dispatchEvent(new CustomEvent('pv2:game-start', { detail: { points } }));
   }
 
@@ -622,6 +627,7 @@
     scoreValue.textContent = String(points);
     refreshUpgradeCue();
     refreshUpgradeTree();
+    refreshBushidoBadge();
     const node = upgradeTree?.querySelector(`[data-upgrade-id="${id}"]`);
     try {
       node?.animate([
@@ -1357,19 +1363,72 @@
     return out.length ? out : [poly];
   }
 
+  // The persistent cooldown badge: a small ring with the katana icon + label.
+  // The ring is full when ready; on activation it empties and fills clockwise
+  // over the cooldown via an SVG stroke-dashoffset transition (pathLength=100).
+  function ensureBushidoBadge() {
+    if (bushidoBadge?.isConnected) return bushidoBadge;
+    bushidoBadge = document.createElement('div');
+    bushidoBadge.className = 'pv2-bushido-badge';
+    bushidoBadge.setAttribute('aria-hidden', 'true');
+    bushidoBadge.innerHTML =
+      '<span class="pv2-bushido-badge__ring">'
+      + '<svg viewBox="0 0 36 36">'
+      + '<circle class="pv2-bushido-badge__track" cx="18" cy="18" r="15.5"></circle>'
+      + '<circle class="pv2-bushido-badge__prog" cx="18" cy="18" r="15.5" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"></circle>'
+      + '</svg>'
+      + `<span class="pv2-bushido-badge__icon">${iconSvg('katana')}</span>`
+      + '</span>'
+      + '<span class="pv2-bushido-badge__label">Bushido</span>';
+    bushidoRing = bushidoBadge.querySelector('.pv2-bushido-badge__prog');
+    document.body.appendChild(bushidoBadge);
+    return bushidoBadge;
+  }
+
+  function refreshBushidoBadge() {
+    ensureBushidoBadge().classList.toggle('is-visible', hasUpgrade('flux-bushido') && gameActive);
+  }
+
+  function startBushidoCooldown(now) {
+    bushidoCooldownUntil = now + BUSHIDO_COOLDOWN;
+    if (!bushidoRing) return;
+    // Empty the ring instantly, then let it refill over the cooldown window.
+    bushidoRing.style.transition = 'none';
+    bushidoRing.style.strokeDashoffset = '100';
+    requestAnimationFrame(() => {
+      if (!bushidoRing) return;
+      bushidoRing.style.transition = `stroke-dashoffset ${BUSHIDO_COOLDOWN}ms linear`;
+      bushidoRing.style.strokeDashoffset = '0';
+    });
+  }
+
+  function pulseBushidoBadge() {
+    refreshBushidoBadge();
+    if (!bushidoBadge) return;
+    bushidoBadge.classList.remove('is-denied');
+    // Force reflow so re-adding the class restarts the animation.
+    void bushidoBadge.offsetWidth;
+    bushidoBadge.classList.add('is-denied');
+    window.setTimeout(() => bushidoBadge?.classList.remove('is-denied'), 1000);
+  }
+
   function handleBushidoDblClick(event) {
-    if (bushido || battlePaused || !gameActive || !stage) return;
+    if (battlePaused || !gameActive || !stage) return;
     if (!hasUpgrade('flux-bushido')) return;
     if (upgradeOverlay?.classList.contains('is-open')) return;
     // Leave real interactive targets alone; only the work-area whitespace arms it.
-    if (event.target.closest?.('a, button, input, textarea, .pv2-score-counter, .pv2-upgrade-overlay')) return;
+    if (event.target.closest?.('a, button, input, textarea, .pv2-score-counter, .pv2-upgrade-overlay, .pv2-bushido-badge')) return;
     const r = stage.getBoundingClientRect();
     if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) return;
+    if (bushido) return;                                   // already mid-ability
+    if (performance.now() < bushidoCooldownUntil) { pulseBushidoBadge(); return; } // on cooldown
     startBushido();
   }
 
   function startBushido() {
     if (bushido || !stage || !gameActive || !bodies.length) return;
+    refreshBushidoBadge();
+    startBushidoCooldown(performance.now());
     const stageRect = stage.getBoundingClientRect();
     const overlay = document.createElement('div');
     overlay.className = 'pv2-bushido-black';
@@ -1800,6 +1859,7 @@
     }
 
     if (gameActive) setScoreVisible(true);
+    refreshBushidoBadge();
     mark('initialized');
     frame = requestAnimationFrame(tick);
   }
@@ -1821,6 +1881,8 @@
     mark('script-loaded');
     ensureScoreCounter();
     ensureFxLayer();
+    ensureBushidoBadge();
+    refreshBushidoBadge();
     observer.observe(document.body, { childList: true, subtree: true });
     // Battle-mode bridge (portfolio-battle.js drives these).
     window.addEventListener('pv2:battle-pause', () => { battlePaused = true; });

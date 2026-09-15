@@ -645,3 +645,96 @@
 @media (prefers-reduced-motion: reduce) {
   .pv2-bushido-black { animation-duration: 1ms; }
 }
+
+/* Cooldown badge: ring (empty on use, refills clockwise) + katana + label. */
+.pv2-bushido-badge {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 6400;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 13px 6px 6px;
+  border: 1px solid rgba(36, 36, 36, .14);
+  background: rgba(247, 246, 242, .9);
+  box-shadow: 0 8px 22px rgba(36, 36, 36, .08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(6px);
+  transform-origin: left center;
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.pv2-bushido-badge.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.pv2-bushido-badge__ring {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  flex: none;
+}
+
+.pv2-bushido-badge__ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg); /* start the fill at 12 o'clock, go clockwise */
+}
+
+.pv2-bushido-badge__track {
+  fill: none;
+  stroke: rgba(36, 36, 36, .16);
+  stroke-width: 3;
+}
+
+.pv2-bushido-badge__prog {
+  fill: none;
+  stroke: #e01c1c;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.pv2-bushido-badge__icon {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #b0281f;
+}
+
+.pv2-bushido-badge__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pv2-bushido-badge__label {
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--pv2-text, #242424);
+}
+
+/* Denied double-click while on cooldown: pulse + enlarge for ~1s. */
+.pv2-bushido-badge.is-denied {
+  animation: pv2BushidoDeny 1s ease;
+}
+
+@keyframes pv2BushidoDeny {
+  0% { transform: scale(1); }
+  22% { transform: scale(1.2); }
+  50% { transform: scale(1.06); }
+  74% { transform: scale(1.16); }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pv2-bushido-badge.is-denied { animation: none; }
+}
