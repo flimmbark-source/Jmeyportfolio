@@ -30,8 +30,13 @@
   // out a "friction burn" before the block cools back into the ambient float.
   // Idle drift stays below HEAT_THRESHOLD, so only launched blocks ever settle.
   const HEAT_THRESHOLD = 0.06;      // floor for the heat-build speed cutoff (px/ms)
-  const HEAT_MARGIN = 1.8;          // …but never below this ×the live drift floor,
-                                    // so idle drift never heats however upgraded
+  const HEAT_MARGIN = 0.05;         // …and always this much (px/ms) ABOVE the live
+                                    // drift floor. Additive, not a multiplier, so the
+                                    // "hot" window stays a constant width no matter how
+                                    // high speed upgrades push the floor — idle drift
+                                    // still sits just under it, but launches/bumper
+                                    // kicks clear it and heat again (a ×margin scaled
+                                    // with the floor and swallowed every launch speed).
   const FRICTION_GAIN = 0.0016;     // heat gained per (speed − threshold) per ms
   const FRICTION_RELIEF = 0.00045;  // heat shed per ms while below threshold
   const FRICTION_DAMP_BASE = 0.988; // extra per-ms damping, exponent-scaled by heat
@@ -1674,7 +1679,7 @@
     const speedFloor = (reducedMotion() ? REDUCED_SPEED : NORMAL_SPEED) * effects.speedMult * effects.speedFloorMult * (mobile ? MOBILE_FLOOR_SCALE : 1);
     // Heat only builds above the live drift floor, so ambient drift never heats
     // (and never self-settles) no matter how high upgrades push the floor.
-    const heatThreshold = Math.max(HEAT_THRESHOLD, speedFloor * HEAT_MARGIN);
+    const heatThreshold = Math.max(HEAT_THRESHOLD, speedFloor + HEAT_MARGIN);
     const maxSpeed = (reducedMotion() ? REDUCED_MAX_SPEED : MAX_SPEED) * effects.maxSpeedMult;
     const t = now / 1000;
 
