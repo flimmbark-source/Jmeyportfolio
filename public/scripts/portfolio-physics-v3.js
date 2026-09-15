@@ -66,8 +66,9 @@
   const TREE_ZOOM_MAX = 1.9;
   const TREE_DEFAULT_ZOOM = 1.18;
 
-  // Genre labels flavor the incremental tree; `soon` marks nodes whose deeper
-  // mechanic (the RPG Battle) is scaffolded in the tree now and wired later.
+  // Genre labels flavor the incremental tree. The `soon` flag (none set now)
+  // still greys a node out and blocks its purchase, kept for any future
+  // scaffold-ahead node; every listed node currently affects the block game.
   const UPGRADES = [
     // ── Velocity (upward spine) ────────────────────────────────────────────
     { id: 'vel-1', branch: 'velocity', depth: 1, x: 620, y: 336, title: 'Faster Drift', effect: '+60% drift speed', icon: 'wind', cost: 10, requires: [] },
@@ -100,8 +101,8 @@
     { id: 'fric-perpetual', branch: 'friction', depth: 3, x: 742, y: 768, title: 'Perpetual Motion', effect: 'Near-zero drag', icon: 'infinity', cost: 150, requires: ['fric-keep'] },
 
     // ── Flux (genre-bending cross-branch tech) ─────────────────────────────
-    { id: 'flux-crit', branch: 'flux', depth: 3, x: 300, y: 168, title: 'Critical Hit', effect: 'RPG · 15% ×5', icon: 'target', cost: 150, requires: ['vel-accel', 'walls-hard'] },
-    { id: 'flux-battle', branch: 'flux', depth: 4, x: 150, y: 58, title: 'Critical Combo', effect: 'RPG · combo → Battle', icon: 'swords', cost: 320, requires: ['flux-crit'], soon: true },
+    { id: 'flux-crit', branch: 'flux', depth: 3, x: 300, y: 168, title: 'Critical Hit', effect: '15% crit · ×5 points', icon: 'target', cost: 150, requires: ['vel-accel', 'walls-hard'] },
+    { id: 'flux-battle', branch: 'flux', depth: 4, x: 150, y: 58, title: 'Critical Combo', effect: '30% crit · chains ×4', icon: 'swords', cost: 320, requires: ['flux-crit'] },
     { id: 'flux-bushido', branch: 'flux', depth: 4, x: 120, y: 300, title: 'Bushido', effect: 'Dbl-click → slice time', icon: 'katana', cost: 280, requires: ['flux-crit'] },
     { id: 'flux-mult', branch: 'flux', depth: 3, x: 940, y: 168, title: 'Compound Interest', effect: 'Idle · ×2 points', icon: 'multiply', cost: 120, requires: ['vel-cap', 'bounce-force'] },
     { id: 'flux-idle', branch: 'flux', depth: 3, x: 940, y: 732, title: 'Idle Engine', effect: 'Idle · +2 / sec', icon: 'clock', cost: 110, requires: ['bounce-value', 'fric-keep'] },
@@ -167,6 +168,8 @@
   let pointer = { x: -9999, y: -9999, t: 0 };
   let comboCount = 0;
   let comboExpire = 0;
+  let critComboCount = 0;
+  let critComboExpire = 0;
   let idleBank = 0;
   let autoFlickTimer = 0;
   let battlePaused = false;
@@ -238,6 +241,9 @@
     let pointMult = 1;
     let critChance = 0;
     let critMult = 1;
+    let critCombo = false;
+    let critComboStep = 0;
+    let critComboMax = 1;
     let comboEnabled = false;
     let comboStep = 0;
     let comboMax = 1;
@@ -278,9 +284,12 @@
     if (hasUpgrade('fric-low')) { damping = 0.99994; speedFloorMult *= 1.4; frictionBurnMult *= 1.8; }
     if (hasUpgrade('fric-perpetual')) { damping = 0.999985; speedFloorMult *= 1.6; frictionBurnMult *= 2; }
 
-    // Flux branch (genre-bending)
+    // Flux branch (genre-bending). The "RPG" crit nodes apply to the block game
+    // itself: any scored hit (bumper, wall, friction burn) can crit, and Critical
+    // Combo makes back-to-back crits escalate.
     if (hasUpgrade('flux-mult')) pointMult *= 2;
     if (hasUpgrade('flux-crit')) { critChance = 0.15; critMult = 5; }
+    if (hasUpgrade('flux-battle')) { critChance = 0.3; critMult = Math.max(critMult, 5); critCombo = true; critComboStep = 0.6; critComboMax = 4; }
     if (hasUpgrade('flux-idle')) idlePerSec += 2;
     if (hasUpgrade('flux-auto')) autoFlick = true;
     if (hasUpgrade('flux-gravity')) gravity = GRAVITY_ACCEL;
@@ -299,6 +308,9 @@
       pointMult,
       critChance,
       critMult,
+      critCombo,
+      critComboStep,
+      critComboMax,
       comboEnabled,
       comboStep,
       comboMax,
@@ -667,10 +679,10 @@
   // updates the counter and spawns a floating ghost showing what was earned.
   function award(base, sourceId, impact, velocity) {
     const fx = currentEffects();
+    const now = performance.now();
     let mult = fx.pointMult;
     let comboMult = 1;
     if (fx.comboEnabled) {
-      const now = performance.now();
       comboCount = now <= comboExpire ? comboCount + 1 : 1;
       comboExpire = now + COMBO_WINDOW;
       comboMult = Math.min(fx.comboMax, 1 + fx.comboStep * (comboCount - 1));
@@ -680,6 +692,12 @@
     if (fx.critChance > 0 && Math.random() < fx.critChance) {
       crit = true;
       mult *= fx.critMult;
+      // Critical Combo: back-to-back crits within the combo window escalate.
+      if (fx.critCombo) {
+        critComboCount = now <= critComboExpire ? critComboCount + 1 : 1;
+        critComboExpire = now + COMBO_WINDOW;
+        mult *= Math.min(fx.critComboMax, 1 + fx.critComboStep * (critComboCount - 1));
+      }
     }
     const gained = Math.max(1, Math.round(base * mult));
     updateScore(gained, sourceId, impact);
