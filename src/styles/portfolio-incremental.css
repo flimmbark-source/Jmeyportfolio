@@ -560,3 +560,88 @@
     transition: none;
   }
 }
+
+/* ===================== Bushido: slice-time ability ===================== */
+.pv2-bushido-black {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  background: #000;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  animation: pv2BushidoFade 220ms ease forwards;
+}
+
+@keyframes pv2BushidoFade { to { opacity: 1; } }
+
+/* Frozen stand-ins for the games while the player slices. */
+.pv2-bushido-box {
+  position: absolute;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .25);
+  overflow: hidden;
+}
+
+/* A recorded slice, drawn as a red chord across the white box. */
+.pv2-bushido-cut {
+  position: absolute;
+  height: 2px;
+  margin-top: -1px;
+  background: rgba(220, 28, 28, .92);
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+/* A shard of a sliced game block during the explosion. */
+.pv2-bushido-piece {
+  will-change: transform, opacity;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .35);
+}
+
+.pv2-bushido-on,
+.pv2-bushido-on .pv2-overview__stage {
+  cursor: crosshair;
+}
+
+/* Top-of-screen banner + draining red bar. */
+.pv2-bushido-hud {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.pv2-bushido-hud__label {
+  color: #e01c1c;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .42em;
+  text-indent: .42em;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, .5);
+}
+
+.pv2-bushido-hud__track {
+  width: min(60vw, 360px);
+  height: 16px;
+  background: #000;
+  border: 1px solid rgba(224, 28, 28, .55);
+  overflow: hidden;
+}
+
+.pv2-bushido-hud__fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #ff2d2d, #b30000);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pv2-bushido-black { animation-duration: 1ms; }
+}

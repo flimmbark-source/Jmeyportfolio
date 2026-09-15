@@ -47,6 +47,11 @@
   const COMBO_WINDOW = 2200;
   const AUTO_FLICK_INTERVAL = 2600;
   const GRAVITY_ACCEL = 0.00007;
+  // --- Bushido (double-click slice-time ability) ---------------------------
+  const BUSHIDO_DURATION = 3000;   // slicing window (ms) — matches the red bar
+  const BUSHIDO_MAX_CUTS = 6;      // per box, so piece counts stay bounded
+  const BUSHIDO_SHATTER_MAX = 3000;// hard cap on the fling phase before settle
+  const BUSHIDO_SETTLE_SPEED = 0.02; // px/ms — below this (all pieces) = settled
   // Mobile has a tiny stage, so blocks otherwise ping-pong forever. Extra drag
   // (damping raised to this power) and a lower drift floor let them settle.
   const MOBILE_DRAG_EXP = 2.6;
@@ -91,6 +96,7 @@
     // ── Flux (genre-bending cross-branch tech) ─────────────────────────────
     { id: 'flux-crit', branch: 'flux', depth: 3, x: 300, y: 168, title: 'Critical Hit', effect: 'RPG · 15% ×5', icon: 'target', cost: 150, requires: ['vel-accel', 'walls-hard'] },
     { id: 'flux-battle', branch: 'flux', depth: 4, x: 150, y: 58, title: 'Critical Combo', effect: 'RPG · combo → Battle', icon: 'swords', cost: 320, requires: ['flux-crit'], soon: true },
+    { id: 'flux-bushido', branch: 'flux', depth: 4, x: 120, y: 300, title: 'Bushido', effect: 'Dbl-click → slice time', icon: 'katana', cost: 280, requires: ['flux-crit'] },
     { id: 'flux-mult', branch: 'flux', depth: 3, x: 940, y: 168, title: 'Compound Interest', effect: 'Idle · ×2 points', icon: 'multiply', cost: 120, requires: ['vel-cap', 'bounce-force'] },
     { id: 'flux-idle', branch: 'flux', depth: 3, x: 940, y: 732, title: 'Idle Engine', effect: 'Idle · +2 / sec', icon: 'clock', cost: 110, requires: ['bounce-value', 'fric-keep'] },
     { id: 'flux-auto', branch: 'flux', depth: 4, x: 1064, y: 828, title: 'Autopilot', effect: 'Auto · flicks a block', icon: 'cpu', cost: 220, requires: ['flux-idle'] },
@@ -124,6 +130,7 @@
     multiply: '<path d="M6 6l12 12M18 6L6 18"/>',
     target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
     swords: '<path d="M4 4l8 8M4 4l1 4 4 1M14 12l6 6-1 1-6-6M20 4l-8 8M20 4l-1 4-4 1M10 12l-6 6 1 1 6-6"/>',
+    katana: '<path d="M20 3l-1.5 1.5M18.5 4.5L7 16M7 16l-3 4 4-3M7 16l1.4 1.4M5.6 17.4L4 20"/><path d="M8.4 17.4l1.6-1.6"/>',
     clock: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',
     cpu: '<rect x="7" y="7" width="10" height="10" rx="2"/><path d="M10 7V4M14 7V4M10 20v-3M14 20v-3M7 10H4M7 14H4M20 10h-3M20 14h-3"/>',
     gravity: '<path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/>',
@@ -157,6 +164,7 @@
   let idleBank = 0;
   let autoFlickTimer = 0;
   let battlePaused = false;
+  let bushido = null;        // active Bushido session state (null when idle)
   let treeZoom = TREE_DEFAULT_ZOOM;
   let treePanX = 0;
   let treePanY = 0;
@@ -1270,12 +1278,14 @@
   }
 
   function handlePointerDown(event) {
+    if (bushido) return;
     if (event.pointerType !== 'touch') return;
     pointer = { x: event.clientX, y: event.clientY, t: performance.now() };
     collideWithPointer(event);
   }
 
   function handlePointerMove(event) {
+    if (bushido) return; // Bushido tracks the pointer itself for slicing
     const now = performance.now();
     const firstSample = pointer.x <= -9000;
     const dt = Math.max(8, now - pointer.t || 16);
@@ -1292,6 +1302,287 @@
     for (const body of bodies) body.pointerInside = false;
   }
 
+  // ===================== Bushido: double-click slice time ==================
+  // Slice-time ability. Double-clicking the work-area whitespace freezes the
+  // games as white boxes; the player's mouse strokes across a box record cut
+  // lines; when the timer ends the boxes become the real game blocks sliced
+  // along those cuts, and the shards explode around the stage before the games
+  // fade back in. Piece motion is a light particle sim (bounding-circle
+  // collisions + visual spin), not a full rigid-body solver.
+
+  // Signed area (shoelace) of a polygon given as [{x,y},…] — box-local px.
+  function polyArea(pts) {
+    let a = 0;
+    for (let i = 0; i < pts.length; i += 1) {
+      const p = pts[i], q = pts[(i + 1) % pts.length];
+      a += p.x * q.y - q.x * p.y;
+    }
+    return Math.abs(a) / 2;
+  }
+
+  function polyCentroid(pts) {
+    let a = 0, cx = 0, cy = 0;
+    for (let i = 0; i < pts.length; i += 1) {
+      const p = pts[i], q = pts[(i + 1) % pts.length];
+      const cross = p.x * q.y - q.x * p.y;
+      a += cross; cx += (p.x + q.x) * cross; cy += (p.y + q.y) * cross;
+    }
+    if (Math.abs(a) < 1e-6) {
+      const n = pts.length || 1;
+      return { x: pts.reduce((s, p) => s + p.x, 0) / n, y: pts.reduce((s, p) => s + p.y, 0) / n };
+    }
+    a *= 0.5;
+    return { x: cx / (6 * a), y: cy / (6 * a) };
+  }
+
+  // Split a convex polygon by the infinite line through a→b into ≤2 polygons.
+  function splitPolygon(poly, a, b) {
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const side = (p) => (p.x - a.x) * dy - (p.y - a.y) * dx;
+    const left = [], right = [];
+    for (let i = 0; i < poly.length; i += 1) {
+      const cur = poly[i], nxt = poly[(i + 1) % poly.length];
+      const sc = side(cur), sn = side(nxt);
+      if (sc >= 0) left.push(cur);
+      if (sc <= 0) right.push(cur);
+      if ((sc > 0 && sn < 0) || (sc < 0 && sn > 0)) {
+        const t = sc / (sc - sn);
+        const ip = { x: cur.x + t * (nxt.x - cur.x), y: cur.y + t * (nxt.y - cur.y) };
+        left.push(ip); right.push(ip);
+      }
+    }
+    const out = [];
+    if (left.length >= 3 && polyArea(left) > 4) out.push(left);
+    if (right.length >= 3 && polyArea(right) > 4) out.push(right);
+    return out.length ? out : [poly];
+  }
+
+  function handleBushidoDblClick(event) {
+    if (bushido || battlePaused || !gameActive || !stage) return;
+    if (!hasUpgrade('flux-bushido')) return;
+    if (upgradeOverlay?.classList.contains('is-open')) return;
+    // Leave real interactive targets alone; only the work-area whitespace arms it.
+    if (event.target.closest?.('a, button, input, textarea, .pv2-score-counter, .pv2-upgrade-overlay')) return;
+    const r = stage.getBoundingClientRect();
+    if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) return;
+    startBushido();
+  }
+
+  function startBushido() {
+    if (bushido || !stage || !gameActive || !bodies.length) return;
+    const stageRect = stage.getBoundingClientRect();
+    const overlay = document.createElement('div');
+    overlay.className = 'pv2-bushido-black';
+    overlay.setAttribute('aria-hidden', 'true');
+    stage.appendChild(overlay);
+
+    const boxes = bodies.map((body) => {
+      const el = document.createElement('div');
+      el.className = 'pv2-bushido-box';
+      el.style.left = `${body.x}px`;
+      el.style.top = `${body.y}px`;
+      el.style.width = `${body.w}px`;
+      el.style.height = `${body.h}px`;
+      overlay.appendChild(el);
+      body.el.style.visibility = 'hidden'; // freeze + hide the real block
+      return { body, x: body.x, y: body.y, w: body.w, h: body.h, el, inside: false, entry: null, cuts: [] };
+    });
+
+    const hud = document.createElement('div');
+    hud.className = 'pv2-bushido-hud';
+    hud.innerHTML = '<span class="pv2-bushido-hud__label">BUSHIDO</span>'
+      + '<span class="pv2-bushido-hud__track"><span class="pv2-bushido-hud__fill"></span></span>';
+    document.body.appendChild(hud);
+    const fill = hud.querySelector('.pv2-bushido-hud__fill');
+    requestAnimationFrame(() => {
+      fill.style.transition = `width ${BUSHIDO_DURATION}ms linear`;
+      fill.style.width = '0%';
+    });
+
+    document.documentElement.classList.add('pv2-bushido-on');
+    bushido = { phase: 'slice', start: performance.now(), shatterStart: 0, stageRect, overlay, hud, boxes, pieces: [] };
+    window.addEventListener('pointermove', bushidoPointerMove, { passive: true });
+  }
+
+  function drawCut(box, a, b) {
+    const line = document.createElement('span');
+    line.className = 'pv2-bushido-cut';
+    line.style.width = `${Math.hypot(b.x - a.x, b.y - a.y)}px`;
+    line.style.left = `${a.x}px`;
+    line.style.top = `${a.y}px`;
+    line.style.transform = `rotate(${Math.atan2(b.y - a.y, b.x - a.x)}rad)`;
+    box.el.appendChild(line);
+  }
+
+  // Record a cut whenever the pointer crosses a box and leaves it: the chord
+  // from where it entered to where it exited defines the slice line.
+  function bushidoPointerMove(event) {
+    if (!bushido || bushido.phase !== 'slice') return;
+    const r = stage.getBoundingClientRect();
+    const px = event.clientX - r.left;
+    const py = event.clientY - r.top;
+    for (const box of bushido.boxes) {
+      const inside = px >= box.x && px <= box.x + box.w && py >= box.y && py <= box.y + box.h;
+      if (inside && !box.inside) {
+        box.inside = true;
+        box.entry = { x: clamp(px - box.x, 0, box.w), y: clamp(py - box.y, 0, box.h) };
+      } else if (!inside && box.inside) {
+        box.inside = false;
+        if (box.entry && box.cuts.length < BUSHIDO_MAX_CUTS) {
+          const exit = { x: clamp(px - box.x, 0, box.w), y: clamp(py - box.y, 0, box.h) };
+          if (Math.hypot(exit.x - box.entry.x, exit.y - box.entry.y) > 6) {
+            box.cuts.push({ a: box.entry, b: exit });
+            drawCut(box, box.entry, exit);
+          }
+        }
+        box.entry = null;
+      }
+    }
+  }
+
+  // Slice window over: turn each white box into the real block, cut along the
+  // recorded chords, and hand the shards outward velocities + spin.
+  function endSlicing() {
+    const stageRect = bushido.stageRect;
+    const centerX = stageRect.width / 2, centerY = stageRect.height / 2;
+    for (const box of bushido.boxes) {
+      let polys = [[
+        { x: 0, y: 0 }, { x: box.w, y: 0 }, { x: box.w, y: box.h }, { x: 0, y: box.h },
+      ]];
+      for (const cut of box.cuts) {
+        const next = [];
+        for (const poly of polys) for (const part of splitPolygon(poly, cut.a, cut.b)) next.push(part);
+        polys = next;
+      }
+      box.el.remove();
+      const boxCX = box.x + box.w / 2, boxCY = box.y + box.h / 2;
+      for (const poly of polys) {
+        const c = polyCentroid(poly);
+        const area = polyArea(poly);
+        const el = box.body.el.cloneNode(true);
+        el.classList.add('pv2-bushido-piece');
+        el.removeAttribute('data-node-id');
+        Object.assign(el.style, {
+          position: 'absolute', left: `${box.x}px`, top: `${box.y}px`,
+          width: `${box.w}px`, height: `${box.h}px`, margin: '0', visibility: 'visible',
+          transition: 'none', pointerEvents: 'none', opacity: '1',
+          clipPath: `polygon(${poly.map((p) => `${p.x.toFixed(1)}px ${p.y.toFixed(1)}px`).join(',')})`,
+          transformOrigin: `${c.x.toFixed(1)}px ${c.y.toFixed(1)}px`,
+        });
+        bushido.overlay.appendChild(el);
+        const cx = box.x + c.x, cy = box.y + c.y;
+        const ox = cx - boxCX, oy = cy - boxCY, ol = Math.hypot(ox, oy) || 1;
+        const bx = boxCX - centerX, by = boxCY - centerY, bl = Math.hypot(bx, by) || 1;
+        const speed = 0.18 + Math.random() * 0.32;
+        bushido.pieces.push({
+          el, cx, cy, homeCx: cx, homeCy: cy,
+          vx: (ox / ol) * speed + (bx / bl) * 0.06 + (Math.random() - 0.5) * 0.12,
+          vy: (oy / ol) * speed + (by / bl) * 0.06 + (Math.random() - 0.5) * 0.12,
+          angle: 0, va: (Math.random() - 0.5) * (reducedMotion() ? 0.006 : 0.03),
+          r: Math.max(6, 0.42 * Math.sqrt(Math.max(1, area))),
+        });
+      }
+    }
+    bushido.phase = 'shatter';
+    bushido.shatterStart = performance.now();
+    window.removeEventListener('pointermove', bushidoPointerMove);
+  }
+
+  function updateBushido(now, dt) {
+    if (bushido.phase === 'slice') {
+      if (now - bushido.start >= BUSHIDO_DURATION) endSlicing();
+      return;
+    }
+    if (bushido.phase !== 'shatter') return;
+    const { width: W, height: H } = bushido.stageRect;
+    const bumpers = bumperRects(bushido.stageRect);
+    const pieces = bushido.pieces;
+    let maxSpeed = 0;
+    for (const p of pieces) {
+      p.vy += 0.00004 * dt;                 // faint gravity so shards settle low
+      p.vx *= Math.pow(0.9975, dt);
+      p.vy *= Math.pow(0.9975, dt);
+      p.cx += p.vx * dt;
+      p.cy += p.vy * dt;
+      p.angle += p.va * dt;
+      if (p.cx < p.r) { p.cx = p.r; p.vx = Math.abs(p.vx) * 0.62; p.va += 0.004; }
+      else if (p.cx > W - p.r) { p.cx = W - p.r; p.vx = -Math.abs(p.vx) * 0.62; p.va -= 0.004; }
+      if (p.cy < p.r) { p.cy = p.r; p.vy = Math.abs(p.vy) * 0.62; }
+      else if (p.cy > H - p.r) { p.cy = H - p.r; p.vy = -Math.abs(p.vy) * 0.62; p.vx *= 0.92; }
+      for (const bm of bumpers) {
+        const nx = clamp(p.cx, bm.x, bm.x + bm.w);
+        const ny = clamp(p.cy, bm.y, bm.y + bm.h);
+        let ddx = p.cx - nx, ddy = p.cy - ny, d = Math.hypot(ddx, ddy);
+        if (d < p.r) {
+          if (d < 0.01) { ddx = p.cx - (bm.x + bm.w / 2); ddy = p.cy - (bm.y + bm.h / 2); d = Math.hypot(ddx, ddy) || 1; }
+          const nxn = ddx / d, nyn = ddy / d;
+          p.cx += nxn * (p.r - d); p.cy += nyn * (p.r - d);
+          const vn = p.vx * nxn + p.vy * nyn;
+          if (vn < 0) { p.vx -= 1.4 * vn * nxn; p.vy -= 1.4 * vn * nyn; p.va += (Math.random() - 0.5) * 0.01; }
+        }
+      }
+      maxSpeed = Math.max(maxSpeed, Math.hypot(p.vx, p.vy));
+    }
+    for (let i = 0; i < pieces.length; i += 1) {
+      for (let j = i + 1; j < pieces.length; j += 1) {
+        const a = pieces[i], b = pieces[j];
+        const ddx = b.cx - a.cx, ddy = b.cy - a.cy, d = Math.hypot(ddx, ddy), min = a.r + b.r;
+        if (d < min && d > 0.01) {
+          const nxn = ddx / d, nyn = ddy / d, push = (min - d) / 2;
+          a.cx -= nxn * push; a.cy -= nyn * push;
+          b.cx += nxn * push; b.cy += nyn * push;
+          const rel = (b.vx - a.vx) * nxn + (b.vy - a.vy) * nyn;
+          if (rel < 0) { const imp = rel * 0.5; a.vx += imp * nxn; a.vy += imp * nyn; b.vx -= imp * nxn; b.vy -= imp * nyn; }
+        }
+      }
+    }
+    for (const p of pieces) {
+      p.el.style.transform = `translate(${(p.cx - p.homeCx).toFixed(2)}px, ${(p.cy - p.homeCy).toFixed(2)}px) rotate(${p.angle.toFixed(3)}rad)`;
+    }
+    const elapsed = now - bushido.shatterStart;
+    if (elapsed > 500 && (maxSpeed < BUSHIDO_SETTLE_SPEED || elapsed > BUSHIDO_SHATTER_MAX)) finishBushido();
+  }
+
+  function finishBushido() {
+    if (!bushido || bushido.phase === 'restore') return;
+    bushido.phase = 'restore';
+    const b = bushido;
+    for (const p of b.pieces) { p.el.style.transition = 'opacity 600ms ease'; p.el.style.opacity = '0'; }
+    b.overlay.style.transition = 'opacity 600ms ease';
+    b.overlay.style.opacity = '0';
+    if (b.hud) { b.hud.style.transition = 'opacity 400ms ease'; b.hud.style.opacity = '0'; }
+    for (const box of b.boxes) {
+      const el = box.body.el;
+      el.style.visibility = 'visible';
+      el.style.opacity = '0';
+      el.style.transition = 'opacity 600ms ease';
+      requestAnimationFrame(() => { el.style.opacity = '1'; });
+    }
+    window.setTimeout(() => {
+      b.overlay.remove();
+      b.hud?.remove();
+      for (const box of b.boxes) { box.body.el.style.transition = ''; box.body.el.style.opacity = ''; }
+      document.documentElement.classList.remove('pv2-bushido-on');
+      if (bushido === b) bushido = null;
+      lastTime = 0;
+    }, 680);
+  }
+
+  // Tear down a Bushido session immediately (e.g. the stage is being rebuilt).
+  function abortBushido() {
+    if (!bushido) return;
+    window.removeEventListener('pointermove', bushidoPointerMove);
+    bushido.overlay?.remove();
+    bushido.hud?.remove();
+    for (const box of bushido.boxes) {
+      box.body.el.style.visibility = '';
+      box.body.el.style.transition = '';
+      box.body.el.style.opacity = '';
+    }
+    document.documentElement.classList.remove('pv2-bushido-on');
+    bushido = null;
+  }
+
   function tick(now) {
     if (!stage) {
       mark('waiting');
@@ -1302,6 +1593,15 @@
     // Freeze the simulation while a battle is on top, but keep the loop alive.
     if (battlePaused) {
       lastTime = now;
+      frame = requestAnimationFrame(tick);
+      return;
+    }
+
+    // Bushido runs its own particle sim in place of the normal simulation.
+    if (bushido) {
+      const bdt = clamp(lastTime ? now - lastTime : 16.667, 8, 32);
+      lastTime = now;
+      updateBushido(now, bdt);
       frame = requestAnimationFrame(tick);
       return;
     }
@@ -1417,6 +1717,7 @@
   }
 
   function teardown() {
+    abortBushido();
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
     for (const body of bodies) if (body.halo) body.halo.style.opacity = '0';
@@ -1528,6 +1829,7 @@
       const n = Math.max(0, Math.round(Number(event.detail?.n) || 0));
       if (n) { activateGame(); addIdlePoints(n); }
     });
+    window.addEventListener('dblclick', handleBushidoDblClick);
     window.addEventListener('pointerdown', handlePointerDown, { passive: true });
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('pointerup', handlePointerEnd, { passive: true });
