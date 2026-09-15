@@ -28,17 +28,31 @@
 .pv2-score-counter.has-upgrade {
   border-color: rgba(230, 181, 32, .72);
   background: rgba(255, 244, 174, .95);
-  animation: pv2UpgradeReady 1.25s ease-in-out infinite;
 }
 
-@keyframes pv2UpgradeReady {
+/* The pulse lives on a dedicated glow layer behind the box. Because it has its
+   own transform/opacity, the per-score "pop" that hijacks the counter's own
+   transform can't mask it — so the box actually pulses while points flow in. */
+.pv2-score-counter.has-upgrade::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: pv2UpgradeGlow 1.3s ease-in-out infinite;
+}
+
+@keyframes pv2UpgradeGlow {
   0%, 100% {
-    box-shadow: 0 8px 22px rgba(36, 36, 36, .06), 0 0 0 0 rgba(242, 197, 51, 0);
-    transform: translateY(0) scale(1);
+    opacity: .4;
+    box-shadow: 0 0 12px 2px rgba(242, 197, 51, .4);
+    transform: scale(.98);
   }
   50% {
-    box-shadow: 0 8px 22px rgba(36, 36, 36, .06), 0 0 0 9px rgba(242, 197, 51, .26);
-    transform: translateY(0) scale(1.06);
+    opacity: 1;
+    box-shadow: 0 0 28px 9px rgba(242, 197, 51, .7);
+    transform: scale(1.07);
   }
 }
 
@@ -528,13 +542,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pv2-score-counter.has-upgrade,
+  .pv2-score-counter.has-upgrade::before,
   .pv2-upgrade-node.is-affordable {
     animation: none;
   }
 
-  .pv2-score-counter.has-upgrade {
-    box-shadow: 0 0 0 6px rgba(242,197,51,.24);
+  .pv2-score-counter.has-upgrade::before {
+    opacity: .8;
+    transform: none;
+    box-shadow: 0 0 20px 5px rgba(242, 197, 51, .5);
   }
 
   .pv2-upgrade-overlay,
