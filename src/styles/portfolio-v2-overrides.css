@@ -202,6 +202,54 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Lets a visitor stop the floating work-screen game if the movement is distracting. */
+.pv2-motion-toggle {
+  position: fixed;
+  top: calc(var(--pv2-nav-height) + 60px);
+  right: clamp(18px, 3.8vw, 68px);
+  z-index: 1180;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid rgba(36, 36, 36, 0.14);
+  border-radius: 999px;
+  background: rgba(120, 118, 112, 0.14);
+  color: var(--pv2-muted);
+  box-shadow: 0 8px 22px rgba(36, 36, 36, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-5px);
+  transition: opacity 180ms ease, transform 220ms var(--pv2-ease), background var(--pv2-fast) ease, color var(--pv2-fast) ease;
+}
+
+.pv2-motion-toggle.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.pv2-motion-toggle:hover,
+.pv2-motion-toggle:focus-visible {
+  background: rgba(120, 118, 112, 0.24);
+  color: var(--pv2-text);
+}
+
+.pv2-motion-toggle.is-stopped {
+  background: rgba(120, 118, 112, 0.24);
+  color: var(--pv2-text);
+}
+
+.pv2-motion-toggle svg {
+  width: 16px;
+  height: 16px;
+}
+
 .pv2-point-ghost {
   position: absolute;
   z-index: 1;
@@ -271,6 +319,13 @@
   .pv2-score-counter__value {
     font-size: 1rem;
   }
+
+  .pv2-motion-toggle {
+    top: 116px;
+    right: 14px;
+    width: 32px;
+    height: 32px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -278,7 +333,8 @@
   .pv2-project-tile .pv2-visual,
   .pv2-project-tile .pv2-project-tile__caption,
   .pv2-focus__actions a,
-  .pv2-score-counter {
+  .pv2-score-counter,
+  .pv2-motion-toggle {
     transition: none !important;
   }
 }

@@ -173,6 +173,8 @@
   let idleBank = 0;
   let autoFlickTimer = 0;
   let battlePaused = false;
+  let motionStopped = false; // user-toggled via the "Stop motion" button
+  let motionToggle = null;   // the toggle button element
   let bushido = null;        // active Bushido session state (null when idle)
   let bushidoCooldownUntil = 0;   // performance.now() timestamp cooldown ends
   let bushidoBadge = null;        // persistent cooldown badge element
@@ -368,6 +370,42 @@
 
   function setScoreVisible(visible) {
     ensureScoreCounter().classList.toggle('is-visible', Boolean(visible));
+  }
+
+  const MOTION_ICON_PAUSE = '<path d="M8 5v14M16 5v14"/>';
+  const MOTION_ICON_PLAY = '<path d="M7 4.5v15l13-7.5z" fill="currentColor" stroke="none"/>';
+
+  function ensureMotionToggle() {
+    if (motionToggle?.isConnected) return motionToggle;
+    motionToggle = document.createElement('button');
+    motionToggle.type = 'button';
+    motionToggle.className = 'pv2-motion-toggle';
+    motionToggle.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MOTION_ICON_PAUSE}</svg>`;
+    motionToggle.addEventListener('click', () => setMotionStopped(!motionStopped));
+    document.body.appendChild(motionToggle);
+    refreshMotionToggle();
+    return motionToggle;
+  }
+
+  function refreshMotionToggle() {
+    if (!motionToggle?.isConnected) return;
+    const label = motionStopped ? 'Resume motion' : 'Stop motion';
+    motionToggle.setAttribute('aria-label', label);
+    motionToggle.title = label;
+    motionToggle.setAttribute('aria-pressed', String(motionStopped));
+    motionToggle.classList.toggle('is-stopped', motionStopped);
+    const svg = motionToggle.querySelector('svg');
+    if (svg) svg.innerHTML = motionStopped ? MOTION_ICON_PLAY : MOTION_ICON_PAUSE;
+  }
+
+  function setMotionStopped(stopped) {
+    motionStopped = Boolean(stopped);
+    if (!motionStopped) lastTime = 0;
+    refreshMotionToggle();
+  }
+
+  function setMotionToggleVisible(visible) {
+    ensureMotionToggle().classList.toggle('is-visible', Boolean(visible));
   }
 
   function activateGame() {
@@ -1435,7 +1473,7 @@
   }
 
   function handleBushidoDblClick(event) {
-    if (battlePaused || !gameActive || !stage) return;
+    if (battlePaused || motionStopped || !gameActive || !stage) return;
     if (!hasUpgrade('flux-bushido')) return;
     if (upgradeOverlay?.classList.contains('is-open')) return;
     // Leave real interactive targets alone; only the work-area whitespace arms it.
@@ -1671,8 +1709,9 @@
       return;
     }
 
-    // Freeze the simulation while a battle is on top, but keep the loop alive.
-    if (battlePaused) {
+    // Freeze the simulation while a battle is on top or motion is stopped,
+    // but keep the loop alive.
+    if (battlePaused || motionStopped) {
       lastTime = now;
       frame = requestAnimationFrame(tick);
       return;
@@ -1808,6 +1847,7 @@
     autoFlickTimer = 0;
     document.documentElement.classList.remove('pv2-physics-live');
     setScoreVisible(false);
+    setMotionToggleVisible(false);
   }
 
   // Position-only push that guarantees a freshly spawned block sits clear of
@@ -1881,6 +1921,7 @@
     }
 
     if (gameActive) setScoreVisible(true);
+    setMotionToggleVisible(true);
     refreshBushidoBadge();
     mark('initialized');
     frame = requestAnimationFrame(tick);
@@ -1902,6 +1943,7 @@
   function start() {
     mark('script-loaded');
     ensureScoreCounter();
+    ensureMotionToggle();
     ensureFxLayer();
     ensureBushidoBadge();
     refreshBushidoBadge();
