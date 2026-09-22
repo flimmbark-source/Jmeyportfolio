@@ -562,18 +562,36 @@
 }
 
 /* ===================== Bushido: slice-time ability ===================== */
+/* Fixed to the full viewport (nav bar and outer edges included), not just
+   the work-screen stage — the backdrop child below is what actually paints
+   black, so it can fade out independently once shards start flying. */
 .pv2-bushido-black {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  z-index: 40;
-  background: #000;
-  opacity: 0;
+  /* Above the nav bar (1000) and the score/motion-toggle chrome (1180) so the
+     whole viewport actually darkens, but below the HUD (6500) and cooldown
+     badge (6400), which are Bushido's own UI and should stay visible on top. */
+  z-index: 3000;
   overflow: hidden;
   pointer-events: none;
+}
+
+.pv2-bushido-backdrop {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
   animation: pv2BushidoFade 220ms ease forwards;
 }
 
 @keyframes pv2BushidoFade { to { opacity: 1; } }
+
+/* Aligned to the work-screen stage's viewport rect, so every box/piece's
+   stage-local x/y positioning is unchanged even though the backdrop above
+   now spans the whole screen. */
+.pv2-bushido-stage-layer {
+  position: absolute;
+}
 
 /* Frozen stand-ins for the games while the player slices. */
 .pv2-bushido-box {
@@ -589,6 +607,18 @@
   height: 2px;
   margin-top: -1px;
   background: rgba(220, 28, 28, .92);
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+/* A short fading streak following the blade between two pointer samples. */
+.pv2-bushido-trail {
+  position: absolute;
+  height: 3px;
+  margin-top: -1.5px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, .95));
+  box-shadow: 0 0 10px rgba(255, 255, 255, .65);
+  border-radius: 2px;
   transform-origin: left center;
   pointer-events: none;
 }
@@ -643,7 +673,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pv2-bushido-black { animation-duration: 1ms; }
+  .pv2-bushido-backdrop { animation-duration: 1ms; }
 }
 
 /* Cooldown badge: ring (empty on use, refills clockwise) + katana + label. */

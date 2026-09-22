@@ -1423,6 +1423,32 @@
     return out.length ? out : [poly];
   }
 
+  // Liang-Barsky clip: the [tMin,tMax] portion of segment a→b that lies
+  // inside rect, or null if the segment never enters it. Used to find the
+  // exact point a fast pointer sample crossed a box's edge, instead of the
+  // (already-inside) sampled position — otherwise a cut visibly starts
+  // partway into the box rather than at the blade's true entry point.
+  function clipSegmentToRect(ax, ay, bx, by, rect) {
+    const dx = bx - ax, dy = by - ay;
+    let tMin = 0, tMax = 1;
+    const p = [-dx, dx, -dy, dy];
+    const q = [ax - rect.left, rect.right - ax, ay - rect.top, rect.bottom - ay];
+    for (let i = 0; i < 4; i += 1) {
+      if (p[i] === 0) {
+        if (q[i] < 0) return null;
+      } else {
+        const t = q[i] / p[i];
+        if (p[i] < 0) { if (t > tMax) return null; if (t > tMin) tMin = t; }
+        else { if (t < tMin) return null; if (t < tMax) tMax = t; }
+      }
+    }
+    return { tMin, tMax };
+  }
+
+  function pointAt(ax, ay, bx, by, t) {
+    return { x: ax + (bx - ax) * t, y: ay + (by - ay) * t };
+  }
+
   // The persistent cooldown badge: a small ring with the katana icon + label.
   // The ring is full when ready; on activation it empties and fills clockwise
   // over the cooldown via an SVG stroke-dashoffset transition (pathLength=100).
@@ -1490,10 +1516,29 @@
     refreshBushidoBadge();
     startBushidoCooldown(performance.now());
     const stageRect = stage.getBoundingClientRect();
+
+    // The overlay is fixed to the full viewport (nav bar and edges included),
+    // with a separate backdrop layer for the black fade so it can be faded
+    // out independently of the stage-aligned content once shards start
+    // flying. A stage-aligned layer inside it keeps every box/piece's
+    // existing stage-local x/y math unchanged.
     const overlay = document.createElement('div');
     overlay.className = 'pv2-bushido-black';
     overlay.setAttribute('aria-hidden', 'true');
-    stage.appendChild(overlay);
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'pv2-bushido-backdrop';
+    overlay.appendChild(backdrop);
+
+    const stageLayer = document.createElement('div');
+    stageLayer.className = 'pv2-bushido-stage-layer';
+    stageLayer.style.left = `${stageRect.left}px`;
+    stageLayer.style.top = `${stageRect.top}px`;
+    stageLayer.style.width = `${stageRect.width}px`;
+    stageLayer.style.height = `${stageRect.height}px`;
+    overlay.appendChild(stageLayer);
+
+    document.body.appendChild(overlay);
 
     const boxes = bodies.map((body) => {
       const el = document.createElement('div');
@@ -1502,7 +1547,7 @@
       el.style.top = `${body.y}px`;
       el.style.width = `${body.w}px`;
       el.style.height = `${body.h}px`;
-      overlay.appendChild(el);
+      stageLayer.appendChild(el);
       body.el.style.visibility = 'hidden'; // freeze + hide the real block
       return { body, x: body.x, y: body.y, w: body.w, h: body.h, el, inside: false, entry: null, cuts: [] };
     });
@@ -1519,8 +1564,35 @@
     });
 
     document.documentElement.classList.add('pv2-bushido-on');
-    bushido = { phase: 'slice', start: performance.now(), shatterStart: 0, stageRect, overlay, hud, boxes, pieces: [] };
+    bushido = {
+      phase: 'slice', start: performance.now(), shatterStart: 0, stageRect,
+      overlay, backdrop, stageLayer, hud, boxes, pieces: [], lastPx: null, lastPy: null,
+    };
     window.addEventListener('pointermove', bushidoPointerMove, { passive: true });
+  }
+
+  // A short fading streak between two consecutive pointer samples, so the
+  // blade leaves a continuous ink trail rather than jumping silently between
+  // slice marks.
+  function spawnBushidoTrail(session, ax, ay, bx, by) {
+    const dist = Math.hypot(bx - ax, by - ay);
+    if (dist < 1) return;
+    const el = document.createElement('span');
+    el.className = 'pv2-bushido-trail';
+    el.style.width = `${dist}px`;
+    el.style.left = `${ax}px`;
+    el.style.top = `${ay}px`;
+    el.style.transform = `rotate(${Math.atan2(by - ay, bx - ax)}rad)`;
+    session.stageLayer.appendChild(el);
+    try {
+      const anim = el.animate(
+        [{ opacity: 1 }, { opacity: 0 }],
+        { duration: reducedMotion() ? 1 : 260, easing: 'ease-out' },
+      );
+      anim.addEventListener('finish', () => el.remove(), { once: true });
+    } catch {
+      el.remove();
+    }
   }
 
   function drawCut(box, a, b) {
@@ -1540,15 +1612,28 @@
     const r = stage.getBoundingClientRect();
     const px = event.clientX - r.left;
     const py = event.clientY - r.top;
+    const lastPx = bushido.lastPx, lastPy = bushido.lastPy;
+    if (lastPx != null) spawnBushidoTrail(bushido, lastPx, lastPy, px, py);
+
     for (const box of bushido.boxes) {
       const inside = px >= box.x && px <= box.x + box.w && py >= box.y && py <= box.y + box.h;
+      // Where a fast sample crosses a box's edge between two frames, use the
+      // exact intersection with that edge rather than the (already-inside or
+      // already-outside) sampled point — otherwise the cut visibly starts or
+      // ends partway into the box instead of right at the blade's edge.
+      const rect = { left: box.x, top: box.y, right: box.x + box.w, bottom: box.y + box.h };
+      const clip = lastPx != null ? clipSegmentToRect(lastPx, lastPy, px, py, rect) : null;
       if (inside && !box.inside) {
         box.inside = true;
-        box.entry = { x: clamp(px - box.x, 0, box.w), y: clamp(py - box.y, 0, box.h) };
+        box.entry = clip
+          ? (() => { const p = pointAt(lastPx, lastPy, px, py, clip.tMin); return { x: clamp(p.x - box.x, 0, box.w), y: clamp(p.y - box.y, 0, box.h) }; })()
+          : { x: clamp(px - box.x, 0, box.w), y: clamp(py - box.y, 0, box.h) };
       } else if (!inside && box.inside) {
         box.inside = false;
         if (box.entry && box.cuts.length < BUSHIDO_MAX_CUTS) {
-          const exit = { x: clamp(px - box.x, 0, box.w), y: clamp(py - box.y, 0, box.h) };
+          const exit = clip
+            ? (() => { const p = pointAt(lastPx, lastPy, px, py, clip.tMax); return { x: clamp(p.x - box.x, 0, box.w), y: clamp(p.y - box.y, 0, box.h) }; })()
+            : { x: clamp(px - box.x, 0, box.w), y: clamp(py - box.y, 0, box.h) };
           if (Math.hypot(exit.x - box.entry.x, exit.y - box.entry.y) > 6) {
             box.cuts.push({ a: box.entry, b: exit });
             drawCut(box, box.entry, exit);
@@ -1557,6 +1642,8 @@
         box.entry = null;
       }
     }
+    bushido.lastPx = px;
+    bushido.lastPy = py;
   }
 
   // Slice window over: turn each white box into the real block, cut along the
@@ -1588,7 +1675,7 @@
           clipPath: `polygon(${poly.map((p) => `${p.x.toFixed(1)}px ${p.y.toFixed(1)}px`).join(',')})`,
           transformOrigin: `${c.x.toFixed(1)}px ${c.y.toFixed(1)}px`,
         });
-        bushido.overlay.appendChild(el);
+        bushido.stageLayer.appendChild(el);
         const cx = box.x + c.x, cy = box.y + c.y;
         const ox = cx - boxCX, oy = cy - boxCY, ol = Math.hypot(ox, oy) || 1;
         const bx = boxCX - centerX, by = boxCY - centerY, bl = Math.hypot(bx, by) || 1;
@@ -1605,6 +1692,22 @@
     bushido.phase = 'shatter';
     bushido.shatterStart = performance.now();
     window.removeEventListener('pointermove', bushidoPointerMove);
+    // Drop the black backdrop the moment shards start flying, so the bounce
+    // and bumper physics plays out visibly against the real background
+    // instead of staying hidden behind a black screen until everything
+    // settles.
+    if (bushido.backdrop) {
+      // The backdrop's fade-IN is a CSS `animation …forwards`, which pins its
+      // final value with higher cascade priority than a plain inline style —
+      // clear it and commit the current opacity (with a forced reflow) before
+      // starting the transition, or the fade-out either gets silently
+      // ignored or snaps instantly instead of easing out.
+      bushido.backdrop.style.animation = 'none';
+      bushido.backdrop.style.opacity = '1';
+      void bushido.backdrop.offsetWidth;
+      bushido.backdrop.style.transition = `opacity ${reducedMotion() ? 1 : 260}ms ease`;
+      bushido.backdrop.style.opacity = '0';
+    }
   }
 
   function updateBushido(now, dt) {
@@ -1667,8 +1770,6 @@
     bushido.phase = 'restore';
     const b = bushido;
     for (const p of b.pieces) { p.el.style.transition = 'opacity 600ms ease'; p.el.style.opacity = '0'; }
-    b.overlay.style.transition = 'opacity 600ms ease';
-    b.overlay.style.opacity = '0';
     if (b.hud) { b.hud.style.transition = 'opacity 400ms ease'; b.hud.style.opacity = '0'; }
     for (const box of b.boxes) {
       const el = box.body.el;
