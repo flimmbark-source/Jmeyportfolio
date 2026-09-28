@@ -488,6 +488,7 @@ export default function RelationalPortfolio() {
         <nav aria-label="Portfolio navigation">
           <button type="button" onClick={() => { setSelectedId(null); writeProjectToUrl(null); }}>Work</button>
           <button type="button" onClick={() => select('unfinished')}>Playground</button>
+          <a href="/research">Research</a>
           <a href="/ux">UX</a>
           <a href="/contact">Contact</a>
         </nav>

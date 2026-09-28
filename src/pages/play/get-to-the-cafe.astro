@@ -13,7 +13,10 @@ const gameSrc = '/games/get-to-the-cafe/index.html';
     <header class="playbar">
       <a href="/?project=get-to-the-cafe">← Back to project</a>
       <strong>Get to the Café</strong>
-      <button id="fullscreen" type="button" aria-pressed="false">Fullscreen</button>
+      <div class="playbar__actions">
+        <a class="reflect-link" href="/reflect/get-to-the-cafe">Finished? Reflect →</a>
+        <button id="fullscreen" type="button" aria-pressed="false">Fullscreen</button>
+      </div>
     </header>
 
     <main class="game-shell" id="game-shell">
@@ -94,8 +97,25 @@ const gameSrc = '/games/get-to-the-cafe/index.html';
     font-weight: 650;
   }
 
-  .playbar button {
+  .playbar__actions {
     justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .reflect-link {
+    font-size: .82rem;
+    white-space: nowrap;
+    opacity: .58;
+  }
+
+  .reflect-link:hover,
+  .reflect-link:focus-visible {
+    opacity: 1;
+  }
+
+  .playbar button {
     min-height: 36px;
     padding: 0 12px;
     border: 1px solid rgba(255,255,255,.18);
@@ -140,7 +160,8 @@ const gameSrc = '/games/get-to-the-cafe/index.html';
   }
 
   :global(body.is-immersive) .playbar > a,
-  :global(body.is-immersive) .playbar > strong {
+  :global(body.is-immersive) .playbar > strong,
+  :global(body.is-immersive) .reflect-link {
     display: none;
   }
 

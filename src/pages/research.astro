@@ -1,0 +1,512 @@
+---
+import '../styles/portfolio-v2.css';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta
+      name="description"
+      content="Experiments and research around interaction, interpretation, learning, and perspective."
+    />
+    <title>Experiments & Research — Jacob Meyerkopf</title>
+  </head>
+  <body class="pv2-body">
+    <div class="pv2-site">
+      <header class="pv2-nav">
+        <a href="/" class="pv2-nav__name">Jacob Meyerkopf</a>
+        <nav aria-label="Portfolio navigation">
+          <a href="/">Work</a>
+          <a href="/?project=unfinished">Playground</a>
+          <a href="/research" aria-current="page">Research</a>
+          <a href="/ux">UX</a>
+          <a href="/contact">Contact</a>
+        </nav>
+      </header>
+
+      <main class="research">
+        <section class="research__hero">
+          <p class="pv2-overline">Experiments &amp; Research</p>
+          <h1>Can interaction give someone a framework they can use?</h1>
+          <p>
+            I build small interactive experiences around questions that are difficult to communicate
+            through explanation alone, then use what happens in and around those experiences to decide
+            what is worth investigating more carefully.
+          </p>
+        </section>
+
+        <section class="research__section" aria-labelledby="current-experiments">
+          <div class="research__section-heading">
+            <p class="pv2-overline">Current experiments</p>
+            <h2 id="current-experiments">Work that is being tested, not presented as settled evidence.</h2>
+          </div>
+
+          <article class="experiment" id="get-to-the-cafe">
+            <div class="experiment__topline">
+              <span class="evidence-label evidence-label--question">Current question</span>
+              <span class="experiment__status">Study design in development</span>
+            </div>
+            <h3>Get to the Café</h3>
+            <p class="experiment__question">
+              Does playing the experience change how people interpret apparently ordinary functioning —
+              especially how confidently they infer someone&rsquo;s capacity when important information is missing?
+            </p>
+            <p class="experiment__note">
+              The planned study uses pre/post judgment tasks to test that question. The study is not being
+              presented here as having produced a finding yet.
+            </p>
+            <div class="experiment__actions">
+              <a class="research__primary-link" href="/play/get-to-the-cafe">Play it blind →</a>
+              <a href="/reflect/get-to-the-cafe">Reflect after playing →</a>
+            </div>
+          </article>
+        </section>
+
+        <section class="research__section" aria-labelledby="evidence-states">
+          <div class="research__section-heading">
+            <p class="pv2-overline">What we&rsquo;re learning</p>
+            <h2 id="evidence-states">The evidence state stays visible.</h2>
+            <p>
+              Reactions can generate useful questions without becoming research claims. These labels mark
+              what kind of statement is being made.
+            </p>
+          </div>
+
+          <div class="evidence-grid">
+            <article class="evidence-card">
+              <span class="evidence-label">Player observation</span>
+              <strong>Exploratory / anecdotal</strong>
+              <p>Something a player reports or does. Useful for noticing patterns and forming questions; not a finding.</p>
+            </article>
+
+            <article class="evidence-card">
+              <span class="evidence-label evidence-label--question">Current question</span>
+              <strong>Open</strong>
+              <p>A question emerging from the work that has not yet been answered by structured evidence.</p>
+            </article>
+
+            <article class="evidence-card">
+              <span class="evidence-label evidence-label--study">Active study</span>
+              <strong>Structured investigation</strong>
+              <p>Used once a study is actually collecting or analyzing data under a defined protocol.</p>
+            </article>
+
+            <article class="evidence-card">
+              <span class="evidence-label evidence-label--finding">Finding</span>
+              <strong>Evidence-backed</strong>
+              <p>Reserved for conclusions supported by the relevant study evidence, with the limits of that evidence stated.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="research__section research__participate" id="participate" aria-labelledby="participate-title">
+          <div class="research__section-heading">
+            <p class="pv2-overline">Participate</p>
+            <h2 id="participate-title">Get involved in the work.</h2>
+            <p>
+              This is for testing unfinished experiences, research participation, and collaboration around
+              interaction, disability, learning, or therapeutic applications.
+            </p>
+          </div>
+
+          <form
+            class="research-form"
+            name="research-interest"
+            method="POST"
+            action="/research?sent=1#participate"
+            data-netlify="true"
+            netlify-honeypot="bot-field"
+          >
+            <input type="hidden" name="form-name" value="research-interest" />
+            <p hidden>
+              <label>Leave this empty: <input name="bot-field" /></label>
+            </p>
+
+            <fieldset class="research-form__choices">
+              <legend>I&rsquo;m interested in</legend>
+              <label><input type="radio" name="interest" value="testing-unfinished-experiences" /> Testing unfinished experiences</label>
+              <label><input type="radio" name="interest" value="participating-in-research" /> Participating in research</label>
+              <label><input type="radio" name="interest" value="research-collaboration" /> Research collaboration</label>
+              <label><input type="radio" name="interest" value="clinical-institutional-collaboration" /> Clinical / institutional collaboration</label>
+              <label><input type="radio" name="interest" value="something-else" /> Something else</label>
+            </fieldset>
+
+            <div class="research-form__row">
+              <div class="research-form__field">
+                <label for="research-name">Name</label>
+                <input id="research-name" name="name" type="text" autocomplete="name" required />
+              </div>
+              <div class="research-form__field">
+                <label for="research-email">Email</label>
+                <input id="research-email" name="email" type="email" autocomplete="email" required />
+              </div>
+            </div>
+
+            <div class="research-form__field">
+              <label for="research-message">Optional message</label>
+              <textarea id="research-message" name="message" rows="5"></textarea>
+            </div>
+
+            <button class="research-form__submit" type="submit">Get involved</button>
+            <p class="research-form__status" role="status" aria-live="polite" hidden></p>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <script is:inline>
+      (() => {
+        const form = document.querySelector('.research-form');
+        if (!form) return;
+        const status = form.querySelector('.research-form__status');
+        const submit = form.querySelector('.research-form__submit');
+
+        const showStatus = (message, ok) => {
+          if (!status) return;
+          status.textContent = message;
+          status.hidden = false;
+          status.classList.toggle('is-error', !ok);
+          status.classList.toggle('is-ok', ok);
+        };
+
+        const succeed = () => {
+          form.querySelectorAll('input, textarea, button').forEach((element) => {
+            element.disabled = true;
+          });
+          showStatus('Thanks — I have your interest and contact details.', true);
+        };
+
+        if (new URLSearchParams(window.location.search).get('sent') === '1') {
+          succeed();
+        }
+
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          if (submit) {
+            submit.disabled = true;
+            submit.textContent = 'Sending…';
+          }
+
+          const data = new FormData(form);
+          fetch('/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(data).toString(),
+          })
+            .then((response) => {
+              if (!response.ok) throw new Error('Submission failed');
+              succeed();
+            })
+            .catch(() => {
+              if (submit) {
+                submit.disabled = false;
+                submit.textContent = 'Get involved';
+              }
+              showStatus('Couldn’t send that here. Please use the Contact page instead.', false);
+            });
+        });
+      })();
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  .research {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: clamp(32px, 7vh, 82px) 0 clamp(64px, 10vh, 120px);
+  }
+
+  .research__hero {
+    max-width: 820px;
+  }
+
+  .research__hero h1 {
+    margin: 0 0 clamp(18px, 3vh, 30px);
+    font-size: clamp(3rem, 7vw, 6rem);
+    line-height: .95;
+    letter-spacing: -.06em;
+    font-weight: 510;
+    text-wrap: balance;
+  }
+
+  .research__hero > p:last-child,
+  .research__section-heading > p:last-child {
+    max-width: 64ch;
+    margin: 0;
+    color: var(--pv2-muted);
+    font-size: clamp(1rem, 1.35vw, 1.16rem);
+    line-height: 1.58;
+  }
+
+  .research__section {
+    margin-top: clamp(72px, 11vh, 132px);
+  }
+
+  .research__section-heading {
+    max-width: 760px;
+    margin-bottom: 30px;
+  }
+
+  .research__section-heading h2 {
+    margin: 0 0 14px;
+    font-size: clamp(2rem, 4.2vw, 3.7rem);
+    line-height: 1;
+    letter-spacing: -.045em;
+    font-weight: 520;
+    text-wrap: balance;
+  }
+
+  .experiment {
+    padding: clamp(22px, 4vw, 38px);
+    border: 1px solid var(--pv2-line);
+    border-radius: 22px;
+    background: rgba(255,255,255,.55);
+  }
+
+  .experiment__topline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .experiment__status {
+    color: var(--pv2-muted);
+    font-size: .78rem;
+  }
+
+  .experiment h3 {
+    margin: 22px 0 16px;
+    font-size: clamp(2rem, 4vw, 3.4rem);
+    line-height: 1;
+    letter-spacing: -.045em;
+    font-weight: 540;
+  }
+
+  .experiment__question {
+    max-width: 66ch;
+    margin: 0;
+    font-size: clamp(1.08rem, 1.6vw, 1.28rem);
+    line-height: 1.5;
+  }
+
+  .experiment__note {
+    max-width: 70ch;
+    margin: 16px 0 0;
+    color: var(--pv2-muted);
+    line-height: 1.55;
+  }
+
+  .experiment__actions {
+    display: flex;
+    gap: 18px 26px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 28px;
+  }
+
+  .experiment__actions a {
+    color: var(--pv2-text);
+    text-decoration: none;
+    font-weight: 620;
+  }
+
+  .experiment__actions a:not(.research__primary-link) {
+    color: var(--pv2-muted);
+    font-weight: 540;
+  }
+
+  .research__primary-link {
+    display: inline-flex;
+    padding: 11px 18px;
+    border-radius: 999px;
+    background: var(--pv2-text);
+    color: #f7f6f2 !important;
+  }
+
+  .evidence-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .evidence-card {
+    min-height: 190px;
+    padding: 22px;
+    border: 1px solid var(--pv2-line);
+    border-radius: 18px;
+    background: rgba(255,255,255,.42);
+  }
+
+  .evidence-card strong {
+    display: block;
+    margin-top: 17px;
+    font-size: 1.2rem;
+    font-weight: 620;
+  }
+
+  .evidence-card p {
+    margin: 9px 0 0;
+    color: var(--pv2-muted);
+    line-height: 1.52;
+  }
+
+  .evidence-label {
+    display: inline-flex;
+    width: fit-content;
+    padding: 5px 8px;
+    border: 1px solid rgba(36,36,36,.16);
+    border-radius: 999px;
+    color: #68635d;
+    background: #f1efe9;
+    font-size: .64rem;
+    font-weight: 750;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+  }
+
+  .evidence-label--question { background: #eee9de; }
+  .evidence-label--study { background: #e6ece9; }
+  .evidence-label--finding { background: #e9ebe2; }
+
+  .research__participate {
+    display: grid;
+    grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 70px);
+    align-items: start;
+  }
+
+  .research__participate .research__section-heading {
+    margin: 0;
+  }
+
+  .research-form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding: clamp(22px, 3vw, 30px);
+    border: 1px solid var(--pv2-line);
+    border-radius: 20px;
+    background: rgba(255,255,255,.62);
+  }
+
+  .research-form__choices {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .research-form__choices legend,
+  .research-form__field > label {
+    margin-bottom: 8px;
+    color: var(--pv2-muted);
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .research-form__choices label {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    font-size: .95rem;
+    line-height: 1.4;
+  }
+
+  .research-form__choices input {
+    margin-top: .2em;
+  }
+
+  .research-form__row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .research-form__field {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .research-form__field input,
+  .research-form__field textarea {
+    width: 100%;
+    padding: 12px 13px;
+    border: 1px solid var(--pv2-line);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--pv2-text);
+    font: inherit;
+    font-size: .98rem;
+  }
+
+  .research-form__field textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+
+  .research-form__field input:focus,
+  .research-form__field textarea:focus {
+    outline: none;
+    border-color: var(--pv2-text);
+    box-shadow: 0 0 0 3px rgba(36,36,36,.08);
+  }
+
+  .research-form__submit {
+    align-self: flex-start;
+    padding: 12px 24px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--pv2-text);
+    color: #f7f6f2;
+    font: inherit;
+    font-weight: 640;
+    cursor: pointer;
+  }
+
+  .research-form__submit:disabled {
+    opacity: .58;
+    cursor: default;
+  }
+
+  .research-form__status {
+    margin: -8px 0 0;
+    font-size: .92rem;
+  }
+
+  .research-form__status.is-ok { color: #2d8a5b; }
+  .research-form__status.is-error { color: #b4442f; }
+
+  @media (max-width: 820px) {
+    .research__participate {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .pv2-nav {
+      height: auto;
+      min-height: 64px;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+      padding: 16px 0 12px;
+    }
+
+    .pv2-nav nav {
+      flex-wrap: wrap;
+      gap: 12px 18px;
+    }
+
+    .evidence-grid,
+    .research-form__row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
