@@ -1,0 +1,334 @@
+---
+import '../../styles/portfolio-v2.css';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta
+      name="description"
+      content="Reflect on your experience playing Get to the Café."
+    />
+    <title>Reflect — Get to the Café</title>
+  </head>
+  <body class="pv2-body">
+    <div class="pv2-site">
+      <header class="reflection-nav">
+        <a href="/" class="pv2-nav__name">Jacob Meyerkopf</a>
+        <a href="/play/get-to-the-cafe">← Back to the game</a>
+      </header>
+
+      <main class="reflection">
+        <section class="reflection__intro">
+          <p class="pv2-overline">After playing</p>
+          <h1>Get to the Café</h1>
+          <p>No explanation needed. I&rsquo;m interested in what happened for you while you played.</p>
+        </section>
+
+        <form
+          class="reflection__form"
+          name="gttc-reflection"
+          method="POST"
+          action="/reflect/get-to-the-cafe?sent=1"
+          data-netlify="true"
+          netlify-honeypot="bot-field"
+        >
+          <input type="hidden" name="form-name" value="gttc-reflection" />
+          <p hidden>
+            <label>Leave this empty: <input name="bot-field" /></label>
+          </p>
+
+          <div class="reflection__field">
+            <label for="r-doing">What did you find yourself doing while playing?</label>
+            <textarea id="r-doing" name="what_did_you_do" rows="5"></textarea>
+          </div>
+
+          <div class="reflection__field">
+            <label for="r-change">Was there a point where the way you approached it changed?</label>
+            <textarea id="r-change" name="approach_changed" rows="5"></textarea>
+          </div>
+
+          <div class="reflection__field">
+            <label for="r-stayed">What, if anything, stayed with you afterward?</label>
+            <textarea id="r-stayed" name="stayed_with_you" rows="5"></textarea>
+          </div>
+
+          <fieldset class="reflection__checks">
+            <legend>Optional</legend>
+            <label>
+              <input type="checkbox" name="quote_permission" value="yes" />
+              <span>You may quote this response anonymously.</span>
+            </label>
+            <label>
+              <input type="checkbox" name="future_experiments" value="yes" />
+              <span>I&rsquo;m interested in trying future experiments.</span>
+            </label>
+          </fieldset>
+
+          <div class="reflection__field reflection__field--email">
+            <label for="r-email">Email <span>(optional)</span></label>
+            <input id="r-email" name="email" type="email" autocomplete="email" />
+          </div>
+
+          <button class="reflection__submit" type="submit">Submit reflection</button>
+          <p class="reflection__status" role="status" aria-live="polite" hidden></p>
+        </form>
+
+        <section class="reflection__next" hidden>
+          <p class="pv2-overline">From here</p>
+          <div class="reflection__next-links">
+            <a href="/research#get-to-the-cafe">See what this experiment is investigating →</a>
+            <a href="/research#participate">Help test future work →</a>
+            <a href="/?project=unfinished">Try another experiment →</a>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script is:inline>
+      (() => {
+        const form = document.querySelector('.reflection__form');
+        if (!form) return;
+        const status = form.querySelector('.reflection__status');
+        const submit = form.querySelector('.reflection__submit');
+        const next = document.querySelector('.reflection__next');
+
+        const showStatus = (message, ok) => {
+          if (!status) return;
+          status.textContent = message;
+          status.hidden = false;
+          status.classList.toggle('is-error', !ok);
+          status.classList.toggle('is-ok', ok);
+        };
+
+        const succeed = () => {
+          form.querySelectorAll('input, textarea, button').forEach((element) => {
+            element.disabled = true;
+          });
+          showStatus('Thank you. Your reflection was submitted.', true);
+          if (next) next.hidden = false;
+        };
+
+        if (new URLSearchParams(window.location.search).get('sent') === '1') {
+          succeed();
+        }
+
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          if (submit) {
+            submit.disabled = true;
+            submit.textContent = 'Submitting…';
+          }
+
+          const data = new FormData(form);
+          fetch('/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(data).toString(),
+          })
+            .then((response) => {
+              if (!response.ok) throw new Error('Submission failed');
+              succeed();
+            })
+            .catch(() => {
+              if (submit) {
+                submit.disabled = false;
+                submit.textContent = 'Submit reflection';
+              }
+              showStatus('Couldn’t submit that here. Please try again later.', false);
+            });
+        });
+      })();
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  .reflection-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: clamp(64px, 9vh, 88px);
+    gap: 24px;
+  }
+
+  .reflection-nav > a:last-child {
+    color: var(--pv2-muted);
+    text-decoration: none;
+    font-size: .9rem;
+  }
+
+  .reflection-nav > a:last-child:hover,
+  .reflection-nav > a:last-child:focus-visible {
+    color: var(--pv2-text);
+  }
+
+  .reflection {
+    width: min(760px, 100%);
+    margin: 0 auto;
+    padding: clamp(32px, 7vh, 84px) 0 clamp(56px, 10vh, 120px);
+  }
+
+  .reflection__intro {
+    max-width: 620px;
+    margin-bottom: clamp(34px, 6vh, 64px);
+  }
+
+  .reflection__intro h1 {
+    margin: 0 0 18px;
+    font-size: clamp(2.7rem, 7vw, 5.2rem);
+    line-height: .96;
+    letter-spacing: -.055em;
+    font-weight: 510;
+  }
+
+  .reflection__intro > p:last-child {
+    max-width: 52ch;
+    margin: 0;
+    color: var(--pv2-muted);
+    font-size: clamp(1rem, 1.4vw, 1.14rem);
+    line-height: 1.55;
+  }
+
+  .reflection__form {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .reflection__field {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .reflection__field label,
+  .reflection__checks legend {
+    color: var(--pv2-text);
+    font-size: clamp(1rem, 1.5vw, 1.14rem);
+    font-weight: 590;
+    line-height: 1.35;
+  }
+
+  .reflection__field label span {
+    color: var(--pv2-muted);
+    font-size: .86em;
+    font-weight: 500;
+  }
+
+  .reflection__field textarea,
+  .reflection__field input[type="email"] {
+    width: 100%;
+    border: 1px solid var(--pv2-line);
+    border-radius: 14px;
+    background: rgba(255,255,255,.68);
+    color: var(--pv2-text);
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .reflection__field textarea {
+    min-height: 132px;
+    padding: 14px 15px;
+    resize: vertical;
+  }
+
+  .reflection__field input[type="email"] {
+    padding: 12px 14px;
+  }
+
+  .reflection__field textarea:focus,
+  .reflection__field input[type="email"]:focus {
+    outline: none;
+    border-color: var(--pv2-text);
+    box-shadow: 0 0 0 3px rgba(36,36,36,.08);
+  }
+
+  .reflection__checks {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 2px 0 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .reflection__checks legend {
+    margin-bottom: 10px;
+  }
+
+  .reflection__checks label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: var(--pv2-muted);
+    font-size: .96rem;
+    line-height: 1.45;
+  }
+
+  .reflection__checks input {
+    margin-top: .2em;
+  }
+
+  .reflection__field--email {
+    max-width: 440px;
+  }
+
+  .reflection__submit {
+    align-self: flex-start;
+    padding: 12px 24px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--pv2-text);
+    color: #f7f6f2;
+    font: inherit;
+    font-weight: 640;
+    cursor: pointer;
+  }
+
+  .reflection__submit:disabled {
+    opacity: .55;
+    cursor: default;
+  }
+
+  .reflection__status {
+    margin: -12px 0 0;
+    font-size: .94rem;
+    line-height: 1.45;
+  }
+
+  .reflection__status.is-ok { color: #2d8a5b; }
+  .reflection__status.is-error { color: #b4442f; }
+
+  .reflection__next {
+    margin-top: clamp(44px, 7vh, 72px);
+    padding-top: 26px;
+    border-top: 1px solid var(--pv2-line);
+  }
+
+  .reflection__next-links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .reflection__next-links a {
+    color: var(--pv2-text);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+
+  @media (max-width: 620px) {
+    .reflection-nav {
+      align-items: flex-start;
+      padding-top: 18px;
+    }
+
+    .reflection {
+      padding-top: 42px;
+    }
+  }
+</style>
