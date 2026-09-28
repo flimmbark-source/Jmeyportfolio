@@ -1,0 +1,276 @@
+.tutorial-target {
+  z-index: 72 !important;
+  outline: 5px solid #efcf69;
+  outline-offset: 5px;
+  box-shadow:
+    0 0 0 10px rgba(40, 35, 49, 0.92),
+    12px 14px 0 rgba(40, 35, 49, 0.8) !important;
+  animation: tutorial-target-pulse 700ms ease-in-out infinite alternate;
+}
+
+.tutorial-layer {
+  position: absolute;
+  z-index: 68;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tutorial-callout {
+  position: absolute;
+  width: min(310px, calc(100vw - 24px));
+  padding: 16px 18px;
+  border: 4px solid #292431;
+  border-radius: 12px;
+  color: #292431;
+  background: #fff4c7;
+  box-shadow: 9px 10px 0 rgba(41, 36, 49, 0.84);
+}
+
+.tutorial-callout span {
+  display: block;
+  margin-bottom: 4px;
+  color: #a7484c;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 0.2em;
+}
+
+.tutorial-callout strong {
+  display: block;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.tutorial-callout p {
+  margin: 9px 0 0;
+  font-size: 16px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.tutorial-pointer {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.placement-right .tutorial-pointer {
+  left: -25px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 16px solid transparent;
+  border-right: 25px solid #292431;
+  border-bottom: 16px solid transparent;
+}
+
+.placement-left .tutorial-pointer {
+  right: -25px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 16px solid transparent;
+  border-bottom: 16px solid transparent;
+  border-left: 25px solid #292431;
+}
+
+.placement-above .tutorial-pointer {
+  left: 50%;
+  bottom: -25px;
+  transform: translateX(-50%);
+  border-top: 25px solid #292431;
+  border-right: 16px solid transparent;
+  border-left: 16px solid transparent;
+}
+
+.placement-below .tutorial-pointer {
+  left: 50%;
+  top: -25px;
+  transform: translateX(-50%);
+  border-right: 16px solid transparent;
+  border-bottom: 25px solid #292431;
+  border-left: 16px solid transparent;
+}
+
+.tutorial-callout-home {
+  pointer-events: auto;
+}
+
+/* The result-screen skill-tree tip sits above the results card and needs its
+   GOT IT button to be clickable through the (otherwise pass-through) layer. */
+.tutorial-layer-results-skill-tree {
+  z-index: 240;
+}
+
+.tutorial-callout-results-skill-tree {
+  pointer-events: auto;
+}
+
+.tutorial-next {
+  margin-top: 12px;
+  padding: 8px 14px;
+  border: 3px solid #292431;
+  border-radius: 7px;
+  color: #fff8ef;
+  background: #a7484c;
+  box-shadow: 0 4px 0 #292431;
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.tutorial-next:active {
+  translate: 0 3px;
+  box-shadow: 0 1px 0 #292431;
+}
+
+.tutorial-layer-summary {
+  z-index: 95;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  pointer-events: auto;
+  background: rgba(29, 24, 35, 0.64);
+  backdrop-filter: blur(7px);
+}
+
+.tutorial-callout-summary {
+  position: relative;
+  width: min(470px, 100%);
+  padding: 24px 26px;
+  text-align: center;
+}
+
+.tutorial-callout-summary strong {
+  font-size: clamp(30px, 5vw, 48px);
+}
+
+.tutorial-callout-summary p {
+  margin: 14px auto 18px;
+  max-width: 390px;
+  font-size: 18px;
+}
+
+.tutorial-callout-summary button {
+  padding: 11px 20px;
+  border: 3px solid #292431;
+  border-radius: 8px;
+  color: #fff8ef;
+  background: #a7484c;
+  box-shadow: 0 5px 0 #292431;
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.tutorial-callout-summary button:active {
+  translate: 0 4px;
+  box-shadow: 0 1px 0 #292431;
+}
+
+.overlay-card > .tutorial-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(260px, 100%);
+  margin: 0 auto 16px;
+  padding: 10px 12px;
+  border: 3px solid #292431;
+  border-radius: 9px;
+  color: #292431;
+  background: #fffaf4;
+  box-shadow: none;
+}
+
+.tutorial-toggle span {
+  font-size: 13px;
+  font-weight: 1000;
+  letter-spacing: 0.16em;
+}
+
+.tutorial-toggle strong {
+  min-width: 50px;
+  padding: 4px 7px;
+  border: 2px solid #292431;
+  border-radius: 5px;
+  color: #fff8ef;
+  background: #657c8f;
+  font-size: 14px;
+}
+
+.tutorial-toggle[aria-pressed="false"] strong {
+  background: #847d86;
+}
+
+.go-home:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+}
+
+.go-home.tutorial-home-target:disabled {
+  opacity: 1;
+  filter: none;
+}
+
+.results-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  margin: 8px 24px 24px;
+}
+
+.results-actions .results-restart {
+  width: auto;
+  margin: 0;
+}
+
+.results-tutorial {
+  min-width: 122px;
+  padding: 10px 12px;
+  border: 3px solid #292431;
+  border-radius: 9px;
+  color: #292431;
+  background: #fff4c7;
+  box-shadow: 0 5px 0 #292431;
+  font-size: 13px;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.results-tutorial:active {
+  translate: 0 4px;
+  box-shadow: 0 1px 0 #292431;
+}
+
+@keyframes tutorial-target-pulse {
+  to { outline-color: #fff8ef; }
+}
+
+@media (max-width: 760px) {
+  .tutorial-callout { width: min(300px, calc(100vw - 24px)); }
+
+  .results-actions {
+    grid-template-columns: 1fr;
+    margin: 6px 16px 18px;
+  }
+
+  .results-tutorial {
+    min-height: 40px;
+  }
+}
+
+@media (max-height: 700px) and (min-width: 761px) {
+  .tutorial-callout {
+    padding: 12px 14px;
+  }
+
+  .tutorial-callout strong {
+    font-size: 20px;
+  }
+
+  .tutorial-callout p {
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-target { animation: none; }
+}
