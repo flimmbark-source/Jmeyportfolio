@@ -27,7 +27,7 @@ import '../styles/portfolio-v2.css';
 
       <main class="research">
         <section class="research__hero">
-          <p class="pv2-overline">Experiments &amp; Research</p>
+          <p class="pv2-overline">What I&rsquo;m investigating</p>
           <h1>Can interaction give someone a framework they can use?</h1>
           <p>
             I build small interactive experiences around questions that are difficult to communicate
@@ -77,25 +77,37 @@ import '../styles/portfolio-v2.css';
             <article class="evidence-card">
               <span class="evidence-label">Player observation</span>
               <strong>Exploratory / anecdotal</strong>
-              <p>Something a player reports or does. Useful for noticing patterns and forming questions; not a finding.</p>
+              <p>
+                Players have described triaging demands, planning around capacity, and choosing to
+                stop or go home rather than treating every task as something that must be completed.
+              </p>
             </article>
 
             <article class="evidence-card">
               <span class="evidence-label evidence-label--question">Current question</span>
               <strong>Open</strong>
-              <p>A question emerging from the work that has not yet been answered by structured evidence.</p>
+              <p>
+                Does experiencing those pressures make apparently ordinary functioning feel like
+                weaker evidence of someone&rsquo;s underlying capacity?
+              </p>
             </article>
 
             <article class="evidence-card">
               <span class="evidence-label evidence-label--study">Active study</span>
-              <strong>Structured investigation</strong>
-              <p>Used once a study is actually collecting or analyzing data under a defined protocol.</p>
+              <strong>Not active yet</strong>
+              <p>
+                The structured pre/post study is still in development. This state will apply once
+                data collection begins under a defined protocol.
+              </p>
             </article>
 
             <article class="evidence-card">
               <span class="evidence-label evidence-label--finding">Finding</span>
-              <strong>Evidence-backed</strong>
-              <p>Reserved for conclusions supported by the relevant study evidence, with the limits of that evidence stated.</p>
+              <strong>None claimed yet</strong>
+              <p>
+                No research conclusion is being presented yet. Findings belong here only after the
+                study evidence supports them, with its limits stated.
+              </p>
             </article>
           </div>
         </section>
@@ -125,7 +137,7 @@ import '../styles/portfolio-v2.css';
 
             <fieldset class="research-form__choices">
               <legend>I&rsquo;m interested in</legend>
-              <label><input type="radio" name="interest" value="testing-unfinished-experiences" /> Testing unfinished experiences</label>
+              <label><input type="radio" name="interest" value="testing-unfinished-experiences" required /> Testing unfinished experiences</label>
               <label><input type="radio" name="interest" value="participating-in-research" /> Participating in research</label>
               <label><input type="radio" name="interest" value="research-collaboration" /> Research collaboration</label>
               <label><input type="radio" name="interest" value="clinical-institutional-collaboration" /> Clinical / institutional collaboration</label>
