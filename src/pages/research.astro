@@ -8,7 +8,7 @@ import '../styles/portfolio-v2.css';
     <meta name="viewport" content="width=device-width" />
     <meta
       name="description"
-      content="Experiments and research around interaction, interpretation, learning, and perspective."
+      content="Research questions, study status, and participation around Jacob Meyerkopf’s interactive experiments."
     />
     <title>Experiments & Research — Jacob Meyerkopf</title>
   </head>
@@ -28,18 +28,17 @@ import '../styles/portfolio-v2.css';
       <main class="research">
         <section class="research__hero">
           <p class="pv2-overline">What I&rsquo;m investigating</p>
-          <h1>Can interaction give someone a framework they can use?</h1>
+          <h1>Can interaction change the framework someone uses to interpret what they see?</h1>
           <p>
-            I build small interactive experiences around questions that are difficult to communicate
-            through explanation alone, then use what happens in and around those experiences to decide
-            what is worth investigating more carefully.
+            The idea is simple: instead of explaining a framework first, build an experience that makes
+            someone act inside it, then test whether that framework changes how they interpret something afterward.
           </p>
         </section>
 
         <section class="research__section" aria-labelledby="current-experiments">
           <div class="research__section-heading">
             <p class="pv2-overline">Current experiments</p>
-            <h2 id="current-experiments">Work that is being tested, not presented as settled evidence.</h2>
+            <h2 id="current-experiments">Questions the current work is actually testing.</h2>
           </div>
 
           <article class="experiment" id="get-to-the-cafe">
@@ -53,8 +52,7 @@ import '../styles/portfolio-v2.css';
               especially how confidently they infer someone&rsquo;s capacity when important information is missing?
             </p>
             <p class="experiment__note">
-              The planned study uses pre/post judgment tasks to test that question. The study is not being
-              presented here as having produced a finding yet.
+              A pre/post judgment study is being designed to test this. Data collection has not started yet.
             </p>
             <div class="experiment__actions">
               <a class="research__primary-link" href="/play/get-to-the-cafe">Play it blind →</a>
@@ -65,11 +63,11 @@ import '../styles/portfolio-v2.css';
 
         <section class="research__section" aria-labelledby="evidence-states">
           <div class="research__section-heading">
-            <p class="pv2-overline">What we&rsquo;re learning</p>
-            <h2 id="evidence-states">The evidence state stays visible.</h2>
+            <p class="pv2-overline">Evidence</p>
+            <h2 id="evidence-states">What we actually know right now.</h2>
             <p>
-              Reactions can generate useful questions without becoming research claims. These labels mark
-              what kind of statement is being made.
+              Player reactions, research questions, active studies, and findings are different things.
+              They are kept separate here.
             </p>
           </div>
 
@@ -78,8 +76,8 @@ import '../styles/portfolio-v2.css';
               <span class="evidence-label">Player observation</span>
               <strong>Exploratory / anecdotal</strong>
               <p>
-                Players have described triaging demands, planning around capacity, and choosing to
-                stop or go home rather than treating every task as something that must be completed.
+                Some players report triaging demands, planning around capacity, and deciding to stop
+                or go home instead of trying to complete everything.
               </p>
             </article>
 
@@ -96,17 +94,16 @@ import '../styles/portfolio-v2.css';
               <span class="evidence-label evidence-label--study">Active study</span>
               <strong>Not active yet</strong>
               <p>
-                The structured pre/post study is still in development. This state will apply once
-                data collection begins under a defined protocol.
+                No data is being collected yet. The pre/post judgment protocol is still being finalized.
               </p>
             </article>
 
             <article class="evidence-card">
               <span class="evidence-label evidence-label--finding">Finding</span>
-              <strong>None claimed yet</strong>
+              <strong>None yet</strong>
               <p>
-                No research conclusion is being presented yet. Findings belong here only after the
-                study evidence supports them, with its limits stated.
+                No finding has been established yet. This changes only when the study produces evidence
+                strong enough to support one.
               </p>
             </article>
           </div>
@@ -115,10 +112,10 @@ import '../styles/portfolio-v2.css';
         <section class="research__section research__participate" id="participate" aria-labelledby="participate-title">
           <div class="research__section-heading">
             <p class="pv2-overline">Participate</p>
-            <h2 id="participate-title">Get involved in the work.</h2>
+            <h2 id="participate-title">Test a build or work on the research.</h2>
             <p>
-              This is for testing unfinished experiences, research participation, and collaboration around
-              interaction, disability, learning, or therapeutic applications.
+              Use this form if you want to play unfinished work, take part in a study when one opens,
+              or talk about research or clinical collaboration.
             </p>
           </div>
 
@@ -160,7 +157,7 @@ import '../styles/portfolio-v2.css';
               <textarea id="research-message" name="message" rows="5"></textarea>
             </div>
 
-            <button class="research-form__submit" type="submit">Get involved</button>
+            <button class="research-form__submit" type="submit">Send interest</button>
             <p class="research-form__status" role="status" aria-live="polite" hidden></p>
           </form>
         </section>
@@ -186,7 +183,7 @@ import '../styles/portfolio-v2.css';
           form.querySelectorAll('input, textarea, button').forEach((element) => {
             element.disabled = true;
           });
-          showStatus('Thanks — I have your interest and contact details.', true);
+          showStatus('Got it. I have your contact details.', true);
         };
 
         if (new URLSearchParams(window.location.search).get('sent') === '1') {
@@ -213,7 +210,7 @@ import '../styles/portfolio-v2.css';
             .catch(() => {
               if (submit) {
                 submit.disabled = false;
-                submit.textContent = 'Get involved';
+                submit.textContent = 'Send interest';
               }
               showStatus('Couldn’t send that here. Please use the Contact page instead.', false);
             });
