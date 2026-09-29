@@ -1027,21 +1027,6 @@
     }
   }
 
-  function classString(slot) {
-    const child = slot.querySelector('.pv2-project-tile');
-    return `${slot.className} ${child?.className || ''}`;
-  }
-
-  function anchorFor(slot, width, height) {
-    const classes = classString(slot);
-    if (classes.includes('project-tile--top')) return { x: width * .50, y: height * .12 };
-    if (classes.includes('project-tile--left')) return { x: width * .13, y: height * .44 };
-    if (classes.includes('project-tile--right')) return { x: width * .87, y: height * .44 };
-    if (classes.includes('project-tile--bottom-left')) return { x: width * .20, y: height * .80 };
-    if (classes.includes('project-tile--bottom-right')) return { x: width * .80, y: height * .80 };
-    return { x: width * .5, y: height * .5 };
-  }
-
   function stageTopLimit(stageRect) {
     const nav = document.querySelector('.pv2-nav');
     if (!nav) return EDGE_PADDING;
@@ -1252,13 +1237,15 @@
   }
 
   function makeBody(el, index, stageRect) {
+    // Inherit the tile's authored/solved on-page position. Recomputing a second
+    // physics-only anchor here made freshly mounted tiles appear to launch from
+    // a shared origin before settling into the composition.
+    const rect = el.getBoundingClientRect();
+    const minY = stageTopLimit(stageRect);
+    const x = clamp(rect.left - stageRect.left, EDGE_PADDING, stageRect.width - rect.width - EDGE_PADDING);
+    const y = clamp(rect.top - stageRect.top, minY, stageRect.height - rect.height - EDGE_PADDING);
     el.style.transform = '';
     el.style.removeProperty('--pv2-scroll-drift-y');
-    const rect = el.getBoundingClientRect();
-    const anchor = anchorFor(el, stageRect.width, stageRect.height);
-    const minY = stageTopLimit(stageRect);
-    const x = clamp(anchor.x - rect.width / 2, EDGE_PADDING, stageRect.width - rect.width - EDGE_PADDING);
-    const y = clamp(anchor.y - rect.height / 2, minY, stageRect.height - rect.height - EDGE_PADDING);
     const angle = .55 + index * 1.19;
     const speed = reducedMotion()
       ? REDUCED_SPEED
