@@ -91,6 +91,7 @@
     inset: auto !important;
     width: 100%;
     max-width: none;
+    transform: none !important;
   }
 
   html:not(.pv2-physics-live) .pv2-float-slot .pv2-project-tile,
