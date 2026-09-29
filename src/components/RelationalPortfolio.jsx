@@ -34,6 +34,15 @@ const overviewAnchors = {
   unfinished: [0.90, 0.78],
 };
 
+function overviewAnchorStyle(id) {
+  const [x, y] = overviewAnchors[id] || [0.5, 0.5];
+  return {
+    left: `${x * 100}%`,
+    top: `${y * 100}%`,
+    transform: 'translate(-50%, -50%)',
+  };
+}
+
 function readProjectFromUrl() {
   if (typeof window === 'undefined') return null;
   const value = new URL(window.location.href).searchParams.get('project');
@@ -179,7 +188,7 @@ function ProjectTile({ node, placement, index, onSelect, reducedMotion, register
       ref={(el) => register(node.id, el)}
       className="pv2-float-slot"
       data-node-id={node.id}
-      style={position || { visibility: 'hidden' }}
+      style={position || overviewAnchorStyle(node.id)}
     >
       <motion.button
         layoutId={`project-${node.id}`}
@@ -206,7 +215,7 @@ function ProjectTile({ node, placement, index, onSelect, reducedMotion, register
 
 function GatewayLink({ id, className, eyebrow, title, onClick, reducedMotion, delay = 0, register, position }) {
   return (
-    <div ref={(el) => register(id, el)} className="pv2-float-slot pv2-float-slot--gateway" style={position || undefined}>
+    <div ref={(el) => register(id, el)} className="pv2-float-slot pv2-float-slot--gateway" style={position || overviewAnchorStyle(id)}>
       <motion.button
         className={`pv2-gateway-link ${className}`}
         type="button"
@@ -254,7 +263,10 @@ function Overview({ onSelect, reducedMotion }) {
       });
     };
 
-    recalculate();
+    // Establish the authored positions synchronously before the browser paints.
+    // Subsequent resize work can stay frame-batched.
+    setPositions(solveOverviewLayout(stage, statement, itemRefs.current));
+
     const observer = new ResizeObserver(recalculate);
     observer.observe(stage);
     observer.observe(statement);
