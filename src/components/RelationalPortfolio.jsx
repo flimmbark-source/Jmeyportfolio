@@ -175,7 +175,12 @@ function ProjectVisual({ node, large = false }) {
 
 function ProjectTile({ node, placement, index, onSelect, reducedMotion, register, position }) {
   return (
-    <div ref={(el) => register(node.id, el)} className="pv2-float-slot" data-node-id={node.id} style={position || undefined}>
+    <div
+      ref={(el) => register(node.id, el)}
+      className="pv2-float-slot"
+      data-node-id={node.id}
+      style={position || { visibility: 'hidden' }}
+    >
       <motion.button
         layoutId={`project-${node.id}`}
         type="button"
