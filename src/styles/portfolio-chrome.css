@@ -31,6 +31,8 @@
 }
 
 .pv2-site {
+  position: relative;
+  z-index: 1;
   padding-top: var(--pv2-nav-height);
 }
 
@@ -39,7 +41,7 @@
 .pv2-page-backdrop {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   overflow: hidden;
   pointer-events: none;
   background: var(--pv2-bg);
@@ -76,7 +78,7 @@
   position: fixed;
   left: clamp(18px, 3.8vw, 68px);
   bottom: clamp(10px, 1.6vh, 18px);
-  z-index: 0;
+  z-index: 2;
   max-width: min(44ch, calc(100vw - 36px));
   margin: 0;
   color: rgba(35, 34, 32, 0.72);
