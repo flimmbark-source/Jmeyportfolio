@@ -512,7 +512,7 @@ function WorkBackdrop({ reducedMotion }) {
   }, []);
 
   useEffect(() => {
-    if (reducedMotion) return undefined;
+    if (reducedMotion || !window.matchMedia('(pointer: fine)').matches) return undefined;
 
     let frame = 0;
     let nextX = 0;
