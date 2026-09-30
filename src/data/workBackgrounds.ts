@@ -22,6 +22,14 @@ export const workBackgrounds: WorkBackground[] = [
   { src: '/images/work-backgrounds/at-the-seaside.jpg', position: 'center 65%' },
   { src: '/images/work-backgrounds/landers-peak.jpg', position: 'center 55%' },
   { src: '/images/work-backgrounds/gulf-stream.jpg', position: 'center 60%' },
+  // Portrait and square sources: a wide viewport crops these hard, so the
+  // position keeps the subject in frame rather than a band of empty ground.
+  // painted-cabinet.jpg is cropped to the painted panel — the full cabinet
+  // shot left its studio backdrop showing as hard vertical seams.
+  { src: '/images/work-backgrounds/painted-cabinet.jpg', position: 'center' },
+  { src: '/images/work-backgrounds/silver-coffee-pot.jpg', position: 'center 45%' },
+  { src: '/images/work-backgrounds/rococo-room.jpg', position: 'center 40%' },
+  { src: '/images/work-backgrounds/terracotta-allegory.jpg', position: 'center 45%' },
 ];
 
 /** Index of the last pick, so the same backdrop never shows twice in a row. */
