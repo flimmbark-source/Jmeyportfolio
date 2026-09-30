@@ -8,6 +8,7 @@
   --pv2-ease: cubic-bezier(.22, 1, .36, 1);
   --pv2-ease-major: cubic-bezier(.16, 1, .3, 1);
   --pv2-fast: 140ms;
+  --pv2-fast-half: 70ms;
   --pv2-medium: 360ms;
   --pv2-major: 720ms;
 }
