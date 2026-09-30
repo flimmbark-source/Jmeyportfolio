@@ -6,8 +6,11 @@
   --pv2-soft: #eceae4;
   --pv2-accent: #222;
   --pv2-ease: cubic-bezier(.22, 1, .36, 1);
-  --pv2-fast: 160ms;
-  --pv2-medium: 240ms;
+  --pv2-ease-major: cubic-bezier(.16, 1, .3, 1);
+  --pv2-fast: 140ms;
+  --pv2-fast-half: 70ms;
+  --pv2-medium: 360ms;
+  --pv2-major: 720ms;
 }
 
 * { box-sizing: border-box; }
@@ -107,15 +110,20 @@ button { font: inherit; }
   z-index: -1;
   pointer-events: none;
   overflow: hidden;
+  transform-origin: center;
+  will-change: opacity, filter, transform;
 }
 
 .pv2-work-backdrop__art {
   position: absolute;
-  inset: 0;
+  inset: -1.2%;
   background-repeat: no-repeat;
   background-size: cover;
   opacity: 0.93;
   filter: saturate(0.95);
+  transform: translate3d(var(--pv2-backdrop-x, 0), var(--pv2-backdrop-y, 0), 0) scale(1.012);
+  transition: transform var(--pv2-medium) var(--pv2-ease);
+  will-change: transform;
 }
 
 /* Cream wash so the statement and gateway links keep their contrast. An even
@@ -133,6 +141,7 @@ button { font: inherit; }
   /* Narrow screens crop hard and stack more text, so lean further on the wash. */
   .pv2-work-backdrop__art {
     opacity: 0.675;
+    inset: -1.8%;
   }
 
   .pv2-work-backdrop__scrim {
@@ -266,7 +275,7 @@ button { font: inherit; }
   justify-content: space-between;
   padding: clamp(8px, 1vw, 12px);
   transform: scale(1.001);
-  transition: transform 420ms var(--pv2-ease);
+  transition: transform var(--pv2-medium) var(--pv2-ease);
   background:
     linear-gradient(145deg, rgba(255,255,255,.72), rgba(255,255,255,.08)),
     radial-gradient(circle at 22% 20%, rgba(255,255,255,.82), transparent 35%),
@@ -753,6 +762,10 @@ button { font: inherit; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .pv2-work-backdrop__art {
+    transform: none !important;
+  }
+
   *, *::before, *::after {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;

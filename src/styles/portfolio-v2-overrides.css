@@ -197,7 +197,7 @@
   pointer-events: none;
   opacity: 0;
   transform: translateY(-5px);
-  transition: opacity 180ms ease, transform 220ms var(--pv2-ease);
+  transition: opacity var(--pv2-fast) var(--pv2-ease), transform var(--pv2-medium) var(--pv2-ease);
 }
 
 .pv2-score-counter.is-visible {
@@ -244,7 +244,7 @@
   opacity: 0;
   pointer-events: none;
   transform: translateY(-5px);
-  transition: opacity 180ms ease, transform 220ms var(--pv2-ease), background var(--pv2-fast) ease, color var(--pv2-fast) ease;
+  transition: opacity var(--pv2-fast) var(--pv2-ease), transform var(--pv2-medium) var(--pv2-ease), background var(--pv2-fast) var(--pv2-ease), color var(--pv2-fast) var(--pv2-ease);
 }
 
 .pv2-motion-toggle.is-visible {

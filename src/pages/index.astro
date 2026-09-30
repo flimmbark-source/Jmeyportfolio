@@ -30,27 +30,10 @@ import '../styles/portfolio-battle.css';
         const loader = document.querySelector('.pv2-boot-loader');
         if (!loader) return;
 
-        const startedAt = performance.now();
-        const minimumVisibleMs = 600;
-        const criticalImages = [
-          '/images/oiz8uf.png',
-          '/images/letterriverscreen.png',
-          '/images/Thelastreadingscreen.png',
-          '/images/rotogoscreen.png',
-          '/images/VenueRivalsscreen .png',
-        ];
-
-        const preload = (src) => new Promise((resolve) => {
-          const image = new Image();
-          image.onload = resolve;
-          image.onerror = resolve;
-          image.src = src;
-        });
-
         const waitForPortfolio = new Promise((resolve) => {
           const check = () => {
             if (document.querySelector('#portfolio-v2 .pv2-site')) {
-              requestAnimationFrame(() => requestAnimationFrame(resolve));
+              requestAnimationFrame(resolve);
               return;
             }
             requestAnimationFrame(check);
@@ -58,25 +41,17 @@ import '../styles/portfolio-battle.css';
           check();
         });
 
-        const fontsReady = document.fonts?.ready?.catch?.(() => {}) || Promise.resolve();
-        const assetsReady = Promise.all([
-          waitForPortfolio,
-          fontsReady,
-          Promise.all(criticalImages.map(preload)),
-        ]);
-
         const finish = () => {
           if (!loader.isConnected) return;
-          const remaining = Math.max(0, minimumVisibleMs - (performance.now() - startedAt));
-          window.setTimeout(() => {
-            if (!loader.isConnected) return;
-            loader.classList.add('is-done');
-            window.setTimeout(() => loader.remove(), 220);
-          }, remaining);
+          loader.classList.add('is-done');
+          window.setTimeout(() => loader.remove(), 150);
         };
 
-        assetsReady.then(finish);
-        window.setTimeout(finish, 4000);
+        // The shell is the critical content. Project media and the randomized
+        // painting reveal progressively after it is interactive instead of
+        // holding the visitor behind an artificial minimum loading screen.
+        waitForPortfolio.then(finish);
+        window.setTimeout(finish, 1500);
       })();
     </script>
     <script src="/scripts/portfolio-physics-v3.js?v=37" defer></script>
