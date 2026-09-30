@@ -500,6 +500,20 @@ function WorkBackdrop({ reducedMotion }) {
   );
 }
 
+function WorkBackdropCredit({ reducedMotion }) {
+  return (
+    <motion.p
+      className="pv2-work-credit"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: reducedMotion ? 0 : 0.55, ease: 'easeOut' }}
+    >
+      Images supplied by The Met Open Access Collection. All Images are Public Domain.
+    </motion.p>
+  );
+}
+
 export default function RelationalPortfolio() {
   const reducedMotion = useReducedMotion();
   const [selectedId, setSelectedId] = useState(null);
@@ -556,6 +570,7 @@ export default function RelationalPortfolio() {
 
       <AnimatePresence initial={false}>
         {!selected && <WorkBackdrop key="work-backdrop" reducedMotion={reducedMotion} />}
+        {!selected && <WorkBackdropCredit key="work-credit" reducedMotion={reducedMotion} />}
       </AnimatePresence>
 
       <AnimatePresence initial={false} mode="sync">
