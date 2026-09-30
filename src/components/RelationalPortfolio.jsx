@@ -203,6 +203,7 @@ function ProjectTile({ node, placement, index, onSelect, reducedMotion, register
         onClick={() => onSelect(node.id)}
         initial={reducedMotion ? false : { opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
+        exit={reducedMotion ? undefined : { opacity: 0, scale: 0.92, y: 5 }}
         whileHover={reducedMotion ? undefined : hoverMotion[placement]}
         whileFocus={reducedMotion ? undefined : { y: -4, scale: 1.01 }}
         whileTap={reducedMotion ? undefined : { scale: 0.985 }}
@@ -228,6 +229,7 @@ function GatewayLink({ id, className, eyebrow, title, onClick, reducedMotion, de
         onClick={onClick}
         initial={reducedMotion ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
+        exit={reducedMotion ? undefined : { opacity: 0, scale: 0.96, y: 5 }}
         whileHover={reducedMotion ? undefined : { x: className.includes('unfinished') ? -4 : 4, y: -2 }}
         whileTap={reducedMotion ? undefined : { scale: 0.985 }}
         transition={reducedMotion ? { duration: 0 } : { ...MOTION.interface, delay }}
@@ -291,8 +293,8 @@ function Overview({ onSelect, reducedMotion }) {
       className="pv2-overview"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={undefined}
-      transition={reducedMotion ? { duration: 0 } : MOTION.fast}
+      exit={reducedMotion ? undefined : { opacity: 1 }}
+      transition={reducedMotion ? { duration: 0 } : MOTION.interface}
     >
       <section ref={stageRef} className="pv2-overview__stage" aria-label="Selected work">
         <motion.div
@@ -300,6 +302,7 @@ function Overview({ onSelect, reducedMotion }) {
           className="pv2-overview__statement"
           initial={reducedMotion ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
+          exit={reducedMotion ? undefined : { opacity: 0, scale: 0.97, y: 7 }}
           transition={reducedMotion ? { duration: 0 } : MOTION.interface}
         >
           <p className="pv2-overline">Interaction · systems · perspective</p>
@@ -358,10 +361,18 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
       className="pv2-focus"
       initial={false}
       animate={{ opacity: 1 }}
-      exit={undefined}
-      transition={reducedMotion ? { duration: 0 } : MOTION.fast}
+      exit={reducedMotion ? undefined : { opacity: 1 }}
+      transition={reducedMotion ? { duration: 0 } : MOTION.interface}
     >
-      <button className="pv2-back" type="button" onClick={onBack}>← {node.status === 'unfinished' ? 'All Games' : 'All work'}</button>
+      <motion.button
+        className="pv2-back"
+        type="button"
+        onClick={onBack}
+        exit={reducedMotion ? undefined : { opacity: 0, y: -4 }}
+        transition={reducedMotion ? { duration: 0 } : MOTION.fast}
+      >
+        ← {node.status === 'unfinished' ? 'All Games' : 'All work'}
+      </motion.button>
 
       <section className="pv2-focus__layout">
         <motion.div
@@ -380,6 +391,7 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
         <motion.div
           className="pv2-focus__artifact"
           layoutId={`project-${node.id}`}
+          exit={reducedMotion ? undefined : { opacity: 0.7, scale: 0.99 }}
           transition={reducedMotion ? { duration: 0 } : MOTION.major}
         >
           <ProjectVisual node={node} large />
@@ -410,12 +422,17 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
         </motion.div>
       </section>
 
-      <div className="pv2-focus__rail" aria-label={node.status === 'unfinished' ? 'Other games' : 'Other projects'}>
+      <motion.div
+        className="pv2-focus__rail"
+        aria-label={node.status === 'unfinished' ? 'Other games' : 'Other projects'}
+        exit={reducedMotion ? undefined : { opacity: 0, y: 6 }}
+        transition={reducedMotion ? { duration: 0 } : MOTION.fast}
+      >
         {siblingIds.filter((id) => id !== node.id).map((id) => {
           const item = portfolioV2NodeMap.get(id);
           return item ? <button key={id} type="button" onClick={() => onSelect(id)}>{item.title}</button> : null;
         })}
-      </div>
+      </motion.div>
     </motion.main>
   );
 }
