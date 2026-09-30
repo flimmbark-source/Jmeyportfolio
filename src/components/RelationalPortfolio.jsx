@@ -491,7 +491,7 @@ function UXGateway({ onBack }) {
   );
 }
 
-function WorkBackdrop({ reducedMotion }) {
+function WorkBackdrop({ reducedMotion, content = false }) {
   const [background, setBackground] = useState(null);
   const [ready, setReady] = useState(false);
 
@@ -515,7 +515,7 @@ function WorkBackdrop({ reducedMotion }) {
   // layer would stay mounted after the visitor opens a project.
   return (
     <motion.div
-      className="pv2-work-backdrop"
+      className={`pv2-work-backdrop${content ? ' pv2-work-backdrop--content' : ''}`}
       aria-hidden="true"
       initial={{ opacity: 0 }}
       animate={{ opacity: background && ready ? 1 : 0, scale: 1, filter: 'blur(0px)' }}
@@ -602,8 +602,19 @@ export default function RelationalPortfolio() {
       </header>
 
       <AnimatePresence initial={false}>
-        {!selected && <WorkBackdrop key="work-backdrop" reducedMotion={reducedMotion} />}
-        {!selected && <WorkBackdropCredit key="work-credit" reducedMotion={reducedMotion} />}
+        {(!selected || selected?.id === 'unfinished') && (
+          <WorkBackdrop
+            key={selected?.id === 'unfinished' ? 'playground-backdrop' : 'work-backdrop'}
+            reducedMotion={reducedMotion}
+            content={selected?.id === 'unfinished'}
+          />
+        )}
+        {(!selected || selected?.id === 'unfinished') && (
+          <WorkBackdropCredit
+            key={selected?.id === 'unfinished' ? 'playground-credit' : 'work-credit'}
+            reducedMotion={reducedMotion}
+          />
+        )}
       </AnimatePresence>
 
       <AnimatePresence initial={false} mode="sync">
