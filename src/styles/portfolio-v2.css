@@ -121,9 +121,7 @@ button { font: inherit; }
   background-size: cover;
   opacity: 0.93;
   filter: saturate(0.95);
-  transform: translate3d(var(--pv2-backdrop-x, 0), var(--pv2-backdrop-y, 0), 0) scale(1.012);
-  transition: transform var(--pv2-medium) var(--pv2-ease);
-  will-change: transform;
+  transform: scale(1.012);
 }
 
 /* Cream wash so the statement and gateway links keep their contrast. An even
