@@ -428,7 +428,7 @@ function Workshop({ onBack, onSelect, reducedMotion }) {
       initial={reducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={reducedMotion ? undefined : { opacity: 0 }}
-      transition={{ duration: reducedMotion ? 0 : 0.14 }}
+      transition={reducedMotion ? { duration: 0 } : MOTION.fast}
     >
       <button className="pv2-back" type="button" onClick={onBack}>← All work</button>
       <div className="pv2-workshop__intro">
