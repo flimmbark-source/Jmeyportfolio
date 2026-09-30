@@ -492,7 +492,6 @@ function UXGateway({ onBack }) {
 }
 
 function WorkBackdrop({ reducedMotion }) {
-  const backdropRef = useRef(null);
   const [background, setBackground] = useState(null);
   const [ready, setReady] = useState(false);
 
@@ -511,51 +510,11 @@ function WorkBackdrop({ reducedMotion }) {
     };
   }, []);
 
-  useEffect(() => {
-    if (reducedMotion || !window.matchMedia('(pointer: fine)').matches) return undefined;
-
-    let frame = 0;
-    let nextX = 0;
-    let nextY = 0;
-
-    const applyDepth = () => {
-      frame = 0;
-      const layer = backdropRef.current;
-      if (!layer) return;
-      layer.style.setProperty('--pv2-backdrop-x', `${nextX}px`);
-      layer.style.setProperty('--pv2-backdrop-y', `${nextY}px`);
-    };
-
-    const onPointerMove = (event) => {
-      const x = (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * 2;
-      const y = (event.clientY / Math.max(window.innerHeight, 1) - 0.5) * 2;
-      nextX = x * -3.5;
-      nextY = y * -2.5;
-      if (!frame) frame = requestAnimationFrame(applyDepth);
-    };
-
-    const resetDepth = () => {
-      nextX = 0;
-      nextY = 0;
-      if (!frame) frame = requestAnimationFrame(applyDepth);
-    };
-
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    document.documentElement.addEventListener('mouseleave', resetDepth);
-
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener('pointermove', onPointerMove);
-      document.documentElement.removeEventListener('mouseleave', resetDepth);
-    };
-  }, [reducedMotion]);
-
   // The wrapper always renders, even before a backdrop is picked: returning
   // null here would leave AnimatePresence without a child to exit, and the
   // layer would stay mounted after the visitor opens a project.
   return (
     <motion.div
-      ref={backdropRef}
       className="pv2-work-backdrop"
       aria-hidden="true"
       initial={{ opacity: 0 }}
