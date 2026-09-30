@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { portfolioV2NodeMap } from '../data/portfolioV2';
+import { pickWorkBackground } from '../data/workBackgrounds';
 import '../styles/portfolio-v2.css';
 
 const spring = { type: 'spring', stiffness: 220, damping: 28, mass: 0.9 };
@@ -457,6 +458,48 @@ function UXGateway({ onBack }) {
   );
 }
 
+function WorkBackdrop({ reducedMotion }) {
+  const [background, setBackground] = useState(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const choice = pickWorkBackground();
+    if (!choice) return undefined;
+    setBackground(choice);
+
+    // Load before revealing so the painting fades in instead of popping.
+    const image = new Image();
+    image.decoding = 'async';
+    image.onload = () => setReady(true);
+    image.src = choice.src;
+    return () => {
+      image.onload = null;
+    };
+  }, []);
+
+  // The wrapper always renders, even before a backdrop is picked: returning
+  // null here would leave AnimatePresence without a child to exit, and the
+  // layer would stay mounted after the visitor opens a project.
+  return (
+    <motion.div
+      className="pv2-work-backdrop"
+      aria-hidden="true"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: background && ready ? 1 : 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: reducedMotion ? 0 : 0.55, ease: 'easeOut' }}
+    >
+      {background && (
+        <div
+          className="pv2-work-backdrop__art"
+          style={{ backgroundImage: `url("${background.src}")`, backgroundPosition: background.position }}
+        />
+      )}
+      <div className="pv2-work-backdrop__scrim" />
+    </motion.div>
+  );
+}
+
 export default function RelationalPortfolio() {
   const reducedMotion = useReducedMotion();
   const [selectedId, setSelectedId] = useState(null);
@@ -510,6 +553,10 @@ export default function RelationalPortfolio() {
           <a href="/contact">Contact</a>
         </nav>
       </header>
+
+      <AnimatePresence initial={false}>
+        {!selected && <WorkBackdrop key="work-backdrop" reducedMotion={reducedMotion} />}
+      </AnimatePresence>
 
       <AnimatePresence initial={false} mode="sync">
         {!selected && <Overview key="overview" onSelect={select} reducedMotion={reducedMotion} />}
