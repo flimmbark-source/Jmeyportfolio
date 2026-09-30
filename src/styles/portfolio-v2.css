@@ -114,7 +114,7 @@ button { font: inherit; }
   inset: 0;
   background-repeat: no-repeat;
   background-size: cover;
-  opacity: 0.31;
+  opacity: 0.93;
   filter: saturate(0.95);
 }
 
@@ -132,7 +132,7 @@ button { font: inherit; }
 @media (max-width: 720px) {
   /* Narrow screens crop hard and stack more text, so lean further on the wash. */
   .pv2-work-backdrop__art {
-    opacity: 0.225;
+    opacity: 0.675;
   }
 
   .pv2-work-backdrop__scrim {
