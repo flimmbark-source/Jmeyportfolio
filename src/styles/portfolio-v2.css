@@ -274,7 +274,7 @@ button { font: inherit; }
   justify-content: space-between;
   padding: clamp(8px, 1vw, 12px);
   transform: scale(1.001);
-  transition: transform 420ms var(--pv2-ease);
+  transition: transform var(--pv2-medium) var(--pv2-ease);
   background:
     linear-gradient(145deg, rgba(255,255,255,.72), rgba(255,255,255,.08)),
     radial-gradient(circle at 22% 20%, rgba(255,255,255,.82), transparent 35%),
