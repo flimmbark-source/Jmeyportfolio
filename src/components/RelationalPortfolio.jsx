@@ -296,9 +296,9 @@ function Overview({ onSelect, reducedMotion }) {
           animate={{ opacity: 1, y: 0 }}
           transition={reducedMotion ? { duration: 0 } : { duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className="pv2-overline">Interactive work · systems · perspective</p>
-          <h1>I use Interaction<br />to tell stories.</h1>
-          <p>Through the creation of games, interactive art, learning experiments, and UX work, I explore how people experience the world.</p>
+          <p className="pv2-overline">Interaction · systems · perspective</p>
+          <h1>Can a game give you<br />a new perspecitive?</h1>
+          <p>I create games, interactive art, thought experiments, and UX work, in order to explore how interaction fosters growth, connection, and positive change.</p>
         </motion.div>
 
         {projects.map((node, index) => (
