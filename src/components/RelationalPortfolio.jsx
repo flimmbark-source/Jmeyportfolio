@@ -4,8 +4,13 @@ import { portfolioV2NodeMap } from '../data/portfolioV2';
 import { pickWorkBackground } from '../data/workBackgrounds';
 import '../styles/portfolio-v2.css';
 
-const spring = { type: 'spring', stiffness: 220, damping: 28, mass: 0.9 };
-const softSpring = { type: 'spring', stiffness: 180, damping: 24, mass: 0.85 };
+const MOTION = {
+  ease: [0.22, 1, 0.36, 1],
+  majorEase: [0.16, 1, 0.3, 1],
+  fast: { duration: 0.14, ease: [0.22, 1, 0.36, 1] },
+  interface: { duration: 0.36, ease: [0.22, 1, 0.36, 1] },
+  major: { duration: 0.72, ease: [0.16, 1, 0.3, 1] },
+};
 const publicProjectIds = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotogo', 'gig-duel'];
 const unfinishedProjectIds = ['phase-g', 'splitpulse'];
 const allGameIds = [...publicProjectIds, ...unfinishedProjectIds];
@@ -201,7 +206,7 @@ function ProjectTile({ node, placement, index, onSelect, reducedMotion, register
         whileHover={reducedMotion ? undefined : hoverMotion[placement]}
         whileFocus={reducedMotion ? undefined : { y: -4, scale: 1.01 }}
         whileTap={reducedMotion ? undefined : { scale: 0.985 }}
-        transition={reducedMotion ? { duration: 0 } : { ...softSpring, delay: 0.04 + index * 0.045 }}
+        transition={reducedMotion ? { duration: 0 } : { ...MOTION.interface, delay: 0.04 + index * 0.045 }}
         aria-label={`Open ${node.title}`}
       >
         <ProjectVisual node={node} />
@@ -225,7 +230,7 @@ function GatewayLink({ id, className, eyebrow, title, onClick, reducedMotion, de
         animate={{ opacity: 1, y: 0 }}
         whileHover={reducedMotion ? undefined : { x: className.includes('unfinished') ? -4 : 4, y: -2 }}
         whileTap={reducedMotion ? undefined : { scale: 0.985 }}
-        transition={reducedMotion ? { duration: 0 } : { ...softSpring, delay }}
+        transition={reducedMotion ? { duration: 0 } : { ...MOTION.interface, delay }}
       >
         <span>{eyebrow}</span>
         <strong>{title}</strong>
@@ -286,8 +291,8 @@ function Overview({ onSelect, reducedMotion }) {
       className="pv2-overview"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={reducedMotion ? undefined : { opacity: 0 }}
-      transition={{ duration: reducedMotion ? 0 : 0.12 }}
+      exit={undefined}
+      transition={reducedMotion ? { duration: 0 } : MOTION.fast}
     >
       <section ref={stageRef} className="pv2-overview__stage" aria-label="Selected work">
         <motion.div
@@ -295,10 +300,10 @@ function Overview({ onSelect, reducedMotion }) {
           className="pv2-overview__statement"
           initial={reducedMotion ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={reducedMotion ? { duration: 0 } : { duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          transition={reducedMotion ? { duration: 0 } : MOTION.interface}
         >
           <p className="pv2-overline">Interaction · systems · perspective</p>
-          <h1>Can a game give you<br />a new perspecitive?</h1>
+          <h1>Can a game give you<br />a new perspective?</h1>
           <p>I create games, interactive art, thought experiments, and UX work, in order to explore how interaction fosters growth, connection, and positive change.</p>
         </motion.div>
 
@@ -351,19 +356,20 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
   return (
     <motion.main
       className="pv2-focus"
-      initial={reducedMotion ? false : { opacity: 0 }}
+      initial={false}
       animate={{ opacity: 1 }}
-      exit={reducedMotion ? undefined : { opacity: 0 }}
-      transition={{ duration: reducedMotion ? 0 : 0.16 }}
+      exit={undefined}
+      transition={reducedMotion ? { duration: 0 } : MOTION.fast}
     >
       <button className="pv2-back" type="button" onClick={onBack}>← {node.status === 'unfinished' ? 'All Games' : 'All work'}</button>
 
       <section className="pv2-focus__layout">
         <motion.div
           className="pv2-focus__intro"
-          initial={reducedMotion ? false : { opacity: 0, x: -14 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={reducedMotion ? { duration: 0 } : { duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          initial={reducedMotion ? false : { opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reducedMotion ? undefined : { opacity: 0, y: 8, transition: MOTION.fast }}
+          transition={reducedMotion ? { duration: 0 } : { ...MOTION.interface, delay: 0.38 }}
         >
           <p className="pv2-overline">{node.kicker || 'Project'}</p>
           <motion.h1 layoutId={`title-${node.id}`}>{node.title}</motion.h1>
@@ -371,12 +377,22 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
           {node.purpose && <p className="pv2-focus__purpose">{node.purpose}</p>}
         </motion.div>
 
-        <motion.div className="pv2-focus__artifact" layoutId={`project-${node.id}`} transition={reducedMotion ? { duration: 0 } : spring}>
+        <motion.div
+          className="pv2-focus__artifact"
+          layoutId={`project-${node.id}`}
+          transition={reducedMotion ? { duration: 0 } : MOTION.major}
+        >
           <ProjectVisual node={node} large />
-          <div className="pv2-focus__artifact-footer">
+          <motion.div
+            className="pv2-focus__artifact-footer"
+            initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reducedMotion ? undefined : { opacity: 0, y: 4 }}
+            transition={reducedMotion ? { duration: 0 } : { ...MOTION.interface, delay: 0.46 }}
+          >
             <div>
               <span>Preview</span>
-              <strong>{node.previewSrc ? 'Gameplay preview' : node.status === 'unfinished' ? 'Prototype preview asset can live here' : 'Gameplay preview asset can live here'}</strong>
+              <strong>{node.status === 'unfinished' ? 'Prototype' : node.previewSrc ? 'Gameplay preview' : 'Project preview'}</strong>
             </div>
             <div className="pv2-focus__actions">
               {primaryPlayUrl && (
@@ -390,7 +406,7 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
               {!primaryPlayUrl && node.route && <a href={node.route}>Open project →</a>}
               {!primaryPlayUrl && !node.route && <span className="pv2-focus__pending">Playable build not connected yet</span>}
             </div>
-          </div>
+          </motion.div>
         </motion.div>
       </section>
 
@@ -431,7 +447,7 @@ function Workshop({ onBack, onSelect, reducedMotion }) {
             animate={{ opacity: 1, y: 0 }}
             whileHover={reducedMotion ? undefined : { y: -5, rotate: index % 2 ? 0.3 : -0.3 }}
             whileTap={reducedMotion ? undefined : { scale: 0.99 }}
-            transition={reducedMotion ? { duration: 0 } : { ...softSpring, delay: index * 0.012 }}
+            transition={reducedMotion ? { duration: 0 } : { ...MOTION.interface, delay: index * 0.012 }}
           >
             <ProjectVisual node={node} />
             <strong>{node.title}</strong>
@@ -459,6 +475,7 @@ function UXGateway({ onBack }) {
 }
 
 function WorkBackdrop({ reducedMotion }) {
+  const backdropRef = useRef(null);
   const [background, setBackground] = useState(null);
   const [ready, setReady] = useState(false);
 
@@ -477,17 +494,57 @@ function WorkBackdrop({ reducedMotion }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (reducedMotion) return undefined;
+
+    let frame = 0;
+    let nextX = 0;
+    let nextY = 0;
+
+    const applyDepth = () => {
+      frame = 0;
+      const layer = backdropRef.current;
+      if (!layer) return;
+      layer.style.setProperty('--pv2-backdrop-x', `${nextX}px`);
+      layer.style.setProperty('--pv2-backdrop-y', `${nextY}px`);
+    };
+
+    const onPointerMove = (event) => {
+      const x = (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * 2;
+      const y = (event.clientY / Math.max(window.innerHeight, 1) - 0.5) * 2;
+      nextX = x * -3.5;
+      nextY = y * -2.5;
+      if (!frame) frame = requestAnimationFrame(applyDepth);
+    };
+
+    const resetDepth = () => {
+      nextX = 0;
+      nextY = 0;
+      if (!frame) frame = requestAnimationFrame(applyDepth);
+    };
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    document.documentElement.addEventListener('mouseleave', resetDepth);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('pointermove', onPointerMove);
+      document.documentElement.removeEventListener('mouseleave', resetDepth);
+    };
+  }, [reducedMotion]);
+
   // The wrapper always renders, even before a backdrop is picked: returning
   // null here would leave AnimatePresence without a child to exit, and the
   // layer would stay mounted after the visitor opens a project.
   return (
     <motion.div
+      ref={backdropRef}
       className="pv2-work-backdrop"
       aria-hidden="true"
       initial={{ opacity: 0 }}
-      animate={{ opacity: background && ready ? 1 : 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: reducedMotion ? 0 : 0.55, ease: 'easeOut' }}
+      animate={{ opacity: background && ready ? 1 : 0, scale: 1, filter: 'blur(0px)' }}
+      exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 1.015, filter: 'blur(7px)' }}
+      transition={reducedMotion ? { duration: 0 } : MOTION.major}
     >
       {background && (
         <div
@@ -507,7 +564,7 @@ function WorkBackdropCredit({ reducedMotion }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: reducedMotion ? 0 : 0.55, ease: 'easeOut' }}
+      transition={reducedMotion ? { duration: 0 } : MOTION.interface}
     >
       Images supplied by The Met Open Access Collection. All Images are Public Domain.
     </motion.p>
