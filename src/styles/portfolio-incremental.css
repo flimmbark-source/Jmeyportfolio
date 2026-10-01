@@ -1406,3 +1406,113 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
     overflow: visible !important;
   }
 }
+
+
+/* ================= Level-up project hierarchy ================= */
+.pv2-project-levelup__project-info {
+  position: relative;
+  margin: 0 -2px;
+  padding: 13px 14px 14px 16px;
+  border: 1px solid rgba(36,36,36,.10);
+  border-radius: 12px;
+  background:
+    linear-gradient(100deg, rgba(255,216,79,.11), rgba(255,255,255,.74) 34%, rgba(255,255,255,.58));
+  box-shadow:
+    inset 3px 0 0 var(--pv2-upgrade-affordable,#ffd84f),
+    0 6px 18px rgba(36,36,36,.045);
+  opacity: 0;
+  transform: translateY(5px);
+  animation: pv2ProjectInfoIn 420ms cubic-bezier(.16,1,.3,1) 80ms forwards;
+}
+.pv2-project-levelup__project-label {
+  margin: 0 0 5px;
+  color: #8b761d;
+  font-size: .52rem;
+  font-weight: 850;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.pv2-project-levelup__project-info h2 {
+  margin: 0;
+  color: var(--pv2-text,#242424);
+  font: 850 clamp(1.32rem,2.1vw,1.65rem)/1.02 system-ui,sans-serif;
+  letter-spacing: -.045em;
+}
+.pv2-project-levelup__project-info .pv2-project-levelup__reveal {
+  max-width: 44ch;
+  margin: 8px 0 0;
+  color: #625f59;
+  font-size: .86rem;
+  font-weight: 560;
+  line-height: 1.42;
+}
+@keyframes pv2ProjectInfoIn {
+  to { opacity: 1; transform: none; }
+}
+.pv2-project-levelup__rule {
+  margin-top: 12px;
+}
+
+/* Mobile level-up cards use a stable safe-area layout rather than desktop
+   side-placement. This keeps the playfield and leveled sphere visible. */
+@media (max-width:720px) {
+  .pv2-project-levelup__panel {
+    width: calc(100vw - 32px) !important;
+    max-width: 390px;
+    padding: 12px;
+    border-radius: 14px;
+  }
+  .pv2-project-levelup__panel[data-side='mobile-top'],
+  .pv2-project-levelup__panel[data-side='mobile-bottom'] {
+    transform: translateY(8px) scale(.985);
+    transform-origin: center;
+  }
+  .pv2-project-levelup-overlay.is-open .pv2-project-levelup__panel[data-side='mobile-top'],
+  .pv2-project-levelup-overlay.is-open .pv2-project-levelup__panel[data-side='mobile-bottom'] {
+    transform: none;
+  }
+  .pv2-project-levelup__panel[data-side='mobile-top']::before,
+  .pv2-project-levelup__panel[data-side='mobile-bottom']::before {
+    display: none;
+  }
+  .pv2-project-levelup__header {
+    margin: -12px -12px 11px;
+    padding: 12px 12px 11px;
+  }
+  .pv2-project-levelup__reward-title {
+    font-size: 1.04rem;
+  }
+  .pv2-project-levelup__project-info {
+    padding: 11px 12px 12px 14px;
+  }
+  .pv2-project-levelup__project-info h2 {
+    font-size: 1.28rem;
+  }
+  .pv2-project-levelup__project-info .pv2-project-levelup__reveal {
+    margin-top: 6px;
+    font-size: .79rem;
+    line-height: 1.36;
+  }
+  .pv2-project-levelup__rule {
+    margin: 10px 0 9px;
+  }
+  .pv2-project-levelup__choices {
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .pv2-project-levelup__choice {
+    min-height: 46px;
+    padding: 6px 8px;
+    border-radius: 11px;
+  }
+  .pv2-project-levelup__choice-copy strong {
+    font-size: .7rem;
+  }
+  .pv2-project-levelup__choice-copy span {
+    font-size: .59rem;
+  }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .pv2-project-levelup__project-info { animation: none; opacity: 1; transform: none; }
+}
