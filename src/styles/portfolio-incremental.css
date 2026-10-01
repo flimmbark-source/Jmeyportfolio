@@ -740,23 +740,335 @@
 }
 
 /* ================= Per-project level progression ================= */
-.pv2-project-progress{position:absolute;left:50%;top:-42px;z-index:8;width:112px;transform:translateX(-50%);pointer-events:none;text-align:center;color:var(--pv2-text,#242424);opacity:.78;filter:drop-shadow(0 2px 7px rgba(247,246,242,.88));transition:opacity 160ms ease,transform 220ms cubic-bezier(.22,1,.36,1)}
-.pv2-float-slot:hover .pv2-project-progress,.pv2-float-slot:focus-within .pv2-project-progress,.pv2-project-progress.is-exp-flash{opacity:1;transform:translateX(-50%) translateY(-2px)}
-.pv2-project-progress__level{font-size:.66rem;font-weight:720;letter-spacing:.05em;text-transform:uppercase}.pv2-project-progress__level strong{font-size:.86rem;letter-spacing:-.02em}
-.pv2-project-progress__arc{display:block;width:100%;height:22px;margin-top:-2px;overflow:visible}.pv2-project-progress__track,.pv2-project-progress__fill{fill:none;stroke-width:5;stroke-linecap:round}.pv2-project-progress__track{stroke:rgba(36,36,36,.12)}.pv2-project-progress__fill{stroke:#d29a27;stroke-dasharray:100;stroke-dashoffset:100;transition:stroke-dashoffset 300ms cubic-bezier(.22,1,.36,1)}
-.pv2-project-progress__exp{margin-top:-4px;color:var(--pv2-muted,#686762);font-size:.56rem;font-weight:690;opacity:0;transform:translateY(-2px);transition:opacity 150ms ease,transform 150ms ease}.pv2-float-slot:hover .pv2-project-progress__exp,.pv2-float-slot:focus-within .pv2-project-progress__exp,.pv2-project-progress.is-exp-flash .pv2-project-progress__exp{opacity:1;transform:none}
-.pv2-float-slot.is-project-leveling{z-index:3200!important}.pv2-float-slot.is-project-leveling .pv2-visual{animation:pv2ProjectLevelGlow 720ms cubic-bezier(.16,.84,.3,1) both}
-@keyframes pv2ProjectLevelGlow{0%{box-shadow:0 19px 32px rgba(36,36,36,.22),0 0 0 0 rgba(222,170,54,0)}35%{box-shadow:0 24px 48px rgba(36,36,36,.28),0 0 0 9px rgba(241,190,70,.42),0 0 48px 18px rgba(241,190,70,.42)}100%{box-shadow:0 22px 40px rgba(36,36,36,.24),0 0 0 3px rgba(241,190,70,.28),0 0 26px 7px rgba(241,190,70,.24)}}
-.pv2-project-levelup-fanfare{position:fixed;z-index:7600;display:grid;place-items:center;gap:2px;min-width:126px;padding:10px 14px 9px;border:1px solid rgba(184,126,23,.58);border-radius:999px;background:rgba(249,241,217,.96);box-shadow:0 14px 45px rgba(80,52,12,.28),0 0 35px rgba(237,180,58,.34);color:#5c3a09;transform:translate(-50%,-50%);pointer-events:none;animation:pv2LevelFanfare 720ms cubic-bezier(.16,.84,.3,1) both}
-.pv2-project-levelup-fanfare span{font-family:Georgia,'Times New Roman',serif;font-size:1.05rem;font-weight:700;letter-spacing:.08em}.pv2-project-levelup-fanfare strong{font-size:.6rem;letter-spacing:.14em}
-@keyframes pv2LevelFanfare{0%{opacity:0;transform:translate(-50%,-50%) scale(.62)}24%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}74%{opacity:1;transform:translate(-50%,-70%) scale(1)}100%{opacity:0;transform:translate(-50%,-92%) scale(.96)}}
-.pv2-project-levelup-overlay{position:fixed;inset:0;z-index:7500;display:grid;place-items:center;padding:calc(var(--pv2-nav-height,76px) + 26px) clamp(18px,4vw,64px) 28px;background:rgba(42,33,23,.20);backdrop-filter:blur(3px) saturate(.92);-webkit-backdrop-filter:blur(3px) saturate(.92);opacity:0;pointer-events:none;transition:opacity 220ms ease}.pv2-project-levelup-overlay.is-open{opacity:1;pointer-events:auto}
-.pv2-project-levelup__layout{width:min(1040px,94vw);max-height:calc(100svh - var(--pv2-nav-height,76px) - 54px);display:grid;grid-template-columns:minmax(190px,.72fr) minmax(420px,1.18fr);align-items:center;gap:clamp(24px,4vw,62px)}.pv2-project-levelup__artifact{display:grid;place-items:center;min-width:0}.pv2-project-levelup__artifact .pv2-project-tile{position:relative!important;inset:auto!important;width:min(290px,26vw)!important;transform:none!important;pointer-events:none;filter:drop-shadow(0 26px 34px rgba(44,30,13,.28))}.pv2-project-levelup__artifact .pv2-project-progress,.pv2-project-levelup__artifact .pv2-heat-halo{display:none!important}
-.pv2-project-levelup__panel{position:relative;overflow:auto;max-height:inherit;padding:clamp(26px,3vw,42px);border:1px solid rgba(133,94,35,.38);outline:1px solid rgba(255,255,255,.74);outline-offset:-7px;border-radius:4px;background:linear-gradient(rgba(255,255,255,.25),rgba(255,255,255,.08)),#f4ecd9;box-shadow:0 28px 70px rgba(50,35,15,.28),inset 0 0 50px rgba(143,103,43,.055);color:#29231b}
-.pv2-project-levelup__panel::before,.pv2-project-levelup__panel::after{content:'';position:absolute;width:8px;height:8px;border:1px solid rgba(154,105,28,.55);transform:rotate(45deg);background:#f4ecd9}.pv2-project-levelup__panel::before{left:18px;top:18px}.pv2-project-levelup__panel::after{right:18px;bottom:18px}
-.pv2-project-levelup__eyebrow,.pv2-project-levelup__choose{margin:0;color:#866224;font-size:.63rem;font-weight:780;letter-spacing:.24em;text-transform:uppercase}.pv2-project-levelup__panel h2{margin:8px 0 0;font-family:Georgia,'Times New Roman',serif;font-size:clamp(1.75rem,3vw,2.85rem);font-weight:500;line-height:1.02;letter-spacing:-.035em}.pv2-project-levelup__panel h2 span{color:#6c6458;font-family:system-ui,sans-serif;font-size:.52em;font-weight:680;letter-spacing:.02em;white-space:nowrap}.pv2-project-levelup__reveal{max-width:52ch;margin:18px 0 0;color:#51493f;font-family:Georgia,'Times New Roman',serif;font-size:clamp(.98rem,1.3vw,1.18rem);line-height:1.48}.pv2-project-levelup__rule{width:100%;height:1px;margin:22px 0 18px;background:linear-gradient(90deg,transparent,rgba(129,91,33,.42) 13%,rgba(129,91,33,.42) 87%,transparent)}
-.pv2-project-levelup__choices{display:grid;gap:9px;margin-top:11px}.pv2-project-levelup__choice{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;min-height:70px;padding:10px 13px 10px 11px;border:1px solid rgba(96,80,57,.28);border-radius:8px;background:rgba(255,252,243,.66);color:#29231b;text-align:left;cursor:pointer;box-shadow:0 3px 9px rgba(63,45,19,.04);transition:transform 150ms ease,border-color 150ms ease,background 150ms ease,box-shadow 150ms ease,opacity 180ms ease}
-.pv2-project-levelup__choice:hover,.pv2-project-levelup__choice:focus-visible{transform:translateY(-2px);border-color:rgba(157,109,27,.72);background:rgba(255,250,234,.96);box-shadow:0 7px 18px rgba(87,58,16,.10);outline:none}.pv2-project-levelup__choice[data-rarity='uncommon']{border-color:rgba(73,123,77,.48)}.pv2-project-levelup__choice[data-rarity='rare']{border-color:rgba(105,75,151,.58);background:rgba(247,241,255,.62)}
-.pv2-project-levelup__choice-icon{display:grid;place-items:center;width:38px;height:38px;border:1px solid rgba(118,89,47,.24);border-radius:999px;background:rgba(217,188,133,.22);color:#7b5520}.pv2-project-levelup__choice[data-rarity='uncommon'] .pv2-project-levelup__choice-icon{color:#3c7548;background:rgba(93,150,102,.12)}.pv2-project-levelup__choice[data-rarity='rare'] .pv2-project-levelup__choice-icon{color:#705098;background:rgba(127,91,174,.12)}.pv2-project-levelup__choice-icon svg{width:19px;height:19px}.pv2-project-levelup__choice-copy{min-width:0;display:grid;gap:2px}.pv2-project-levelup__choice-copy small{color:#43724b;font-size:.54rem;font-weight:820;letter-spacing:.14em}.pv2-project-levelup__choice[data-rarity='rare'] .pv2-project-levelup__choice-copy small{color:#725097}.pv2-project-levelup__choice-copy strong{font-family:Georgia,'Times New Roman',serif;font-size:1rem;font-weight:600}.pv2-project-levelup__choice-copy span{color:#6a6258;font-size:.72rem;line-height:1.25}.pv2-project-levelup__choice-arrow{color:#877866;font-family:Georgia,serif;font-size:1.6rem;line-height:1}.pv2-project-levelup__choice.is-selected{transform:scale(1.015);border-color:#c38d25;background:#fff4cc;box-shadow:0 0 0 3px rgba(211,158,45,.16),0 8px 22px rgba(87,58,16,.12)}.pv2-project-levelup__choice.is-rejected{opacity:.34}.pv2-project-levelup__choice:disabled{cursor:default}
-@media(max-width:720px){.pv2-project-progress{top:-35px;width:92px}.pv2-project-levelup-overlay{padding:74px 12px 14px;align-items:start;overflow:auto}.pv2-project-levelup__layout{width:min(100%,520px);max-height:none;grid-template-columns:1fr;gap:8px}.pv2-project-levelup__artifact .pv2-project-tile{width:126px!important}.pv2-project-levelup__panel{max-height:none;padding:22px 18px 20px}.pv2-project-levelup__panel h2{font-size:1.7rem}.pv2-project-levelup__reveal{margin-top:12px;font-size:.95rem}.pv2-project-levelup__rule{margin:16px 0 14px}.pv2-project-levelup__choice{min-height:64px}}
-@media(prefers-reduced-motion:reduce){.pv2-float-slot.is-project-leveling .pv2-visual,.pv2-project-levelup-fanfare{animation:none}.pv2-project-levelup-overlay,.pv2-project-progress,.pv2-project-progress__fill,.pv2-project-levelup__choice{transition:none}}
+
+/* The level UI borrows the same neutral surface, type scale, radii and branch
+   colors as the existing points/upgrade UI. It stays physically next to the
+   sphere that earned it rather than turning into a second full-screen game. */
+html.pv2-project-levelup-open .pv2-project-tile { pointer-events: none; }
+
+.pv2-project-progress {
+  position: absolute;
+  left: 50%;
+  top: -38px;
+  z-index: 8;
+  width: 104px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  text-align: center;
+  color: var(--pv2-text, #242424);
+  opacity: .72;
+  filter: drop-shadow(0 2px 7px rgba(247,246,242,.82));
+  transition: opacity 180ms ease, transform 240ms cubic-bezier(.22,1,.36,1);
+}
+.pv2-float-slot:hover .pv2-project-progress,
+.pv2-float-slot:focus-within .pv2-project-progress,
+.pv2-project-progress.is-exp-flash {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-2px);
+}
+.pv2-project-progress__level {
+  font-size: .61rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.pv2-project-progress__level strong { font-size: .77rem; letter-spacing: -.02em; }
+.pv2-project-progress__arc { display: block; width: 100%; height: 19px; margin-top: -2px; overflow: visible; }
+.pv2-project-progress__track,
+.pv2-project-progress__fill { fill: none; stroke-width: 4; stroke-linecap: round; }
+.pv2-project-progress__track { stroke: rgba(36,36,36,.13); }
+.pv2-project-progress__fill {
+  stroke: var(--pv2-upgrade-affordable, #ffd84f);
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  transition: stroke-dashoffset 380ms cubic-bezier(.22,1,.36,1);
+}
+.pv2-project-progress__exp {
+  margin-top: -4px;
+  color: var(--pv2-muted, #686762);
+  font-size: .52rem;
+  font-weight: 720;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+.pv2-float-slot:hover .pv2-project-progress__exp,
+.pv2-float-slot:focus-within .pv2-project-progress__exp,
+.pv2-project-progress.is-exp-flash .pv2-project-progress__exp { opacity: 1; transform: none; }
+
+.pv2-float-slot.is-project-leveling {
+  z-index: 7450 !important;
+}
+.pv2-float-slot.is-project-leveling::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: -1;
+  width: calc(100% + 28px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(36,36,36,.18);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(255,216,79,.28);
+  pointer-events: none;
+  animation: pv2ProjectLevelRing 1500ms cubic-bezier(.16,.84,.3,1) both;
+}
+.pv2-float-slot.is-project-leveling .pv2-visual {
+  animation: pv2ProjectLevelGlow 1550ms cubic-bezier(.16,.84,.3,1) both;
+}
+@keyframes pv2ProjectLevelRing {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(.72); }
+  20% { opacity: 1; transform: translate(-50%,-50%) scale(.94); }
+  62% { opacity: .58; transform: translate(-50%,-50%) scale(1.13); }
+  100% { opacity: .22; transform: translate(-50%,-50%) scale(1.2); }
+}
+@keyframes pv2ProjectLevelGlow {
+  0% { transform: scale(1); box-shadow: 0 19px 32px rgba(36,36,36,.22); }
+  18% { transform: scale(1.085); box-shadow: 0 24px 46px rgba(36,36,36,.25),0 0 0 4px rgba(255,216,79,.34),0 0 28px 7px rgba(255,216,79,.22); }
+  48% { transform: scale(1.045); box-shadow: 0 23px 42px rgba(36,36,36,.24),0 0 0 2px rgba(255,216,79,.22),0 0 20px 5px rgba(255,216,79,.16); }
+  100% { transform: scale(1.035); box-shadow: 0 22px 40px rgba(36,36,36,.23),0 0 0 1px rgba(255,216,79,.18); }
+}
+
+/* Local celebration: typography, not a floating fantasy-style badge. */
+.pv2-project-levelup-fanfare {
+  position: fixed;
+  z-index: 7600;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 128px;
+  color: var(--pv2-text, #242424);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  text-shadow: 0 1px 10px rgba(247,246,242,.96);
+  animation: pv2LevelFanfare 1600ms cubic-bezier(.16,.84,.3,1) both;
+}
+.pv2-project-levelup-fanfare::after {
+  content: '';
+  width: 54px;
+  height: 2px;
+  margin-top: 4px;
+  border-radius: 999px;
+  background: var(--pv2-upgrade-affordable, #ffd84f);
+  box-shadow: 0 0 12px rgba(255,216,79,.42);
+}
+.pv2-project-levelup-fanfare span {
+  font: 850 .72rem/1 system-ui, sans-serif;
+  letter-spacing: .18em;
+  text-indent: .18em;
+}
+.pv2-project-levelup-fanfare strong {
+  color: var(--pv2-muted, #686762);
+  font: 800 .56rem/1 system-ui, sans-serif;
+  letter-spacing: .1em;
+}
+@keyframes pv2LevelFanfare {
+  0% { opacity: 0; transform: translate(-50%,-10%) scale(.9); }
+  16% { opacity: 1; transform: translate(-50%,-70%) scale(1); }
+  58% { opacity: 1; transform: translate(-50%,-90%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%,-125%) scale(.98); }
+}
+
+/* Transparent interaction shield keeps the rest of the playground visible. */
+.pv2-project-levelup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 7400;
+  background: rgba(247,246,242,.035);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 380ms ease;
+}
+.pv2-project-levelup-overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.pv2-project-levelup__panel {
+  position: fixed;
+  width: min(372px, calc(100vw - 24px));
+  max-height: min(520px, calc(100svh - 96px));
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid rgba(36,36,36,.15);
+  border-radius: 16px;
+  background: rgba(247,246,242,.965);
+  color: var(--pv2-text, #242424);
+  box-shadow: 0 18px 50px rgba(36,36,36,.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  opacity: 0;
+  transform: translateY(6px) scale(.985);
+  transition: opacity 360ms ease, transform 440ms cubic-bezier(.16,1,.3,1);
+}
+.pv2-project-levelup-overlay.is-open .pv2-project-levelup__panel {
+  opacity: 1;
+  transform: none;
+}
+.pv2-project-levelup__panel[data-side='right'] { transform: translateX(-12px) scale(.985); }
+.pv2-project-levelup__panel[data-side='left'] { transform: translateX(12px) scale(.985); }
+.pv2-project-levelup__panel[data-side='below'] { transform: translateY(-10px) scale(.985); }
+.pv2-project-levelup__panel[data-side='above'] { transform: translateY(10px) scale(.985); }
+.pv2-project-levelup-overlay.is-open .pv2-project-levelup__panel[data-side] { transform: none; }
+
+.pv2-project-levelup__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.pv2-project-levelup__eyebrow,
+.pv2-project-levelup__choose {
+  margin: 0;
+  color: var(--pv2-muted, #686762);
+  font-size: .55rem;
+  font-weight: 820;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.pv2-project-levelup__level {
+  flex: none;
+  padding: 4px 7px;
+  border: 1px solid rgba(36,36,36,.12);
+  border-radius: 999px;
+  background: rgba(255,255,255,.62);
+  color: var(--pv2-text, #242424);
+  font-size: .56rem;
+  font-weight: 850;
+  letter-spacing: .06em;
+}
+.pv2-project-levelup__panel h2 {
+  margin: 5px 0 0;
+  font: 720 1.22rem/1.05 system-ui, sans-serif;
+  letter-spacing: -.04em;
+}
+.pv2-project-levelup__reveal {
+  max-width: 48ch;
+  margin: 10px 0 0;
+  color: var(--pv2-muted, #686762);
+  font: 500 .78rem/1.43 system-ui, sans-serif;
+}
+.pv2-project-levelup__rule {
+  width: 100%;
+  height: 1px;
+  margin: 13px 0 11px;
+  background: rgba(36,36,36,.09);
+}
+.pv2-project-levelup__choices {
+  display: grid;
+  gap: 7px;
+  margin-top: 7px;
+}
+.pv2-project-levelup__choice {
+  display: grid;
+  grid-template-columns: 31px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 52px;
+  padding: 7px 9px;
+  border: 1px solid rgba(36,36,36,.13);
+  border-radius: 12px;
+  background: rgba(253,252,248,.82);
+  color: var(--pv2-text, #242424);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 3px 9px rgba(36,36,36,.025);
+  opacity: 0;
+  transform: translateY(5px);
+  animation: pv2LevelChoiceIn 360ms cubic-bezier(.16,1,.3,1) forwards;
+  transition: border-color 150ms ease, background 150ms ease, box-shadow 150ms ease, opacity 220ms ease, transform 180ms ease;
+}
+.pv2-project-levelup__choice:nth-child(1) { animation-delay: 120ms; }
+.pv2-project-levelup__choice:nth-child(2) { animation-delay: 175ms; }
+.pv2-project-levelup__choice:nth-child(3) { animation-delay: 230ms; }
+@keyframes pv2LevelChoiceIn { to { opacity: 1; transform: none; } }
+.pv2-project-levelup__choice:hover,
+.pv2-project-levelup__choice:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(36,36,36,.28);
+  background: #fff;
+  box-shadow: 0 7px 16px rgba(36,36,36,.07);
+  outline: none;
+}
+.pv2-project-levelup__choice[data-rarity='uncommon'] {
+  border-color: color-mix(in srgb, var(--pv2-upgrade-friction) 44%, rgba(36,36,36,.13));
+}
+.pv2-project-levelup__choice[data-rarity='rare'] {
+  border-color: color-mix(in srgb, var(--pv2-upgrade-flux) 52%, rgba(36,36,36,.13));
+}
+.pv2-project-levelup__choice-icon {
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 29px;
+  border-radius: 8px;
+  background: rgba(36,36,36,.055);
+  color: var(--pv2-text, #242424);
+}
+.pv2-project-levelup__choice[data-rarity='uncommon'] .pv2-project-levelup__choice-icon {
+  background: color-mix(in srgb, var(--pv2-upgrade-friction) 14%, #fff);
+  color: var(--pv2-upgrade-friction);
+}
+.pv2-project-levelup__choice[data-rarity='rare'] .pv2-project-levelup__choice-icon {
+  background: color-mix(in srgb, var(--pv2-upgrade-flux) 14%, #fff);
+  color: var(--pv2-upgrade-flux);
+}
+.pv2-project-levelup__choice-icon svg { width: 15px; height: 15px; }
+.pv2-project-levelup__choice-copy { min-width: 0; display: grid; gap: 1px; }
+.pv2-project-levelup__choice-copy small {
+  color: var(--pv2-upgrade-friction);
+  font-size: .48rem;
+  font-weight: 850;
+  letter-spacing: .1em;
+}
+.pv2-project-levelup__choice[data-rarity='rare'] .pv2-project-levelup__choice-copy small { color: var(--pv2-upgrade-flux); }
+.pv2-project-levelup__choice-copy strong {
+  font-size: .72rem;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -.02em;
+}
+.pv2-project-levelup__choice-copy span {
+  color: var(--pv2-muted, #686762);
+  font-size: .61rem;
+  line-height: 1.18;
+}
+.pv2-project-levelup__choice-arrow {
+  color: var(--pv2-muted, #686762);
+  font: 500 1.15rem/1 system-ui, sans-serif;
+}
+.pv2-project-levelup__choice.is-selected {
+  border-color: rgba(36,36,36,.38);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(255,216,79,.22), 0 8px 20px rgba(36,36,36,.08);
+  transform: scale(1.01);
+}
+.pv2-project-levelup__choice.is-rejected { opacity: .26 !important; }
+.pv2-project-levelup__choice:disabled { cursor: default; }
+
+@media (max-width: 720px) {
+  .pv2-project-progress { top: -34px; width: 90px; }
+  .pv2-project-levelup__panel {
+    width: min(340px, calc(100vw - 24px));
+    max-height: min(420px, calc(100svh - 92px));
+    padding: 14px;
+    border-radius: 14px;
+  }
+  .pv2-project-levelup__panel h2 { font-size: 1.08rem; }
+  .pv2-project-levelup__reveal { font-size: .74rem; }
+  .pv2-project-levelup__choice { min-height: 48px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pv2-float-slot.is-project-leveling .pv2-visual,
+  .pv2-float-slot.is-project-leveling::after,
+  .pv2-project-levelup-fanfare,
+  .pv2-project-levelup__choice { animation: none; }
+  .pv2-project-levelup-overlay,
+  .pv2-project-progress,
+  .pv2-project-progress__fill,
+  .pv2-project-levelup__panel,
+  .pv2-project-levelup__choice { transition: none; }
+  .pv2-project-levelup__choice { opacity: 1; transform: none; }
+}
