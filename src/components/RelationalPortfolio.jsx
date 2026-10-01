@@ -666,21 +666,13 @@ function UXGateway({ onBack }) {
 
 function WorkBackdrop({ reducedMotion, content = false }) {
   const [background, setBackground] = useState(null);
-  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const choice = pickWorkBackground();
-    if (!choice) return undefined;
-    setBackground(choice);
-
-    // Load before revealing so the painting fades in instead of popping.
-    const image = new Image();
-    image.decoding = 'async';
-    image.onload = () => setReady(true);
-    image.src = choice.src;
-    return () => {
-      image.onload = null;
-    };
+    // The image is a local public asset. Let CSS load it directly rather than
+    // gating the entire backdrop on a separate Image.onload event: a stalled
+    // preload must never leave the portfolio with a permanently transparent
+    // background.
+    setBackground(pickWorkBackground());
   }, []);
 
   // The wrapper always renders, even before a backdrop is picked: returning
@@ -691,7 +683,7 @@ function WorkBackdrop({ reducedMotion, content = false }) {
       className={`pv2-work-backdrop${content ? ' pv2-work-backdrop--content' : ''}`}
       aria-hidden="true"
       initial={{ opacity: 0 }}
-      animate={{ opacity: background && ready ? 1 : 0, scale: 1, filter: 'blur(0px)' }}
+      animate={{ opacity: background ? 1 : 0, scale: 1, filter: 'blur(0px)' }}
       exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 1.015, filter: 'blur(7px)' }}
       transition={reducedMotion ? { duration: 0 } : MOTION.major}
     >

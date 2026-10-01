@@ -961,3 +961,305 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
   .pv2-project-levelup-overlay,.pv2-project-progress,.pv2-project-progress__fill,.pv2-project-levelup__panel,.pv2-project-levelup__choice{transition:none}
   .pv2-project-levelup__choice{opacity:1;transform:none}
 }
+
+
+/* ================= Contextual project + tactile sphere FX overrides ================= */
+
+/* Pixel-arcade fanfare treatment based on the supplied LEVEL UP reference.
+   The rest of the panel stays in the portfolio's existing UI language. */
+.pv2-project-levelup-fanfare__copy {
+  min-width: 176px;
+  gap: 8px;
+  filter: none;
+}
+.pv2-project-levelup-fanfare__copy strong {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-family: Impact, Haettenschweiler, "Arial Black", system-ui, sans-serif;
+  font-size: clamp(1.15rem, 2vw, 1.72rem);
+  font-weight: 950;
+  line-height: .72;
+  letter-spacing: -.045em;
+  text-indent: 0;
+  white-space: normal;
+  transform: skew(-1.5deg);
+}
+.pv2-project-levelup-fanfare__copy strong span {
+  display: block;
+  padding: .06em .12em .13em;
+  background: linear-gradient(180deg, #fff4a8 0%, #ffe34d 24%, #ffc51e 68%, #efa20b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,244,168,.92);
+  text-shadow:
+    0 3px 0 #ef9c08,
+    3px 5px 0 #60218e,
+    6px 7px 0 #1b8fcf;
+}
+.pv2-project-levelup-fanfare__copy strong::after { display: none; }
+.pv2-project-levelup-fanfare__copy em {
+  margin-top: 2px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(247,246,242,.88);
+  box-shadow: 0 4px 12px rgba(36,36,36,.08);
+  color: var(--pv2-muted,#686762);
+  font: 800 .54rem/1 system-ui,sans-serif;
+  letter-spacing: .09em;
+}
+.pv2-project-levelup-fanfare__ray:nth-child(3n) {
+  background: var(--pv2-upgrade-flux,#7c55b6);
+}
+.pv2-project-levelup-fanfare__ray:nth-child(4n) {
+  background: #2397d0;
+}
+
+/* The level-up card should never feel glued to a browser edge. JS also
+   enforces this safe area when deciding left/right/above/below placement. */
+.pv2-project-levelup__panel {
+  width: min(372px, calc(100vw - 40px));
+}
+
+/* ---------- Circular friction feedback ---------- */
+.pv2-heat-halo {
+  --pv2-heat: 0;
+  --pv2-heat-rgb: 255, 160, 45;
+  --pv2-flame-opacity: 0;
+  --pv2-smoke-opacity: 0;
+  --pv2-flame-scale: .55;
+  --pv2-smoke-scale: .72;
+  box-shadow: none !important;
+}
+.pv2-heat-glow {
+  position: absolute;
+  inset: -5%;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--pv2-heat-rgb), .6);
+  background:
+    radial-gradient(circle at center, transparent 56%, rgba(var(--pv2-heat-rgb), .11) 73%, rgba(var(--pv2-heat-rgb), .36) 100%);
+  box-shadow:
+    0 0 10px rgba(var(--pv2-heat-rgb), .25),
+    0 0 24px rgba(var(--pv2-heat-rgb), .16);
+  filter: blur(.15px);
+}
+.pv2-heat-flame,
+.pv2-heat-smoke {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  pointer-events: none;
+  transform-origin: 50% 100%;
+  will-change: transform, opacity;
+}
+.pv2-heat-flame {
+  width: 9px;
+  height: 24px;
+  margin-left: -4.5px;
+  margin-top: -18px;
+  border-radius: 70% 30% 62% 38% / 82% 82% 18% 18%;
+  background:
+    radial-gradient(ellipse at 50% 77%, rgba(255,246,190,.98) 0 13%, transparent 15%),
+    linear-gradient(to top, #ff7a00 0%, #ffb11b 43%, #ffd84f 72%, rgba(255,216,79,0) 100%);
+  box-shadow: 0 0 8px rgba(var(--pv2-heat-rgb), .38);
+  opacity: var(--pv2-flame-opacity);
+  transform: translate(-50%,-50%) rotate(var(--rot)) scaleY(var(--pv2-flame-scale));
+  animation: pv2HeatFlame 620ms ease-in-out calc(var(--i) * -43ms) infinite alternate;
+}
+.pv2-heat-smoke {
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  margin-top: -9px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(66,61,56,.42) 0 32%, rgba(91,84,77,.22) 48%, transparent 72%);
+  filter: blur(2.2px);
+  opacity: var(--pv2-smoke-opacity);
+  transform: translate(-50%,-50%) rotate(var(--rot)) scale(var(--pv2-smoke-scale));
+  animation: pv2HeatSmoke 1450ms ease-out calc(var(--i) * -137ms) infinite;
+}
+@keyframes pv2HeatFlame {
+  0% {
+    transform: translate(-50%,-50%) rotate(var(--rot)) scaleY(var(--pv2-flame-scale)) scale(.82,.78);
+    filter: brightness(.96);
+  }
+  55% {
+    transform: translate(-50%,-54%) rotate(calc(var(--rot) + 3deg)) scaleY(var(--pv2-flame-scale)) scale(1.08);
+    filter: brightness(1.12);
+  }
+  100% {
+    transform: translate(-50%,-59%) rotate(calc(var(--rot) - 2deg)) scaleX(.9) scaleY(var(--pv2-flame-scale));
+    filter: brightness(1.04);
+  }
+}
+@keyframes pv2HeatSmoke {
+  0% {
+    transform: translate(-50%,-45%) rotate(var(--rot)) scale(var(--pv2-smoke-scale)) scale(.7);
+    opacity: 0;
+  }
+  25% { opacity: var(--pv2-smoke-opacity); }
+  100% {
+    transform: translate(-50%,-115%) rotate(calc(var(--rot) + 7deg)) scale(var(--pv2-smoke-scale)) scale(1.22);
+    opacity: 0;
+  }
+}
+
+/* ---------- Playground project context ---------- */
+html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
+.pv2-float-slot.is-project-context-open {
+  z-index: 7350 !important;
+}
+.pv2-float-slot.is-project-context-open .pv2-visual {
+  transform: scale(1.045);
+  box-shadow:
+    0 23px 44px rgba(36,36,36,.24),
+    0 0 0 2px rgba(255,216,79,.25),
+    0 0 20px 5px rgba(255,216,79,.12);
+  transition:
+    transform 360ms cubic-bezier(.16,1,.3,1),
+    box-shadow 360ms cubic-bezier(.16,1,.3,1);
+}
+.pv2-project-context-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 7300;
+  background: rgba(247,246,242,.025);
+  pointer-events: auto;
+}
+.pv2-project-context-panel {
+  position: fixed;
+  z-index: 7420;
+  width: min(420px, calc(100vw - 40px));
+  max-height: min(610px, calc(100svh - 112px));
+  overflow: auto;
+  padding: 18px;
+  border: 1px solid rgba(36,36,36,.15);
+  border-radius: 16px;
+  background: rgba(247,246,242,.975);
+  color: var(--pv2-text,#242424);
+  box-shadow: 0 18px 50px rgba(36,36,36,.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.pv2-project-context-panel::before {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  background: rgba(36,36,36,.18);
+}
+.pv2-project-context-panel[data-side='right']::before { left: -24px; top: 50%; width: 24px; height: 1px; }
+.pv2-project-context-panel[data-side='left']::before { right: -24px; top: 50%; width: 24px; height: 1px; }
+.pv2-project-context-panel[data-side='below']::before { left: 50%; top: -18px; width: 1px; height: 18px; }
+.pv2-project-context-panel[data-side='above']::before { left: 50%; bottom: -18px; width: 1px; height: 18px; }
+
+.pv2-project-context-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.pv2-project-context-panel__header .pv2-overline { margin: 0; }
+.pv2-project-context-panel__close {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  padding: 0;
+  border: 1px solid rgba(36,36,36,.12);
+  border-radius: 999px;
+  background: rgba(255,255,255,.62);
+  color: var(--pv2-text,#242424);
+  font: 600 1.15rem/1 system-ui,sans-serif;
+  cursor: pointer;
+  transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+}
+.pv2-project-context-panel__close:hover,
+.pv2-project-context-panel__close:focus-visible {
+  transform: scale(1.06);
+  border-color: rgba(36,36,36,.28);
+  background: #fff;
+  outline: none;
+}
+.pv2-project-context-panel__close:active { transform: scale(.94); }
+.pv2-project-context-panel h2 {
+  margin: 8px 0 0;
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  font-weight: 690;
+  line-height: 1;
+  letter-spacing: -.045em;
+}
+.pv2-project-context-panel__summary {
+  margin: 13px 0 0;
+  color: var(--pv2-text,#242424);
+  font-size: .86rem;
+  line-height: 1.46;
+}
+.pv2-project-context-panel__purpose {
+  margin: 10px 0 0;
+  color: var(--pv2-muted,#686762);
+  font-size: .75rem;
+  line-height: 1.48;
+}
+.pv2-project-context-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(36,36,36,.09);
+}
+.pv2-project-context-panel__actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 10px;
+  background: var(--pv2-text,#242424);
+  color: #fff;
+  text-decoration: none;
+  font-size: .72rem;
+  font-weight: 750;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+.pv2-project-context-panel__actions a:hover,
+.pv2-project-context-panel__actions a:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 16px rgba(36,36,36,.14);
+  outline: none;
+}
+.pv2-project-context-panel__actions a:active { transform: translateY(1px) scale(.98); }
+.pv2-project-context-panel__actions .pv2-project-context-panel__secondary {
+  border: 1px solid rgba(36,36,36,.14);
+  background: rgba(255,255,255,.7);
+  color: var(--pv2-text,#242424);
+}
+.pv2-project-context-panel__actions > span {
+  color: var(--pv2-muted,#686762);
+  font-size: .72rem;
+}
+
+@media (max-width:720px) {
+  .pv2-project-levelup__panel,
+  .pv2-project-context-panel {
+    width: min(340px, calc(100vw - 40px));
+  }
+  .pv2-project-context-panel {
+    max-height: min(520px, calc(100svh - 116px));
+    padding: 15px;
+  }
+  .pv2-project-context-panel__purpose { font-size: .72rem; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .pv2-heat-flame,
+  .pv2-heat-smoke { animation: none; }
+  .pv2-float-slot.is-project-context-open .pv2-visual { transition: none; }
+}
