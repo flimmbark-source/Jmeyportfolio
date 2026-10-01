@@ -74,20 +74,90 @@
     );
 }
 
-.pv2-page-backdrop-credit {
+.pv2-credit-drawer {
   position: fixed;
-  left: clamp(18px, 3.8vw, 68px);
+  left: clamp(10px, 1.5vw, 18px);
   bottom: clamp(10px, 1.6vh, 18px);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  color: #232220;
+}
+
+.pv2-credit-drawer__trigger {
+  position: relative;
   z-index: 2;
-  max-width: min(44ch, calc(100vw - 36px));
-  margin: 0;
-  color: rgba(35, 34, 32, 0.72);
+  display: grid;
+  place-items: center;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgba(36, 36, 36, 0.24);
+  border-radius: 50%;
+  background: rgba(247, 246, 242, 0.82);
+  color: #35322e;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: help;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 3px 10px rgba(36, 36, 36, 0.08);
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  transition:
+    border-color var(--pv2-fast) var(--pv2-ease),
+    background var(--pv2-fast) var(--pv2-ease);
+}
+
+.pv2-credit-drawer__reveal {
+  display: block;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(-14px);
+  transition:
+    max-width var(--pv2-medium) var(--pv2-ease),
+    opacity var(--pv2-fast) var(--pv2-ease),
+    transform var(--pv2-medium) var(--pv2-ease);
+}
+
+.pv2-credit-drawer__text {
+  display: block;
+  width: max-content;
+  max-width: min(430px, calc(100vw - 58px));
+  margin-left: 6px;
+  padding: 6px 11px 6px 10px;
+  border: 1px solid rgba(36, 36, 36, 0.12);
+  border-radius: 999px;
+  background: rgba(247, 246, 242, 0.84);
+  color: rgba(35, 34, 32, 0.78);
   font-size: 10px;
   line-height: 1.4;
-  text-shadow:
-    0 0 3px rgba(247, 246, 242, 0.98),
-    0 0 8px rgba(247, 246, 242, 0.9);
-  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(36, 36, 36, 0.06);
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+}
+
+.pv2-credit-drawer:hover .pv2-credit-drawer__reveal,
+.pv2-credit-drawer:focus-within .pv2-credit-drawer__reveal {
+  max-width: min(440px, calc(100vw - 52px));
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.pv2-credit-drawer:hover .pv2-credit-drawer__trigger,
+.pv2-credit-drawer:focus-within .pv2-credit-drawer__trigger {
+  border-color: rgba(36, 36, 36, 0.42);
+  background: rgba(247, 246, 242, 0.94);
+}
+
+.pv2-credit-drawer__trigger:focus-visible {
+  outline: 2px solid var(--pv2-text);
+  outline-offset: 3px;
 }
 
 @media (max-width: 720px) {
@@ -119,13 +189,16 @@
     background: rgba(247, 246, 242, 0.79);
   }
 
-  .pv2-page-backdrop-credit {
-    display: none;
+  .pv2-credit-drawer__text {
+    max-width: calc(100vw - 58px);
+    white-space: normal;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pv2-page-backdrop__art {
+  .pv2-page-backdrop__art,
+  .pv2-credit-drawer__trigger,
+  .pv2-credit-drawer__reveal {
     transition: none;
   }
 }
