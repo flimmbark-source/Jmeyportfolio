@@ -3,63 +3,103 @@
   will-change: transform;
 }
 
-/* On the floating Work overview, the game previews are physical-looking orbs.
-   The project image remains the texture; layered highlights and edge falloff sell
-   the spherical volume without changing the project artwork itself. */
+/* Floating overview previews are actual lens-distorted orbs, not merely circular
+   crops. The whole artwork surface is warped first; lighting is added above it. */
 .pv2-project-tile .pv2-visual {
+  position: relative;
   border-radius: 50%;
   clip-path: circle(50% at 50% 50%);
+  overflow: hidden;
   isolation: isolate;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: #aaa59c;
   box-shadow:
-    0 16px 28px rgba(36, 36, 36, 0.18),
-    0 4px 8px rgba(36, 36, 36, 0.12),
-    inset -12px -14px 20px rgba(0, 0, 0, 0.24),
-    inset 8px 7px 14px rgba(255, 255, 255, 0.17);
+    0 19px 32px rgba(36, 36, 36, 0.22),
+    0 6px 12px rgba(36, 36, 36, 0.13),
+    inset -18px -20px 28px rgba(0, 0, 0, 0.28),
+    inset 12px 11px 19px rgba(255, 255, 255, 0.22);
 }
 
+.pv2-project-tile .pv2-visual__surface {
+  position: absolute;
+  inset: -5%;
+  z-index: 1;
+  transform: scale(1.1);
+  transform-origin: center;
+  filter: url(#pv2-sphere-distortion);
+  will-change: filter, transform;
+}
+
+/* Gloss, rim light, and edge falloff sit above the distorted artwork. */
 .pv2-project-tile .pv2-visual::before,
 .pv2-project-tile .pv2-visual::after {
   content: '';
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 3;
   border-radius: inherit;
   pointer-events: none;
 }
 
 .pv2-project-tile .pv2-visual::before {
   background:
-    radial-gradient(circle at 28% 19%,
-      rgba(255, 255, 255, 0.7) 0 3%,
-      rgba(255, 255, 255, 0.25) 8%,
-      rgba(255, 255, 255, 0.08) 15%,
-      transparent 27%);
+    radial-gradient(
+      ellipse at 27% 15%,
+      rgba(255, 255, 255, 0.88) 0 2.5%,
+      rgba(255, 255, 255, 0.48) 5%,
+      rgba(255, 255, 255, 0.18) 11%,
+      rgba(255, 255, 255, 0.055) 19%,
+      transparent 30%
+    ),
+    radial-gradient(
+      ellipse at 17% 34%,
+      rgba(255, 255, 255, 0.2),
+      transparent 23%
+    );
 }
 
 .pv2-project-tile .pv2-visual::after {
   background:
-    radial-gradient(circle at 39% 34%,
-      transparent 0 45%,
-      rgba(0, 0, 0, 0.07) 59%,
-      rgba(0, 0, 0, 0.28) 82%,
-      rgba(0, 0, 0, 0.5) 100%),
-    radial-gradient(circle at 78% 82%,
-      rgba(255, 190, 112, 0.12),
-      transparent 31%);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-}
-
-.pv2-project-tile .pv2-visual__media {
-  transform: scale(1.055);
+    radial-gradient(
+      circle at 42% 36%,
+      transparent 0 39%,
+      rgba(0, 0, 0, 0.04) 50%,
+      rgba(0, 0, 0, 0.14) 65%,
+      rgba(0, 0, 0, 0.36) 84%,
+      rgba(0, 0, 0, 0.62) 100%
+    ),
+    radial-gradient(
+      ellipse at 79% 81%,
+      rgba(255, 184, 96, 0.18),
+      transparent 29%
+    ),
+    linear-gradient(
+      125deg,
+      rgba(255, 255, 255, 0.1),
+      transparent 35% 67%,
+      rgba(0, 0, 0, 0.12)
+    );
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 5px 5px 12px rgba(255, 255, 255, 0.08),
+    inset -7px -8px 16px rgba(0, 0, 0, 0.1);
 }
 
 .pv2-project-tile:hover .pv2-visual,
 .pv2-project-tile:focus-visible .pv2-visual {
   box-shadow:
-    0 22px 42px rgba(36, 36, 36, 0.24),
-    0 6px 12px rgba(36, 36, 36, 0.13),
-    inset -13px -15px 22px rgba(0, 0, 0, 0.22),
-    inset 9px 8px 15px rgba(255, 255, 255, 0.2);
+    0 25px 46px rgba(36, 36, 36, 0.27),
+    0 8px 14px rgba(36, 36, 36, 0.15),
+    inset -19px -21px 30px rgba(0, 0, 0, 0.27),
+    inset 13px 12px 20px rgba(255, 255, 255, 0.24);
+}
+
+.pv2-filter-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 /* The image itself is the project block; no duplicate title/category below it. */
