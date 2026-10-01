@@ -386,9 +386,9 @@
     const sphere = body.el.getBoundingClientRect();
     const navBottom = document.querySelector('.pv2-nav')?.getBoundingClientRect().bottom || 72;
     const pad = window.innerWidth <= MOBILE_BREAKPOINT
-      ? 20
-      : Math.max(38, Math.min(56, window.innerWidth * .03));
-    const gap = window.innerWidth <= MOBILE_BREAKPOINT ? 14 : 22;
+      ? 24
+      : Math.max(48, Math.min(72, window.innerWidth * .045));
+    const gap = window.innerWidth <= MOBILE_BREAKPOINT ? 16 : 26;
     const panelRect = panel.getBoundingClientRect();
     const minTop = navBottom + Math.max(16, pad * .45);
     const maxTop = Math.max(minTop, window.innerHeight - pad - panelRect.height);
