@@ -25,13 +25,13 @@
   inset: auto;
   left: 50%;
   top: 50%;
-  width: 118%;
-  height: 118%;
+  width: 112%;
+  height: 112%;
   z-index: 1;
   transform: translate(-50%, -50%);
   transform-origin: 50% 50%;
-  filter: url(#pv2-sphere-distortion);
-  will-change: filter, transform;
+  filter: none;
+  will-change: transform;
 }
 
 /* Gloss, rim light, and edge falloff sit above the distorted artwork. */
@@ -489,4 +489,44 @@
 }
 @media (max-width:720px) {
   .pv2-project-hover-meta { display:none; }
+}
+
+
+/* ================= Mobile HUD correction ================= */
+@media (max-width:720px) {
+  .pv2-score-counter {
+    top: calc(var(--pv2-nav-height) + 9px);
+    right: 12px;
+    gap: 6px;
+    padding: 6px 8px;
+  }
+
+  .pv2-score-counter__label {
+    font-size: .56rem;
+  }
+
+  .pv2-score-counter__value {
+    font-size: .92rem;
+  }
+
+  .pv2-motion-toggle {
+    top: calc(var(--pv2-nav-height) + 47px);
+    right: 12px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .pv2-motion-toggle svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+
+/* Keep project artwork raster-stable inside the orb.
+   Scale/hover feedback belongs to the sphere itself, not the bitmap layer. */
+.pv2-project-tile .pv2-visual__frame,
+.pv2-project-tile:hover .pv2-visual__frame,
+.pv2-project-tile:focus-visible .pv2-visual__frame {
+  transform: none;
 }

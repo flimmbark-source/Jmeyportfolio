@@ -243,3 +243,33 @@
     padding-top: var(--pv2-nav-height);
   }
 }
+
+
+/* ================= Mobile layout correction ================= */
+@media (max-width:720px) {
+  :root { --pv2-nav-height: 76px; }
+
+  .pv2-nav {
+    height: var(--pv2-nav-height);
+    min-height: var(--pv2-nav-height);
+    padding: 8px 12px 7px;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .pv2-nav__name {
+    font-size: .79rem;
+    line-height: 1;
+  }
+
+  .pv2-nav nav {
+    gap: 4px;
+  }
+
+  .pv2-nav nav a,
+  .pv2-nav nav button {
+    padding: 5px 0;
+    font-size: clamp(.66rem, 3.05vw, .78rem);
+    line-height: 1;
+  }
+}

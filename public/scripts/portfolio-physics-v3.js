@@ -1,6 +1,7 @@
 (() => {
   const MOBILE_BREAKPOINT = 720;
   const EDGE_PADDING = 16;
+  const BOTTOM_EDGE_PADDING = 0;
   const NAV_CLEARANCE = 10;
   const BODY_GAP = 10;
   const NORMAL_SPEED = 0.038;
@@ -427,14 +428,23 @@
     const maxTop = Math.max(minTop, window.innerHeight - pad - panelRect.height);
 
     if (window.innerWidth <= MOBILE_BREAKPOINT) {
+      const viewport = window.visualViewport;
+      const viewportTop = viewport?.offsetTop || 0;
+      const viewportHeight = viewport?.height || window.innerHeight;
+      const viewportBottom = viewportTop + viewportHeight;
       const sphereCenterY = sphere.top + sphere.height / 2;
       const availableWidth = window.innerWidth - pad * 2;
       const left = pad + Math.max(0, (availableWidth - panelRect.width) / 2);
-      let side = sphereCenterY < window.innerHeight / 2 ? 'mobile-bottom' : 'mobile-top';
+      const safeTop = Math.max(minTop, viewportTop + 12);
+      const safeBottom = viewportBottom - Math.max(18, pad);
+      let side = sphereCenterY < viewportTop + viewportHeight / 2 ? 'mobile-bottom' : 'mobile-top';
       let top = side === 'mobile-bottom'
-        ? window.innerHeight - pad - panelRect.height
-        : minTop;
-      top = clamp(top, minTop, maxTop);
+        ? safeBottom - panelRect.height
+        : safeTop;
+      if (top < safeTop) {
+        top = safeTop;
+        side = 'mobile-top';
+      }
       panel.style.left = left.toFixed(1) + 'px';
       panel.style.top = top.toFixed(1) + 'px';
       panel.dataset.side = side;
@@ -510,6 +520,15 @@
     document.body.appendChild(overlay);
     projectLevelUpOverlay = overlay;
     positionProjectLevelUpDialog(overlay, body);
+    const reposition = () => {
+      if (projectLevelUpOverlay === overlay && body.el?.isConnected) {
+        positionProjectLevelUpDialog(overlay, body);
+      }
+    };
+    overlay._pv2Reposition = reposition;
+    window.addEventListener('resize', reposition);
+    window.visualViewport?.addEventListener('resize', reposition);
+    window.visualViewport?.addEventListener('scroll', reposition);
     requestAnimationFrame(() => overlay.classList.add('is-open'));
     window.setTimeout(() => overlay.querySelector('.pv2-project-levelup__choice')?.focus(), reducedMotion() ? 0 : 420);
   }
@@ -536,6 +555,11 @@
     if (activeProjectLevelUp !== event) return;
     projectLevelUpOverlay?.classList.remove('is-open');
     const overlay = projectLevelUpOverlay;
+    if (overlay?._pv2Reposition) {
+      window.removeEventListener('resize', overlay._pv2Reposition);
+      window.visualViewport?.removeEventListener('resize', overlay._pv2Reposition);
+      window.visualViewport?.removeEventListener('scroll', overlay._pv2Reposition);
+    }
     projectLevelUpOverlay = null;
     event.body?.el?.classList.remove('is-project-leveling');
     activeProjectLevelUp = null;
@@ -1595,7 +1619,7 @@
     if (side === 'left') return { x: rect.left + EDGE_PADDING, y: rect.top + body.y + body.h / 2 };
     if (side === 'right') return { x: rect.left + stageRect.width - EDGE_PADDING, y: rect.top + body.y + body.h / 2 };
     if (side === 'top') return { x: rect.left + body.x + body.w / 2, y: rect.top + stageTopLimit(stageRect) };
-    return { x: rect.left + body.x + body.w / 2, y: rect.top + stageRect.height - EDGE_PADDING };
+    return { x: rect.left + body.x + body.w / 2, y: rect.top + stageRect.height - BOTTOM_EDGE_PADDING };
   }
 
   function scoreWallBounce(body, side, stageRect) {
@@ -1613,7 +1637,7 @@
     const projectFx = projectEffects(body);
     const minY = stageTopLimit(stageRect);
     const maxX = Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING);
-    const maxY = Math.max(minY, stageRect.height - body.h - EDGE_PADDING);
+    const maxY = Math.max(minY, stageRect.height - body.h - BOTTOM_EDGE_PADDING);
     let hit = null;
     if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx) * effects.wallKickMult * projectFx.wallKickMult; hit = 'left'; }
     if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx) * effects.wallKickMult * projectFx.wallKickMult; hit = 'right'; }
@@ -2483,7 +2507,7 @@
   function ejectFromBumpers(body, stageRect, bumpers) {
     const minY = stageTopLimit(stageRect);
     const maxX = Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING);
-    const maxY = Math.max(minY, stageRect.height - body.h - EDGE_PADDING);
+    const maxY = Math.max(minY, stageRect.height - body.h - BOTTOM_EDGE_PADDING);
     for (let iter = 0; iter < 30; iter += 1) {
       let moved = false;
       for (const bumper of bumpers) {

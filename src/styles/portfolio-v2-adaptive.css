@@ -204,3 +204,31 @@
     aspect-ratio: 1 / 1;
   }
 }
+
+
+/* ================= Mobile Playground correction ================= */
+@media (max-width:720px) {
+  html.pv2-physics-live .pv2-overview__stage {
+    height: calc(100dvh - var(--pv2-nav-height));
+    min-height: 430px;
+  }
+
+  html.pv2-physics-live .pv2-float-slot .pv2-project-tile {
+    width: clamp(58px, 18vw, 76px);
+  }
+
+  html.pv2-physics-live .pv2-overview__statement {
+    width: min(88vw, 340px);
+  }
+
+  html.pv2-physics-live .pv2-overview__statement h1 {
+    font-size: clamp(1.82rem, 8.4vw, 2.65rem);
+    line-height: .98;
+  }
+
+  html.pv2-physics-live .pv2-overview__statement > p:last-child {
+    max-width: 300px;
+    font-size: .82rem;
+    line-height: 1.38;
+  }
+}
