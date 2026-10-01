@@ -15,6 +15,23 @@
   const MAX_SPEED = 0.66;
   const REDUCED_MAX_SPEED = 0.08;
   const POINTER_COOLDOWN = 85;
+  // --- "Click to Explore!" nudge -------------------------------------------
+  // The spheres are the way into the actual work, but nothing on the stage says
+  // so — the Points box gets a "Click to Spend" sticker and the projects get
+  // nothing. This is the same sticker pointed at a random game sphere, shown
+  // occasionally rather than permanently: it is an invitation, not a label, so
+  // it appears a handful of times and then stops asking.
+  const EXPLORE_CUE_FIRST_DELAY = 16000;
+  const EXPLORE_CUE_MIN_GAP = 48000;
+  const EXPLORE_CUE_MAX_GAP = 80000;
+  const EXPLORE_CUE_VISIBLE = 5400;
+  const EXPLORE_CUE_MAX_SHOWS = 4;
+  // Distance from the sphere's edge to the sticker's box. The arrow is an
+  // ::after hanging off the box, so it eats about 24px of this — the remainder
+  // is the clearance between the arrow's tip and the sphere. Too small and the
+  // tip lands on the artwork, where a dark arrow on a dark sphere disappears.
+  const EXPLORE_CUE_GAP = 32;
+  const EXPLORE_CUE_MARGIN = 8;   // px of viewport breathing room
   const BUMPER_KICK = 0.384;
   const WALL_SCORE_COOLDOWN = 220;
   // A flick's "armed" state is finite: after this it decays so a single flick
@@ -743,6 +760,17 @@
   let projectContextPaused = false;
   let motionStopped = false; // user-toggled via the "Stop motion" button
   let motionToggle = null;   // the toggle button element
+  let exploreCue = null;          // the "Click to Explore!" sticker element
+  let exploreCueBox = null;       // its inner box (owns the entrance animation)
+  let exploreCueBody = null;      // the sphere it currently points at
+  let exploreCueHideAt = 0;       // performance.now() when it should go away
+  let exploreCueNextAt = 0;       // …and when the next one may appear
+  let exploreCueShows = 0;        // how many times it has been shown this visit
+  let exploreCueDismissed = false;// the visitor opened a project — stop asking
+  let exploreCueW = 0;            // measured once per show, not per frame
+  let exploreCueH = 0;
+  let exploreCueFlipped = false;
+  let exploreCueTransform = '';   // last transform written, to skip no-op writes
   let bushido = null;        // active Bushido session state (null when idle)
   let bushidoCooldownUntil = 0;   // performance.now() timestamp cooldown ends
   let bushidoBadge = null;        // persistent cooldown badge element
@@ -987,6 +1015,145 @@
 
   function setMotionToggleVisible(visible) {
     ensureMotionToggle().classList.toggle('is-visible', Boolean(visible));
+  }
+
+  // ===================== "Click to Explore!" nudge =========================
+  // Lives in the page (not inside .pv2-float-slot) and is positioned by
+  // transform each frame while it is up. The stage clips its overflow, so a
+  // sticker parented to a sphere near an edge would be cut in half; tracking
+  // from outside also lets it flip sides and stay inside the viewport as the
+  // sphere drifts.
+  function ensureExploreCue() {
+    if (exploreCue?.isConnected) return exploreCue;
+    exploreCue = document.createElement('div');
+    exploreCue.className = 'pv2-explore-cue';
+    exploreCue.setAttribute('aria-hidden', 'true');
+    exploreCue.innerHTML = '<span class="pv2-explore-cue__box">Click to Explore!</span>';
+    exploreCueBox = exploreCue.querySelector('.pv2-explore-cue__box');
+    document.body.appendChild(exploreCue);
+    return exploreCue;
+  }
+
+  function hideExploreCue() {
+    exploreCueBody = null;
+    exploreCueHideAt = 0;
+    if (exploreCue?.isConnected) exploreCue.classList.remove('is-visible');
+  }
+
+  // Stop for good once the visitor has opened a project: they have found the
+  // door, so continuing to point at it would just be nagging.
+  function dismissExploreCue() {
+    exploreCueDismissed = true;
+    hideExploreCue();
+  }
+
+  function scheduleNextExploreCue(now) {
+    exploreCueNextAt = now + EXPLORE_CUE_MIN_GAP
+      + Math.random() * (EXPLORE_CUE_MAX_GAP - EXPLORE_CUE_MIN_GAP);
+  }
+
+  function exploreCueBlocked() {
+    return Boolean(
+      exploreCueDismissed
+      || !stage?.isConnected
+      || !bodies.length
+      || battlePaused
+      || projectContextPaused
+      || activeProjectLevelUp
+      || bushido
+      || document.documentElement.classList.contains('pv2-upgrades-open')
+      || !playgroundIsVisible()
+    );
+  }
+
+  function showExploreCue(now) {
+    // Never point at the same sphere twice running — part of the invitation is
+    // that it keeps gesturing at different pieces of work.
+    const candidates = bodies.filter((body) => body.el?.isConnected && body !== exploreCueBody);
+    const pool = candidates.length ? candidates : bodies.filter((body) => body.el?.isConnected);
+    if (!pool.length) return false;
+
+    const cue = ensureExploreCue();
+    exploreCueBody = pool[Math.floor(Math.random() * pool.length)];
+    cue.classList.remove('is-flipped');
+    cue.classList.add('is-visible');
+    // One layout read per appearance, so the per-frame tracking needs none.
+    // offsetWidth/Height, not getBoundingClientRect: the box is mid entrance
+    // animation at this point (it starts at scale(.78) and carries a resting
+    // tilt), and a transformed bounding box would measure the sticker ~20%
+    // narrower than it ends up — which parked it on top of the sphere.
+    exploreCueW = exploreCueBox.offsetWidth;
+    exploreCueH = exploreCueBox.offsetHeight;
+    exploreCueFlipped = false;
+    exploreCueHideAt = now + EXPLORE_CUE_VISIBLE;
+    exploreCueShows += 1;
+    // Names the sphere the sticker is pointing at, so what it is aimed at is
+    // inspectable rather than something you have to infer from coordinates.
+    cue.dataset.target = exploreCueBody.projectId || '';
+    return true;
+  }
+
+  function positionExploreCue(stageRect) {
+    const body = exploreCueBody;
+    if (!body || !exploreCue) return;
+    const centerX = stageRect.left + body.x + body.w / 2;
+    const centerY = stageRect.top + body.y + body.h / 2;
+    const reach = body.w / 2 + EXPLORE_CUE_GAP;
+
+    // Prefer the left of the sphere (matching the Points sticker), and flip
+    // only when that would run off the screen. The 10px of hysteresis stops it
+    // oscillating while a sphere hovers right on the threshold.
+    let left = centerX - reach - exploreCueW;
+    const flipThreshold = EXPLORE_CUE_MARGIN + (exploreCueFlipped ? 10 : 0);
+    const flipped = left < flipThreshold;
+    if (flipped) left = centerX + reach;
+    if (flipped !== exploreCueFlipped) {
+      exploreCueFlipped = flipped;
+      exploreCue.classList.toggle('is-flipped', flipped);
+    }
+
+    const maxLeft = window.innerWidth - exploreCueW - EXPLORE_CUE_MARGIN;
+    const minTop = Math.max(EXPLORE_CUE_MARGIN, (navBottom === null || navBottom === -Infinity ? 0 : navBottom) + EXPLORE_CUE_MARGIN);
+    const maxTop = window.innerHeight - exploreCueH - EXPLORE_CUE_MARGIN;
+    left = clamp(left, EXPLORE_CUE_MARGIN, Math.max(EXPLORE_CUE_MARGIN, maxLeft));
+    const top = clamp(centerY - exploreCueH / 2, minTop, Math.max(minTop, maxTop));
+    // Skip the write when nothing moved. It matters most while motion is
+    // stopped: there, tick() reads the stage rect each frame, and a write that
+    // changed nothing would still invalidate layout for the next read.
+    const next = `translate3d(${left.toFixed(1)}px, ${top.toFixed(1)}px, 0)`;
+    if (next !== exploreCueTransform) {
+      exploreCue.style.transform = next;
+      exploreCueTransform = next;
+    }
+  }
+
+  // Called once per frame from tick(), after the bodies have been written, so
+  // it reuses that frame's stageRect and performs no layout reads of its own.
+  function updateExploreCue(now, stageRect) {
+    if (exploreCueBody) {
+      if (now >= exploreCueHideAt || exploreCueBlocked() || !exploreCueBody.el?.isConnected) {
+        hideExploreCue();
+        scheduleNextExploreCue(now);
+        return;
+      }
+      positionExploreCue(stageRect);
+      return;
+    }
+
+    if (exploreCueDismissed || exploreCueShows >= EXPLORE_CUE_MAX_SHOWS) return;
+    if (!exploreCueNextAt) {
+      exploreCueNextAt = now + EXPLORE_CUE_FIRST_DELAY;
+      return;
+    }
+    if (now < exploreCueNextAt) return;
+    if (exploreCueBlocked()) {
+      // Try again shortly rather than burning this slot while something else
+      // is on top of the stage.
+      exploreCueNextAt = now + 4000;
+      return;
+    }
+    if (showExploreCue(now)) positionExploreCue(stageRect);
+    else exploreCueNextAt = now + 4000;
   }
 
   function activateGame() {
@@ -2416,16 +2583,30 @@
       return;
     }
 
-    // Freeze the simulation while a battle is on top or motion is stopped,
-    // but keep the loop alive.
-    if (battlePaused || projectContextPaused || motionStopped || activeProjectLevelUp) {
+    // Freeze the simulation but keep the loop alive. A battle, a context panel
+    // or a level-up owns the screen, so the sticker would hang over whatever is
+    // on top — drop it.
+    if (battlePaused || projectContextPaused || activeProjectLevelUp) {
       lastTime = now;
+      if (exploreCueBody) { hideExploreCue(); scheduleNextExploreCue(now); }
+      frame = requestAnimationFrame(tick);
+      return;
+    }
+
+    // "Stop motion" is different: nothing covers the stage, the spheres are
+    // simply still, and the invitation is easier to act on than ever — so the
+    // cue keeps running. Nothing in this branch writes style, so the rect read
+    // is a clean one the browser can serve from its cached layout.
+    if (motionStopped) {
+      lastTime = now;
+      updateExploreCue(now, stage.getBoundingClientRect());
       frame = requestAnimationFrame(tick);
       return;
     }
 
     // Bushido runs its own particle sim in place of the normal simulation.
     if (bushido) {
+      if (exploreCueBody) { hideExploreCue(); scheduleNextExploreCue(now); }
       const bdt = clamp(lastTime ? now - lastTime : 16.667, 8, 32);
       lastTime = now;
       updateBushido(now, bdt);
@@ -2568,6 +2749,8 @@
       }
     }
 
+    updateExploreCue(now, stageRect);
+
     mark(reducedMotion() ? 'running-reduced' : gameActive ? 'running-game' : 'running');
     frame = requestAnimationFrame(tick);
   }
@@ -2575,6 +2758,10 @@
   function teardown() {
     abortBushido();
     suspendProjectLevelUp();
+    hideExploreCue();
+    // A resize or rotation lands here mid-countdown, usually with the next slot
+    // already in the past — let the new layout settle before asking again.
+    if (exploreCueNextAt) exploreCueNextAt = performance.now() + 6000;
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
     for (const body of bodies) if (body.halo) body.halo.style.opacity = '0';
@@ -2720,7 +2907,10 @@
     // Battle-mode bridge (portfolio-battle.js drives these).
     window.addEventListener('pv2:battle-pause', () => { battlePaused = true; });
     window.addEventListener('pv2:battle-resume', () => { battlePaused = false; lastTime = 0; });
-    window.addEventListener('pv2:project-context-pause', () => { projectContextPaused = true; });
+    window.addEventListener('pv2:project-context-pause', () => {
+      projectContextPaused = true;
+      dismissExploreCue();
+    });
     window.addEventListener('pv2:project-context-resume', () => { projectContextPaused = false; lastTime = 0; });
     window.addEventListener('pv2:add-points', (event) => {
       const n = Math.max(0, Math.round(Number(event.detail?.n) || 0));

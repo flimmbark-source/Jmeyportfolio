@@ -105,6 +105,91 @@
   100% { opacity: 1; transform: translate(0,-50%) rotate(-4deg) scale(1); }
 }
 
+/* The same sticker as "Click to Spend", pointed at a game sphere instead.
+   Two elements on purpose: the outer one is moved by the physics loop with a
+   transform every frame, so the inner one is free to own the entrance
+   animation and the resting tilt without the two fighting over `transform`. */
+.pv2-explore-cue {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1170;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 220ms ease;
+  will-change: transform;
+}
+
+.pv2-explore-cue.is-visible {
+  opacity: 1;
+}
+
+.pv2-explore-cue__box {
+  position: relative;
+  display: block;
+  width: max-content;
+  padding: 7px 10px 6px;
+  border: 2px solid var(--pv2-text, #242424);
+  border-radius: 7px;
+  background: #d8ff63;
+  color: var(--pv2-text, #242424);
+  box-shadow: 4px 4px 0 rgba(36, 36, 36, .18);
+  font-size: .68rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform: rotate(-4deg);
+  transform-origin: right center;
+}
+
+/* Arrow on the side facing the sphere. */
+.pv2-explore-cue__box::after {
+  content: '➜';
+  position: absolute;
+  left: calc(100% + 5px);
+  top: 50%;
+  color: var(--pv2-text, #242424);
+  font-size: 1.25rem;
+  font-weight: 950;
+  line-height: 1;
+  transform: translateY(-52%) rotate(2deg);
+  filter: drop-shadow(1px 1px 0 rgba(216, 255, 99, .9));
+}
+
+/* Flipped when there is no room to the left of the sphere. */
+.pv2-explore-cue.is-flipped .pv2-explore-cue__box {
+  transform: rotate(4deg);
+  transform-origin: left center;
+}
+
+.pv2-explore-cue.is-flipped .pv2-explore-cue__box::after {
+  left: auto;
+  right: calc(100% + 5px);
+  transform: translateY(-52%) rotate(-2deg) scaleX(-1);
+}
+
+.pv2-explore-cue.is-visible .pv2-explore-cue__box {
+  animation: pv2ExploreCueIn 520ms cubic-bezier(.16, 1.12, .3, 1) both;
+}
+
+.pv2-explore-cue.is-visible.is-flipped .pv2-explore-cue__box {
+  animation-name: pv2ExploreCueInFlipped;
+}
+
+@keyframes pv2ExploreCueIn {
+  0% { opacity: 0; transform: translateX(12px) rotate(-8deg) scale(.78); }
+  58% { opacity: 1; transform: translateX(-4px) rotate(-2deg) scale(1.07); }
+  100% { opacity: 1; transform: translateX(0) rotate(-4deg) scale(1); }
+}
+
+@keyframes pv2ExploreCueInFlipped {
+  0% { opacity: 0; transform: translateX(-12px) rotate(8deg) scale(.78); }
+  58% { opacity: 1; transform: translateX(4px) rotate(2deg) scale(1.07); }
+  100% { opacity: 1; transform: translateX(0) rotate(4deg) scale(1); }
+}
+
 /* Cross-project abilities communicate both the source-to-target relationship
    and the impact on the receiving sphere. */
 .pv2-project-target-link {
@@ -147,6 +232,16 @@
 }
 
 @media (max-width:720px) {
+  .pv2-explore-cue__box {
+    padding: 6px 9px 5px;
+    font-size: .6rem;
+    letter-spacing: .035em;
+  }
+
+  .pv2-explore-cue__box::after {
+    font-size: 1.1rem;
+  }
+
   .pv2-score-spend-cue {
     right: 4px;
     top: calc(100% + 15px);
@@ -1114,6 +1209,8 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
   .pv2-float-slot.is-project-leveling .pv2-visual,.pv2-float-slot.is-project-leveling::before,.pv2-float-slot.is-project-leveling::after,
   .pv2-project-levelup-fanfare__ring,.pv2-project-levelup-fanfare__ray,.pv2-project-levelup-fanfare__copy,.pv2-project-levelup__header::before,.pv2-project-target-link,.pv2-project-target-impact,.pv2-score-spend-cue,
   .pv2-project-levelup__choice,.pv2-float-slot.is-project-upgrade-applied .pv2-visual,.pv2-float-slot.is-project-upgrade-applied::before{animation:none}
+  .pv2-explore-cue.is-visible .pv2-explore-cue__box{animation:none}
+  .pv2-explore-cue{transition:none}
   .pv2-project-levelup-overlay,.pv2-project-progress,.pv2-project-progress__fill,.pv2-project-levelup__panel,.pv2-project-levelup__choice{transition:none}
   .pv2-project-levelup__choice{opacity:1;transform:none}
 }
