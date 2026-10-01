@@ -1389,3 +1389,20 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
   .pv2-heat-smoke { animation: none; }
   .pv2-float-slot.is-project-context-open .pv2-visual { transition: none; }
 }
+
+
+/* Level-up cards size to content; no internal scrollbars. */
+.pv2-project-levelup__panel {
+  box-sizing: border-box;
+  max-height: none !important;
+  overflow: visible !important;
+}
+.pv2-project-levelup__choice {
+  box-sizing: border-box;
+}
+@media (max-width:720px) {
+  .pv2-project-levelup__panel {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
