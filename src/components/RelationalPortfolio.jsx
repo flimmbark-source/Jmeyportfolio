@@ -173,7 +173,7 @@ function SphereFilterDefs() {
           <feDisplacementMap
             in="SourceGraphic"
             in2="sphereMap"
-            scale="64"
+            scale="20"
             xChannelSelector="R"
             yChannelSelector="G"
           />
