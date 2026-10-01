@@ -25,8 +25,8 @@
   inset: auto;
   left: 50%;
   top: 50%;
-  width: 110%;
-  height: 110%;
+  width: 150%;
+  height: 150%;
   z-index: 1;
   transform: translate(-50%, -50%);
   transform-origin: 50% 50%;
@@ -427,4 +427,14 @@
 .pv2-ux-gateway {
   position: relative;
   z-index: 1;
+}
+
+
+/* Lock every Playground artwork focal point to the sphere center. */
+.pv2-project-tile .pv2-visual__media {
+  object-position: 50% 50% !important;
+}
+
+.pv2-project-tile .pv2-visual__frame {
+  background-position: 50% 50% !important;
 }
