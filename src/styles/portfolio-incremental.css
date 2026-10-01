@@ -1086,11 +1086,11 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
 }
 @keyframes pv2HeatFlame {
   0% {
-    transform: translate(-50%,-50%) rotate(var(--rot)) scaleX(.78) scaleY(calc(var(--pv2-flame-scale) * .82));
+    transform: translate(-50%,-50%) rotate(var(--rot)) scaleY(var(--pv2-flame-scale)) scale(.82,.78);
     filter: brightness(.96);
   }
   55% {
-    transform: translate(-50%,-54%) rotate(calc(var(--rot) + 3deg)) scaleX(1.08) scaleY(calc(var(--pv2-flame-scale) * 1.08));
+    transform: translate(-50%,-54%) rotate(calc(var(--rot) + 3deg)) scaleY(var(--pv2-flame-scale)) scale(1.08);
     filter: brightness(1.12);
   }
   100% {
@@ -1100,12 +1100,12 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
 }
 @keyframes pv2HeatSmoke {
   0% {
-    transform: translate(-50%,-45%) rotate(var(--rot)) scale(calc(var(--pv2-smoke-scale) * .7));
+    transform: translate(-50%,-45%) rotate(var(--rot)) scale(var(--pv2-smoke-scale)) scale(.7);
     opacity: 0;
   }
   25% { opacity: var(--pv2-smoke-opacity); }
   100% {
-    transform: translate(-50%,-115%) rotate(calc(var(--rot) + 7deg)) scale(calc(var(--pv2-smoke-scale) * 1.22));
+    transform: translate(-50%,-115%) rotate(calc(var(--rot) + 7deg)) scale(var(--pv2-smoke-scale)) scale(1.22);
     opacity: 0;
   }
 }
