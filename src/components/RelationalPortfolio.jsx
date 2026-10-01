@@ -28,8 +28,8 @@ const overviewAnchors = {
   'get-to-the-cafe': [0.50, 0.10],
   'letter-river': [0.12, 0.43],
   'last-reading': [0.87, 0.42],
-  rotogo: [0.31, 0.82],
-  'gig-duel': [0.69, 0.82],
+  rotogo: [0.22, 0.82],
+  'gig-duel': [0.78, 0.82],
   'ux-work': [0.08, 0.18],
   unfinished: [0.90, 0.78],
 };
