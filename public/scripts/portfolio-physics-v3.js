@@ -302,7 +302,7 @@
       el.classList.remove('is-exp-flash');
       void el.offsetWidth;
       el.classList.add('is-exp-flash');
-      window.setTimeout(() => el?.classList.remove('is-exp-flash'), 950);
+      window.setTimeout(() => el?.classList.remove('is-exp-flash'), 1800);
     }
   }
 
@@ -554,6 +554,7 @@
     const others = bodies.filter((candidate) => candidate !== body && candidate.projectState);
     if (!others.length) return;
     others.sort((a, b) => a.projectState.level - b.projectState.level || a.projectState.xp - b.projectState.xp);
+    signalProjectTarget(body, others[0], 'mentor');
     addProjectXp(others[0], 1, 'mentor');
   }
 
@@ -571,10 +572,60 @@
       queueProjectLevelUp(body, state.level);
       if (projectEffects(body).mentor && source !== 'mentor') mentorLowestProject(body);
     }
-    refreshProjectProgressUI(body, true);
+    refreshProjectProgressUI(body, source === 'bumper');
     window.dispatchEvent(new CustomEvent('pv2:project-xp', {
       detail: { id: body.projectId, level: state.level, xp: state.xp, amount, source, leveled },
     }));
+  }
+
+
+  function signalProjectTarget(sourceBody, targetBody, kind = 'chain') {
+    if (!sourceBody?.el?.isConnected || !targetBody?.el?.isConnected) return;
+
+    const sourceRect = sourceBody.el.getBoundingClientRect();
+    const targetRect = targetBody.el.getBoundingClientRect();
+    const sx = sourceRect.left + sourceRect.width / 2;
+    const sy = sourceRect.top + sourceRect.height / 2;
+    const tx = targetRect.left + targetRect.width / 2;
+    const ty = targetRect.top + targetRect.height / 2;
+    const dx = tx - sx;
+    const dy = ty - sy;
+    const distance = Math.hypot(dx, dy);
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+    const layer = ensureFxLayer();
+    const line = document.createElement('div');
+    line.className = 'pv2-project-target-link pv2-project-target-link--' + kind;
+    line.style.left = sx + 'px';
+    line.style.top = sy + 'px';
+    line.style.width = distance + 'px';
+    line.style.transform = 'rotate(' + angle + 'deg)';
+
+    const impact = document.createElement('div');
+    impact.className = 'pv2-project-target-impact pv2-project-target-impact--' + kind;
+    impact.style.left = tx + 'px';
+    impact.style.top = ty + 'px';
+    impact.style.width = Math.max(54, targetRect.width * .72) + 'px';
+    impact.style.height = Math.max(54, targetRect.height * .72) + 'px';
+
+    layer.append(line, impact);
+
+    const visual = targetBody.el.querySelector('.pv2-visual');
+    if (!reducedMotion() && visual) {
+      try {
+        visual.animate([
+          { transform: 'scale(1)', filter: 'brightness(1)' },
+          { transform: 'scale(.94)', filter: 'brightness(1.04)', offset: .16 },
+          { transform: 'scale(1.11)', filter: 'brightness(1.28) saturate(1.18)', offset: .38 },
+          { transform: 'scale(1)', filter: 'brightness(1)' },
+        ], { duration: 560, easing: 'cubic-bezier(.16,.84,.3,1)' });
+      } catch {}
+    }
+
+    window.setTimeout(() => {
+      line.remove();
+      impact.remove();
+    }, reducedMotion() ? 180 : 700);
   }
 
   function kickNearestProject(sourceBody, now) {
@@ -589,6 +640,7 @@
       if (d < best) { best = d; nearest = candidate; }
     }
     if (!nearest) return;
+    signalProjectTarget(sourceBody, nearest, 'chain');
     const dx = nearest.x + nearest.w / 2 - sx;
     const dy = nearest.y + nearest.h / 2 - sy;
     const length = Math.hypot(dx, dy) || 1;
@@ -787,7 +839,11 @@
   function refreshUpgradeCue() {
     if (!scoreCounter?.isConnected) return;
     const next = cheapestAvailableUpgrade();
-    scoreCounter.classList.toggle('has-upgrade', Boolean(next && points >= next.cost));
+    const affordable = Boolean(next && points >= next.cost);
+    const wasAffordable = scoreCounter.classList.contains('has-upgrade');
+    scoreCounter.classList.toggle('has-upgrade', affordable);
+    if (affordable && !wasAffordable) scoreCounter.classList.remove('spend-cue-seen');
+    if (!affordable) scoreCounter.classList.remove('spend-cue-seen');
   }
 
   function ensureFxLayer() {
@@ -808,13 +864,17 @@
     scoreCounter.setAttribute('role', 'button');
     scoreCounter.setAttribute('tabindex', '0');
     scoreCounter.setAttribute('aria-label', 'Open upgrades');
-    scoreCounter.innerHTML = '<span class="pv2-score-counter__label">Points</span><strong class="pv2-score-counter__value">0</strong>';
+    scoreCounter.innerHTML = '<span class="pv2-score-counter__label">Points</span><strong class="pv2-score-counter__value">0</strong><span class="pv2-score-spend-cue" aria-hidden="true">Click to Spend</span>';
     scoreValue = scoreCounter.querySelector('.pv2-score-counter__value');
     scoreValue.textContent = String(points);
-    scoreCounter.addEventListener('click', openUpgradeTree);
+    scoreCounter.addEventListener('click', () => {
+      scoreCounter.classList.add('spend-cue-seen');
+      openUpgradeTree();
+    });
     scoreCounter.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
+        scoreCounter.classList.add('spend-cue-seen');
         openUpgradeTree();
       }
     });
@@ -1577,6 +1637,8 @@
       if (now - a.projectState.lastSharedXpAt > 900 && now - b.projectState.lastSharedXpAt > 900) {
         a.projectState.lastSharedXpAt = now;
         b.projectState.lastSharedXpAt = now;
+        if (aProject.sharedMomentum) signalProjectTarget(a, b, 'shared');
+        if (bProject.sharedMomentum) signalProjectTarget(b, a, 'shared');
         addProjectXp(a, .5, 'shared-momentum');
         addProjectXp(b, .5, 'shared-momentum');
       }
