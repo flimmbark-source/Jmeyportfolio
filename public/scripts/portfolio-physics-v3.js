@@ -15,6 +15,12 @@
   const MAX_SPEED = 0.66;
   const REDUCED_MAX_SPEED = 0.08;
   const POINTER_COOLDOWN = 85;
+  // Context hover: after the same 1s dwell used by the label, gently settle
+  // the hovered sphere onto the pointer so the player can inspect it in place.
+  const CONTEXT_HOVER_DELAY = 1000;
+  const CONTEXT_HOVER_FOLLOW_SPEED = 0.0018;
+  const CONTEXT_HOVER_RESPONSE_MS = 110;
+  const CONTEXT_HOVER_RELEASE_PAD = 28;
   // --- "Click to Explore!" nudge -------------------------------------------
   // The spheres are the way into the actual work, but nothing on the stage says
   // so — the Points box gets a "Click to Spend" sticker and the projects get
@@ -2166,6 +2172,8 @@
       vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
       phase: index * 1.41 + .7,
       pointerInside: false,
+      contextHoverSince: 0,
+      contextHoverActive: false,
       lastPointerHit: -Infinity,
       lastWallScore: -Infinity,
       contacts: new Set(),
@@ -2307,6 +2315,40 @@
     return pointerStageRectCache;
   }
 
+  function pointerNearBody(body, stageRect, pad = 0) {
+    if (pointer.x <= -9000 || pointer.y <= -9000) return false;
+    const x = pointer.x - stageRect.left;
+    const y = pointer.y - stageRect.top;
+    return x >= body.x - pad
+      && x <= body.x + body.w + pad
+      && y >= body.y - pad
+      && y <= body.y + body.h + pad;
+  }
+
+  function setContextHoverActive(body, active) {
+    if (body.contextHoverActive === active) return;
+    body.contextHoverActive = active;
+    body.el.classList.toggle('is-context-hover-active', active);
+  }
+
+  function updateContextHover(body, now, stageRect) {
+    const directlyHovered = body.el.matches(':hover');
+    const hovering = directlyHovered
+      || (body.contextHoverActive && pointerNearBody(body, stageRect, CONTEXT_HOVER_RELEASE_PAD));
+
+    if (!hovering || projectContextPaused || activeProjectLevelUp) {
+      body.contextHoverSince = 0;
+      setContextHoverActive(body, false);
+      return false;
+    }
+
+    if (!body.contextHoverSince) body.contextHoverSince = now;
+    if (!body.contextHoverActive && now - body.contextHoverSince >= CONTEXT_HOVER_DELAY) {
+      setContextHoverActive(body, true);
+    }
+    return body.contextHoverActive;
+  }
+
   function collideWithPointer(event, pointerVx = 0, pointerVy = 0) {
     const now = performance.now();
     if (!stage || activeProjectLevelUp || projectContextPaused || document.documentElement.classList.contains('pv2-upgrades-open')) return;
@@ -2327,6 +2369,10 @@
         height: body.h,
       };
       const inside = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
+      if (inside && body.contextHoverActive) {
+        body.pointerInside = true;
+        continue;
+      }
       if (inside && !body.pointerInside && now - body.lastPointerHit >= POINTER_COOLDOWN) {
         let dx = pointerVx;
         let dy = pointerVy;
@@ -2795,6 +2841,31 @@
       const bodyMaxSpeed = maxSpeed * projectFx.maxSpeedMult;
       const bodyHeatThreshold = Math.max(HEAT_THRESHOLD, bodySpeedFloor + HEAT_MARGIN);
       const bodyDamping = Math.pow(damping, projectFx.dragExponent);
+      const contextHoverActive = updateContextHover(body, now, stageRect);
+      if (contextHoverActive && !reducedMotion()) {
+        const minY = stageTopLimit(stageRect);
+        const targetX = clamp(
+          pointer.x - stageRect.left - body.w / 2,
+          EDGE_PADDING,
+          Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING)
+        );
+        const targetY = clamp(
+          pointer.y - stageRect.top - body.h / 2,
+          minY,
+          Math.max(minY, stageRect.height - body.h - BOTTOM_EDGE_PADDING)
+        );
+        const desiredVx = (targetX - body.x) * CONTEXT_HOVER_FOLLOW_SPEED;
+        const desiredVy = (targetY - body.y) * CONTEXT_HOVER_FOLLOW_SPEED;
+        const response = 1 - Math.exp(-dt / CONTEXT_HOVER_RESPONSE_MS);
+        body.vx += (desiredVx - body.vx) * response;
+        body.vy += (desiredVy - body.vy) * response;
+        body.friction = Math.max(0, body.friction - FRICTION_RELIEF * dt * 2);
+        updateHeatVisual(body);
+        body.x += body.vx * dt;
+        body.y += body.vy * dt;
+        constrain(body, stageRect, false);
+        continue;
+      }
       if (gameActive && projectFx.autoFlick) {
         body.projectState.autoTimer += dt;
         if (body.projectState.autoTimer >= 7000) {
@@ -2901,7 +2972,10 @@
     if (exploreCueNextAt) exploreCueNextAt = performance.now() + 6000;
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
-    for (const body of bodies) if (body.halo) body.halo.style.opacity = '0';
+    for (const body of bodies) {
+      if (body.halo) body.halo.style.opacity = '0';
+      body.el.classList.remove('is-context-hover-active');
+    }
     bodies = [];
     invalidateBumpers();
     lastTime = 0;
