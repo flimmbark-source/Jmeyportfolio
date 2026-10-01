@@ -429,8 +429,8 @@ function ProjectContextPanel({ node, anchorEl, onClose, reducedMotion }) {
         const panelRect = panel.getBoundingClientRect();
         const navBottom = document.querySelector('.pv2-nav')?.getBoundingClientRect().bottom || 72;
         const mobile = window.innerWidth <= 720;
-        const pad = mobile ? 20 : Math.max(36, Math.min(52, window.innerWidth * .028));
-        const gap = mobile ? 14 : 24;
+        const pad = mobile ? 24 : Math.max(48, Math.min(72, window.innerWidth * .045));
+        const gap = mobile ? 16 : 26;
         const minTop = navBottom + 14;
         const maxTop = Math.max(minTop, window.innerHeight - pad - panelRect.height);
         let side = 'right';
