@@ -355,7 +355,7 @@
       + rays
       + '</span>'
       + '<span class="pv2-project-levelup-fanfare__copy">'
-      + '<strong>LEVEL UP</strong>'
+      + '<strong><span>LEVEL</span><span>UP!</span></strong>'
       + '<em>LV. ' + level + '</em>'
       + '</span>';
     document.body.appendChild(el);
@@ -385,10 +385,12 @@
     if (!panel || !body?.el?.isConnected) return;
     const sphere = body.el.getBoundingClientRect();
     const navBottom = document.querySelector('.pv2-nav')?.getBoundingClientRect().bottom || 72;
-    const pad = window.innerWidth <= MOBILE_BREAKPOINT ? 12 : 18;
-    const gap = window.innerWidth <= MOBILE_BREAKPOINT ? 12 : 22;
+    const pad = window.innerWidth <= MOBILE_BREAKPOINT
+      ? 20
+      : Math.max(38, Math.min(56, window.innerWidth * .03));
+    const gap = window.innerWidth <= MOBILE_BREAKPOINT ? 14 : 22;
     const panelRect = panel.getBoundingClientRect();
-    const minTop = navBottom + 10;
+    const minTop = navBottom + Math.max(16, pad * .45);
     const maxTop = Math.max(minTop, window.innerHeight - pad - panelRect.height);
     let side = 'right';
     let left = sphere.right + gap;
@@ -571,6 +573,7 @@
   let idleBank = 0;
   let autoFlickTimer = 0;
   let battlePaused = false;
+  let projectContextPaused = false;
   let motionStopped = false; // user-toggled via the "Stop motion" button
   let motionToggle = null;   // the toggle button element
   let bushido = null;        // active Bushido session state (null when idle)
@@ -1058,7 +1061,7 @@
   }
 
   function openUpgradeTree() {
-    if (activeProjectLevelUp) return;
+    if (activeProjectLevelUp || projectContextPaused) return;
     buildUpgradeTree();
     refreshUpgradeTree();
     upgradeOverlay.classList.add('is-open');
@@ -1176,27 +1179,44 @@
       `0 0 ${(6 + f * 14).toFixed(0)}px rgba(${c},0.5)`;
   }
 
-  // Paint a block's heat ring from its friction (0→1). Center stays transparent
-  // so the tile text is legible. Cost control: the blurred box-shadow is only
-  // rewritten on a tier change; the smooth ramp rides on `opacity` (composited),
-  // and both writes are skipped when the quantized value is unchanged.
+  // Friction now reads as heat on the sphere itself: low values start as faint
+  // smoke/glow, then the perimeter catches fire and grows more turbulent.
   function updateHeatVisual(body) {
     const halo = body.halo;
     if (!halo) return;
     const f = body.friction;
     if (f < HEAT_MIN_VISIBLE) {
-      if (body.heatOpacity !== 0) { halo.style.opacity = '0'; body.heatOpacity = 0; body.heatTier = -1; }
+      halo.style.setProperty('--pv2-heat', '0');
+      halo.style.setProperty('--pv2-flame-opacity', '0');
+      halo.style.setProperty('--pv2-smoke-opacity', '0');
+      if (body.heatOpacity !== 0) {
+        halo.style.opacity = '0';
+        body.heatOpacity = 0;
+        body.heatTier = -1;
+      }
       return;
     }
+
     const tier = Math.min(HEAT_TIERS - 1, Math.floor(f * HEAT_TIERS));
     if (tier !== body.heatTier) {
-      halo.style.boxShadow = heatShadow((tier + 0.5) / HEAT_TIERS);
+      halo.style.setProperty('--pv2-heat-rgb', heatColor((tier + .5) / HEAT_TIERS));
       body.heatTier = tier;
     }
-    // Front-load the opacity ramp (√f) so even light heat reads clearly instead
-    // of fading in from near-invisible; quantize to skip redundant writes.
+
+    const heat = Math.round(clamp(f, 0, 1) * 100) / 100;
+    const flame = Math.round(clamp((f - .22) / .78, 0, 1) * 100) / 100;
+    const smoke = Math.round(clamp(.24 + f * .7, 0, .92) * 100) / 100;
+    halo.style.setProperty('--pv2-heat', String(heat));
+    halo.style.setProperty('--pv2-flame-opacity', String(flame));
+    halo.style.setProperty('--pv2-smoke-opacity', String(smoke));
+    halo.style.setProperty('--pv2-flame-scale', String(.55 + heat * .85));
+    halo.style.setProperty('--pv2-smoke-scale', String(.72 + heat * .62));
+
     const op = Math.round(Math.min(1, Math.sqrt(f)) * 40) / 40;
-    if (op !== body.heatOpacity) { halo.style.opacity = String(op); body.heatOpacity = op; }
+    if (op !== body.heatOpacity) {
+      halo.style.opacity = String(op);
+      body.heatOpacity = op;
+    }
   }
 
   // Full meter → cash in a "friction burn" through the normal scoring path
@@ -1209,12 +1229,12 @@
     window.dispatchEvent(new CustomEvent('pv2:friction-burn', { detail: { x: impact.x, y: impact.y } }));
     if (reducedMotion() || !body.halo) return;
     try {
-      const rest = body.halo.style.boxShadow;
       body.halo.animate([
-        { boxShadow: rest, transform: 'scale(1)' },
-        { boxShadow: 'inset 0 0 0 3px rgba(255,240,205,.92), 0 0 42px 9px rgba(255,150,45,.78)', transform: 'scale(1.06)', offset: .3 },
-        { boxShadow: rest, transform: 'scale(1)' },
-      ], { duration: 520, easing: 'cubic-bezier(.16,.84,.3,1)' });
+        { transform: 'scale(1)', filter: 'brightness(1) saturate(1)' },
+        { transform: 'scale(1.12)', filter: 'brightness(1.5) saturate(1.55)', offset: .28 },
+        { transform: 'scale(1.025)', filter: 'brightness(1.15) saturate(1.2)', offset: .62 },
+        { transform: 'scale(1)', filter: 'brightness(1) saturate(1)' },
+      ], { duration: 720, easing: 'cubic-bezier(.16,.84,.3,1)' });
     } catch {}
   }
 
@@ -1706,29 +1726,65 @@
     return body;
   }
 
-  // A transparent-centered overlay pinned to the block; its glowing border is
-  // the heat readout. Reused across re-inits so we never stack duplicates.
+  // Heat conforms to the circular project visual. Smoke and flame sprites sit
+  // around its perimeter and are driven by friction via CSS variables.
   function ensureHeatHalo(el) {
     let halo = el.querySelector(':scope > .pv2-heat-halo');
-    if (halo) return halo;
-    const tile = el.querySelector('.pv2-project-tile') || el;
-    halo = document.createElement('div');
-    halo.className = 'pv2-heat-halo';
-    halo.setAttribute('aria-hidden', 'true');
-    let radius = '16px';
-    try { radius = getComputedStyle(tile).borderRadius || radius; } catch {}
+    if (!halo) {
+      halo = document.createElement('div');
+      halo.className = 'pv2-heat-halo';
+      halo.setAttribute('aria-hidden', 'true');
+
+      const edgeItem = (className, index, count, radius, jitter = 0) => {
+        const angle = (Math.PI * 2 * index / count) - Math.PI / 2;
+        const radial = radius + (jitter ? ((index * 17) % 5 - 2) * jitter : 0);
+        const x = 50 + Math.cos(angle) * radial;
+        const y = 50 + Math.sin(angle) * radial;
+        const degrees = angle * 180 / Math.PI + 90;
+        return '<span class="' + className + '" style="--i:' + index
+          + ';--x:' + x.toFixed(2) + '%;--y:' + y.toFixed(2)
+          + '%;--rot:' + degrees.toFixed(1) + 'deg"></span>';
+      };
+
+      const flames = Array.from({ length: 14 }, (_, index) =>
+        edgeItem('pv2-heat-flame', index, 14, 48, .45)
+      ).join('');
+      const smoke = Array.from({ length: 9 }, (_, index) =>
+        edgeItem('pv2-heat-smoke', index, 9, 46, .7)
+      ).join('');
+      halo.innerHTML = '<span class="pv2-heat-glow"></span>' + smoke + flames;
+      el.appendChild(halo);
+    }
+
+    // The physics body includes captions/interaction space; measure the actual
+    // rendered sphere so the heat effect never becomes a square around it.
+    const visual = el.querySelector('.pv2-visual');
+    const hostRect = el.getBoundingClientRect();
+    const visualRect = visual?.getBoundingClientRect();
+    const left = visualRect ? visualRect.left - hostRect.left : 0;
+    const top = visualRect ? visualRect.top - hostRect.top : 0;
+    const width = visualRect?.width || hostRect.width;
+    const height = visualRect?.height || width;
     Object.assign(halo.style, {
-      position: 'absolute', inset: '0', pointerEvents: 'none',
-      borderRadius: radius, opacity: '0', zIndex: '3',
-      transition: 'opacity 120ms linear', willChange: 'opacity',
+      position: 'absolute',
+      left: left + 'px',
+      top: top + 'px',
+      width: width + 'px',
+      height: height + 'px',
+      pointerEvents: 'none',
+      borderRadius: '50%',
+      opacity: halo.style.opacity || '0',
+      zIndex: '3',
+      transition: 'opacity 120ms linear',
+      willChange: 'opacity, filter, transform',
+      overflow: 'visible',
     });
-    el.appendChild(halo);
     return halo;
   }
 
   function collideWithPointer(event, pointerVx = 0, pointerVy = 0) {
     const now = performance.now();
-    if (!stage || activeProjectLevelUp || document.documentElement.classList.contains('pv2-upgrades-open')) return;
+    if (!stage || activeProjectLevelUp || projectContextPaused || document.documentElement.classList.contains('pv2-upgrades-open')) return;
 
     const effects = currentEffects();
     for (const body of bodies) {
@@ -1891,7 +1947,7 @@
   }
 
   function handleBushidoDblClick(event) {
-    if (battlePaused || motionStopped || activeProjectLevelUp || !gameActive || !stage) return;
+    if (battlePaused || projectContextPaused || motionStopped || activeProjectLevelUp || !gameActive || !stage) return;
     if (!hasUpgrade('flux-bushido')) return;
     if (upgradeOverlay?.classList.contains('is-open')) return;
     // Leave real interactive targets alone; only the work-area whitespace arms it.
@@ -2129,7 +2185,7 @@
 
     // Freeze the simulation while a battle is on top or motion is stopped,
     // but keep the loop alive.
-    if (battlePaused || motionStopped || activeProjectLevelUp) {
+    if (battlePaused || projectContextPaused || motionStopped || activeProjectLevelUp) {
       lastTime = now;
       frame = requestAnimationFrame(tick);
       return;
@@ -2388,6 +2444,8 @@
     // Battle-mode bridge (portfolio-battle.js drives these).
     window.addEventListener('pv2:battle-pause', () => { battlePaused = true; });
     window.addEventListener('pv2:battle-resume', () => { battlePaused = false; lastTime = 0; });
+    window.addEventListener('pv2:project-context-pause', () => { projectContextPaused = true; });
+    window.addEventListener('pv2:project-context-resume', () => { projectContextPaused = false; lastTime = 0; });
     window.addEventListener('pv2:add-points', (event) => {
       const n = Math.max(0, Math.round(Number(event.detail?.n) || 0));
       if (n) { activateGame(); addIdlePoints(n); }
