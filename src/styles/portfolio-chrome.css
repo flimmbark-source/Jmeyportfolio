@@ -202,3 +202,44 @@
     transition: none;
   }
 }
+
+
+/* ================= Mobile chrome stabilization ================= */
+@media (max-width:720px) {
+  :root { --pv2-nav-height: 94px; }
+
+  .pv2-nav {
+    height: var(--pv2-nav-height);
+    min-height: var(--pv2-nav-height);
+    padding: 10px 16px 9px;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  .pv2-nav__name {
+    font-size: .86rem;
+    line-height: 1;
+  }
+
+  .pv2-nav nav {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  .pv2-nav nav a,
+  .pv2-nav nav button {
+    flex: 0 1 auto;
+    padding: 6px 0;
+    font-size: clamp(.72rem,3.25vw,.84rem);
+    white-space: nowrap;
+  }
+
+  .pv2-site {
+    padding-top: var(--pv2-nav-height);
+  }
+}
