@@ -440,7 +440,7 @@
 }
 
 
-/* A deliberate 1.5s hover reveals project identity without cluttering the
+/* A deliberate 1s hover reveals project identity without cluttering the
    moving playfield during normal play. */
 .pv2-project-hover-meta {
   position: absolute;
@@ -474,7 +474,7 @@
 .pv2-float-slot:hover > .pv2-project-hover-meta {
   opacity: 1;
   transform: translate(0,-50%);
-  transition-delay: 1.5s;
+  transition-delay: 1s;
 }
 .pv2-float-slot[data-placement='right'] > .pv2-project-hover-meta,
 .pv2-float-slot[data-placement='bottom-right'] > .pv2-project-hover-meta {
@@ -489,6 +489,11 @@
 }
 @media (max-width:720px) {
   .pv2-project-hover-meta { display:none; }
+}
+
+/* A project detail panel supersedes the delayed hover label. */
+html.pv2-project-context-open .pv2-project-hover-meta {
+  display: none !important;
 }
 
 
@@ -529,4 +534,51 @@
 .pv2-project-tile:hover .pv2-visual__frame,
 .pv2-project-tile:focus-visible .pv2-visual__frame {
   transform: none;
+}
+
+
+/* Playground project detail media: reuse the real project screenshots as the
+   immediate fallback, then let the existing preview script replace them with
+   looping recordings where one already exists. */
+.pv2-project-context-panel__media .pv2-visual--rotogo .pv2-visual__frame {
+  background: url('/images/derived/rotogoscreen-768.webp') center / cover no-repeat;
+}
+.pv2-project-context-panel__media .pv2-visual--gig-duel .pv2-visual__frame {
+  background: url('/images/derived/VenueRivalsscreen-768.webp') center / cover no-repeat;
+}
+.pv2-project-context-panel__media .pv2-visual--letter-river .pv2-visual__frame {
+  background: url('/images/derived/letterriverscreen-768.webp') center / cover no-repeat;
+}
+.pv2-project-context-panel__media .pv2-visual--last-reading .pv2-visual__frame {
+  background: url('/images/derived/Thelastreadingscreen-768.webp') center / cover no-repeat;
+}
+.pv2-project-context-panel__media .pv2-visual--get-to-the-cafe .pv2-visual__media {
+  display: none;
+}
+.pv2-project-context-panel__media .pv2-visual--get-to-the-cafe .pv2-visual__frame {
+  background: url('/images/derived/sRdmVj-600.webp') center / cover no-repeat;
+}
+.pv2-project-context-panel__media .pv2-visual__mark,
+.pv2-project-context-panel__media .pv2-visual__status {
+  display: none;
+}
+
+.pv2-project-context-panel__media .pv2-visual--letter-river.is-large,
+.pv2-project-context-panel__media .pv2-visual--rotogo.is-large,
+.pv2-project-context-panel__media .pv2-visual--last-reading.is-large,
+.pv2-project-context-panel__media .pv2-visual--gig-duel.is-large {
+  overflow: hidden;
+}
+.pv2-project-context-panel__media .pv2-letter-river-video,
+.pv2-project-context-panel__media .pv2-rotogo-video,
+.pv2-project-context-panel__media .pv2-last-reading-video,
+.pv2-project-context-panel__media .pv2-gig-duel-video {
+  object-fit: cover;
+}
+.pv2-project-context-panel__media .pv2-visual--letter-river.is-large .pv2-visual__frame,
+.pv2-project-context-panel__media .pv2-visual--rotogo.is-large .pv2-visual__frame,
+.pv2-project-context-panel__media .pv2-visual--last-reading.is-large .pv2-visual__frame,
+.pv2-project-context-panel__media .pv2-visual--gig-duel.is-large .pv2-visual__frame {
+  background: transparent;
+  pointer-events: none;
 }
