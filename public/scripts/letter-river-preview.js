@@ -4,22 +4,22 @@
   // file, so a preview starts playing instead of waiting on a whole download.
   const PREVIEWS = [
     {
-      selector: '.pv2-focus .pv2-visual--letter-river.is-large',
+      selector: '.pv2-focus .pv2-visual--letter-river.is-large, .pv2-project-context-panel__media .pv2-visual--letter-river.is-large',
       className: 'pv2-letter-river-video',
       src: '/images/derived/Screen-Recording-2026-09-10-161604.mp4',
     },
     {
-      selector: '.pv2-focus .pv2-visual--rotogo.is-large',
+      selector: '.pv2-focus .pv2-visual--rotogo.is-large, .pv2-project-context-panel__media .pv2-visual--rotogo.is-large',
       className: 'pv2-rotogo-video',
       src: '/images/derived/Screen-Recording-2026-09-10-162158.mp4',
     },
     {
-      selector: '.pv2-focus .pv2-visual--last-reading.is-large',
+      selector: '.pv2-focus .pv2-visual--last-reading.is-large, .pv2-project-context-panel__media .pv2-visual--last-reading.is-large',
       className: 'pv2-last-reading-video',
       src: '/images/derived/Screen-Recording-2026-09-10-162450.mp4',
     },
     {
-      selector: '.pv2-focus .pv2-visual--gig-duel.is-large',
+      selector: '.pv2-focus .pv2-visual--gig-duel.is-large, .pv2-project-context-panel__media .pv2-visual--gig-duel.is-large',
       className: 'pv2-gig-duel-video',
       src: '/images/derived/Screen-Recording-2026-09-10-162707.mp4',
     },
