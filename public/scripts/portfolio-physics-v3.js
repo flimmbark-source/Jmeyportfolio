@@ -66,6 +66,78 @@
   const TREE_ZOOM_MAX = 1.9;
   const TREE_DEFAULT_ZOOM = 1.18;
 
+
+  // --- Per-project progression --------------------------------------------
+  // Each portfolio sphere levels independently from powered bumper hits.
+  // Project information is deterministic; the three upgrade offers are rolled.
+  const PROJECT_REVEALS = {
+    'get-to-the-cafe': {
+      title: 'Get to the Café',
+      reveals: [
+        'A browser game about the hidden cost of completing an ordinary social task while internal demands accumulate.',
+        'Built in three days for GMTK Game Jam 2026.',
+        'I designed the mechanics to carry the idea through play rather than relying on exposition.',
+        'Built as a working 3D browser game with React, Three.js, and React Three Fiber.',
+        'The project is now the basis for research into whether interaction can change how people interpret everyday behavior.',
+      ],
+    },
+    'letter-river': {
+      title: 'Letter River',
+      reveals: [
+        'A guided Hebrew-learning system designed to reduce the cognitive load of starting a new language and script.',
+        'I designed one connected learning journey from letters to vocabulary, practice, review, and reading.',
+        'The same vocabulary returns across different tasks, so repetition changes form instead of becoming the same drill.',
+        'Built as a responsive web app with persisted progress and reusable learning content.',
+        'I designed and built the prototype end to end, from the interaction model and content structure through deployment.',
+      ],
+    },
+    'last-reading': {
+      title: 'The Last Reading',
+      reveals: [
+        'A solitaire-style horror roguelike built around constructing and interpreting five-card tarot readings.',
+        'I built a complete game loop around scoring combinations, deck manipulation, abilities, and progression.',
+        'Pattern recognition is both the game\'s core system and part of what the game is about.',
+        'Built as a production web game with React, Three.js, and React Three Fiber.',
+      ],
+    },
+    rotogo: {
+      title: 'Rotogo',
+      reveals: [
+        'A physical game idea that became the project that pulled me into programming.',
+        'I taught myself React by turning the rules into a working digital game.',
+        'Building it forced me to learn debugging, version control, deployment, and iteration through an actual product.',
+        'It marks the point where I moved from designing systems I could describe to systems I could build myself.',
+      ],
+    },
+    'gig-duel': {
+      title: 'Venue Rivals',
+      reveals: [
+        'A compact game experiment conceived while I was sitting in a shelter during missile attacks.',
+        'I used it to turn a passing idea into a ruleset and then into something playable.',
+        'It is deliberately small: an example of using game design as a way to think through an idea by building it.',
+      ],
+    },
+  };
+
+  const PROJECT_UPGRADES = [
+    { id: 'project-speed', title: 'Faster Drift', effect: '+15% drift speed', rarity: 'common', icon: 'wind', weight: 7, maxStacks: 4 },
+    { id: 'project-cap', title: 'Top Speed', effect: '+20% velocity cap', rarity: 'common', icon: 'gauge', weight: 7, maxStacks: 4 },
+    { id: 'project-launch', title: 'Quick Launch', effect: '+20% flick force', rarity: 'common', icon: 'rocket', weight: 7, maxStacks: 4 },
+    { id: 'project-bounce', title: 'Better Bounce', effect: '+20% bumper rebound', rarity: 'common', icon: 'bounce', weight: 7, maxStacks: 4 },
+    { id: 'project-walls', title: 'Hard Walls', effect: '+20% wall rebound', rarity: 'common', icon: 'shield', weight: 7, maxStacks: 4 },
+    { id: 'project-glide', title: 'Glide', effect: '−15% drag', rarity: 'common', icon: 'feather', weight: 7, maxStacks: 4 },
+    { id: 'project-keep', title: 'Kinetic Keep', effect: '+15% collision energy retained', rarity: 'common', icon: 'refresh', weight: 7, maxStacks: 4 },
+    { id: 'project-value', title: 'Bumper Value', effect: '+1 point from this project\'s bumper hits', rarity: 'common', icon: 'coin', weight: 7, maxStacks: 3 },
+    { id: 'project-learner', title: 'Fast Learner', effect: '+25% EXP from bumper hits', rarity: 'uncommon', icon: 'bolt', weight: 3, maxStacks: 3 },
+    { id: 'project-echo', title: 'Echo Hit', effect: 'Every third bumper hit grants +1 EXP', rarity: 'uncommon', icon: 'echo', weight: 3, maxStacks: 1 },
+    { id: 'project-shared', title: 'Shared Momentum', effect: 'Project collisions can grant both projects EXP', rarity: 'uncommon', icon: 'link', weight: 3, maxStacks: 1 },
+    { id: 'project-second-wind', title: 'Second Wind', effect: 'First bumper after 5s without one grants +1 EXP', rarity: 'rare', icon: 'flame', weight: .8, maxStacks: 1 },
+    { id: 'project-auto', title: 'Autopilot', effect: 'Occasionally launches itself', rarity: 'rare', icon: 'cpu', weight: .8, maxStacks: 1 },
+    { id: 'project-gravity', title: 'Gravity Well', effect: 'This project gains its own gravity', rarity: 'rare', icon: 'gravity', weight: .8, maxStacks: 1 },
+    { id: 'project-chain', title: 'Chain Reaction', effect: 'Bumper hits kick the nearest project', rarity: 'rare', icon: 'layers', weight: .8, maxStacks: 1 },
+    { id: 'project-mentor', title: 'Mentor', effect: 'When this project levels, the lowest-level project gains EXP', rarity: 'rare', icon: 'target', weight: .8, maxStacks: 1 },
+  ];
+
   // Genre labels flavor the incremental tree. The `soon` flag (none set now)
   // still greys a node out and blocks its purchase, kept for any future
   // scaffold-ahead node; every listed node currently affects the block game.
@@ -149,6 +221,285 @@
     return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
   }
 
+  function projectXpTarget(level) {
+    return Math.max(1, Math.round(level * (level + 1) / 2));
+  }
+
+  function formatProjectXp(value) {
+    const rounded = Math.round(value * 10) / 10;
+    return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+  }
+
+  function projectStateFor(id) {
+    if (!projectProgressState.has(id)) {
+      projectProgressState.set(id, {
+        level: 1, xp: 0, upgrades: new Map(), bumperHits: 0,
+        lastBumperAt: -Infinity, lastSharedXpAt: -Infinity, autoTimer: 0,
+      });
+    }
+    return projectProgressState.get(id);
+  }
+
+  function projectUpgradeCount(body, id) {
+    return body.projectState?.upgrades?.get(id) || 0;
+  }
+
+  function projectEffects(body) {
+    const count = (id) => projectUpgradeCount(body, id);
+    return {
+      speedMult: 1 + count('project-speed') * .15,
+      maxSpeedMult: 1 + count('project-cap') * .20,
+      pointerImpulseMult: 1 + count('project-launch') * .20,
+      bumperKickMult: 1 + count('project-bounce') * .20,
+      wallKickMult: 1 + count('project-walls') * .20,
+      dragExponent: Math.max(.35, 1 - count('project-glide') * .15),
+      collisionBoostMult: 1 + count('project-keep') * .15,
+      bumperPointBonus: count('project-value'),
+      expMult: 1 + count('project-learner') * .25,
+      echo: count('project-echo') > 0,
+      sharedMomentum: count('project-shared') > 0,
+      secondWind: count('project-second-wind') > 0,
+      autoFlick: count('project-auto') > 0,
+      gravity: count('project-gravity') > 0 ? GRAVITY_ACCEL : 0,
+      chainReaction: count('project-chain') > 0,
+      mentor: count('project-mentor') > 0,
+    };
+  }
+
+  function ensureProjectProgressUI(body) {
+    let el = body.el.querySelector(':scope > .pv2-project-progress');
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'pv2-project-progress';
+      el.setAttribute('aria-hidden', 'true');
+      el.innerHTML =
+        '<div class="pv2-project-progress__level">LV. <strong>1</strong></div>'
+        + '<svg class="pv2-project-progress__arc" viewBox="0 0 100 30" preserveAspectRatio="none">'
+        + '<path class="pv2-project-progress__track" d="M5 25 Q50 2 95 25" pathLength="100"></path>'
+        + '<path class="pv2-project-progress__fill" d="M5 25 Q50 2 95 25" pathLength="100"></path>'
+        + '</svg>'
+        + '<div class="pv2-project-progress__exp">0 / 1 EXP</div>';
+      body.el.appendChild(el);
+    }
+    body.progressEl = el;
+    refreshProjectProgressUI(body);
+    return el;
+  }
+
+  function refreshProjectProgressUI(body, flash = false) {
+    if (!body?.projectState) return;
+    const el = body.progressEl || ensureProjectProgressUI(body);
+    const state = body.projectState;
+    const target = projectXpTarget(state.level);
+    const ratio = clamp(state.xp / target, 0, 1);
+    const level = el.querySelector('.pv2-project-progress__level strong');
+    const exp = el.querySelector('.pv2-project-progress__exp');
+    const fill = el.querySelector('.pv2-project-progress__fill');
+    if (level) level.textContent = String(state.level);
+    if (exp) exp.textContent = formatProjectXp(state.xp) + ' / ' + target + ' EXP';
+    if (fill) fill.style.strokeDashoffset = String(100 - ratio * 100);
+    if (flash) {
+      el.classList.remove('is-exp-flash');
+      void el.offsetWidth;
+      el.classList.add('is-exp-flash');
+      window.setTimeout(() => el?.classList.remove('is-exp-flash'), 950);
+    }
+  }
+
+  function projectReveal(body, level) {
+    const meta = PROJECT_REVEALS[body.projectId];
+    if (!meta) return { title: body.projectId || 'Project', text: 'A project in the interactive portfolio.' };
+    const index = Math.max(0, level - 2);
+    return {
+      title: meta.title,
+      text: meta.reveals[index] || ('You have discovered everything about ' + meta.title + ' available from the Playground.'),
+    };
+  }
+
+  function weightedProjectChoice(pool) {
+    const total = pool.reduce((sum, item) => sum + item.weight, 0);
+    let roll = Math.random() * total;
+    for (const item of pool) {
+      roll -= item.weight;
+      if (roll <= 0) return item;
+    }
+    return pool[pool.length - 1];
+  }
+
+  function rollProjectUpgrades(body, count = 3) {
+    const available = PROJECT_UPGRADES.filter((upgrade) => projectUpgradeCount(body, upgrade.id) < upgrade.maxStacks);
+    const pool = available.slice();
+    const choices = [];
+    while (choices.length < count && pool.length) {
+      const picked = weightedProjectChoice(pool);
+      choices.push(picked);
+      pool.splice(pool.indexOf(picked), 1);
+    }
+    return choices;
+  }
+
+  function spawnProjectLevelFanfare(body, level) {
+    const rect = body.el.getBoundingClientRect();
+    const el = document.createElement('div');
+    el.className = 'pv2-project-levelup-fanfare';
+    el.style.left = (rect.left + rect.width / 2) + 'px';
+    el.style.top = (rect.top + rect.height / 2) + 'px';
+    el.innerHTML = '<span>LEVEL UP!</span><strong>LV. ' + level + '</strong>';
+    document.body.appendChild(el);
+    window.setTimeout(() => el.remove(), reducedMotion() ? 260 : 760);
+  }
+
+  function queueProjectLevelUp(body, level) {
+    projectLevelQueue.push({ body, level, sequence: ++projectLevelSequence });
+    if (!activeProjectLevelUp) openNextProjectLevelUp();
+  }
+
+  function openNextProjectLevelUp() {
+    if (activeProjectLevelUp || !projectLevelQueue.length) return;
+    const event = projectLevelQueue.shift();
+    if (!event.body?.el?.isConnected) { openNextProjectLevelUp(); return; }
+    activeProjectLevelUp = event;
+    document.documentElement.classList.add('pv2-project-levelup-open');
+    event.body.el.classList.add('is-project-leveling');
+    spawnProjectLevelFanfare(event.body, event.level);
+    window.setTimeout(() => {
+      if (activeProjectLevelUp === event) buildProjectLevelUpDialog(event);
+    }, reducedMotion() ? 0 : 430);
+  }
+
+  function buildProjectLevelUpDialog(event) {
+    const body = event.body;
+    const reveal = projectReveal(body, event.level);
+    const choices = rollProjectUpgrades(body, 3);
+    projectLevelUpOverlay?.remove();
+    const overlay = document.createElement('div');
+    overlay.className = 'pv2-project-levelup-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'pv2-project-levelup-title');
+    overlay.innerHTML =
+      '<div class="pv2-project-levelup__layout">'
+      + '<div class="pv2-project-levelup__artifact" aria-hidden="true"></div>'
+      + '<section class="pv2-project-levelup__panel">'
+      + '<p class="pv2-project-levelup__eyebrow">Level Up</p>'
+      + '<h2 id="pv2-project-levelup-title">' + reveal.title + ' <span>· LV. ' + event.level + '</span></h2>'
+      + '<p class="pv2-project-levelup__reveal">' + reveal.text + '</p>'
+      + '<div class="pv2-project-levelup__rule" aria-hidden="true"></div>'
+      + '<p class="pv2-project-levelup__choose">Choose an upgrade</p>'
+      + '<div class="pv2-project-levelup__choices"></div>'
+      + '</section></div>';
+    const artifact = overlay.querySelector('.pv2-project-levelup__artifact');
+    const sourceTile = body.el.querySelector('.pv2-project-tile');
+    if (artifact && sourceTile) {
+      const clone = sourceTile.cloneNode(true);
+      clone.removeAttribute('style');
+      clone.setAttribute('tabindex', '-1');
+      clone.setAttribute('aria-hidden', 'true');
+      artifact.appendChild(clone);
+    }
+    const list = overlay.querySelector('.pv2-project-levelup__choices');
+    for (const upgrade of choices) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'pv2-project-levelup__choice';
+      button.dataset.rarity = upgrade.rarity;
+      const rarity = upgrade.rarity === 'common' ? '' : '<small>' + upgrade.rarity.toUpperCase() + '</small>';
+      button.innerHTML =
+        '<span class="pv2-project-levelup__choice-icon" aria-hidden="true">' + iconSvg(upgrade.icon) + '</span>'
+        + '<span class="pv2-project-levelup__choice-copy">' + rarity
+        + '<strong>' + upgrade.title + '</strong><span>' + upgrade.effect + '</span></span>'
+        + '<span class="pv2-project-levelup__choice-arrow" aria-hidden="true">›</span>';
+      button.addEventListener('click', () => chooseProjectUpgrade(event, upgrade, button));
+      list?.appendChild(button);
+    }
+    document.body.appendChild(overlay);
+    projectLevelUpOverlay = overlay;
+    requestAnimationFrame(() => overlay.classList.add('is-open'));
+    window.setTimeout(() => overlay.querySelector('.pv2-project-levelup__choice')?.focus(), reducedMotion() ? 0 : 180);
+  }
+
+  function chooseProjectUpgrade(event, upgrade, button) {
+    if (activeProjectLevelUp !== event || !event.body?.projectState) return;
+    const upgrades = event.body.projectState.upgrades;
+    upgrades.set(upgrade.id, (upgrades.get(upgrade.id) || 0) + 1);
+    button?.classList.add('is-selected');
+    projectLevelUpOverlay?.querySelectorAll('.pv2-project-levelup__choice').forEach((choice) => {
+      choice.disabled = true;
+      if (choice !== button) choice.classList.add('is-rejected');
+    });
+    window.setTimeout(() => finishProjectLevelUp(event), reducedMotion() ? 40 : 430);
+  }
+
+  function finishProjectLevelUp(event) {
+    if (activeProjectLevelUp !== event) return;
+    projectLevelUpOverlay?.classList.remove('is-open');
+    const overlay = projectLevelUpOverlay;
+    projectLevelUpOverlay = null;
+    event.body?.el?.classList.remove('is-project-leveling');
+    activeProjectLevelUp = null;
+    document.documentElement.classList.remove('pv2-project-levelup-open');
+    lastTime = 0;
+    window.setTimeout(() => overlay?.remove(), reducedMotion() ? 0 : 240);
+    window.setTimeout(openNextProjectLevelUp, reducedMotion() ? 0 : 270);
+  }
+
+  function abortProjectLevelUp() {
+    projectLevelQueue.length = 0;
+    if (activeProjectLevelUp?.body?.el) activeProjectLevelUp.body.el.classList.remove('is-project-leveling');
+    activeProjectLevelUp = null;
+    projectLevelUpOverlay?.remove();
+    projectLevelUpOverlay = null;
+    document.documentElement.classList.remove('pv2-project-levelup-open');
+  }
+
+  function mentorLowestProject(body) {
+    const others = bodies.filter((candidate) => candidate !== body && candidate.projectState);
+    if (!others.length) return;
+    others.sort((a, b) => a.projectState.level - b.projectState.level || a.projectState.xp - b.projectState.xp);
+    addProjectXp(others[0], 1, 'mentor');
+  }
+
+  function addProjectXp(body, amount, source = 'bumper') {
+    if (!body?.projectState || amount <= 0) return;
+    const state = body.projectState;
+    state.xp += amount;
+    let leveled = false;
+    for (let guard = 0; guard < 8; guard += 1) {
+      const target = projectXpTarget(state.level);
+      if (state.xp + 1e-6 < target) break;
+      state.xp -= target;
+      state.level += 1;
+      leveled = true;
+      queueProjectLevelUp(body, state.level);
+      if (projectEffects(body).mentor && source !== 'mentor') mentorLowestProject(body);
+    }
+    refreshProjectProgressUI(body, true);
+    window.dispatchEvent(new CustomEvent('pv2:project-xp', {
+      detail: { id: body.projectId, level: state.level, xp: state.xp, amount, source, leveled },
+    }));
+  }
+
+  function kickNearestProject(sourceBody, now) {
+    let nearest = null, best = Infinity;
+    const sx = sourceBody.x + sourceBody.w / 2;
+    const sy = sourceBody.y + sourceBody.h / 2;
+    for (const candidate of bodies) {
+      if (candidate === sourceBody) continue;
+      const dx = candidate.x + candidate.w / 2 - sx;
+      const dy = candidate.y + candidate.h / 2 - sy;
+      const d = Math.hypot(dx, dy);
+      if (d < best) { best = d; nearest = candidate; }
+    }
+    if (!nearest) return;
+    const dx = nearest.x + nearest.w / 2 - sx;
+    const dy = nearest.y + nearest.h / 2 - sy;
+    const length = Math.hypot(dx, dy) || 1;
+    nearest.vx += (dx / length) * .13;
+    nearest.vy += (dy / length) * .13;
+    nearest.armed = true;
+    nearest.armedUntil = Math.max(nearest.armedUntil, now + 1400);
+  }
+
   let frame = 0;
   let stage = null;
   let bodies = [];
@@ -184,6 +535,11 @@
   let treePanY = 0;
   let treeDrag = null;
   let suppressTreeClick = false;
+  const projectProgressState = new Map();
+  const projectLevelQueue = [];
+  let activeProjectLevelUp = null;
+  let projectLevelUpOverlay = null;
+  let projectLevelSequence = 0;
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   // One persistent MediaQueryList instead of rebuilding it on every call (this
@@ -655,6 +1011,7 @@
   }
 
   function openUpgradeTree() {
+    if (activeProjectLevelUp) return;
     buildUpgradeTree();
     refreshUpgradeTree();
     upgradeOverlay.classList.add('is-open');
@@ -1053,14 +1410,15 @@
 
   function constrain(body, stageRect, allowScore = true) {
     const effects = currentEffects();
+    const projectFx = projectEffects(body);
     const minY = stageTopLimit(stageRect);
     const maxX = Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING);
     const maxY = Math.max(minY, stageRect.height - body.h - EDGE_PADDING);
     let hit = null;
-    if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx) * effects.wallKickMult; hit = 'left'; }
-    if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx) * effects.wallKickMult; hit = 'right'; }
-    if (body.y < minY) { body.y = minY; body.vy = Math.abs(body.vy) * effects.wallKickMult; hit = 'top'; }
-    if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy) * effects.wallKickMult; hit = 'bottom'; }
+    if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx) * effects.wallKickMult * projectFx.wallKickMult; hit = 'left'; }
+    if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx) * effects.wallKickMult * projectFx.wallKickMult; hit = 'right'; }
+    if (body.y < minY) { body.y = minY; body.vy = Math.abs(body.vy) * effects.wallKickMult * projectFx.wallKickMult; hit = 'top'; }
+    if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy) * effects.wallKickMult * projectFx.wallKickMult; hit = 'bottom'; }
     if (hit && allowScore) scoreWallBounce(body, hit, stageRect);
   }
 
@@ -1071,6 +1429,8 @@
   function resolveBodyPair(a, b) {
     if (!overlaps(bodyRect(a), bodyRect(b), BODY_GAP)) return false;
     const effects = currentEffects();
+    const aProject = projectEffects(a);
+    const bProject = projectEffects(b);
     const dx = (a.x + a.w / 2) - (b.x + b.w / 2) || .01;
     const dy = (a.y + a.h / 2) - (b.y + b.h / 2) || .01;
     const overlapX = (a.w + b.w) / 2 + BODY_GAP - Math.abs(dx);
@@ -1080,20 +1440,29 @@
       a.x += overlapX * .5 * sign;
       b.x -= overlapX * .5 * sign;
       const av = a.vx;
-      a.vx = b.vx * effects.collisionBoost;
-      b.vx = av * effects.collisionBoost;
+      a.vx = b.vx * effects.collisionBoost * aProject.collisionBoostMult;
+      b.vx = av * effects.collisionBoost * bProject.collisionBoostMult;
     } else {
       const sign = dy >= 0 ? 1 : -1;
       a.y += overlapY * .5 * sign;
       b.y -= overlapY * .5 * sign;
       const av = a.vy;
-      a.vy = b.vy * effects.collisionBoost;
-      b.vy = av * effects.collisionBoost;
+      a.vy = b.vy * effects.collisionBoost * aProject.collisionBoostMult;
+      b.vy = av * effects.collisionBoost * bProject.collisionBoostMult;
     }
     if (a.armed || b.armed) {
       const until = Math.max(a.armedUntil, b.armedUntil);
       a.armed = true; b.armed = true;
       a.armedUntil = until; b.armedUntil = until;
+    }
+    if ((aProject.sharedMomentum || bProject.sharedMomentum) && (a.armed || b.armed)) {
+      const now = performance.now();
+      if (now - a.projectState.lastSharedXpAt > 900 && now - b.projectState.lastSharedXpAt > 900) {
+        a.projectState.lastSharedXpAt = now;
+        b.projectState.lastSharedXpAt = now;
+        addProjectXp(a, .5, 'shared-momentum');
+        addProjectXp(b, .5, 'shared-momentum');
+      }
     }
     return true;
   }
@@ -1188,6 +1557,7 @@
   function resolveBumper(body, bumper, entering) {
     if (!overlaps(bodyRect(body), bumper, 0)) return false;
     const effects = currentEffects();
+    const projectFx = projectEffects(body);
     const dx = (body.x + body.w / 2) - (bumper.x + bumper.w / 2) || .01;
     const dy = (body.y + body.h / 2) - (bumper.y + bumper.h / 2) || .01;
     const overlapX = (body.w + bumper.w) / 2 - Math.abs(dx);
@@ -1207,8 +1577,16 @@
       const impact = impactPoint(body, bumper, horizontal);
       // Velocity is read before the bumper kick below flips it, so this is the
       // block's incoming travel direction — the way it was heading on impact.
-      award(effects.bumperValue, bumper.id, impact, { vx: body.vx, vy: body.vy });
+      award(effects.bumperValue + projectFx.bumperPointBonus, bumper.id, impact, { vx: body.vx, vy: body.vy });
       pulseBumper(bumper.el);
+      const state = body.projectState;
+      let xpGain = 1;
+      state.bumperHits += 1;
+      if (projectFx.echo && state.bumperHits % 3 === 0) xpGain += 1;
+      if (projectFx.secondWind && now - state.lastBumperAt >= 5000) xpGain += 1;
+      state.lastBumperAt = now;
+      addProjectXp(body, xpGain * projectFx.expMult, 'bumper');
+      if (projectFx.chainReaction) kickNearestProject(body, now);
       // Battle mode (portfolio-battle.js) listens for these to detect a
       // Critical Combo (5 bumper hits within 1s) and trigger a battle.
       window.dispatchEvent(new CustomEvent('pv2:bumper-hit', { detail: { id: bumper.id, x: impact.x, y: impact.y } }));
@@ -1222,14 +1600,14 @@
       const sign = dx >= 0 ? 1 : -1;
       body.x += Math.max(0, overlapX) * sign;
       body.vx = (poweredHit
-        ? BUMPER_KICK * effects.bumperKickMult
+        ? BUMPER_KICK * effects.bumperKickMult * projectFx.bumperKickMult
         : Math.max(softFloor, Math.abs(body.vx) * SOFT_BUMPER_RESTITUTION)) * sign;
       if (poweredHit) body.vy *= 1.12;
     } else {
       const sign = dy >= 0 ? 1 : -1;
       body.y += Math.max(0, overlapY) * sign;
       body.vy = (poweredHit
-        ? BUMPER_KICK * effects.bumperKickMult
+        ? BUMPER_KICK * effects.bumperKickMult * projectFx.bumperKickMult
         : Math.max(softFloor, Math.abs(body.vy) * SOFT_BUMPER_RESTITUTION)) * sign;
       if (poweredHit) body.vx *= 1.12;
     }
@@ -1256,8 +1634,11 @@
     el.style.left = `${x}px`;
     el.style.top = `${y}px`;
     el.style.transition = 'none';
-    return {
+    const projectId = el.dataset.nodeId || ('project-' + index);
+    const projectState = projectStateFor(projectId);
+    const body = {
       el, x, y, w: rect.width, h: rect.height,
+      projectId, projectState,
       homeX: x, homeY: y,
       vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
       phase: index * 1.41 + .7,
@@ -1272,7 +1653,10 @@
       halo: ensureHeatHalo(el),
       heatTier: -1,
       heatOpacity: 0,
+      progressEl: null,
     };
+    ensureProjectProgressUI(body);
+    return body;
   }
 
   // A transparent-centered overlay pinned to the block; its glowing border is
@@ -1297,7 +1681,7 @@
 
   function collideWithPointer(event, pointerVx = 0, pointerVy = 0) {
     const now = performance.now();
-    if (!stage || document.documentElement.classList.contains('pv2-upgrades-open')) return;
+    if (!stage || activeProjectLevelUp || document.documentElement.classList.contains('pv2-upgrades-open')) return;
 
     const effects = currentEffects();
     for (const body of bodies) {
@@ -1313,7 +1697,7 @@
           length = Math.hypot(dx, dy) || 1;
         }
         const pointerSpeed = Math.hypot(pointerVx, pointerVy);
-        const impulse = clamp(POINTER_MIN_IMPULSE + pointerSpeed * .24, POINTER_MIN_IMPULSE, POINTER_IMPULSE) * effects.pointerImpulseMult;
+        const impulse = clamp(POINTER_MIN_IMPULSE + pointerSpeed * .24, POINTER_MIN_IMPULSE, POINTER_IMPULSE) * effects.pointerImpulseMult * projectEffects(body).pointerImpulseMult;
         body.vx += (dx / length) * impulse;
         body.vy += (dy / length) * impulse;
         body.lastPointerHit = now;
@@ -1460,7 +1844,7 @@
   }
 
   function handleBushidoDblClick(event) {
-    if (battlePaused || motionStopped || !gameActive || !stage) return;
+    if (battlePaused || motionStopped || activeProjectLevelUp || !gameActive || !stage) return;
     if (!hasUpgrade('flux-bushido')) return;
     if (upgradeOverlay?.classList.contains('is-open')) return;
     // Leave real interactive targets alone; only the work-area whitespace arms it.
@@ -1698,7 +2082,7 @@
 
     // Freeze the simulation while a battle is on top or motion is stopped,
     // but keep the loop alive.
-    if (battlePaused || motionStopped) {
+    if (battlePaused || motionStopped || activeProjectLevelUp) {
       lastTime = now;
       frame = requestAnimationFrame(tick);
       return;
@@ -1752,18 +2136,35 @@
     }
 
     for (const body of bodies) {
+      const projectFx = projectEffects(body);
+      const bodySpeedFloor = speedFloor * projectFx.speedMult;
+      const bodyMaxSpeed = maxSpeed * projectFx.maxSpeedMult;
+      const bodyHeatThreshold = Math.max(HEAT_THRESHOLD, bodySpeedFloor + HEAT_MARGIN);
+      const bodyDamping = Math.pow(damping, projectFx.dragExponent);
+      if (gameActive && projectFx.autoFlick) {
+        body.projectState.autoTimer += dt;
+        if (body.projectState.autoTimer >= 7000) {
+          body.projectState.autoTimer = 0;
+          const angle = Math.random() * Math.PI * 2;
+          const impulse = POINTER_IMPULSE * .72 * effects.pointerImpulseMult * projectFx.pointerImpulseMult;
+          body.vx += Math.cos(angle) * impulse;
+          body.vy += Math.sin(angle) * impulse;
+          body.armed = true;
+          body.armedUntil = now + ARMED_DURATION;
+        }
+      }
       // Let a flick's armed state lapse so blocks eventually settle instead of
       // scoring off bumpers (and re-launching) indefinitely.
       if (body.armed && now >= body.armedUntil) body.armed = false;
       body.vx += (body.homeX - body.x) * HOME_PULL * dt;
       body.vy += (body.homeY - body.y) * HOME_PULL * dt;
-      if (effects.gravity) body.vy += effects.gravity * dt;
+      if (effects.gravity || projectFx.gravity) body.vy += (effects.gravity + projectFx.gravity) * dt;
       if (!reducedMotion()) {
         body.vx += Math.sin(t * .41 + body.phase) * .000014 * dt;
         body.vy += Math.cos(t * .37 + body.phase * 1.23) * .000014 * dt;
       }
-      body.vx *= Math.pow(damping, dt);
-      body.vy *= Math.pow(damping, dt);
+      body.vx *= Math.pow(bodyDamping, dt);
+      body.vy *= Math.pow(bodyDamping, dt);
       // Heat adds its own drag on top, growing as the meter fills.
       if (body.friction > 0) {
         const fDamp = Math.pow(FRICTION_DAMP_BASE, body.friction * dt);
@@ -1773,7 +2174,7 @@
       const speed = Math.hypot(body.vx, body.vy);
       // Build heat while moving faster than the ambient drift, shed it below —
       // so idle blocks stay cool and only launched ones heat toward a stop.
-      const heat = speed - heatThreshold;
+      const heat = speed - bodyHeatThreshold;
       if (heat > 0) body.friction = Math.min(1, body.friction + heat * FRICTION_GAIN * dt);
       else body.friction = Math.max(0, body.friction - FRICTION_RELIEF * dt);
       if (body.friction >= 1 && !body.frictionSpent) {
@@ -1785,14 +2186,14 @@
       updateHeatVisual(body);
       // Heat suppresses the drift floor so a hot block can actually come to rest
       // (at full heat the floor is zero); it returns as the block cools.
-      const effFloor = speedFloor * (1 - body.friction);
+      const effFloor = bodySpeedFloor * (1 - body.friction);
       if (speed < effFloor) {
         const angle = body.phase + t * .16;
         body.vx += Math.cos(angle) * (effFloor - speed) * .16;
         body.vy += Math.sin(angle) * (effFloor - speed) * .16;
       }
-      body.vx = clamp(body.vx, -maxSpeed, maxSpeed);
-      body.vy = clamp(body.vy, -maxSpeed, maxSpeed);
+      body.vx = clamp(body.vx, -bodyMaxSpeed, bodyMaxSpeed);
+      body.vy = clamp(body.vy, -bodyMaxSpeed, bodyMaxSpeed);
       body.x += body.vx * dt;
       body.y += body.vy * dt;
       constrain(body, stageRect, true);
@@ -1825,6 +2226,7 @@
 
   function teardown() {
     abortBushido();
+    abortProjectLevelUp();
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
     for (const body of bodies) if (body.halo) body.halo.style.opacity = '0';
@@ -1903,6 +2305,7 @@
       body.homeY = body.y;
       body.contacts.clear();
       body.lastWallScore = -Infinity;
+      refreshProjectProgressUI(body);
       body.el.style.left = `${body.x}px`;
       body.el.style.top = `${body.y}px`;
     }
