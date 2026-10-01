@@ -361,21 +361,51 @@
     window.setTimeout(() => el.remove(), reducedMotion() ? 320 : 1900);
   }
 
+  function playgroundIsVisible() {
+    const overview = document.querySelector('.pv2-overview__stage');
+    return Boolean(
+      overview
+      && overview.isConnected
+      && overview.getClientRects().length
+      && overview.offsetWidth > 0
+      && overview.offsetHeight > 0
+    );
+  }
+
+  function liveProjectBody(projectId) {
+    return bodies.find((body) => body.projectId === projectId && body.el?.isConnected) || null;
+  }
+
   function queueProjectLevelUp(body, level) {
-    projectLevelQueue.push({ body, level, sequence: ++projectLevelSequence });
-    if (!activeProjectLevelUp) openNextProjectLevelUp();
+    projectLevelQueue.push({
+      projectId: body.projectId,
+      level,
+      sequence: ++projectLevelSequence,
+      choiceCommitted: false,
+    });
+    if (!activeProjectLevelUp && playgroundIsVisible()) openNextProjectLevelUp();
   }
 
   function openNextProjectLevelUp() {
-    if (activeProjectLevelUp || !projectLevelQueue.length) return;
-    const event = projectLevelQueue.shift();
-    if (!event.body?.el?.isConnected) { openNextProjectLevelUp(); return; }
+    // Level-up encounters belong to the Playground. If another portfolio view
+    // is active, leave the event queued and present it when the Playground
+    // mounts again.
+    if (activeProjectLevelUp || !projectLevelQueue.length || !playgroundIsVisible()) return;
+
+    const queued = projectLevelQueue[0];
+    const body = liveProjectBody(queued.projectId);
+    // React may have mounted the overview before physics has rebuilt its body
+    // list. Keep the event at the head of the queue until init() resolves it.
+    if (!body) return;
+
+    projectLevelQueue.shift();
+    const event = { ...queued, body };
     activeProjectLevelUp = event;
     document.documentElement.classList.add('pv2-project-levelup-open');
     event.body.el.classList.add('is-project-leveling');
     spawnProjectLevelFanfare(event.body, event.level);
     window.setTimeout(() => {
-      if (activeProjectLevelUp === event) buildProjectLevelUpDialog(event);
+      if (activeProjectLevelUp === event && playgroundIsVisible()) buildProjectLevelUpDialog(event);
     }, reducedMotion() ? 0 : 1450);
   }
 
@@ -463,6 +493,7 @@
 
   function chooseProjectUpgrade(event, upgrade, button) {
     if (activeProjectLevelUp !== event || !event.body?.projectState) return;
+    event.choiceCommitted = true;
     const upgrades = event.body.projectState.upgrades;
     upgrades.set(upgrade.id, (upgrades.get(upgrade.id) || 0) + 1);
     button?.classList.add('is-selected');
@@ -491,9 +522,28 @@
     window.setTimeout(openNextProjectLevelUp, reducedMotion() ? 0 : 270);
   }
 
-  function abortProjectLevelUp() {
-    projectLevelQueue.length = 0;
-    if (activeProjectLevelUp?.body?.el) activeProjectLevelUp.body.el.classList.remove('is-project-leveling');
+  function suspendProjectLevelUp() {
+    const active = activeProjectLevelUp;
+    if (active?.body?.el) {
+      active.body.el.classList.remove('is-project-leveling');
+      active.body.el.classList.remove('is-project-upgrade-applied');
+    }
+
+    if (active && !active.choiceCommitted) {
+      const alreadyQueued = projectLevelQueue.some((event) =>
+        event.sequence === active.sequence
+        || (event.projectId === active.projectId && event.level === active.level)
+      );
+      if (!alreadyQueued) {
+        projectLevelQueue.unshift({
+          projectId: active.projectId,
+          level: active.level,
+          sequence: active.sequence,
+          choiceCommitted: false,
+        });
+      }
+    }
+
     activeProjectLevelUp = null;
     projectLevelUpOverlay?.remove();
     projectLevelUpOverlay = null;
@@ -2329,7 +2379,7 @@
 
   function teardown() {
     abortBushido();
-    abortProjectLevelUp();
+    suspendProjectLevelUp();
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
     for (const body of bodies) if (body.halo) body.halo.style.opacity = '0';
@@ -2418,6 +2468,7 @@
     refreshBushidoBadge();
     mark('initialized');
     frame = requestAnimationFrame(tick);
+    openNextProjectLevelUp();
   }
 
   const observer = new MutationObserver(() => {
@@ -2429,6 +2480,8 @@
         teardown();
         stage = null;
         mark('inactive');
+      } else if (!hasOverview && activeProjectLevelUp) {
+        suspendProjectLevelUp();
       }
     }, 40);
   });
