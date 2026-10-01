@@ -432,13 +432,19 @@ function ProjectContextPanel({ node, anchorEl, onClose, reducedMotion }) {
         const maxTop = Math.max(minTop, window.innerHeight - pad - panelRect.height);
 
         if (mobile) {
+          const viewport = window.visualViewport;
+          const viewportTop = viewport?.offsetTop || 0;
+          const viewportHeight = viewport?.height || window.innerHeight;
+          const viewportBottom = viewportTop + viewportHeight;
           const availableWidth = window.innerWidth - pad * 2;
           const left = pad + Math.max(0, (availableWidth - panelRect.width) / 2);
           const sphereCenterY = sphere.top + sphere.height / 2;
-          const side = sphereCenterY < window.innerHeight / 2 ? 'mobile-bottom' : 'mobile-top';
+          const side = sphereCenterY < viewportTop + viewportHeight / 2 ? 'mobile-bottom' : 'mobile-top';
+          const safeTop = Math.max(minTop, viewportTop + 12);
+          const safeBottom = viewportBottom - Math.max(18, pad);
           const top = side === 'mobile-bottom'
-            ? Math.max(minTop, window.innerHeight - pad - panelRect.height)
-            : minTop;
+            ? Math.max(safeTop, safeBottom - panelRect.height)
+            : safeTop;
           setPosition({ left, top, side });
           return;
         }
@@ -471,10 +477,14 @@ function ProjectContextPanel({ node, anchorEl, onClose, reducedMotion }) {
     observer.observe(panel);
     observer.observe(anchorEl);
     window.addEventListener('resize', place);
+    window.visualViewport?.addEventListener('resize', place);
+    window.visualViewport?.addEventListener('scroll', place);
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
       window.removeEventListener('resize', place);
+      window.visualViewport?.removeEventListener('resize', place);
+      window.visualViewport?.removeEventListener('scroll', place);
     };
   }, [anchorEl, node.id]);
 
