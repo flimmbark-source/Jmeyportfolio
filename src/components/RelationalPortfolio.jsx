@@ -430,6 +430,19 @@ function ProjectContextPanel({ node, anchorEl, onClose, reducedMotion }) {
         const gap = mobile ? 16 : 26;
         const minTop = navBottom + 14;
         const maxTop = Math.max(minTop, window.innerHeight - pad - panelRect.height);
+
+        if (mobile) {
+          const availableWidth = window.innerWidth - pad * 2;
+          const left = pad + Math.max(0, (availableWidth - panelRect.width) / 2);
+          const sphereCenterY = sphere.top + sphere.height / 2;
+          const side = sphereCenterY < window.innerHeight / 2 ? 'mobile-bottom' : 'mobile-top';
+          const top = side === 'mobile-bottom'
+            ? Math.max(minTop, window.innerHeight - pad - panelRect.height)
+            : minTop;
+          setPosition({ left, top, side });
+          return;
+        }
+
         let side = 'right';
         let left = sphere.right + gap;
         let top = Math.max(minTop, Math.min(maxTop, sphere.top + sphere.height / 2 - panelRect.height / 2));
