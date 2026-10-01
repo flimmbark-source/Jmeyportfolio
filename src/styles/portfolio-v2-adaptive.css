@@ -16,7 +16,7 @@
   width: fit-content;
   max-width: calc(100% - 36px);
   transition: none;
-  will-change: transform;
+  will-change: left, top;
 }
 
 .pv2-float-slot--gateway {
