@@ -12,7 +12,7 @@
  * sources. Anything already up to date is skipped, which keeps `npm run dev`
  * fast after the first run.
  */
-import { mkdirSync, readdirSync, statSync, existsSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { dirname, join, parse, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -130,20 +130,29 @@ if (existsSync(backgroundsDir)) {
   }
 }
 
-// Videos: same codec, container and dimensions — just sane rate control, no
-// audio track (every preview is muted) and a front-loaded index.
+// Videos: prefer a smaller H.264 derivative with faststart when ffmpeg is
+// available. Netlify's build image does not guarantee a system ffmpeg binary,
+// so the derivative path must still exist without it: in that case copy the
+// original MP4 there. Runtime code also keeps the source file as a final
+// fallback, so a missing optimizer can never turn a project preview blank.
+const videoNames = readdirSync(imagesDir).filter((f) => /\.mp4$/i.test(f));
 const ffmpegAvailable = spawnSync('ffmpeg', ['-version'], { stdio: 'ignore' }).status === 0;
-if (!ffmpegAvailable) {
-  console.warn('[optimize-images] ffmpeg unavailable — skipping video derivatives.');
-} else {
-  for (const name of readdirSync(imagesDir).filter((f) => /\.mp4$/i.test(f))) {
-    const source = join(imagesDir, name);
-    const target = join(derivedDir, `${slug(name)}.mp4`);
-    if (!isStale(source, target)) {
-      results.push([name, { skipped: true }]);
-      continue;
-    }
-    mkdirSync(dirname(target), { recursive: true });
+if (!ffmpegAvailable && videoNames.length) {
+  console.warn('[optimize-images] ffmpeg unavailable — copying original videos to derivative paths.');
+}
+
+for (const name of videoNames) {
+  const source = join(imagesDir, name);
+  const target = join(derivedDir, `${slug(name)}.mp4`);
+  if (!isStale(source, target)) {
+    results.push([name, { skipped: true }]);
+    continue;
+  }
+
+  mkdirSync(dirname(target), { recursive: true });
+  let encoded = false;
+
+  if (ffmpegAvailable) {
     const run = spawnSync('ffmpeg', [
       '-v', 'error', '-y', '-i', source,
       '-an',
@@ -152,12 +161,14 @@ if (!ffmpegAvailable) {
       '-movflags', '+faststart',
       target,
     ], { stdio: 'inherit' });
-    if (run.status !== 0) {
-      console.warn(`[optimize-images] ffmpeg failed for ${name} — leaving the source in place.`);
-      continue;
+    encoded = run.status === 0;
+    if (!encoded) {
+      console.warn(`[optimize-images] ffmpeg failed for ${name} — copying the original instead.`);
     }
-    results.push([name, { from: statSync(source).size, to: statSync(target).size }]);
   }
+
+  if (!encoded) copyFileSync(source, target);
+  results.push([name, { from: statSync(source).size, to: statSync(target).size }]);
 }
 
 const written = results.filter(([, r]) => !r.skipped);
