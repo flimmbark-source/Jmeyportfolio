@@ -1538,6 +1538,22 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
   line-height: 1;
   letter-spacing: -.045em;
 }
+
+.pv2-project-context-panel__media {
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: rgba(36,36,36,.06);
+}
+.pv2-project-context-panel__media .pv2-visual {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: inherit;
+}
+.pv2-project-context-panel__media .pv2-visual__surface {
+  width: 100%;
+  height: 100%;
+}
 .pv2-project-context-panel__summary {
   margin: 13px 0 0;
   color: var(--pv2-text,#242424);
