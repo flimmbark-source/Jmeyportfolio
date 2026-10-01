@@ -391,3 +391,21 @@
     transition: none !important;
   }
 }
+
+
+/* Keep the painting inside the portfolio stacking context. */
+.pv2-site {
+  position: relative;
+  isolation: isolate;
+}
+.pv2-work-backdrop {
+  z-index: 0;
+}
+.pv2-nav,
+.pv2-overview,
+.pv2-workshop,
+.pv2-focus,
+.pv2-ux-gateway {
+  position: relative;
+  z-index: 1;
+}
