@@ -197,10 +197,10 @@
   object-fit: cover;
 }
 
-.pv2-focus .pv2-visual--letter-river.is-large .pv2-visual__frame,
-.pv2-focus .pv2-visual--rotogo.is-large .pv2-visual__frame,
-.pv2-focus .pv2-visual--last-reading.is-large .pv2-visual__frame,
-.pv2-focus .pv2-visual--gig-duel.is-large .pv2-visual__frame {
+.pv2-focus .pv2-visual--letter-river.is-large.is-video-ready .pv2-visual__frame,
+.pv2-focus .pv2-visual--rotogo.is-large.is-video-ready .pv2-visual__frame,
+.pv2-focus .pv2-visual--last-reading.is-large.is-video-ready .pv2-visual__frame,
+.pv2-focus .pv2-visual--gig-duel.is-large.is-video-ready .pv2-visual__frame {
   background: transparent;
   pointer-events: none;
 }
@@ -582,10 +582,10 @@ html.pv2-project-context-open .pv2-project-hover-meta {
 .pv2-project-context-panel__media .pv2-gig-duel-video {
   object-fit: cover;
 }
-.pv2-project-context-panel__media .pv2-visual--letter-river.is-large .pv2-visual__frame,
-.pv2-project-context-panel__media .pv2-visual--rotogo.is-large .pv2-visual__frame,
-.pv2-project-context-panel__media .pv2-visual--last-reading.is-large .pv2-visual__frame,
-.pv2-project-context-panel__media .pv2-visual--gig-duel.is-large .pv2-visual__frame {
+.pv2-project-context-panel__media .pv2-visual--letter-river.is-large.is-video-ready .pv2-visual__frame,
+.pv2-project-context-panel__media .pv2-visual--rotogo.is-large.is-video-ready .pv2-visual__frame,
+.pv2-project-context-panel__media .pv2-visual--last-reading.is-large.is-video-ready .pv2-visual__frame,
+.pv2-project-context-panel__media .pv2-visual--gig-duel.is-large.is-video-ready .pv2-visual__frame {
   background: transparent;
   pointer-events: none;
 }
