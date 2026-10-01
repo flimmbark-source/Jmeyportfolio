@@ -2160,8 +2160,9 @@
     el.style.position = 'absolute';
     el.style.right = 'auto';
     el.style.bottom = 'auto';
-    el.style.left = `${x}px`;
-    el.style.top = `${y}px`;
+    el.style.left = '0px';
+    el.style.top = '0px';
+    el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
     el.style.transition = 'none';
     const projectId = el.dataset.nodeId || ('project-' + index);
     const projectState = projectStateFor(projectId);
@@ -2185,14 +2186,23 @@
       heatTier: -1,
       heatOpacity: 0,
       heatValue: -1,
-      // Last values written to style.left/top, so tick() can skip no-op writes.
-      lastLeft: NaN,
-      lastTop: NaN,
+      // Last transform coordinates written, so tick() can skip no-op writes.
+      lastLeft: x,
+      lastTop: y,
       progressEl: null,
       progressHideTimer: 0,
     };
     ensureProjectProgressUI(body);
     return body;
+  }
+
+  function paintBodyPosition(body) {
+    const left = Math.round(body.x * 10) / 10;
+    const top = Math.round(body.y * 10) / 10;
+    if (left === body.lastLeft && top === body.lastTop) return;
+    body.el.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+    body.lastLeft = left;
+    body.lastTop = top;
   }
 
   // Heat conforms to the circular project visual. Smoke and flame sprites sit
@@ -2264,8 +2274,9 @@
           + '"></span>';
       };
 
-      const FLAMES = 34;
-      const SMOKE = 10;
+      const mobileHeat = window.innerWidth <= MOBILE_BREAKPOINT;
+      const FLAMES = mobileHeat ? 18 : 34;
+      const SMOKE = mobileHeat ? 5 : 10;
       const flames = Array.from({ length: FLAMES }, (_, i) => flame(i, FLAMES)).join('');
       const smoke = Array.from({ length: SMOKE }, (_, i) => smokePuff(i, SMOKE)).join('');
       halo.innerHTML = '<span class="pv2-heat-glow"></span>'
@@ -2941,20 +2952,9 @@
       }
       body.contacts = nextContacts;
       constrain(body, stageRect, true);
-      // Quantize to a tenth of a pixel and skip the write when nothing moved:
-      // a settled or paused block otherwise re-laid itself out every frame, and
-      // toFixed(2) built two throwaway strings per body per frame for precision
-      // no display can show.
-      const left = Math.round(body.x * 10) / 10;
-      const top = Math.round(body.y * 10) / 10;
-      if (left !== body.lastLeft) {
-        body.el.style.left = `${left}px`;
-        body.lastLeft = left;
-      }
-      if (top !== body.lastTop) {
-        body.el.style.top = `${top}px`;
-        body.lastTop = top;
-      }
+      // Compositor-only movement: a single transform write avoids relaying out
+      // the playfield for every moving sphere.
+      paintBodyPosition(body);
     }
 
     updateExploreCue(now, stageRect);
@@ -3056,10 +3056,9 @@
       body.projectState.shownXp = body.projectState.xp;
       body.projectState.shownLevel = body.projectState.level;
       refreshProjectProgressUI(body, false, true);
-      body.el.style.left = `${body.x}px`;
-      body.el.style.top = `${body.y}px`;
       body.lastLeft = NaN;
       body.lastTop = NaN;
+      paintBodyPosition(body);
     }
 
     if (gameActive) setScoreVisible(true);
@@ -3071,15 +3070,22 @@
   }
 
   const observer = new MutationObserver(() => {
+    const hasOverview = Boolean(document.querySelector('.pv2-overview__stage'));
+    // Heat halos, XP UI and other gameplay children mutate inside the React
+    // root too. If the live stage is still healthy, none of those mutations
+    // require a teardown/re-init check.
+    if (hasOverview && stage?.isConnected && frame) return;
+    if (!hasOverview && !stage && !activeProjectLevelUp) return;
+
     clearTimeout(mutationTimer);
     mutationTimer = window.setTimeout(() => {
-      const hasOverview = Boolean(document.querySelector('.pv2-overview__stage'));
-      if (hasOverview && (!stage || !stage.isConnected || !frame)) whenHydrated(init);
-      if (!hasOverview && stage) {
+      const overviewNow = Boolean(document.querySelector('.pv2-overview__stage'));
+      if (overviewNow && (!stage || !stage.isConnected || !frame)) whenHydrated(init);
+      if (!overviewNow && stage) {
         teardown();
         stage = null;
         mark('inactive');
-      } else if (!hasOverview && activeProjectLevelUp) {
+      } else if (!overviewNow && activeProjectLevelUp) {
         suspendProjectLevelUp();
       }
     }, 40);
@@ -3118,7 +3124,8 @@
     ensureFxLayer();
     ensureBushidoBadge();
     refreshBushidoBadge();
-    observer.observe(document.body, { childList: true, subtree: true });
+    const portfolioRoot = document.getElementById('portfolio-v2') || document.body;
+    observer.observe(portfolioRoot, { childList: true, subtree: true });
     // Battle-mode bridge (portfolio-battle.js drives these).
     window.addEventListener('pv2:battle-pause', () => { battlePaused = true; });
     window.addEventListener('pv2:battle-resume', () => { battlePaused = false; lastTime = 0; });
