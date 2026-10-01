@@ -162,7 +162,7 @@ export const portfolioV2Nodes: PortfolioNode[] = [
     status: 'public',
     kicker: 'Game · For Fun',
     summary: 'A small game experiment I came up with while sitting in a shelter, something for my mind to do while hiding from missiles.',
-    purpose: 'It is a compact example of how I use game design as a way to think: take an idea, give it rules, make it playable, and see what happens. The project is small on purpose, but the context it came out of is part of why it matters to me.',
+    purpose: 'Take a game that is extremely fun (Party House on UFO 50) and see if we can make a small mobile port. SOmething to do to distract myself when in a shelter with the rest of the neighborhhod.',
     connections: [c('play', 2), c('game-design', 2)],
     playUrl: 'https://gigduel.netlify.app/'
   },
