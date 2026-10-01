@@ -496,6 +496,9 @@ function ProjectContextPanel({ node, anchorEl, onClose, reducedMotion }) {
           <button type="button" className="pv2-project-context-panel__close" onClick={onClose} aria-label={'Close ' + node.title}>×</button>
         </div>
         <h2 id={'context-title-' + node.id}>{node.title}</h2>
+        <div className="pv2-project-context-panel__media">
+          <ProjectVisual node={node} large />
+        </div>
         <p className="pv2-project-context-panel__summary">{node.summary}</p>
         {node.purpose && <p className="pv2-project-context-panel__purpose">{node.purpose}</p>}
         <div className="pv2-project-context-panel__actions">
