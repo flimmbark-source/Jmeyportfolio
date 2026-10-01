@@ -19,9 +19,20 @@ const backgrounds = workBackgrounds.map(({ src, position }) => ({ src, position 
 </div>
 
 {credit && (
-  <p class="pv2-page-backdrop-credit">
-    Images supplied by The Met Open Access Collection. All Images are Public Domain.
-  </p>
+  <div class="pv2-credit-drawer">
+    <button
+      class="pv2-credit-drawer__trigger"
+      type="button"
+      aria-label="Background image attribution"
+    >
+      ?
+    </button>
+    <span class="pv2-credit-drawer__reveal">
+      <span class="pv2-credit-drawer__text">
+        Images supplied by The Met Open Access Collection. All Images are Public Domain.
+      </span>
+    </span>
+  </div>
 )}
 
 <script>
