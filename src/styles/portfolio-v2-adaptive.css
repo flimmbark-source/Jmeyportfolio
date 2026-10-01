@@ -135,7 +135,7 @@
 
   html.pv2-physics-live .pv2-overview__stage {
     display: block;
-    height: calc(100svh - 100px);
+    height: calc(100dvh - var(--pv2-nav-height));
     min-height: 360px;
     max-height: none;
     padding: 0;
