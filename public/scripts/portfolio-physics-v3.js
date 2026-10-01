@@ -302,7 +302,11 @@
       el.classList.remove('is-exp-flash');
       void el.offsetWidth;
       el.classList.add('is-exp-flash');
-      window.setTimeout(() => el?.classList.remove('is-exp-flash'), 1800);
+      if (body.progressHideTimer) window.clearTimeout(body.progressHideTimer);
+      body.progressHideTimer = window.setTimeout(() => {
+        el?.classList.remove('is-exp-flash');
+        body.progressHideTimer = 0;
+      }, 6800);
     }
   }
 
@@ -421,6 +425,22 @@
     const panelRect = panel.getBoundingClientRect();
     const minTop = navBottom + Math.max(16, pad * .45);
     const maxTop = Math.max(minTop, window.innerHeight - pad - panelRect.height);
+
+    if (window.innerWidth <= MOBILE_BREAKPOINT) {
+      const sphereCenterY = sphere.top + sphere.height / 2;
+      const availableWidth = window.innerWidth - pad * 2;
+      const left = pad + Math.max(0, (availableWidth - panelRect.width) / 2);
+      let side = sphereCenterY < window.innerHeight / 2 ? 'mobile-bottom' : 'mobile-top';
+      let top = side === 'mobile-bottom'
+        ? window.innerHeight - pad - panelRect.height
+        : minTop;
+      top = clamp(top, minTop, maxTop);
+      panel.style.left = left.toFixed(1) + 'px';
+      panel.style.top = top.toFixed(1) + 'px';
+      panel.dataset.side = side;
+      return;
+    }
+
     let side = 'right';
     let left = sphere.right + gap;
     let top = clamp(sphere.top + sphere.height / 2 - panelRect.height / 2, minTop, maxTop);
@@ -461,8 +481,11 @@
       + '<div class="pv2-project-levelup__reward-title"><span>LEVEL</span><span>UP!</span></div>'
       + '<span class="pv2-project-levelup__level">LV. ' + event.level + '</span>'
       + '</div>'
+      + '<div class="pv2-project-levelup__project-info">'
+      + '<p class="pv2-project-levelup__project-label">Project</p>'
       + '<h2 id="pv2-project-levelup-title">' + reveal.title + '</h2>'
       + '<p class="pv2-project-levelup__reveal">' + reveal.text + '</p>'
+      + '</div>'
       + '<div class="pv2-project-levelup__rule" aria-hidden="true"></div>'
       + '<p class="pv2-project-levelup__choose">Choose one</p>'
       + '<div class="pv2-project-levelup__choices"></div>'
@@ -1833,6 +1856,7 @@
       heatTier: -1,
       heatOpacity: 0,
       progressEl: null,
+      progressHideTimer: 0,
     };
     ensureProjectProgressUI(body);
     return body;
