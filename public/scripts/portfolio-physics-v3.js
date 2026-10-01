@@ -222,7 +222,7 @@
   }
 
   function projectXpTarget(level) {
-    return Math.max(1, Math.round(level * (level + 1) / 2));
+    return Math.max(4, Math.round(level * (level + 1) * 2));
   }
 
   function formatProjectXp(value) {
@@ -344,9 +344,9 @@
     el.className = 'pv2-project-levelup-fanfare';
     el.style.left = (rect.left + rect.width / 2) + 'px';
     el.style.top = (rect.top + rect.height / 2) + 'px';
-    el.innerHTML = '<span>LEVEL UP!</span><strong>LV. ' + level + '</strong>';
+    el.innerHTML = '<span>LEVEL UP</span><strong>LV. ' + level + '</strong>';
     document.body.appendChild(el);
-    window.setTimeout(() => el.remove(), reducedMotion() ? 260 : 760);
+    window.setTimeout(() => el.remove(), reducedMotion() ? 300 : 1650);
   }
 
   function queueProjectLevelUp(body, level) {
@@ -364,7 +364,41 @@
     spawnProjectLevelFanfare(event.body, event.level);
     window.setTimeout(() => {
       if (activeProjectLevelUp === event) buildProjectLevelUpDialog(event);
-    }, reducedMotion() ? 0 : 430);
+    }, reducedMotion() ? 0 : 1250);
+  }
+
+  function positionProjectLevelUpDialog(overlay, body) {
+    const panel = overlay.querySelector('.pv2-project-levelup__panel');
+    if (!panel || !body?.el?.isConnected) return;
+    const sphere = body.el.getBoundingClientRect();
+    const navBottom = document.querySelector('.pv2-nav')?.getBoundingClientRect().bottom || 72;
+    const pad = window.innerWidth <= MOBILE_BREAKPOINT ? 12 : 18;
+    const gap = window.innerWidth <= MOBILE_BREAKPOINT ? 12 : 22;
+    const panelRect = panel.getBoundingClientRect();
+    const minTop = navBottom + 10;
+    const maxTop = Math.max(minTop, window.innerHeight - pad - panelRect.height);
+    let side = 'right';
+    let left = sphere.right + gap;
+    let top = clamp(sphere.top + sphere.height / 2 - panelRect.height / 2, minTop, maxTop);
+
+    if (left + panelRect.width > window.innerWidth - pad) {
+      side = 'left';
+      left = sphere.left - gap - panelRect.width;
+    }
+    if (left < pad) {
+      side = 'below';
+      left = clamp(sphere.left + sphere.width / 2 - panelRect.width / 2, pad, window.innerWidth - pad - panelRect.width);
+      top = sphere.bottom + gap;
+      if (top + panelRect.height > window.innerHeight - pad) {
+        side = 'above';
+        top = sphere.top - gap - panelRect.height;
+      }
+      top = clamp(top, minTop, maxTop);
+    }
+
+    panel.style.left = left.toFixed(1) + 'px';
+    panel.style.top = top.toFixed(1) + 'px';
+    panel.dataset.side = side;
   }
 
   function buildProjectLevelUpDialog(event) {
@@ -378,25 +412,18 @@
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-labelledby', 'pv2-project-levelup-title');
     overlay.innerHTML =
-      '<div class="pv2-project-levelup__layout">'
-      + '<div class="pv2-project-levelup__artifact" aria-hidden="true"></div>'
-      + '<section class="pv2-project-levelup__panel">'
-      + '<p class="pv2-project-levelup__eyebrow">Level Up</p>'
-      + '<h2 id="pv2-project-levelup-title">' + reveal.title + ' <span>· LV. ' + event.level + '</span></h2>'
+      '<section class="pv2-project-levelup__panel">'
+      + '<div class="pv2-project-levelup__header">'
+      + '<p class="pv2-project-levelup__eyebrow">Level up</p>'
+      + '<span class="pv2-project-levelup__level">LV. ' + event.level + '</span>'
+      + '</div>'
+      + '<h2 id="pv2-project-levelup-title">' + reveal.title + '</h2>'
       + '<p class="pv2-project-levelup__reveal">' + reveal.text + '</p>'
       + '<div class="pv2-project-levelup__rule" aria-hidden="true"></div>'
-      + '<p class="pv2-project-levelup__choose">Choose an upgrade</p>'
+      + '<p class="pv2-project-levelup__choose">Choose one</p>'
       + '<div class="pv2-project-levelup__choices"></div>'
-      + '</section></div>';
-    const artifact = overlay.querySelector('.pv2-project-levelup__artifact');
-    const sourceTile = body.el.querySelector('.pv2-project-tile');
-    if (artifact && sourceTile) {
-      const clone = sourceTile.cloneNode(true);
-      clone.removeAttribute('style');
-      clone.setAttribute('tabindex', '-1');
-      clone.setAttribute('aria-hidden', 'true');
-      artifact.appendChild(clone);
-    }
+      + '</section>';
+
     const list = overlay.querySelector('.pv2-project-levelup__choices');
     for (const upgrade of choices) {
       const button = document.createElement('button');
@@ -412,10 +439,12 @@
       button.addEventListener('click', () => chooseProjectUpgrade(event, upgrade, button));
       list?.appendChild(button);
     }
+
     document.body.appendChild(overlay);
     projectLevelUpOverlay = overlay;
+    positionProjectLevelUpDialog(overlay, body);
     requestAnimationFrame(() => overlay.classList.add('is-open'));
-    window.setTimeout(() => overlay.querySelector('.pv2-project-levelup__choice')?.focus(), reducedMotion() ? 0 : 180);
+    window.setTimeout(() => overlay.querySelector('.pv2-project-levelup__choice')?.focus(), reducedMotion() ? 0 : 420);
   }
 
   function chooseProjectUpgrade(event, upgrade, button) {
@@ -427,7 +456,7 @@
       choice.disabled = true;
       if (choice !== button) choice.classList.add('is-rejected');
     });
-    window.setTimeout(() => finishProjectLevelUp(event), reducedMotion() ? 40 : 430);
+    window.setTimeout(() => finishProjectLevelUp(event), reducedMotion() ? 40 : 650);
   }
 
   function finishProjectLevelUp(event) {
