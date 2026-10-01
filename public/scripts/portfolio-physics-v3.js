@@ -340,10 +340,11 @@
 
   function spawnProjectLevelFanfare(body, level) {
     const rect = body.el.getBoundingClientRect();
+    const navBottom = document.querySelector('.pv2-nav')?.getBoundingClientRect().bottom || 72;
     const el = document.createElement('div');
     el.className = 'pv2-project-levelup-fanfare';
     el.style.left = (rect.left + rect.width / 2) + 'px';
-    el.style.top = (rect.top + rect.height / 2) + 'px';
+    el.style.top = Math.max(navBottom + 28, rect.top - 4) + 'px';
     el.innerHTML = '<span>LEVEL UP</span><strong>LV. ' + level + '</strong>';
     document.body.appendChild(el);
     window.setTimeout(() => el.remove(), reducedMotion() ? 300 : 1650);
