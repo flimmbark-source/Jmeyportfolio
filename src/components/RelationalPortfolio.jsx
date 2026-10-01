@@ -279,6 +279,8 @@ function Overview({ onSelect, reducedMotion }) {
   const statementRef = useRef(null);
   const itemRefs = useRef({});
   const [positions, setPositions] = useState({});
+  const [contextProjectId, setContextProjectId] = useState(null);
+  const contextNode = contextProjectId ? portfolioV2NodeMap.get(contextProjectId) : null;
 
   const register = useCallback((id, element) => {
     if (element) itemRefs.current[id] = element;
@@ -347,7 +349,7 @@ function Overview({ onSelect, reducedMotion }) {
             node={node}
             placement={placements[index]}
             index={index}
-            onSelect={onSelect}
+            onSelect={setContextProjectId}
             reducedMotion={reducedMotion}
             register={register}
             position={positions[node.id]}
@@ -378,7 +380,147 @@ function Overview({ onSelect, reducedMotion }) {
           position={positions.unfinished}
         />
       </section>
+
+      <AnimatePresence>
+        {contextNode && (
+          <ProjectContextPanel
+            key={contextNode.id}
+            node={contextNode}
+            anchorEl={itemRefs.current[contextNode.id]}
+            onClose={() => setContextProjectId(null)}
+            reducedMotion={reducedMotion}
+          />
+        )}
+      </AnimatePresence>
     </motion.main>
+  );
+}
+
+function ProjectContextPanel({ node, anchorEl, onClose, reducedMotion }) {
+  const panelRef = useRef(null);
+  const [position, setPosition] = useState(null);
+  const primaryUrl = node.localPlayUrl || node.playUrl || node.route;
+  const primaryExternal = Boolean(primaryUrl && /^https?:/i.test(primaryUrl) && !node.localPlayUrl);
+
+  useLayoutEffect(() => {
+    if (!anchorEl) return undefined;
+    const root = document.documentElement;
+    root.classList.add('pv2-project-context-open');
+    anchorEl.classList.add('is-project-context-open');
+    window.dispatchEvent(new CustomEvent('pv2:project-context-pause'));
+
+    return () => {
+      root.classList.remove('pv2-project-context-open');
+      anchorEl.classList.remove('is-project-context-open');
+      window.dispatchEvent(new CustomEvent('pv2:project-context-resume'));
+    };
+  }, [anchorEl, node.id]);
+
+  useLayoutEffect(() => {
+    const panel = panelRef.current;
+    if (!panel || !anchorEl) return undefined;
+    let frame = 0;
+
+    const place = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        if (!panel.isConnected || !anchorEl.isConnected) return;
+        const sphere = anchorEl.getBoundingClientRect();
+        const panelRect = panel.getBoundingClientRect();
+        const navBottom = document.querySelector('.pv2-nav')?.getBoundingClientRect().bottom || 72;
+        const mobile = window.innerWidth <= 720;
+        const pad = mobile ? 20 : Math.max(36, Math.min(52, window.innerWidth * .028));
+        const gap = mobile ? 14 : 24;
+        const minTop = navBottom + 14;
+        const maxTop = Math.max(minTop, window.innerHeight - pad - panelRect.height);
+        let side = 'right';
+        let left = sphere.right + gap;
+        let top = Math.max(minTop, Math.min(maxTop, sphere.top + sphere.height / 2 - panelRect.height / 2));
+
+        if (left + panelRect.width > window.innerWidth - pad) {
+          side = 'left';
+          left = sphere.left - gap - panelRect.width;
+        }
+        if (left < pad) {
+          side = 'below';
+          left = Math.max(pad, Math.min(window.innerWidth - pad - panelRect.width, sphere.left + sphere.width / 2 - panelRect.width / 2));
+          top = sphere.bottom + gap;
+          if (top + panelRect.height > window.innerHeight - pad) {
+            side = 'above';
+            top = sphere.top - gap - panelRect.height;
+          }
+          top = Math.max(minTop, Math.min(maxTop, top));
+        }
+
+        setPosition({ left, top, side });
+      });
+    };
+
+    place();
+    const observer = new ResizeObserver(place);
+    observer.observe(panel);
+    observer.observe(anchorEl);
+    window.addEventListener('resize', place);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener('resize', place);
+    };
+  }, [anchorEl, node.id]);
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      className="pv2-project-context-overlay"
+      initial={reducedMotion ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={reducedMotion ? undefined : { opacity: 0 }}
+      transition={reducedMotion ? { duration: 0 } : MOTION.fast}
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <motion.section
+        ref={panelRef}
+        className="pv2-project-context-panel"
+        data-side={position?.side || 'right'}
+        style={position ? { left: position.left, top: position.top } : { left: 0, top: 0, visibility: 'hidden' }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={'context-title-' + node.id}
+        initial={reducedMotion ? false : { opacity: 0, scale: .975, x: position?.side === 'left' ? 10 : -10 }}
+        animate={{ opacity: 1, scale: 1, x: 0 }}
+        exit={reducedMotion ? undefined : { opacity: 0, scale: .985, x: position?.side === 'left' ? 8 : -8 }}
+        transition={reducedMotion ? { duration: 0 } : MOTION.interface}
+      >
+        <div className="pv2-project-context-panel__header">
+          <p className="pv2-overline">{node.kicker || 'Project'}</p>
+          <button type="button" className="pv2-project-context-panel__close" onClick={onClose} aria-label={'Close ' + node.title}>×</button>
+        </div>
+        <h2 id={'context-title-' + node.id}>{node.title}</h2>
+        <p className="pv2-project-context-panel__summary">{node.summary}</p>
+        {node.purpose && <p className="pv2-project-context-panel__purpose">{node.purpose}</p>}
+        <div className="pv2-project-context-panel__actions">
+          {primaryUrl ? (
+            <a href={primaryUrl} target={primaryExternal ? '_blank' : undefined} rel={primaryExternal ? 'noreferrer' : undefined}>
+              {node.localPlayUrl ? 'Play here →' : node.playUrl ? 'Play in browser ↗' : 'Open project ↗'}
+            </a>
+          ) : (
+            <span>Playable build not connected yet</span>
+          )}
+          {node.localPlayUrl && node.playUrl && (
+            <a className="pv2-project-context-panel__secondary" href={node.playUrl} target="_blank" rel="noreferrer">itch.io ↗</a>
+          )}
+        </div>
+      </motion.section>
+    </motion.div>
   );
 }
 
