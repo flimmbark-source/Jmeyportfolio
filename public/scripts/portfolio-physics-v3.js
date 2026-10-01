@@ -236,6 +236,8 @@
       projectProgressState.set(id, {
         level: 1, xp: 0, upgrades: new Map(), bumperHits: 0,
         lastBumperAt: -Infinity, lastSharedXpAt: -Infinity, autoTimer: 0,
+        // Memoized projectEffects() result; cleared when an upgrade is chosen.
+        effectsCache: null,
       });
     }
     return projectProgressState.get(id);
@@ -245,7 +247,23 @@
     return body.projectState?.upgrades?.get(id) || 0;
   }
 
+  // Read once per body in tick(), twice more per body from constrain(), and
+  // once per candidate pair in the two collision passes — on the order of a
+  // hundred times a frame. The values only change when a project upgrade is
+  // chosen, so memoize on the body's own state and let that purchase path
+  // invalidate it.
   function projectEffects(body) {
+    const state = body.projectState;
+    if (!state) return buildProjectEffects(body);
+    if (!state.effectsCache) state.effectsCache = buildProjectEffects(body);
+    return state.effectsCache;
+  }
+
+  function invalidateProjectEffects(body) {
+    if (body?.projectState) body.projectState.effectsCache = null;
+  }
+
+  function buildProjectEffects(body) {
     const count = (id) => projectUpgradeCount(body, id);
     return {
       speedMult: 1 + count('project-speed') * .15,
@@ -538,6 +556,7 @@
     event.choiceCommitted = true;
     const upgrades = event.body.projectState.upgrades;
     upgrades.set(upgrade.id, (upgrades.get(upgrade.id) || 0) + 1);
+    invalidateProjectEffects(event.body);
     button?.classList.add('is-selected');
     const arrow = button?.querySelector('.pv2-project-levelup__choice-arrow');
     if (arrow) arrow.textContent = '✓';
@@ -1342,14 +1361,20 @@
     if (!body.halo && f < HEAT_MIN_VISIBLE) return;
     const halo = body.halo || (body.halo = ensureHeatHalo(body.el));
     if (f < HEAT_MIN_VISIBLE) {
+      // Already cold and already zeroed: nothing to write. Without this a
+      // settled block kept setting the same three custom properties every
+      // frame, each one invalidating style for its subtree.
+      if (body.heatOpacity === 0) return;
       halo.style.setProperty('--pv2-heat', '0');
       halo.style.setProperty('--pv2-flame-opacity', '0');
       halo.style.setProperty('--pv2-smoke-opacity', '0');
-      if (body.heatOpacity !== 0) {
-        halo.style.opacity = '0';
-        body.heatOpacity = 0;
-        body.heatTier = -1;
-      }
+      halo.style.opacity = '0';
+      body.heatOpacity = 0;
+      body.heatTier = -1;
+      // This branch just overwrote the live properties with 0, so the memo has
+      // to go too — otherwise reheating to the same value would skip the write
+      // and leave the halo blank.
+      body.heatValue = -1;
       return;
     }
 
@@ -1360,13 +1385,17 @@
     }
 
     const heat = Math.round(clamp(f, 0, 1) * 100) / 100;
-    const flame = Math.round(clamp((f - .22) / .78, 0, 1) * 100) / 100;
-    const smoke = Math.round(clamp(.24 + f * .7, 0, .92) * 100) / 100;
-    halo.style.setProperty('--pv2-heat', String(heat));
-    halo.style.setProperty('--pv2-flame-opacity', String(flame));
-    halo.style.setProperty('--pv2-smoke-opacity', String(smoke));
-    halo.style.setProperty('--pv2-flame-scale', String(.55 + heat * .85));
-    halo.style.setProperty('--pv2-smoke-scale', String(.72 + heat * .62));
+    // These are all derived from `heat`, so one comparison gates all five.
+    if (heat !== body.heatValue) {
+      const flame = Math.round(clamp((f - .22) / .78, 0, 1) * 100) / 100;
+      const smoke = Math.round(clamp(.24 + f * .7, 0, .92) * 100) / 100;
+      halo.style.setProperty('--pv2-heat', String(heat));
+      halo.style.setProperty('--pv2-flame-opacity', String(flame));
+      halo.style.setProperty('--pv2-smoke-opacity', String(smoke));
+      halo.style.setProperty('--pv2-flame-scale', String(.55 + heat * .85));
+      halo.style.setProperty('--pv2-smoke-scale', String(.72 + heat * .62));
+      body.heatValue = heat;
+    }
 
     const op = Math.round(Math.min(1, Math.sqrt(f)) * 40) / 40;
     if (op !== body.heatOpacity) {
@@ -1608,14 +1637,28 @@
     }
   }
 
+  // querySelector + getBoundingClientRect forces a synchronous layout, and this
+  // runs twice per body per frame from constrain() — interleaved with the style
+  // writes at the end of tick(), which made every frame thrash layout. The nav
+  // is a fixed-height bar, so its viewport bottom only moves on resize/reflow;
+  // cache it and let invalidateBumpers() (already called from resize and
+  // init) clear it alongside the bumper geometry.
+  let navBottom = null;
+
   function stageTopLimit(stageRect) {
-    const nav = document.querySelector('.pv2-nav');
-    if (!nav) return EDGE_PADDING;
-    return Math.max(EDGE_PADDING, nav.getBoundingClientRect().bottom - stageRect.top + NAV_CLEARANCE);
+    if (navBottom === null) {
+      const nav = document.querySelector('.pv2-nav');
+      navBottom = nav ? nav.getBoundingClientRect().bottom : -Infinity;
+    }
+    if (navBottom === -Infinity) return EDGE_PADDING;
+    return Math.max(EDGE_PADDING, navBottom - stageRect.top + NAV_CLEARANCE);
   }
 
+  // stageRect is already the stage's viewport rect, so there is nothing to
+  // re-measure here — the extra getBoundingClientRect was another forced layout
+  // on every scoring wall bounce.
   function wallImpact(body, side, stageRect) {
-    const rect = stage.getBoundingClientRect();
+    const rect = stageRect;
     if (side === 'left') return { x: rect.left + EDGE_PADDING, y: rect.top + body.y + body.h / 2 };
     if (side === 'right') return { x: rect.left + stageRect.width - EDGE_PADDING, y: rect.top + body.y + body.h / 2 };
     if (side === 'top') return { x: rect.left + body.x + body.w / 2, y: rect.top + stageTopLimit(stageRect) };
@@ -1750,7 +1793,7 @@
       });
   }
 
-  function invalidateBumpers() { bumperGeom = null; }
+  function invalidateBumpers() { bumperGeom = null; navBottom = null; }
 
   function bumperRects(stageRect) {
     if (!bumperGeom) bumperGeom = measureBumperGeom(stageRect);
@@ -1879,6 +1922,10 @@
       halo: null,
       heatTier: -1,
       heatOpacity: 0,
+      heatValue: -1,
+      // Last values written to style.left/top, so tick() can skip no-op writes.
+      lastLeft: NaN,
+      lastTop: NaN,
       progressEl: null,
       progressHideTimer: 0,
     };
@@ -1942,13 +1989,39 @@
     return halo;
   }
 
+  // The stage only moves on scroll or resize, so one measurement per frame is
+  // plenty — pointermove can fire several times between frames.
+  let pointerStageRectCache = null;
+  let pointerStageRectAt = -1;
+
+  function pointerStageRect() {
+    const now = performance.now();
+    if (!pointerStageRectCache || now - pointerStageRectAt > 16) {
+      pointerStageRectCache = stage.getBoundingClientRect();
+      pointerStageRectAt = now;
+    }
+    return pointerStageRectCache;
+  }
+
   function collideWithPointer(event, pointerVx = 0, pointerVy = 0) {
     const now = performance.now();
     if (!stage || activeProjectLevelUp || projectContextPaused || document.documentElement.classList.contains('pv2-upgrades-open')) return;
 
     const effects = currentEffects();
+    // Derive each body's viewport box from the simulation state plus one cached
+    // stage rect, instead of calling getBoundingClientRect() per body. Pointer
+    // moves arrive faster than frames, and each of those reads forced a layout
+    // in the middle of the write-heavy animation loop.
+    const stageRect = pointerStageRect();
     for (const body of bodies) {
-      const rect = body.el.getBoundingClientRect();
+      const rect = {
+        left: stageRect.left + body.x,
+        top: stageRect.top + body.y,
+        right: stageRect.left + body.x + body.w,
+        bottom: stageRect.top + body.y + body.h,
+        width: body.w,
+        height: body.h,
+      };
       const inside = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
       if (inside && !body.pointerInside && now - body.lastPointerHit >= POINTER_COOLDOWN) {
         let dx = pointerVx;
@@ -2479,8 +2552,20 @@
       }
       body.contacts = nextContacts;
       constrain(body, stageRect, true);
-      body.el.style.left = `${body.x.toFixed(2)}px`;
-      body.el.style.top = `${body.y.toFixed(2)}px`;
+      // Quantize to a tenth of a pixel and skip the write when nothing moved:
+      // a settled or paused block otherwise re-laid itself out every frame, and
+      // toFixed(2) built two throwaway strings per body per frame for precision
+      // no display can show.
+      const left = Math.round(body.x * 10) / 10;
+      const top = Math.round(body.y * 10) / 10;
+      if (left !== body.lastLeft) {
+        body.el.style.left = `${left}px`;
+        body.lastLeft = left;
+      }
+      if (top !== body.lastTop) {
+        body.el.style.top = `${top}px`;
+        body.lastTop = top;
+      }
     }
 
     mark(reducedMotion() ? 'running-reduced' : gameActive ? 'running-game' : 'running');
@@ -2571,6 +2656,8 @@
       refreshProjectProgressUI(body);
       body.el.style.left = `${body.x}px`;
       body.el.style.top = `${body.y}px`;
+      body.lastLeft = NaN;
+      body.lastTop = NaN;
     }
 
     if (gameActive) setScoreVisible(true);
@@ -2585,7 +2672,7 @@
     clearTimeout(mutationTimer);
     mutationTimer = window.setTimeout(() => {
       const hasOverview = Boolean(document.querySelector('.pv2-overview__stage'));
-      if (hasOverview && (!stage || !stage.isConnected || !frame)) init();
+      if (hasOverview && (!stage || !stage.isConnected || !frame)) whenHydrated(init);
       if (!hasOverview && stage) {
         teardown();
         stage = null;
@@ -2595,6 +2682,32 @@
       }
     }, 40);
   });
+
+  // React owns .pv2-float-slot. This script repositions those same elements and
+  // injects progress UI into them, so running before hydration left the DOM
+  // different from what React's server HTML described — React threw the markup
+  // away and re-rendered the whole portfolio on every load (hydration error
+  // #418), which also wiped the injected nodes and forced a physics re-init.
+  // RelationalPortfolio raises `pv2:hydrated` once it has mounted; until then
+  // the simulation stays off the DOM.
+  let hydrated = document.documentElement.classList.contains('pv2-hydrated');
+
+  function whenHydrated(run) {
+    if (hydrated) { run(); return; }
+    let done = false;
+    const go = () => {
+      if (done) return;
+      done = true;
+      hydrated = true;
+      clearTimeout(timer);
+      window.removeEventListener('pv2:hydrated', go);
+      run();
+    };
+    // Fallback: if hydration never happens (the React bundle failed to load, or
+    // JS is partly blocked) the floating game should still come up.
+    const timer = window.setTimeout(go, 2000);
+    window.addEventListener('pv2:hydrated', go, { once: true });
+  }
 
   function start() {
     mark('script-loaded');
@@ -2621,13 +2734,31 @@
     window.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && upgradeOverlay?.classList.contains('is-open')) closeUpgradeTree();
     });
+    // Mobile browsers fire `resize` every time the URL bar slides in or out,
+    // which is constantly. A full init() tears the simulation down and respawns
+    // every block at a fresh home position, so reacting to those made the game
+    // visibly reset itself while the visitor was just moving a finger. Only a
+    // real geometry change — a rotation, or a window actually being resized —
+    // warrants a rebuild; the stage itself is sized in `svh`, so URL-bar
+    // movement no longer changes the play area at all.
+    let lastViewportW = window.innerWidth;
+    let lastViewportH = window.innerHeight;
+    const URL_BAR_SLACK = 140;
+
     window.addEventListener('resize', () => {
       invalidateBumpers();
-      clearTimeout(mutationTimer);
-      mutationTimer = window.setTimeout(init, 100);
       if (upgradeOverlay?.classList.contains('is-open')) { clampTreePan(); applyTreeTransform(); }
+
+      const widthChanged = window.innerWidth !== lastViewportW;
+      const heightDelta = Math.abs(window.innerHeight - lastViewportH);
+      lastViewportW = window.innerWidth;
+      lastViewportH = window.innerHeight;
+      if (!widthChanged && heightDelta <= URL_BAR_SLACK) return;
+
+      clearTimeout(mutationTimer);
+      mutationTimer = window.setTimeout(() => whenHydrated(init), 100);
     });
-    init();
+    whenHydrated(init);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });

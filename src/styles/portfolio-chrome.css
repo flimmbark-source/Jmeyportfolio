@@ -161,20 +161,51 @@
 }
 
 @media (max-width: 720px) {
+  /* One fixed, measurable nav height on phones. It has to be a real length,
+     not `auto`: the overview stage is sized `100svh - var(--pv2-nav-height)`
+     and .pv2-site reserves the same value, so an `auto` nav that grew past it
+     left the top of the stage (and the UX Work link) hidden behind the bar. */
   :root {
-    --pv2-nav-height: auto;
+    --pv2-nav-height: 76px;
   }
 
   .pv2-nav {
-    position: sticky;
-    top: 0;
-    height: auto;
-    min-height: 64px;
-    padding: 16px 18px 12px;
+    height: var(--pv2-nav-height);
+    min-height: var(--pv2-nav-height);
+    /* Stacked: name on one row, links on the next, both inset from the
+       screen edges. A row layout clipped the name on narrow phones. */
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 5px;
+    padding: 8px 16px 7px;
+  }
+
+  .pv2-nav__name {
+    font-size: .82rem;
+    line-height: 1;
+  }
+
+  .pv2-nav nav {
+    width: 100%;
+    /* `nowrap` keeps all five links on one row at 320px — wrapping pushed
+       "Contact" onto a third line and doubled the bar's height. */
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 4px;
+  }
+
+  .pv2-nav nav a,
+  .pv2-nav nav button {
+    flex: 0 1 auto;
+    padding: 5px 0;
+    font-size: clamp(.68rem, 3.05vw, .8rem);
+    line-height: 1;
+    white-space: nowrap;
   }
 
   .pv2-site {
-    padding-top: 0;
+    padding-top: var(--pv2-nav-height);
   }
 
   .pv2-page-backdrop__art {
@@ -200,76 +231,5 @@
   .pv2-credit-drawer__trigger,
   .pv2-credit-drawer__reveal {
     transition: none;
-  }
-}
-
-
-/* ================= Mobile chrome stabilization ================= */
-@media (max-width:720px) {
-  :root { --pv2-nav-height: 94px; }
-
-  .pv2-nav {
-    height: var(--pv2-nav-height);
-    min-height: var(--pv2-nav-height);
-    padding: 10px 16px 9px;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: center;
-    gap: 5px;
-  }
-
-  .pv2-nav__name {
-    font-size: .86rem;
-    line-height: 1;
-  }
-
-  .pv2-nav nav {
-    width: 100%;
-    display: flex;
-    flex-wrap: nowrap;
-    justify-content: space-between;
-    gap: 6px;
-  }
-
-  .pv2-nav nav a,
-  .pv2-nav nav button {
-    flex: 0 1 auto;
-    padding: 6px 0;
-    font-size: clamp(.72rem,3.25vw,.84rem);
-    white-space: nowrap;
-  }
-
-  .pv2-site {
-    padding-top: var(--pv2-nav-height);
-  }
-}
-
-
-/* ================= Mobile layout correction ================= */
-@media (max-width:720px) {
-  :root { --pv2-nav-height: 76px; }
-
-  .pv2-nav {
-    height: var(--pv2-nav-height);
-    min-height: var(--pv2-nav-height);
-    padding: 8px 12px 7px;
-    justify-content: center;
-    gap: 4px;
-  }
-
-  .pv2-nav__name {
-    font-size: .79rem;
-    line-height: 1;
-  }
-
-  .pv2-nav nav {
-    gap: 4px;
-  }
-
-  .pv2-nav nav a,
-  .pv2-nav nav button {
-    padding: 5px 0;
-    font-size: clamp(.66rem, 3.05vw, .78rem);
-    line-height: 1;
   }
 }

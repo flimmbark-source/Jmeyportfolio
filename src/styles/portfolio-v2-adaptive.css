@@ -133,14 +133,13 @@
     min-height: 0;
   }
 
+  /* Height/min-height/max-height are set once, for every width, by the
+     "Viewport-edge Playground wall" block at the end of this file. */
   html.pv2-physics-live .pv2-overview__stage {
     display: block;
-    height: calc(100dvh - var(--pv2-nav-height));
-    min-height: 360px;
-    max-height: none;
     padding: 0;
     overflow: hidden;
-    touch-action: none;
+    touch-action: pinch-zoom;
   }
 
   html.pv2-physics-live .pv2-overview__statement {
@@ -208,11 +207,6 @@
 
 /* ================= Mobile Playground correction ================= */
 @media (max-width:720px) {
-  html.pv2-physics-live .pv2-overview__stage {
-    height: calc(100dvh - var(--pv2-nav-height));
-    min-height: 430px;
-  }
-
   html.pv2-physics-live .pv2-float-slot .pv2-project-tile {
     width: clamp(58px, 18vw, 76px);
   }
@@ -222,8 +216,10 @@
   }
 
   html.pv2-physics-live .pv2-overview__statement h1 {
-    font-size: clamp(1.82rem, 8.4vw, 2.65rem);
-    line-height: .98;
+    /* The floor has to clear 320px: "Interactive Designer" is held on one
+       line by a <br>, so too high a minimum pushed it past the screen edge. */
+    font-size: clamp(1.46rem, 7.6vw, 2.65rem);
+    line-height: 1;
   }
 
   html.pv2-physics-live .pv2-overview__statement > p:last-child {
@@ -234,7 +230,14 @@
 }
 
 
-/* ================= Viewport-edge Playground wall ================= */
+/* ================= Viewport-edge Playground wall =================
+   The live playground fills the viewport below the nav at every width, with
+   no bottom padding, so the page is never scrollable and the bottom wall sits
+   on the screen edge. `dvh` is safe precisely because of that: with nothing to
+   scroll, a mobile URL bar never retracts, and the document height tracks the
+   visible viewport instead of overflowing it. The resize handler in
+   portfolio-physics-v3.js ignores URL-bar-sized height changes regardless, so
+   a bar that does move can no longer tear down and respawn the simulation. */
 html.pv2-physics-live .pv2-site {
   padding-bottom: 0;
 }

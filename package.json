@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "prepare:gttc": "node scripts/prepare-gttc.mjs",
-    "predev": "npm run prepare:gttc",
+    "optimize:images": "node scripts/optimize-images.mjs",
+    "predev": "npm run prepare:gttc && npm run optimize:images",
     "dev": "astro dev",
-    "prebuild": "npm run prepare:gttc",
+    "prebuild": "npm run prepare:gttc && npm run optimize:images",
     "build": "astro build",
     "preview": "astro preview"
   },

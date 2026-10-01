@@ -145,22 +145,22 @@
 /* Existing game artwork is reused on both the Work overview and the All Games playground. */
 .pv2-project-tile .pv2-visual--rotogo .pv2-visual__frame,
 .pv2-workshop-card .pv2-visual--rotogo .pv2-visual__frame {
-  background: url('/images/rotogoscreen.png') center / cover no-repeat;
+  background: url('/images/derived/rotogoscreen-768.webp') center / cover no-repeat;
 }
 
 .pv2-project-tile .pv2-visual--gig-duel .pv2-visual__frame,
 .pv2-workshop-card .pv2-visual--gig-duel .pv2-visual__frame {
-  background: url('/images/VenueRivalsscreen .png') center / cover no-repeat;
+  background: url('/images/derived/VenueRivalsscreen-768.webp') center / cover no-repeat;
 }
 
 .pv2-project-tile .pv2-visual--letter-river .pv2-visual__frame,
 .pv2-workshop-card .pv2-visual--letter-river .pv2-visual__frame {
-  background: url('/images/letterriverscreen.png') center / cover no-repeat;
+  background: url('/images/derived/letterriverscreen-768.webp') center / cover no-repeat;
 }
 
 .pv2-project-tile .pv2-visual--last-reading .pv2-visual__frame,
 .pv2-workshop-card .pv2-visual--last-reading .pv2-visual__frame {
-  background: url('/images/Thelastreadingscreen.png') center / cover no-repeat;
+  background: url('/images/derived/Thelastreadingscreen-768.webp') center / cover no-repeat;
 }
 
 .pv2-project-tile .pv2-visual--get-to-the-cafe .pv2-visual__media,
@@ -170,7 +170,7 @@
 
 .pv2-project-tile .pv2-visual--get-to-the-cafe .pv2-visual__frame,
 .pv2-workshop-card .pv2-visual--get-to-the-cafe .pv2-visual__frame {
-  background: url('/images/oiz8uf.png') center / cover no-repeat;
+  background: url('/images/derived/oiz8uf-768.webp') center / cover no-repeat;
 }
 
 /* The focused Café project uses the supplied gameplay GIF as its internal preview. */
@@ -179,7 +179,7 @@
 }
 
 .pv2-focus .pv2-visual--get-to-the-cafe .pv2-visual__frame {
-  background: url('/images/sRdmVj.gif') center / cover no-repeat;
+  background: url('/images/derived/sRdmVj-600.webp') center / cover no-repeat;
 }
 
 /* Supplied screen recordings behave as looping GIF-like previews in focused views. */
