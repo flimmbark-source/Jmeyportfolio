@@ -19,6 +19,7 @@ export type PortfolioNode = {
   playUrl?: string;
   localPlayUrl?: string;
   previewSrc?: string;
+  made?: string;
   route?: string;
   embed?: {
     mode: 'iframe';
@@ -103,6 +104,7 @@ export const portfolioV2Nodes: PortfolioNode[] = [
   {
     id: 'get-to-the-cafe',
     title: 'Get to the Café',
+    made: '2026',
     kind: 'project',
     status: 'public',
     kicker: 'Playable · Disability',
@@ -117,6 +119,7 @@ export const portfolioV2Nodes: PortfolioNode[] = [
   {
     id: 'letter-river',
     title: 'Letter River',
+    made: '2025',
     kind: 'project',
     status: 'public',
     kicker: 'Playable · Education',
@@ -135,6 +138,7 @@ export const portfolioV2Nodes: PortfolioNode[] = [
   {
     id: 'last-reading',
     title: 'The Last Reading',
+    made: '2026',
     kind: 'project',
     status: 'public',
     kicker: 'Game · For Fun',
@@ -147,6 +151,7 @@ export const portfolioV2Nodes: PortfolioNode[] = [
   {
     id: 'rotogo',
     title: 'Rotogo',
+    made: '2026',
     kind: 'project',
     status: 'public',
     kicker: 'Game · For Fun',
@@ -158,6 +163,7 @@ export const portfolioV2Nodes: PortfolioNode[] = [
   {
     id: 'gig-duel',
     title: 'Venue Rivals',
+    made: '2026',
     kind: 'project',
     status: 'public',
     kicker: 'Game · For Fun',

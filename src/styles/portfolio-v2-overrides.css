@@ -25,8 +25,8 @@
   inset: auto;
   left: 50%;
   top: 50%;
-  width: 110%;
-  height: 110%;
+  width: 150%;
+  height: 150%;
   z-index: 1;
   transform: translate(-50%, -50%);
   transform-origin: 50% 50%;
@@ -411,11 +411,82 @@
 .pv2-work-backdrop {
   z-index: 0;
 }
-.pv2-nav,
+/* Keep content above the painting without changing the nav's fixed
+   viewport positioning. Including .pv2-nav here made it position:relative,
+   which put the bar back into .pv2-site's padded flow and added an extra
+   viewport-height of layout/scroll offset. */
+.pv2-nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 1000;
+}
+
 .pv2-overview,
 .pv2-workshop,
 .pv2-focus,
 .pv2-ux-gateway {
   position: relative;
   z-index: 1;
+}
+
+
+/* Lock every Playground artwork focal point to the sphere center. */
+.pv2-project-tile .pv2-visual__media {
+  object-position: 50% 50% !important;
+}
+
+.pv2-project-tile .pv2-visual__frame {
+  background-position: 50% 50% !important;
+}
+
+
+/* A deliberate 1.5s hover reveals project identity without cluttering the
+   moving playfield during normal play. */
+.pv2-project-hover-meta {
+  position: absolute;
+  z-index: 12;
+  top: 50%;
+  left: calc(100% + 18px);
+  display: grid;
+  gap: 3px;
+  width: max-content;
+  max-width: 210px;
+  transform: translate(8px,-50%);
+  opacity: 0;
+  pointer-events: none;
+  color: var(--pv2-text,#242424);
+  text-align: left;
+  filter: drop-shadow(0 1px 8px rgba(247,246,242,.94));
+  transition: opacity 170ms ease, transform 220ms cubic-bezier(.22,1,.36,1);
+  transition-delay: 0s;
+}
+.pv2-project-hover-meta strong {
+  font-size: clamp(.82rem,.92vw,.96rem);
+  line-height: 1.08;
+  font-weight: 760;
+  letter-spacing: -.025em;
+}
+.pv2-project-hover-meta span {
+  color: var(--pv2-muted,#686762);
+  font-size: clamp(.68rem,.74vw,.76rem);
+  font-weight: 620;
+}
+.pv2-float-slot:hover > .pv2-project-hover-meta {
+  opacity: 1;
+  transform: translate(0,-50%);
+  transition-delay: 1.5s;
+}
+.pv2-float-slot[data-placement='right'] > .pv2-project-hover-meta,
+.pv2-float-slot[data-placement='bottom-right'] > .pv2-project-hover-meta {
+  left: auto;
+  right: calc(100% + 18px);
+  text-align: right;
+  transform: translate(-8px,-50%);
+}
+.pv2-float-slot[data-placement='right']:hover > .pv2-project-hover-meta,
+.pv2-float-slot[data-placement='bottom-right']:hover > .pv2-project-hover-meta {
+  transform: translate(0,-50%);
+}
+@media (max-width:720px) {
+  .pv2-project-hover-meta { display:none; }
 }
