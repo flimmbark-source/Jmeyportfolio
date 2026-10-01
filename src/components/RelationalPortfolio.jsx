@@ -780,7 +780,6 @@ export default function RelationalPortfolio() {
 
   return (
     <>
-      <SphereFilterDefs />
       <div className="pv2-site">
       <header className="pv2-nav">
         <a href="/" className="pv2-nav__name">Jacob Meyerkopf</a>
