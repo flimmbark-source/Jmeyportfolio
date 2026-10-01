@@ -1,24 +1,27 @@
 (() => {
+  // Paths point at the derivatives built by scripts/optimize-images.mjs: same
+  // dimensions, re-encoded at a sane bitrate with the index at the front of the
+  // file, so a preview starts playing instead of waiting on a whole download.
   const PREVIEWS = [
     {
       selector: '.pv2-focus .pv2-visual--letter-river.is-large',
       className: 'pv2-letter-river-video',
-      src: '/images/Screen Recording 2026-09-10 161604.mp4',
+      src: '/images/derived/Screen-Recording-2026-09-10-161604.mp4',
     },
     {
       selector: '.pv2-focus .pv2-visual--rotogo.is-large',
       className: 'pv2-rotogo-video',
-      src: '/images/Screen Recording 2026-09-10 162158.mp4',
+      src: '/images/derived/Screen-Recording-2026-09-10-162158.mp4',
     },
     {
       selector: '.pv2-focus .pv2-visual--last-reading.is-large',
       className: 'pv2-last-reading-video',
-      src: '/images/Screen Recording 2026-09-10 162450.mp4',
+      src: '/images/derived/Screen-Recording-2026-09-10-162450.mp4',
     },
     {
       selector: '.pv2-focus .pv2-visual--gig-duel.is-large',
       className: 'pv2-gig-duel-video',
-      src: '/images/Screen Recording 2026-09-10 162707.mp4',
+      src: '/images/derived/Screen-Recording-2026-09-10-162707.mp4',
     },
   ];
 

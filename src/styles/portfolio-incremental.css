@@ -105,6 +105,91 @@
   100% { opacity: 1; transform: translate(0,-50%) rotate(-4deg) scale(1); }
 }
 
+/* The same sticker as "Click to Spend", pointed at a game sphere instead.
+   Two elements on purpose: the outer one is moved by the physics loop with a
+   transform every frame, so the inner one is free to own the entrance
+   animation and the resting tilt without the two fighting over `transform`. */
+.pv2-explore-cue {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1170;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 220ms ease;
+  will-change: transform;
+}
+
+.pv2-explore-cue.is-visible {
+  opacity: 1;
+}
+
+.pv2-explore-cue__box {
+  position: relative;
+  display: block;
+  width: max-content;
+  padding: 7px 10px 6px;
+  border: 2px solid var(--pv2-text, #242424);
+  border-radius: 7px;
+  background: #d8ff63;
+  color: var(--pv2-text, #242424);
+  box-shadow: 4px 4px 0 rgba(36, 36, 36, .18);
+  font-size: .68rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform: rotate(-4deg);
+  transform-origin: right center;
+}
+
+/* Arrow on the side facing the sphere. */
+.pv2-explore-cue__box::after {
+  content: '➜';
+  position: absolute;
+  left: calc(100% + 5px);
+  top: 50%;
+  color: var(--pv2-text, #242424);
+  font-size: 1.25rem;
+  font-weight: 950;
+  line-height: 1;
+  transform: translateY(-52%) rotate(2deg);
+  filter: drop-shadow(1px 1px 0 rgba(216, 255, 99, .9));
+}
+
+/* Flipped when there is no room to the left of the sphere. */
+.pv2-explore-cue.is-flipped .pv2-explore-cue__box {
+  transform: rotate(4deg);
+  transform-origin: left center;
+}
+
+.pv2-explore-cue.is-flipped .pv2-explore-cue__box::after {
+  left: auto;
+  right: calc(100% + 5px);
+  transform: translateY(-52%) rotate(-2deg) scaleX(-1);
+}
+
+.pv2-explore-cue.is-visible .pv2-explore-cue__box {
+  animation: pv2ExploreCueIn 520ms cubic-bezier(.16, 1.12, .3, 1) both;
+}
+
+.pv2-explore-cue.is-visible.is-flipped .pv2-explore-cue__box {
+  animation-name: pv2ExploreCueInFlipped;
+}
+
+@keyframes pv2ExploreCueIn {
+  0% { opacity: 0; transform: translateX(12px) rotate(-8deg) scale(.78); }
+  58% { opacity: 1; transform: translateX(-4px) rotate(-2deg) scale(1.07); }
+  100% { opacity: 1; transform: translateX(0) rotate(-4deg) scale(1); }
+}
+
+@keyframes pv2ExploreCueInFlipped {
+  0% { opacity: 0; transform: translateX(-12px) rotate(8deg) scale(.78); }
+  58% { opacity: 1; transform: translateX(4px) rotate(2deg) scale(1.07); }
+  100% { opacity: 1; transform: translateX(0) rotate(4deg) scale(1); }
+}
+
 /* Cross-project abilities communicate both the source-to-target relationship
    and the impact on the receiving sphere. */
 .pv2-project-target-link {
@@ -147,6 +232,16 @@
 }
 
 @media (max-width:720px) {
+  .pv2-explore-cue__box {
+    padding: 6px 9px 5px;
+    font-size: .6rem;
+    letter-spacing: .035em;
+  }
+
+  .pv2-explore-cue__box::after {
+    font-size: 1.1rem;
+  }
+
   .pv2-score-spend-cue {
     right: 4px;
     top: calc(100% + 15px);
@@ -874,9 +969,19 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
 .pv2-project-progress__level{font-size:.61rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .pv2-project-progress__level strong{font-size:.77rem;letter-spacing:-.02em}
 .pv2-project-progress__arc{display:block;width:100%;height:19px;margin-top:-2px;overflow:visible}
-.pv2-project-progress__track,.pv2-project-progress__fill{fill:none;stroke-width:4;stroke-linecap:round}
+.pv2-project-progress__track,.pv2-project-progress__pending,.pv2-project-progress__fill{fill:none;stroke-width:4;stroke-linecap:round}
 .pv2-project-progress__track{stroke:rgba(36,36,36,.13)}
+/* The white read-out of xp that has landed but not been banked. It is painted
+   under the yellow, so what shows is the gap between the two. No transition:
+   its whole job is to answer a bump instantly. The dark halo keeps it legible
+   where the bar crosses a pale part of the backdrop painting. */
+.pv2-project-progress__pending{
+  stroke:#fff;stroke-dasharray:100;stroke-dashoffset:100;
+  filter:drop-shadow(0 0 1.5px rgba(36,36,36,.5)) drop-shadow(0 0 5px rgba(255,255,255,.75))
+}
 .pv2-project-progress__fill{stroke:var(--pv2-upgrade-affordable,#ffd84f);stroke-dasharray:100;stroke-dashoffset:100;transition:stroke-dashoffset 380ms cubic-bezier(.22,1,.36,1)}
+/* Set alongside a new offset to place the yellow stroke without easing to it. */
+.pv2-project-progress__fill.is-instant{transition:none}
 .pv2-project-progress__exp{margin-top:-4px;color:var(--pv2-muted,#686762);font-size:.52rem;font-weight:720;opacity:0;transform:translateY(-2px);transition:opacity 260ms ease,transform 260ms ease}
 .pv2-project-progress.is-exp-flash .pv2-project-progress__exp{opacity:1;transform:none}
 
@@ -1114,7 +1219,9 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
   .pv2-float-slot.is-project-leveling .pv2-visual,.pv2-float-slot.is-project-leveling::before,.pv2-float-slot.is-project-leveling::after,
   .pv2-project-levelup-fanfare__ring,.pv2-project-levelup-fanfare__ray,.pv2-project-levelup-fanfare__copy,.pv2-project-levelup__header::before,.pv2-project-target-link,.pv2-project-target-impact,.pv2-score-spend-cue,
   .pv2-project-levelup__choice,.pv2-float-slot.is-project-upgrade-applied .pv2-visual,.pv2-float-slot.is-project-upgrade-applied::before{animation:none}
-  .pv2-project-levelup-overlay,.pv2-project-progress,.pv2-project-progress__fill,.pv2-project-levelup__panel,.pv2-project-levelup__choice{transition:none}
+  .pv2-explore-cue.is-visible .pv2-explore-cue__box{animation:none}
+  .pv2-explore-cue{transition:none}
+  .pv2-project-levelup-overlay,.pv2-project-progress,.pv2-project-progress__fill,.pv2-project-progress__pending,.pv2-project-levelup__panel,.pv2-project-levelup__choice{transition:none}
   .pv2-project-levelup__choice{opacity:1;transform:none}
 }
 
@@ -1183,7 +1290,11 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
   width: min(372px, calc(100vw - 40px));
 }
 
-/* ---------- Circular friction feedback ---------- */
+/* ---------- Circular friction feedback ----------
+   A sphere that has been flicked hard heats up: it smoulders first, then the
+   rim catches and burns. Everything here is sized in percentages of the halo,
+   which the physics script matches to the rendered sphere, so the fire scales
+   with a 184px desktop sphere and a 60px phone one alike. */
 .pv2-heat-halo {
   --pv2-heat: 0;
   --pv2-heat-rgb: 255, 160, 45;
@@ -1193,71 +1304,152 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
   --pv2-smoke-scale: .72;
   box-shadow: none !important;
 }
+
+/* Heat haze around the object: a wide, soft bloom rather than a hard ring. */
+/* Cold: nothing to draw and nothing to animate. */
+.pv2-heat-halo.is-cold .pv2-heat-fire,
+.pv2-heat-halo.is-cold .pv2-heat-smokes,
+.pv2-heat-halo.is-cold .pv2-heat-core { display: none; }
+
 .pv2-heat-glow {
-  position:absolute;inset:-5%;border-radius:50%;
-  border:1px solid rgba(var(--pv2-heat-rgb),calc(.18 + var(--pv2-heat) * .5));
-  background:radial-gradient(circle at center,transparent 58%,rgba(var(--pv2-heat-rgb),calc(.025 + var(--pv2-heat) * .12)) 73%,rgba(var(--pv2-heat-rgb),calc(.08 + var(--pv2-heat) * .34)) 100%);
-  box-shadow:0 0 calc(7px + var(--pv2-heat) * 11px) rgba(var(--pv2-heat-rgb),calc(.12 + var(--pv2-heat) * .3)),0 0 calc(14px + var(--pv2-heat) * 22px) rgba(var(--pv2-heat-rgb),calc(.06 + var(--pv2-heat) * .18));
-  filter:blur(calc(.1px + var(--pv2-heat) * .35px))
+  position: absolute;
+  inset: -7%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center,
+      transparent 56%,
+      rgba(255, 196, 92, calc(.05 + var(--pv2-heat) * .2)) 70%,
+      rgba(var(--pv2-heat-rgb), calc(.1 + var(--pv2-heat) * .4)) 86%,
+      rgba(214, 70, 16, calc(var(--pv2-heat) * .22)) 96%,
+      transparent 100%);
+  box-shadow:
+    0 0 calc(8px + var(--pv2-heat) * 16px) rgba(var(--pv2-heat-rgb), calc(.12 + var(--pv2-heat) * .34)),
+    0 0 calc(20px + var(--pv2-heat) * 42px) rgba(255, 108, 20, calc(.05 + var(--pv2-heat) * .26));
+  filter: blur(calc(.5px + var(--pv2-heat) * 1.6px));
 }
-.pv2-heat-flame,
+
+/* The rim itself glowing through, hottest right at the edge. */
+.pv2-heat-core {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: calc(var(--pv2-heat) * .9);
+  background: radial-gradient(circle at center,
+    transparent 76%,
+    rgba(255, 148, 40, .3) 92%,
+    rgba(255, 226, 150, .62) 99%,
+    transparent 100%);
+  mix-blend-mode: screen;
+}
+
+/* The licks are blended additively and blurred, so where they overlap they
+   merge into one body of fire instead of reading as separate petals. */
+.pv2-heat-fire {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: var(--pv2-flame-opacity);
+  filter: blur(calc(1px + var(--pv2-heat) * 1.4px)) saturate(1.2) contrast(1.08);
+  mix-blend-mode: screen;
+}
+
+.pv2-heat-flame {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: calc((9% + var(--pv2-heat) * 4%) * var(--wid));
+  height: calc((13% + var(--pv2-heat) * 15%) * var(--len) * var(--pv2-flame-scale));
+  /* Wide round base tapering to a point: the silhouette is most of what sells
+     it at this size. */
+  border-radius: 46% 46% 44% 44% / 74% 74% 26% 26%;
+  background: linear-gradient(to top,
+    rgba(156, 22, 0, .72) 0%,
+    #e03a00 10%,
+    #ff6a05 28%,
+    #ff9c14 48%,
+    #ffc63a 68%,
+    #ffe894 84%,
+    rgba(255, 246, 206, .42) 94%,
+    rgba(255, 250, 226, 0) 100%);
+  /* The base sits on the rim and the body goes straight up the screen, with a
+     small per-lick lean. Rotating each lick out along its own radius is what
+     turned the old effect into a sunburst. */
+  transform-origin: 50% 100%;
+  transform: translate(-50%, -100%) rotate(var(--lean));
+  animation: pv2HeatFlame var(--dur) ease-in-out var(--delay) infinite alternate;
+  will-change: transform, opacity;
+}
+
+/* White-hot core inside the lower half of every lick. */
+.pv2-heat-flame::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  width: 54%;
+  height: 46%;
+  border-radius: 50% 50% 45% 45% / 70% 70% 30% 30%;
+  background: linear-gradient(to top,
+    rgba(255, 238, 170, .95) 0%,
+    rgba(255, 248, 214, .88) 45%,
+    rgba(255, 255, 240, 0) 100%);
+  transform: translateX(-50%);
+  filter: blur(.6px);
+  opacity: calc(.35 + var(--pv2-heat) * .55);
+}
+
+@keyframes pv2HeatFlame {
+  0% {
+    transform: translate(-50%, -100%) rotate(var(--lean)) scale(.84, .7);
+    opacity: .6;
+  }
+  45% {
+    transform: translate(-50%, -100%) rotate(calc(var(--lean) + var(--sway))) scale(1.06, 1.14);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -100%) rotate(calc(var(--lean) - var(--sway) * .6)) scale(.76, .9);
+    opacity: .78;
+  }
+}
+
+/* Smoke is the one part that ignores the rim angle — it rises up the screen,
+   spreading and thinning, whichever side of the sphere it came off. */
+.pv2-heat-smokes {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
 .pv2-heat-smoke {
   position: absolute;
   left: var(--x);
   top: var(--y);
-  pointer-events: none;
-  transform-origin: 50% 100%;
+  width: calc(26% * var(--size) * var(--pv2-smoke-scale));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 36%, rgba(96, 89, 82, .5) 0%, rgba(88, 82, 76, .26) 34%, transparent 56%),
+    radial-gradient(circle at 68% 48%, rgba(82, 76, 70, .44) 0%, rgba(76, 71, 66, .22) 32%, transparent 54%),
+    radial-gradient(circle at 46% 70%, rgba(104, 96, 88, .4) 0%, rgba(92, 86, 80, .2) 36%, transparent 58%),
+    radial-gradient(circle at 50% 50%, rgba(88, 82, 76, .3) 0%, rgba(80, 75, 70, .14) 54%, transparent 74%);
+  filter: blur(calc(2.5px + var(--pv2-heat) * 3px));
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  animation: pv2HeatSmoke var(--dur) linear var(--delay) infinite;
   will-change: transform, opacity;
 }
-.pv2-heat-flame {
-  width:calc(7px + var(--pv2-heat) * 4px);
-  height:calc(16px + var(--pv2-heat) * 18px);
-  margin-left:calc(-3.5px - var(--pv2-heat) * 2px);
-  margin-top:calc(-12px - var(--pv2-heat) * 12px);
-  border-radius: 70% 30% 62% 38% / 82% 82% 18% 18%;
-  background:
-    radial-gradient(ellipse at 50% 77%, rgba(255,246,190,.98) 0 13%, transparent 15%),
-    linear-gradient(to top, #ff7a00 0%, #ffb11b 43%, #ffd84f 72%, rgba(255,216,79,0) 100%);
-  box-shadow: 0 0 8px rgba(var(--pv2-heat-rgb), .38);
-  opacity: var(--pv2-flame-opacity);
-  transform: translate(-50%,-50%) rotate(var(--rot)) scaleY(var(--pv2-flame-scale));
-  animation: pv2HeatFlame 620ms ease-in-out calc(var(--i) * -43ms) infinite alternate;
-}
-.pv2-heat-smoke {
-  width: 18px;
-  height: 18px;
-  margin-left: -9px;
-  margin-top: -9px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(66,61,56,.42) 0 32%, rgba(91,84,77,.22) 48%, transparent 72%);
-  filter: blur(2.2px);
-  opacity: var(--pv2-smoke-opacity);
-  transform: translate(-50%,-50%) rotate(var(--rot)) scale(var(--pv2-smoke-scale));
-  animation: pv2HeatSmoke 1450ms ease-out calc(var(--i) * -137ms) infinite;
-}
-@keyframes pv2HeatFlame {
-  0% {
-    transform: translate(-50%,-50%) rotate(var(--rot)) scaleY(var(--pv2-flame-scale)) scale(.82,.78);
-    filter: brightness(.96);
-  }
-  55% {
-    transform: translate(-50%,-54%) rotate(calc(var(--rot) + 3deg)) scaleY(var(--pv2-flame-scale)) scale(1.08);
-    filter: brightness(1.12);
-  }
-  100% {
-    transform: translate(-50%,-59%) rotate(calc(var(--rot) - 2deg)) scaleX(.9) scaleY(var(--pv2-flame-scale));
-    filter: brightness(1.04);
-  }
-}
+
 @keyframes pv2HeatSmoke {
   0% {
-    transform: translate(-50%,-45%) rotate(var(--rot)) scale(var(--pv2-smoke-scale)) scale(.7);
     opacity: 0;
+    transform: translate(-50%, -50%) scale(.38) rotate(0deg);
   }
-  25% { opacity: var(--pv2-smoke-opacity); }
+  16% { opacity: var(--pv2-smoke-opacity); }
+  62% { opacity: calc(var(--pv2-smoke-opacity) * .62); }
   100% {
-    transform: translate(-50%,-115%) rotate(calc(var(--rot) + 7deg)) scale(var(--pv2-smoke-scale)) scale(1.22);
     opacity: 0;
+    transform: translate(calc(-50% + var(--drift)), -300%) scale(2.1) rotate(var(--spin));
   }
 }
 
@@ -1410,8 +1602,16 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
   .pv2-project-context-panel__purpose { font-size: .72rem; }
 }
 @media (prefers-reduced-motion:reduce) {
+  /* Stopping the animation is right, but both of these start their keyframes
+     from a hidden state — without a resting opacity the flames would freeze
+     part-lit and the smoke would vanish entirely. */
   .pv2-heat-flame,
   .pv2-heat-smoke { animation: none; }
+  .pv2-heat-flame { opacity: 1; }
+  .pv2-heat-smoke {
+    opacity: calc(var(--pv2-smoke-opacity) * .7);
+    transform: translate(calc(-50% + var(--drift) * .4), -150%) scale(1.3);
+  }
   .pv2-float-slot.is-project-context-open .pv2-visual { transition: none; }
 }
 

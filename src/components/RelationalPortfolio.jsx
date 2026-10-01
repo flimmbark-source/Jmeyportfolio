@@ -1,8 +1,7 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { portfolioV2NodeMap } from '../data/portfolioV2';
-import { pickWorkBackground } from '../data/workBackgrounds';
-import '../styles/portfolio-v2.css';
+import { pickWorkBackground, workBackgroundSrcSet } from '../data/workBackgrounds';
 
 const MOTION = {
   ease: [0.22, 1, 0.36, 1],
@@ -14,7 +13,6 @@ const MOTION = {
 const publicProjectIds = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotogo', 'gig-duel'];
 const unfinishedProjectIds = ['phase-g', 'splitpulse'];
 const allGameIds = [...publicProjectIds, ...unfinishedProjectIds];
-const SPHERE_DISPLACEMENT_MAP = 'data:image/png;base64,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';
 
 const hoverMotion = {
   top: { y: -9, rotate: -0.35, scale: 1.018 },
@@ -28,8 +26,8 @@ const overviewAnchors = {
   'get-to-the-cafe': [0.50, 0.10],
   'letter-river': [0.12, 0.43],
   'last-reading': [0.87, 0.42],
-  rotogo: [0.31, 0.82],
-  'gig-duel': [0.69, 0.82],
+  rotogo: [0.22, 0.82],
+  'gig-duel': [0.78, 0.82],
   'ux-work': [0.08, 0.18],
   unfinished: [0.90, 0.78],
 };
@@ -154,33 +152,6 @@ function solveOverviewLayout(stage, statement, elements) {
   }
 
   return Object.fromEntries(items.map((item) => [item.id, { left: item.x, top: item.y }]));
-}
-
-function SphereFilterDefs() {
-  return (
-    <svg className="pv2-filter-defs" width="0" height="0" aria-hidden="true" focusable="false">
-      <defs>
-        <filter id="pv2-sphere-distortion" x="-35%" y="-35%" width="170%" height="170%" colorInterpolationFilters="sRGB">
-          <feImage
-            href={SPHERE_DISPLACEMENT_MAP}
-            x="0%"
-            y="0%"
-            width="100%"
-            height="100%"
-            preserveAspectRatio="none"
-            result="sphereMap"
-          />
-          <feDisplacementMap
-            in="SourceGraphic"
-            in2="sphereMap"
-            scale="20"
-            xChannelSelector="R"
-            yChannelSelector="G"
-          />
-        </filter>
-      </defs>
-    </svg>
-  );
 }
 
 function ProjectVisual({ node, large = false }) {
@@ -708,9 +679,22 @@ function WorkBackdrop({ reducedMotion, content = false }) {
       transition={reducedMotion ? { duration: 0 } : MOTION.major}
     >
       {background && (
-        <div
+        // An <img srcset> rather than a background-image: the backdrop is the
+        // single heaviest asset on the page, and this lets a phone pick the
+        // 900px derivative instead of downloading the desktop-sized file.
+        <img
           className="pv2-work-backdrop__art"
-          style={{ backgroundImage: `url("${background.src}")`, backgroundPosition: background.position }}
+          src={`/images/derived/work-backgrounds/${background.src.split('/').pop().replace(/\.[^.]+$/, '')}-1600.webp`}
+          srcSet={workBackgroundSrcSet(background)}
+          // Deliberately under-declared on phones so a 3x screen picks the
+          // 900px file rather than the 1600px one. The backdrop sits under a
+          // 0.675-opacity scrim and a saturation filter, so the extra density
+          // is invisible — and on mobile it was the single largest download.
+          sizes="(max-width: 720px) 75vw, 100vw"
+          style={{ objectPosition: background.position }}
+          alt=""
+          decoding="async"
+          fetchPriority="low"
         />
       )}
       <div className="pv2-work-backdrop__scrim" />
@@ -746,6 +730,15 @@ function WorkBackdropCredit({ reducedMotion }) {
 export default function RelationalPortfolio() {
   const reducedMotion = useReducedMotion();
   const [selectedId, setSelectedId] = useState(null);
+
+  useEffect(() => {
+    // portfolio-physics-v3.js repositions these same .pv2-float-slot elements
+    // and injects progress UI into them. It waits for this signal, because
+    // mutating them before hydration made React discard the server HTML and
+    // re-render the entire portfolio (hydration error #418).
+    document.documentElement.classList.add('pv2-hydrated');
+    window.dispatchEvent(new CustomEvent('pv2:hydrated'));
+  }, []);
 
   useEffect(() => {
     setSelectedId(readProjectFromUrl());

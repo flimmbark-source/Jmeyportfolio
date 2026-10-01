@@ -32,7 +32,11 @@ button { font: inherit; }
   width: 100%;
   min-height: 100vh;
   min-height: 100svh;
-  padding: 0 clamp(18px, 3.8vw, 68px) clamp(18px, 3vh, 36px);
+  /* Longhands, not a `padding` shorthand: portfolio-chrome.css owns
+     `padding-top` (it clears the fixed nav), and a shorthand here would reset
+     it to 0 wherever this file happens to load last. */
+  padding-inline: clamp(18px, 3.8vw, 68px);
+  padding-bottom: clamp(18px, 3vh, 36px);
 }
 
 .pv2-nav {
@@ -117,8 +121,9 @@ button { font: inherit; }
 .pv2-work-backdrop__art {
   position: absolute;
   inset: -1.2%;
-  background-repeat: no-repeat;
-  background-size: cover;
+  width: 102.4%;
+  height: 102.4%;
+  object-fit: cover;
   opacity: 0.93;
   filter: saturate(0.95);
   transform: scale(1.012);
@@ -156,6 +161,8 @@ button { font: inherit; }
   .pv2-work-backdrop__art {
     opacity: 0.675;
     inset: -1.8%;
+    width: 103.6%;
+    height: 103.6%;
   }
 
   .pv2-work-backdrop__scrim {
@@ -181,7 +188,11 @@ button { font: inherit; }
   --stage-h: calc(100svh - clamp(64px, 9vh, 88px) - 8px);
   position: relative;
   height: var(--stage-h);
-  min-height: 560px;
+  /* Clamped to the space actually available. A bare floor made the stage
+     taller than the viewport on short screens — a phone in landscape is
+     wider than the 720px breakpoint but only ~390px tall, so the playground
+     ran off the bottom of the page and the page scrolled. */
+  min-height: min(560px, var(--stage-h));
   max-height: 920px;
   overflow: hidden;
 }
@@ -627,7 +638,7 @@ button { font: inherit; }
   .pv2-nav { height: 64px; }
   .pv2-overview__stage {
     height: calc(100svh - 64px - 6px);
-    min-height: 540px;
+    min-height: min(540px, calc(100svh - 64px - 6px));
   }
   .pv2-overview__statement { top: 50%; width: min(600px, 46vw); }
   .pv2-overview__statement h1 { font-size: clamp(2.6rem, min(4.4vw, 7.4vh), 4.9rem); }
@@ -644,7 +655,10 @@ button { font: inherit; }
 
 @media (max-width: 1000px) {
   .pv2-overview__stage {
-    min-height: 740px;
+    /* Tablet-portrait sizing, but clamped: this range also catches a phone in
+       landscape (wider than 720px, barely 400px tall), where a flat 740px
+       floor pushed most of the playground below the fold. */
+    min-height: min(740px, var(--stage-h));
     height: auto;
   }
 
@@ -668,19 +682,7 @@ button { font: inherit; }
 @media (max-width: 720px) {
   .pv2-site { padding-inline: 18px; }
 
-  .pv2-nav {
-    height: auto;
-    min-height: 76px;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 18px 0 10px;
-  }
-
-  .pv2-nav nav {
-    gap: 12px 16px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
+  /* The mobile nav lives in portfolio-chrome.css, which every page shares. */
 
   .pv2-overview__stage {
     display: grid;
@@ -750,8 +752,6 @@ button { font: inherit; }
 }
 
 @media (max-width: 460px) {
-  .pv2-nav { flex-direction: column; align-items: stretch; }
-  .pv2-nav nav { justify-content: flex-start; }
   .pv2-overview__stage { grid-template-columns: 1fr; padding-top: 40px; }
   .pv2-project-tile { width: 100%; }
   .pv2-visual { aspect-ratio: 4 / 3; }

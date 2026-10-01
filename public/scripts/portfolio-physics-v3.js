@@ -15,6 +15,23 @@
   const MAX_SPEED = 0.66;
   const REDUCED_MAX_SPEED = 0.08;
   const POINTER_COOLDOWN = 85;
+  // --- "Click to Explore!" nudge -------------------------------------------
+  // The spheres are the way into the actual work, but nothing on the stage says
+  // so — the Points box gets a "Click to Spend" sticker and the projects get
+  // nothing. This is the same sticker pointed at a random game sphere, shown
+  // occasionally rather than permanently: it is an invitation, not a label, so
+  // it appears a handful of times and then stops asking.
+  const EXPLORE_CUE_FIRST_DELAY = 16000;
+  const EXPLORE_CUE_MIN_GAP = 48000;
+  const EXPLORE_CUE_MAX_GAP = 80000;
+  const EXPLORE_CUE_VISIBLE = 5400;
+  const EXPLORE_CUE_MAX_SHOWS = 4;
+  // Distance from the sphere's edge to the sticker's box. The arrow is an
+  // ::after hanging off the box, so it eats about 24px of this — the remainder
+  // is the clearance between the arrow's tip and the sphere. Too small and the
+  // tip lands on the artwork, where a dark arrow on a dark sphere disappears.
+  const EXPLORE_CUE_GAP = 32;
+  const EXPLORE_CUE_MARGIN = 8;   // px of viewport breathing room
   const BUMPER_KICK = 0.384;
   const WALL_SCORE_COOLDOWN = 220;
   // A flick's "armed" state is finite: after this it decays so a single flick
@@ -236,6 +253,12 @@
       projectProgressState.set(id, {
         level: 1, xp: 0, upgrades: new Map(), bumperHits: 0,
         lastBumperAt: -Infinity, lastSharedXpAt: -Infinity, autoTimer: 0,
+        // Memoized projectEffects() result; cleared when an upgrade is chosen.
+        effectsCache: null,
+        // The yellow bar lags the real xp: it holds what has been banked, and
+        // catches up to the white read-out once the bumping stops.
+        shownXp: 0, shownLevel: 1,
+        xpCommitTimer: 0, xpResetTimer: 0, xpShowFull: false,
       });
     }
     return projectProgressState.get(id);
@@ -245,7 +268,23 @@
     return body.projectState?.upgrades?.get(id) || 0;
   }
 
+  // Read once per body in tick(), twice more per body from constrain(), and
+  // once per candidate pair in the two collision passes — on the order of a
+  // hundred times a frame. The values only change when a project upgrade is
+  // chosen, so memoize on the body's own state and let that purchase path
+  // invalidate it.
   function projectEffects(body) {
+    const state = body.projectState;
+    if (!state) return buildProjectEffects(body);
+    if (!state.effectsCache) state.effectsCache = buildProjectEffects(body);
+    return state.effectsCache;
+  }
+
+  function invalidateProjectEffects(body) {
+    if (body?.projectState) body.projectState.effectsCache = null;
+  }
+
+  function buildProjectEffects(body) {
     const count = (id) => projectUpgradeCount(body, id);
     return {
       speedMult: 1 + count('project-speed') * .15,
@@ -273,10 +312,15 @@
       el = document.createElement('div');
       el.className = 'pv2-project-progress';
       el.setAttribute('aria-hidden', 'true');
+      // Three strokes, painted in this order: the empty track, the white
+      // "just earned" read-out, then the committed yellow over the top of it.
+      // What stays visible as white is the gap between the two — the XP that
+      // has landed but has not been banked yet.
       el.innerHTML =
         '<div class="pv2-project-progress__level">LV. <strong>1</strong></div>'
         + '<svg class="pv2-project-progress__arc" viewBox="0 0 100 30" preserveAspectRatio="none">'
         + '<path class="pv2-project-progress__track" d="M5 25 Q50 2 95 25" pathLength="100"></path>'
+        + '<path class="pv2-project-progress__pending" d="M5 25 Q50 2 95 25" pathLength="100"></path>'
         + '<path class="pv2-project-progress__fill" d="M5 25 Q50 2 95 25" pathLength="100"></path>'
         + '</svg>'
         + '<div class="pv2-project-progress__exp">0 / 1 EXP</div>';
@@ -287,18 +331,86 @@
     return el;
   }
 
-  function refreshProjectProgressUI(body, flash = false) {
+  // How long the white read-out waits for the next bump before the yellow is
+  // allowed to catch up to it.
+  const XP_COMMIT_DELAY = 500;
+  // Roughly the yellow stroke's CSS transition, so a filled bar is seen full
+  // before it resets onto the next level.
+  const XP_FULL_HOLD = 430;
+
+  function setProgressStroke(path, ratio, instant) {
+    if (!path) return;
+    // `is-instant` kills the stroke's transition. Setting it in the same frame
+    // as the offset means the browser only ever computes the end state, so no
+    // forced reflow is needed to suppress the animation.
+    path.classList.toggle('is-instant', Boolean(instant));
+    path.style.strokeDashoffset = String(100 - clamp(ratio, 0, 1) * 100);
+    if (instant) requestAnimationFrame(() => path.classList.remove('is-instant'));
+  }
+
+  // The yellow's value. It can sit a whole level behind the white one during
+  // the brief "bar is full" beat, in which case it simply reads as full.
+  function committedXpRatio(state) {
+    if (state.xpShowFull) return 1;
+    if (state.shownLevel < state.level) return 1;
+    return clamp(state.shownXp / projectXpTarget(state.shownLevel), 0, 1);
+  }
+
+  // Bank the white read-out: the yellow animates from wherever it is up to it.
+  function commitProjectXp(projectId) {
+    const state = projectProgressState.get(projectId);
+    if (!state) return;
+    state.xpCommitTimer = 0;
+    state.shownXp = state.xp;
+    state.shownLevel = state.level;
+    const body = liveProjectBody(projectId);
+    if (body) refreshProjectProgressUI(body);
+  }
+
+  function scheduleProjectXpCommit(body) {
+    const state = body.projectState;
+    if (state.xpCommitTimer) window.clearTimeout(state.xpCommitTimer);
+    state.xpCommitTimer = window.setTimeout(() => commitProjectXp(body.projectId), XP_COMMIT_DELAY);
+  }
+
+  // A level-up is the other trigger: the white read-out has run off the end of
+  // the bar, so there is nothing to wait for. Hold both strokes full for a beat
+  // — otherwise xp wrapping onto the next level would snap the bar backwards
+  // before anyone saw it fill — then reset onto the new level.
+  function flashProjectXpFull(body) {
+    const state = body.projectState;
+    if (state.xpCommitTimer) { window.clearTimeout(state.xpCommitTimer); state.xpCommitTimer = 0; }
+    if (state.xpResetTimer) window.clearTimeout(state.xpResetTimer);
+    state.xpShowFull = true;
+    refreshProjectProgressUI(body);
+    state.xpResetTimer = window.setTimeout(() => {
+      state.xpResetTimer = 0;
+      state.xpShowFull = false;
+      state.shownXp = state.xp;
+      state.shownLevel = state.level;
+      const live = liveProjectBody(body.projectId);
+      // `true` so the empty bar appears rather than unwinding backwards.
+      if (live) refreshProjectProgressUI(live, false, true);
+    }, XP_FULL_HOLD);
+  }
+
+  function refreshProjectProgressUI(body, flash = false, instant = false) {
     if (!body?.projectState) return;
     const el = body.progressEl || ensureProjectProgressUI(body);
     const state = body.projectState;
     const target = projectXpTarget(state.level);
-    const ratio = clamp(state.xp / target, 0, 1);
+    const ratio = state.xpShowFull ? 1 : clamp(state.xp / target, 0, 1);
     const level = el.querySelector('.pv2-project-progress__level strong');
     const exp = el.querySelector('.pv2-project-progress__exp');
     const fill = el.querySelector('.pv2-project-progress__fill');
+    const pending = el.querySelector('.pv2-project-progress__pending');
     if (level) level.textContent = String(state.level);
     if (exp) exp.textContent = formatProjectXp(state.xp) + ' / ' + target + ' EXP';
-    if (fill) fill.style.strokeDashoffset = String(100 - ratio * 100);
+    // White tracks the real xp with no easing at all — it is the immediate
+    // "that bump landed" feedback, and carries no CSS transition, so it needs
+    // none of setProgressStroke's machinery. Yellow only moves on a commit.
+    if (pending) pending.style.strokeDashoffset = String(100 - clamp(ratio, 0, 1) * 100);
+    setProgressStroke(fill, committedXpRatio(state), instant);
     if (flash) {
       el.classList.remove('is-exp-flash');
       void el.offsetWidth;
@@ -538,6 +650,7 @@
     event.choiceCommitted = true;
     const upgrades = event.body.projectState.upgrades;
     upgrades.set(upgrade.id, (upgrades.get(upgrade.id) || 0) + 1);
+    invalidateProjectEffects(event.body);
     button?.classList.add('is-selected');
     const arrow = button?.querySelector('.pv2-project-levelup__choice-arrow');
     if (arrow) arrow.textContent = '✓';
@@ -620,6 +733,10 @@
       if (projectEffects(body).mentor && source !== 'mentor') mentorLowestProject(body);
     }
     refreshProjectProgressUI(body, source === 'bumper');
+    // Two ways the yellow is allowed to catch up: the white read-out ran off
+    // the end of the bar (a level-up), or the bumping stopped for half a second.
+    if (leveled) flashProjectXpFull(body);
+    else scheduleProjectXpCommit(body);
     window.dispatchEvent(new CustomEvent('pv2:project-xp', {
       detail: { id: body.projectId, level: state.level, xp: state.xp, amount, source, leveled },
     }));
@@ -724,6 +841,17 @@
   let projectContextPaused = false;
   let motionStopped = false; // user-toggled via the "Stop motion" button
   let motionToggle = null;   // the toggle button element
+  let exploreCue = null;          // the "Click to Explore!" sticker element
+  let exploreCueBox = null;       // its inner box (owns the entrance animation)
+  let exploreCueBody = null;      // the sphere it currently points at
+  let exploreCueHideAt = 0;       // performance.now() when it should go away
+  let exploreCueNextAt = 0;       // …and when the next one may appear
+  let exploreCueShows = 0;        // how many times it has been shown this visit
+  let exploreCueDismissed = false;// the visitor opened a project — stop asking
+  let exploreCueW = 0;            // measured once per show, not per frame
+  let exploreCueH = 0;
+  let exploreCueFlipped = false;
+  let exploreCueTransform = '';   // last transform written, to skip no-op writes
   let bushido = null;        // active Bushido session state (null when idle)
   let bushidoCooldownUntil = 0;   // performance.now() timestamp cooldown ends
   let bushidoBadge = null;        // persistent cooldown badge element
@@ -968,6 +1096,145 @@
 
   function setMotionToggleVisible(visible) {
     ensureMotionToggle().classList.toggle('is-visible', Boolean(visible));
+  }
+
+  // ===================== "Click to Explore!" nudge =========================
+  // Lives in the page (not inside .pv2-float-slot) and is positioned by
+  // transform each frame while it is up. The stage clips its overflow, so a
+  // sticker parented to a sphere near an edge would be cut in half; tracking
+  // from outside also lets it flip sides and stay inside the viewport as the
+  // sphere drifts.
+  function ensureExploreCue() {
+    if (exploreCue?.isConnected) return exploreCue;
+    exploreCue = document.createElement('div');
+    exploreCue.className = 'pv2-explore-cue';
+    exploreCue.setAttribute('aria-hidden', 'true');
+    exploreCue.innerHTML = '<span class="pv2-explore-cue__box">Click to Explore!</span>';
+    exploreCueBox = exploreCue.querySelector('.pv2-explore-cue__box');
+    document.body.appendChild(exploreCue);
+    return exploreCue;
+  }
+
+  function hideExploreCue() {
+    exploreCueBody = null;
+    exploreCueHideAt = 0;
+    if (exploreCue?.isConnected) exploreCue.classList.remove('is-visible');
+  }
+
+  // Stop for good once the visitor has opened a project: they have found the
+  // door, so continuing to point at it would just be nagging.
+  function dismissExploreCue() {
+    exploreCueDismissed = true;
+    hideExploreCue();
+  }
+
+  function scheduleNextExploreCue(now) {
+    exploreCueNextAt = now + EXPLORE_CUE_MIN_GAP
+      + Math.random() * (EXPLORE_CUE_MAX_GAP - EXPLORE_CUE_MIN_GAP);
+  }
+
+  function exploreCueBlocked() {
+    return Boolean(
+      exploreCueDismissed
+      || !stage?.isConnected
+      || !bodies.length
+      || battlePaused
+      || projectContextPaused
+      || activeProjectLevelUp
+      || bushido
+      || document.documentElement.classList.contains('pv2-upgrades-open')
+      || !playgroundIsVisible()
+    );
+  }
+
+  function showExploreCue(now) {
+    // Never point at the same sphere twice running — part of the invitation is
+    // that it keeps gesturing at different pieces of work.
+    const candidates = bodies.filter((body) => body.el?.isConnected && body !== exploreCueBody);
+    const pool = candidates.length ? candidates : bodies.filter((body) => body.el?.isConnected);
+    if (!pool.length) return false;
+
+    const cue = ensureExploreCue();
+    exploreCueBody = pool[Math.floor(Math.random() * pool.length)];
+    cue.classList.remove('is-flipped');
+    cue.classList.add('is-visible');
+    // One layout read per appearance, so the per-frame tracking needs none.
+    // offsetWidth/Height, not getBoundingClientRect: the box is mid entrance
+    // animation at this point (it starts at scale(.78) and carries a resting
+    // tilt), and a transformed bounding box would measure the sticker ~20%
+    // narrower than it ends up — which parked it on top of the sphere.
+    exploreCueW = exploreCueBox.offsetWidth;
+    exploreCueH = exploreCueBox.offsetHeight;
+    exploreCueFlipped = false;
+    exploreCueHideAt = now + EXPLORE_CUE_VISIBLE;
+    exploreCueShows += 1;
+    // Names the sphere the sticker is pointing at, so what it is aimed at is
+    // inspectable rather than something you have to infer from coordinates.
+    cue.dataset.target = exploreCueBody.projectId || '';
+    return true;
+  }
+
+  function positionExploreCue(stageRect) {
+    const body = exploreCueBody;
+    if (!body || !exploreCue) return;
+    const centerX = stageRect.left + body.x + body.w / 2;
+    const centerY = stageRect.top + body.y + body.h / 2;
+    const reach = body.w / 2 + EXPLORE_CUE_GAP;
+
+    // Prefer the left of the sphere (matching the Points sticker), and flip
+    // only when that would run off the screen. The 10px of hysteresis stops it
+    // oscillating while a sphere hovers right on the threshold.
+    let left = centerX - reach - exploreCueW;
+    const flipThreshold = EXPLORE_CUE_MARGIN + (exploreCueFlipped ? 10 : 0);
+    const flipped = left < flipThreshold;
+    if (flipped) left = centerX + reach;
+    if (flipped !== exploreCueFlipped) {
+      exploreCueFlipped = flipped;
+      exploreCue.classList.toggle('is-flipped', flipped);
+    }
+
+    const maxLeft = window.innerWidth - exploreCueW - EXPLORE_CUE_MARGIN;
+    const minTop = Math.max(EXPLORE_CUE_MARGIN, (navBottom === null || navBottom === -Infinity ? 0 : navBottom) + EXPLORE_CUE_MARGIN);
+    const maxTop = window.innerHeight - exploreCueH - EXPLORE_CUE_MARGIN;
+    left = clamp(left, EXPLORE_CUE_MARGIN, Math.max(EXPLORE_CUE_MARGIN, maxLeft));
+    const top = clamp(centerY - exploreCueH / 2, minTop, Math.max(minTop, maxTop));
+    // Skip the write when nothing moved. It matters most while motion is
+    // stopped: there, tick() reads the stage rect each frame, and a write that
+    // changed nothing would still invalidate layout for the next read.
+    const next = `translate3d(${left.toFixed(1)}px, ${top.toFixed(1)}px, 0)`;
+    if (next !== exploreCueTransform) {
+      exploreCue.style.transform = next;
+      exploreCueTransform = next;
+    }
+  }
+
+  // Called once per frame from tick(), after the bodies have been written, so
+  // it reuses that frame's stageRect and performs no layout reads of its own.
+  function updateExploreCue(now, stageRect) {
+    if (exploreCueBody) {
+      if (now >= exploreCueHideAt || exploreCueBlocked() || !exploreCueBody.el?.isConnected) {
+        hideExploreCue();
+        scheduleNextExploreCue(now);
+        return;
+      }
+      positionExploreCue(stageRect);
+      return;
+    }
+
+    if (exploreCueDismissed || exploreCueShows >= EXPLORE_CUE_MAX_SHOWS) return;
+    if (!exploreCueNextAt) {
+      exploreCueNextAt = now + EXPLORE_CUE_FIRST_DELAY;
+      return;
+    }
+    if (now < exploreCueNextAt) return;
+    if (exploreCueBlocked()) {
+      // Try again shortly rather than burning this slot while something else
+      // is on top of the stage.
+      exploreCueNextAt = now + 4000;
+      return;
+    }
+    if (showExploreCue(now)) positionExploreCue(stageRect);
+    else exploreCueNextAt = now + 4000;
   }
 
   function activateGame() {
@@ -1342,16 +1609,28 @@
     if (!body.halo && f < HEAT_MIN_VISIBLE) return;
     const halo = body.halo || (body.halo = ensureHeatHalo(body.el));
     if (f < HEAT_MIN_VISIBLE) {
+      // Already cold and already zeroed: nothing to write. Without this a
+      // settled block kept setting the same three custom properties every
+      // frame, each one invalidating style for its subtree.
+      if (body.heatOpacity === 0) return;
       halo.style.setProperty('--pv2-heat', '0');
       halo.style.setProperty('--pv2-flame-opacity', '0');
       halo.style.setProperty('--pv2-smoke-opacity', '0');
-      if (body.heatOpacity !== 0) {
-        halo.style.opacity = '0';
-        body.heatOpacity = 0;
-        body.heatTier = -1;
-      }
+      halo.style.opacity = '0';
+      // A cold sphere should not be paying for ~40 infinite CSS animations,
+      // two blurred layers and a blend mode. `is-cold` takes the fire and
+      // smoke out of the render tree entirely until it heats up again.
+      halo.classList.add('is-cold');
+      body.heatOpacity = 0;
+      body.heatTier = -1;
+      // This branch just overwrote the live properties with 0, so the memo has
+      // to go too — otherwise reheating to the same value would skip the write
+      // and leave the halo blank.
+      body.heatValue = -1;
       return;
     }
+
+    if (body.heatOpacity === 0) halo.classList.remove('is-cold');
 
     const tier = Math.min(HEAT_TIERS - 1, Math.floor(f * HEAT_TIERS));
     if (tier !== body.heatTier) {
@@ -1360,13 +1639,17 @@
     }
 
     const heat = Math.round(clamp(f, 0, 1) * 100) / 100;
-    const flame = Math.round(clamp((f - .22) / .78, 0, 1) * 100) / 100;
-    const smoke = Math.round(clamp(.24 + f * .7, 0, .92) * 100) / 100;
-    halo.style.setProperty('--pv2-heat', String(heat));
-    halo.style.setProperty('--pv2-flame-opacity', String(flame));
-    halo.style.setProperty('--pv2-smoke-opacity', String(smoke));
-    halo.style.setProperty('--pv2-flame-scale', String(.55 + heat * .85));
-    halo.style.setProperty('--pv2-smoke-scale', String(.72 + heat * .62));
+    // These are all derived from `heat`, so one comparison gates all five.
+    if (heat !== body.heatValue) {
+      const flame = Math.round(clamp((f - .22) / .78, 0, 1) * 100) / 100;
+      const smoke = Math.round(clamp(.24 + f * .7, 0, .92) * 100) / 100;
+      halo.style.setProperty('--pv2-heat', String(heat));
+      halo.style.setProperty('--pv2-flame-opacity', String(flame));
+      halo.style.setProperty('--pv2-smoke-opacity', String(smoke));
+      halo.style.setProperty('--pv2-flame-scale', String(.55 + heat * .85));
+      halo.style.setProperty('--pv2-smoke-scale', String(.72 + heat * .62));
+      body.heatValue = heat;
+    }
 
     const op = Math.round(Math.min(1, Math.sqrt(f)) * 40) / 40;
     if (op !== body.heatOpacity) {
@@ -1608,14 +1891,28 @@
     }
   }
 
+  // querySelector + getBoundingClientRect forces a synchronous layout, and this
+  // runs twice per body per frame from constrain() — interleaved with the style
+  // writes at the end of tick(), which made every frame thrash layout. The nav
+  // is a fixed-height bar, so its viewport bottom only moves on resize/reflow;
+  // cache it and let invalidateBumpers() (already called from resize and
+  // init) clear it alongside the bumper geometry.
+  let navBottom = null;
+
   function stageTopLimit(stageRect) {
-    const nav = document.querySelector('.pv2-nav');
-    if (!nav) return EDGE_PADDING;
-    return Math.max(EDGE_PADDING, nav.getBoundingClientRect().bottom - stageRect.top + NAV_CLEARANCE);
+    if (navBottom === null) {
+      const nav = document.querySelector('.pv2-nav');
+      navBottom = nav ? nav.getBoundingClientRect().bottom : -Infinity;
+    }
+    if (navBottom === -Infinity) return EDGE_PADDING;
+    return Math.max(EDGE_PADDING, navBottom - stageRect.top + NAV_CLEARANCE);
   }
 
+  // stageRect is already the stage's viewport rect, so there is nothing to
+  // re-measure here — the extra getBoundingClientRect was another forced layout
+  // on every scoring wall bounce.
   function wallImpact(body, side, stageRect) {
-    const rect = stage.getBoundingClientRect();
+    const rect = stageRect;
     if (side === 'left') return { x: rect.left + EDGE_PADDING, y: rect.top + body.y + body.h / 2 };
     if (side === 'right') return { x: rect.left + stageRect.width - EDGE_PADDING, y: rect.top + body.y + body.h / 2 };
     if (side === 'top') return { x: rect.left + body.x + body.w / 2, y: rect.top + stageTopLimit(stageRect) };
@@ -1750,7 +2047,7 @@
       });
   }
 
-  function invalidateBumpers() { bumperGeom = null; }
+  function invalidateBumpers() { bumperGeom = null; navBottom = null; }
 
   function bumperRects(stageRect) {
     if (!bumperGeom) bumperGeom = measureBumperGeom(stageRect);
@@ -1847,7 +2144,7 @@
     const rect = el.getBoundingClientRect();
     const minY = stageTopLimit(stageRect);
     const x = clamp(rect.left - stageRect.left, EDGE_PADDING, stageRect.width - rect.width - EDGE_PADDING);
-    const y = clamp(rect.top - stageRect.top, minY, stageRect.height - rect.height - EDGE_PADDING);
+    const y = clamp(rect.top - stageRect.top, minY, stageRect.height - rect.height - BOTTOM_EDGE_PADDING);
     el.style.transform = '';
     el.style.removeProperty('--pv2-scroll-drift-y');
     const angle = .55 + index * 1.19;
@@ -1879,6 +2176,10 @@
       halo: null,
       heatTier: -1,
       heatOpacity: 0,
+      heatValue: -1,
+      // Last values written to style.left/top, so tick() can skip no-op writes.
+      lastLeft: NaN,
+      lastTop: NaN,
       progressEl: null,
       progressHideTimer: 0,
     };
@@ -1895,24 +2196,74 @@
       halo.className = 'pv2-heat-halo';
       halo.setAttribute('aria-hidden', 'true');
 
-      const edgeItem = (className, index, count, radius, jitter = 0) => {
-        const angle = (Math.PI * 2 * index / count) - Math.PI / 2;
-        const radial = radius + (jitter ? ((index * 17) % 5 - 2) * jitter : 0);
+      // Deterministic jitter, so the licks keep their identity across repaints
+      // but no two are alike. Eight evenly spaced, identical lozenges is what
+      // made the old effect read as a clock face rather than as fire.
+      const noise = (index, salt) => {
+        const v = Math.sin((index + 1) * 12.9898 + salt * 78.233) * 43758.5453;
+        return v - Math.floor(v);                    // 0..1
+      };
+      const span = (index, salt, min, max) => min + noise(index, salt) * (max - min);
+
+      // A lick of flame. Two things make this read as fire rather than as a
+      // sunburst: every lick points UP the screen regardless of where on the
+      // rim it is rooted, and licks are longest over the top of the sphere,
+      // tapering to nothing at the sides. Flames rise; they do not radiate.
+      const flame = (index, count) => {
+        // Spread across the full rim, then weight by how high up the sphere the
+        // root sits. Spawning only on the top arc leaves a visible seam.
+        const angle = (Math.PI * 2 * (index + span(index, 1, -.3, .3)) / count) - Math.PI / 2;
+        const radial = 47 + span(index, 2, -2.5, 2.5);
         const x = 50 + Math.cos(angle) * radial;
         const y = 50 + Math.sin(angle) * radial;
-        const degrees = angle * 180 / Math.PI + 90;
-        return '<span class="' + className + '" style="--i:' + index
-          + ';--x:' + x.toFixed(2) + '%;--y:' + y.toFixed(2)
-          + '%;--rot:' + degrees.toFixed(1) + 'deg"></span>';
+        // 1 at the top of the sphere, 0 at the bottom.
+        const upness = (1 - Math.sin(angle)) / 2;
+        const reach = Math.pow(upness, 1.85);
+        if (reach < .08) return '';                 // the underside only smoulders
+        return '<span class="pv2-heat-flame" style="'
+          + '--i:' + index
+          + ';--x:' + x.toFixed(2) + '%'
+          + ';--y:' + y.toFixed(2) + '%'
+          + ';--len:' + (reach * span(index, 4, .74, 1.3)).toFixed(3)
+          + ';--wid:' + span(index, 5, .76, 1.28).toFixed(3)
+          + ';--dur:' + span(index, 6, 520, 980).toFixed(0) + 'ms'
+          + ';--delay:-' + span(index, 7, 0, 1100).toFixed(0) + 'ms'
+          + ';--lean:' + span(index, 3, -13, 13).toFixed(1) + 'deg'
+          + ';--sway:' + span(index, 8, -10, 10).toFixed(1) + 'deg'
+          + '"></span>';
       };
 
-      const flames = Array.from({ length: 8 }, (_, index) =>
-        edgeItem('pv2-heat-flame', index, 8, 48, .45)
-      ).join('');
-      const smoke = Array.from({ length: 5 }, (_, index) =>
-        edgeItem('pv2-heat-smoke', index, 5, 46, .7)
-      ).join('');
-      halo.innerHTML = '<span class="pv2-heat-glow"></span>' + smoke + flames;
+      // Smoke ignores the rim angle: it is the one part of this that obeys
+      // gravity, so every puff rises up the screen no matter where on the
+      // sphere it was born.
+      const smokePuff = (index, count) => {
+        // Spread across the top of the sphere only — that is where the flames
+        // are, and smoke leaves from their tips.
+        const angle = -Math.PI / 2 + (index + span(index, 11, -.35, .35) - (count - 1) / 2)
+          * (Math.PI * 1.15 / count);
+        const radial = 46 + span(index, 12, -5, 5);
+        const x = 50 + Math.cos(angle) * radial;
+        const y = 50 + Math.sin(angle) * radial - span(index, 18, 6, 22);
+        return '<span class="pv2-heat-smoke" style="'
+          + '--i:' + index
+          + ';--x:' + x.toFixed(2) + '%'
+          + ';--y:' + y.toFixed(2) + '%'
+          + ';--size:' + span(index, 13, .72, 1.45).toFixed(3)
+          + ';--dur:' + span(index, 14, 1900, 3200).toFixed(0) + 'ms'
+          + ';--delay:-' + span(index, 15, 0, 3000).toFixed(0) + 'ms'
+          + ';--drift:' + span(index, 16, -46, 46).toFixed(0) + '%'
+          + ';--spin:' + span(index, 17, -70, 70).toFixed(0) + 'deg'
+          + '"></span>';
+      };
+
+      const FLAMES = 34;
+      const SMOKE = 10;
+      const flames = Array.from({ length: FLAMES }, (_, i) => flame(i, FLAMES)).join('');
+      const smoke = Array.from({ length: SMOKE }, (_, i) => smokePuff(i, SMOKE)).join('');
+      halo.innerHTML = '<span class="pv2-heat-glow"></span>'
+        + '<span class="pv2-heat-core"></span>'
+        + '<span class="pv2-heat-fire">' + flames + '</span>'
+        + '<span class="pv2-heat-smokes">' + smoke + '</span>';
       el.appendChild(halo);
     }
 
@@ -1942,13 +2293,39 @@
     return halo;
   }
 
+  // The stage only moves on scroll or resize, so one measurement per frame is
+  // plenty — pointermove can fire several times between frames.
+  let pointerStageRectCache = null;
+  let pointerStageRectAt = -1;
+
+  function pointerStageRect() {
+    const now = performance.now();
+    if (!pointerStageRectCache || now - pointerStageRectAt > 16) {
+      pointerStageRectCache = stage.getBoundingClientRect();
+      pointerStageRectAt = now;
+    }
+    return pointerStageRectCache;
+  }
+
   function collideWithPointer(event, pointerVx = 0, pointerVy = 0) {
     const now = performance.now();
     if (!stage || activeProjectLevelUp || projectContextPaused || document.documentElement.classList.contains('pv2-upgrades-open')) return;
 
     const effects = currentEffects();
+    // Derive each body's viewport box from the simulation state plus one cached
+    // stage rect, instead of calling getBoundingClientRect() per body. Pointer
+    // moves arrive faster than frames, and each of those reads forced a layout
+    // in the middle of the write-heavy animation loop.
+    const stageRect = pointerStageRect();
     for (const body of bodies) {
-      const rect = body.el.getBoundingClientRect();
+      const rect = {
+        left: stageRect.left + body.x,
+        top: stageRect.top + body.y,
+        right: stageRect.left + body.x + body.w,
+        bottom: stageRect.top + body.y + body.h,
+        width: body.w,
+        height: body.h,
+      };
       const inside = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
       if (inside && !body.pointerInside && now - body.lastPointerHit >= POINTER_COOLDOWN) {
         let dx = pointerVx;
@@ -2343,16 +2720,30 @@
       return;
     }
 
-    // Freeze the simulation while a battle is on top or motion is stopped,
-    // but keep the loop alive.
-    if (battlePaused || projectContextPaused || motionStopped || activeProjectLevelUp) {
+    // Freeze the simulation but keep the loop alive. A battle, a context panel
+    // or a level-up owns the screen, so the sticker would hang over whatever is
+    // on top — drop it.
+    if (battlePaused || projectContextPaused || activeProjectLevelUp) {
       lastTime = now;
+      if (exploreCueBody) { hideExploreCue(); scheduleNextExploreCue(now); }
+      frame = requestAnimationFrame(tick);
+      return;
+    }
+
+    // "Stop motion" is different: nothing covers the stage, the spheres are
+    // simply still, and the invitation is easier to act on than ever — so the
+    // cue keeps running. Nothing in this branch writes style, so the rect read
+    // is a clean one the browser can serve from its cached layout.
+    if (motionStopped) {
+      lastTime = now;
+      updateExploreCue(now, stage.getBoundingClientRect());
       frame = requestAnimationFrame(tick);
       return;
     }
 
     // Bushido runs its own particle sim in place of the normal simulation.
     if (bushido) {
+      if (exploreCueBody) { hideExploreCue(); scheduleNextExploreCue(now); }
       const bdt = clamp(lastTime ? now - lastTime : 16.667, 8, 32);
       lastTime = now;
       updateBushido(now, bdt);
@@ -2479,9 +2870,23 @@
       }
       body.contacts = nextContacts;
       constrain(body, stageRect, true);
-      body.el.style.left = `${body.x.toFixed(2)}px`;
-      body.el.style.top = `${body.y.toFixed(2)}px`;
+      // Quantize to a tenth of a pixel and skip the write when nothing moved:
+      // a settled or paused block otherwise re-laid itself out every frame, and
+      // toFixed(2) built two throwaway strings per body per frame for precision
+      // no display can show.
+      const left = Math.round(body.x * 10) / 10;
+      const top = Math.round(body.y * 10) / 10;
+      if (left !== body.lastLeft) {
+        body.el.style.left = `${left}px`;
+        body.lastLeft = left;
+      }
+      if (top !== body.lastTop) {
+        body.el.style.top = `${top}px`;
+        body.lastTop = top;
+      }
     }
+
+    updateExploreCue(now, stageRect);
 
     mark(reducedMotion() ? 'running-reduced' : gameActive ? 'running-game' : 'running');
     frame = requestAnimationFrame(tick);
@@ -2490,6 +2895,10 @@
   function teardown() {
     abortBushido();
     suspendProjectLevelUp();
+    hideExploreCue();
+    // A resize or rotation lands here mid-countdown, usually with the next slot
+    // already in the past — let the new layout settle before asking again.
+    if (exploreCueNextAt) exploreCueNextAt = performance.now() + 6000;
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
     for (const body of bodies) if (body.halo) body.halo.style.opacity = '0';
@@ -2568,9 +2977,15 @@
       body.homeY = body.y;
       body.contacts.clear();
       body.lastWallScore = -Infinity;
-      refreshProjectProgressUI(body);
+      // A cold render after (re)init: no pending xp is in flight, so both
+      // strokes jump straight to the stored value.
+      body.projectState.shownXp = body.projectState.xp;
+      body.projectState.shownLevel = body.projectState.level;
+      refreshProjectProgressUI(body, false, true);
       body.el.style.left = `${body.x}px`;
       body.el.style.top = `${body.y}px`;
+      body.lastLeft = NaN;
+      body.lastTop = NaN;
     }
 
     if (gameActive) setScoreVisible(true);
@@ -2585,7 +3000,7 @@
     clearTimeout(mutationTimer);
     mutationTimer = window.setTimeout(() => {
       const hasOverview = Boolean(document.querySelector('.pv2-overview__stage'));
-      if (hasOverview && (!stage || !stage.isConnected || !frame)) init();
+      if (hasOverview && (!stage || !stage.isConnected || !frame)) whenHydrated(init);
       if (!hasOverview && stage) {
         teardown();
         stage = null;
@@ -2595,6 +3010,32 @@
       }
     }, 40);
   });
+
+  // React owns .pv2-float-slot. This script repositions those same elements and
+  // injects progress UI into them, so running before hydration left the DOM
+  // different from what React's server HTML described — React threw the markup
+  // away and re-rendered the whole portfolio on every load (hydration error
+  // #418), which also wiped the injected nodes and forced a physics re-init.
+  // RelationalPortfolio raises `pv2:hydrated` once it has mounted; until then
+  // the simulation stays off the DOM.
+  let hydrated = document.documentElement.classList.contains('pv2-hydrated');
+
+  function whenHydrated(run) {
+    if (hydrated) { run(); return; }
+    let done = false;
+    const go = () => {
+      if (done) return;
+      done = true;
+      hydrated = true;
+      clearTimeout(timer);
+      window.removeEventListener('pv2:hydrated', go);
+      run();
+    };
+    // Fallback: if hydration never happens (the React bundle failed to load, or
+    // JS is partly blocked) the floating game should still come up.
+    const timer = window.setTimeout(go, 2000);
+    window.addEventListener('pv2:hydrated', go, { once: true });
+  }
 
   function start() {
     mark('script-loaded');
@@ -2607,7 +3048,10 @@
     // Battle-mode bridge (portfolio-battle.js drives these).
     window.addEventListener('pv2:battle-pause', () => { battlePaused = true; });
     window.addEventListener('pv2:battle-resume', () => { battlePaused = false; lastTime = 0; });
-    window.addEventListener('pv2:project-context-pause', () => { projectContextPaused = true; });
+    window.addEventListener('pv2:project-context-pause', () => {
+      projectContextPaused = true;
+      dismissExploreCue();
+    });
     window.addEventListener('pv2:project-context-resume', () => { projectContextPaused = false; lastTime = 0; });
     window.addEventListener('pv2:add-points', (event) => {
       const n = Math.max(0, Math.round(Number(event.detail?.n) || 0));
@@ -2621,13 +3065,31 @@
     window.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && upgradeOverlay?.classList.contains('is-open')) closeUpgradeTree();
     });
+    // Mobile browsers fire `resize` every time the URL bar slides in or out,
+    // which is constantly. A full init() tears the simulation down and respawns
+    // every block at a fresh home position, so reacting to those made the game
+    // visibly reset itself while the visitor was just moving a finger. Only a
+    // real geometry change — a rotation, or a window actually being resized —
+    // warrants a rebuild; the stage itself is sized in `svh`, so URL-bar
+    // movement no longer changes the play area at all.
+    let lastViewportW = window.innerWidth;
+    let lastViewportH = window.innerHeight;
+    const URL_BAR_SLACK = 140;
+
     window.addEventListener('resize', () => {
       invalidateBumpers();
-      clearTimeout(mutationTimer);
-      mutationTimer = window.setTimeout(init, 100);
       if (upgradeOverlay?.classList.contains('is-open')) { clampTreePan(); applyTreeTransform(); }
+
+      const widthChanged = window.innerWidth !== lastViewportW;
+      const heightDelta = Math.abs(window.innerHeight - lastViewportH);
+      lastViewportW = window.innerWidth;
+      lastViewportH = window.innerHeight;
+      if (!widthChanged && heightDelta <= URL_BAR_SLACK) return;
+
+      clearTimeout(mutationTimer);
+      mutationTimer = window.setTimeout(() => whenHydrated(init), 100);
     });
-    init();
+    whenHydrated(init);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
