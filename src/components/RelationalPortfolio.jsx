@@ -336,8 +336,8 @@ function Overview({ onSelect, reducedMotion }) {
           exit={reducedMotion ? undefined : { opacity: 0, scale: 0.97, y: 7 }}
           transition={reducedMotion ? { duration: 0 } : MOTION.interface}
         >
-          <p className="pv2-overline">Interaction · systems · perspective</p>
-          <h1>Can a game give you<br />a new perspective?</h1>
+          <p className="pv2-overline"></p>
+          <h1>Interactive Designer <br /> & Creative Thinker</h1>
           <p>I create games, interactive art, thought experiments, and UX work, in order to explore how interaction fosters growth, connection, and positive change.</p>
         </motion.div>
 
