@@ -738,3 +738,562 @@
 @media (prefers-reduced-motion: reduce) {
   .pv2-bushido-badge.is-denied { animation: none; }
 }
+
+/* ================= Per-project level progression ================= */
+
+/* Game-feel sequence:
+   anticipation -> impact/burst -> settle/read -> choice -> confirmation.
+   All feedback remains local to the project that leveled so the portfolio
+   remains visible and relational to the playfield. */
+html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
+
+.pv2-project-progress{
+  position:absolute;left:50%;top:-38px;z-index:8;width:104px;transform:translateX(-50%);
+  pointer-events:none;text-align:center;color:var(--pv2-text,#242424);opacity:.72;
+  filter:drop-shadow(0 2px 7px rgba(247,246,242,.82));
+  transition:opacity 180ms ease,transform 240ms cubic-bezier(.22,1,.36,1)
+}
+.pv2-float-slot:hover .pv2-project-progress,.pv2-float-slot:focus-within .pv2-project-progress,.pv2-project-progress.is-exp-flash{opacity:1;transform:translateX(-50%) translateY(-2px)}
+.pv2-project-progress__level{font-size:.61rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.pv2-project-progress__level strong{font-size:.77rem;letter-spacing:-.02em}
+.pv2-project-progress__arc{display:block;width:100%;height:19px;margin-top:-2px;overflow:visible}
+.pv2-project-progress__track,.pv2-project-progress__fill{fill:none;stroke-width:4;stroke-linecap:round}
+.pv2-project-progress__track{stroke:rgba(36,36,36,.13)}
+.pv2-project-progress__fill{stroke:var(--pv2-upgrade-affordable,#ffd84f);stroke-dasharray:100;stroke-dashoffset:100;transition:stroke-dashoffset 380ms cubic-bezier(.22,1,.36,1)}
+.pv2-project-progress__exp{margin-top:-4px;color:var(--pv2-muted,#686762);font-size:.52rem;font-weight:720;opacity:0;transform:translateY(-2px);transition:opacity 160ms ease,transform 160ms ease}
+.pv2-float-slot:hover .pv2-project-progress__exp,.pv2-float-slot:focus-within .pv2-project-progress__exp,.pv2-project-progress.is-exp-flash .pv2-project-progress__exp{opacity:1;transform:none}
+
+.pv2-float-slot.is-project-leveling{z-index:7450!important}
+.pv2-float-slot.is-project-leveling::before,.pv2-float-slot.is-project-leveling::after{
+  content:'';position:absolute;left:50%;top:50%;z-index:-1;aspect-ratio:1;border-radius:50%;pointer-events:none
+}
+.pv2-float-slot.is-project-leveling::before{
+  width:calc(100% + 20px);border:2px solid rgba(255,216,79,.72);
+  animation:pv2ProjectLevelImpactRing 1750ms cubic-bezier(.16,.84,.3,1) both
+}
+.pv2-float-slot.is-project-leveling::after{
+  width:calc(100% + 42px);border:1px solid rgba(36,36,36,.18);
+  box-shadow:0 0 0 1px rgba(255,216,79,.2);
+  animation:pv2ProjectLevelOuterRing 1750ms cubic-bezier(.16,.84,.3,1) both
+}
+.pv2-float-slot.is-project-leveling .pv2-visual{
+  animation:pv2ProjectLevelSphere 1750ms cubic-bezier(.16,.84,.3,1) both
+}
+@keyframes pv2ProjectLevelSphere{
+  0%{transform:scale(1);filter:brightness(1);box-shadow:0 19px 32px rgba(36,36,36,.22)}
+  7%{transform:scale(.955);filter:brightness(.96);box-shadow:0 15px 24px rgba(36,36,36,.18)}
+  14%{transform:scale(1.13);filter:brightness(1.08);box-shadow:0 28px 52px rgba(36,36,36,.28),0 0 0 5px rgba(255,216,79,.44),0 0 38px 12px rgba(255,216,79,.28)}
+  25%{transform:scale(1.045);filter:brightness(1.02)}
+  38%{transform:scale(1.075);filter:brightness(1.04)}
+  58%{transform:scale(1.035);filter:brightness(1.01);box-shadow:0 24px 44px rgba(36,36,36,.25),0 0 0 2px rgba(255,216,79,.24),0 0 20px 5px rgba(255,216,79,.16)}
+  100%{transform:scale(1.035);filter:brightness(1);box-shadow:0 22px 40px rgba(36,36,36,.23),0 0 0 1px rgba(255,216,79,.18)}
+}
+@keyframes pv2ProjectLevelImpactRing{
+  0%,7%{opacity:0;transform:translate(-50%,-50%) scale(.62)}
+  14%{opacity:1;transform:translate(-50%,-50%) scale(.88)}
+  32%{opacity:.8;transform:translate(-50%,-50%) scale(1.2)}
+  66%{opacity:.26;transform:translate(-50%,-50%) scale(1.34)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.42)}
+}
+@keyframes pv2ProjectLevelOuterRing{
+  0%,10%{opacity:0;transform:translate(-50%,-50%) scale(.72)}
+  18%{opacity:.72;transform:translate(-50%,-50%) scale(.92)}
+  55%{opacity:.32;transform:translate(-50%,-50%) scale(1.22)}
+  100%{opacity:.12;transform:translate(-50%,-50%) scale(1.3)}
+}
+
+/* Burst layer is anchored to the actual sphere. */
+.pv2-project-levelup-fanfare{
+  position:fixed;z-index:7600;width:0;height:0;pointer-events:none;color:var(--pv2-text,#242424)
+}
+.pv2-project-levelup-fanfare__burst{position:absolute;inset:0;display:block}
+.pv2-project-levelup-fanfare__ring{
+  position:absolute;left:0;top:0;width:150px;height:150px;margin:-75px;border-radius:50%;
+  border:2px solid var(--pv2-upgrade-affordable,#ffd84f);opacity:0
+}
+.pv2-project-levelup-fanfare__ring--a{animation:pv2FanfareRingA 1050ms cubic-bezier(.15,.78,.22,1) 120ms both}
+.pv2-project-levelup-fanfare__ring--b{width:104px;height:104px;margin:-52px;border-width:1px;border-color:rgba(36,36,36,.34);animation:pv2FanfareRingB 900ms cubic-bezier(.15,.78,.22,1) 145ms both}
+@keyframes pv2FanfareRingA{0%{opacity:0;transform:scale(.38)}24%{opacity:.9}100%{opacity:0;transform:scale(1.55)}}
+@keyframes pv2FanfareRingB{0%{opacity:0;transform:scale(.5)}28%{opacity:.65}100%{opacity:0;transform:scale(1.75)}}
+.pv2-project-levelup-fanfare__ray{
+  --angle:calc(var(--ray) * 30deg);
+  position:absolute;left:-1px;top:-2px;width:2px;height:23px;border-radius:2px;
+  background:var(--pv2-upgrade-affordable,#ffd84f);transform-origin:50% 2px;opacity:0;
+  transform:rotate(var(--angle)) translateY(-48px) scaleY(.2);
+  animation:pv2FanfareRay 760ms cubic-bezier(.16,.84,.3,1) calc(95ms + var(--ray) * 7ms) both
+}
+.pv2-project-levelup-fanfare__ray:nth-child(3n){background:rgba(36,36,36,.68);height:16px}
+@keyframes pv2FanfareRay{
+  0%{opacity:0;transform:rotate(var(--angle)) translateY(-31px) scaleY(.1)}
+  26%{opacity:1;transform:rotate(var(--angle)) translateY(-52px) scaleY(1)}
+  100%{opacity:0;transform:rotate(var(--angle)) translateY(-74px) scaleY(.42)}
+}
+.pv2-project-levelup-fanfare__copy{
+  position:absolute;left:0;top:0;display:grid;justify-items:center;gap:4px;min-width:150px;
+  transform:translate(-50%,var(--pv2-level-label-y));filter:drop-shadow(0 2px 9px rgba(247,246,242,.95));
+  animation:pv2LevelCopy 1750ms cubic-bezier(.16,.84,.3,1) both
+}
+.pv2-project-levelup-fanfare__copy strong{
+  display:grid;justify-items:center;gap:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none;
+  font-family:Impact,Haettenschweiler,'Arial Black',sans-serif;
+  font-size:clamp(1.55rem,2.35vw,2.25rem);font-weight:900;line-height:.78;letter-spacing:-.035em;text-indent:0;
+  white-space:nowrap;transform:scaleX(1.035);
+  filter:drop-shadow(3px 3px 0 #71269f) drop-shadow(6px 6px 0 #1e9fe1) drop-shadow(0 2px 0 rgba(35,26,24,.34));
+  -webkit-text-stroke:1px rgba(91,38,105,.66)
+}
+.pv2-project-levelup-fanfare__copy strong span{
+  display:block;
+  background:linear-gradient(180deg,#fff5af 0%,#ffd72e 46%,#ffad00 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent
+}
+.pv2-project-levelup-fanfare__copy strong::after{display:none}
+.pv2-project-levelup-fanfare__copy em{
+  margin-top:9px;padding:3px 7px;border:1px solid rgba(36,36,36,.11);border-radius:999px;
+  background:rgba(247,246,242,.9);box-shadow:0 4px 12px rgba(36,36,36,.08);
+  color:var(--pv2-muted,#686762);font:800 .55rem/1 system-ui,sans-serif;font-style:normal;letter-spacing:.09em
+}
+@keyframes pv2LevelCopy{
+  0%,8%{opacity:0;transform:translate(-50%,calc(var(--pv2-level-label-y) + 16px)) scale(.88)}
+  17%{opacity:1;transform:translate(-50%,calc(var(--pv2-level-label-y) - 4px)) scale(1.08)}
+  27%{transform:translate(-50%,var(--pv2-level-label-y)) scale(1)}
+  72%{opacity:1}
+  100%{opacity:0;transform:translate(-50%,calc(var(--pv2-level-label-y) - 10px)) scale(.98)}
+}
+
+/* Keep the playfield visible; only interaction is paused while the choice is open. */
+.pv2-project-levelup-overlay{
+  position:fixed;inset:0;z-index:7400;background:rgba(247,246,242,.025);opacity:0;pointer-events:none;
+  transition:opacity 300ms ease
+}
+.pv2-project-levelup-overlay.is-open{opacity:1;pointer-events:auto}
+
+.pv2-project-levelup__panel{
+  position:fixed;width:min(372px,calc(100vw - 96px));max-height:min(520px,calc(100svh - 112px));overflow:auto;
+  padding:15px;border:1px solid rgba(36,36,36,.15);border-radius:16px;background:rgba(247,246,242,.975);
+  color:var(--pv2-text,#242424);box-shadow:0 18px 50px rgba(36,36,36,.18);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);opacity:0;transform:translateY(6px) scale(.975);
+  transform-origin:center;transition:opacity 320ms ease,transform 460ms cubic-bezier(.16,1,.3,1)
+}
+.pv2-project-levelup__panel::before{
+  content:'';position:absolute;pointer-events:none;background:rgba(36,36,36,.16)
+}
+.pv2-project-levelup__panel[data-side='right']::before{left:-22px;top:50%;width:22px;height:1px}
+.pv2-project-levelup__panel[data-side='left']::before{right:-22px;top:50%;width:22px;height:1px}
+.pv2-project-levelup__panel[data-side='below']::before{left:50%;top:-18px;width:1px;height:18px}
+.pv2-project-levelup__panel[data-side='above']::before{left:50%;bottom:-18px;width:1px;height:18px}
+.pv2-project-levelup__panel[data-side='right']{transform:translateX(-14px) scale(.975);transform-origin:left center}
+.pv2-project-levelup__panel[data-side='left']{transform:translateX(14px) scale(.975);transform-origin:right center}
+.pv2-project-levelup__panel[data-side='below']{transform:translateY(-12px) scale(.975);transform-origin:center top}
+.pv2-project-levelup__panel[data-side='above']{transform:translateY(12px) scale(.975);transform-origin:center bottom}
+.pv2-project-levelup-overlay.is-open .pv2-project-levelup__panel{opacity:1;transform:none}
+
+.pv2-project-levelup__header{
+  position:relative;isolation:isolate;display:flex;justify-content:space-between;align-items:center;gap:12px;
+  margin:-15px -15px 14px;padding:15px 15px 13px;overflow:hidden;
+  border-bottom:1px solid rgba(36,36,36,.1);
+  background:
+    radial-gradient(circle at 18% 50%,rgba(255,216,79,.34),transparent 44%),
+    linear-gradient(105deg,rgba(255,216,79,.16),rgba(120,62,166,.055) 66%,rgba(30,159,225,.07))
+}
+.pv2-project-levelup__header::before{
+  content:'';position:absolute;left:-22px;top:50%;z-index:-1;width:150px;height:150px;transform:translateY(-50%);
+  background:repeating-conic-gradient(from 8deg,rgba(255,216,79,.24) 0 3deg,transparent 3deg 16deg);
+  -webkit-mask:radial-gradient(circle,transparent 0 24%,#000 27% 66%,transparent 70%);
+  mask:radial-gradient(circle,transparent 0 24%,#000 27% 66%,transparent 70%);
+  opacity:.7;animation:pv2RewardHeaderBurst 620ms cubic-bezier(.16,1,.3,1) both
+}
+.pv2-project-levelup__reward-title{
+  display:grid;justify-items:start;gap:0;font-family:Impact,Haettenschweiler,'Arial Black',sans-serif;
+  font-size:1.22rem;font-weight:900;line-height:.72;letter-spacing:-.035em;transform:scaleX(1.025);
+  filter:drop-shadow(2px 2px 0 #71269f) drop-shadow(4px 4px 0 #1e9fe1)
+}
+.pv2-project-levelup__reward-title span{
+  display:block;background:linear-gradient(180deg,#fff6bd 0%,#ffd72e 48%,#ffad00 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:.6px rgba(91,38,105,.58)
+}
+.pv2-project-levelup__choose{margin:0;color:var(--pv2-muted,#686762);font-size:.55rem;font-weight:820;letter-spacing:.13em;text-transform:uppercase}
+.pv2-project-levelup__level{
+  flex:none;padding:5px 8px;border:1px solid rgba(36,36,36,.14);border-radius:999px;background:rgba(247,246,242,.9);
+  color:var(--pv2-text,#242424);font-size:.58rem;font-weight:850;letter-spacing:.06em;
+  box-shadow:0 3px 10px rgba(36,36,36,.06)
+}
+@keyframes pv2RewardHeaderBurst{
+  0%{opacity:0;transform:translateY(-50%) scale(.58) rotate(-8deg)}
+  55%{opacity:.82;transform:translateY(-50%) scale(1.06) rotate(1deg)}
+  100%{opacity:.7;transform:translateY(-50%) scale(1) rotate(0)}
+}
+.pv2-project-levelup__panel h2{margin:5px 0 0;font:720 1.22rem/1.05 system-ui,sans-serif;letter-spacing:-.04em}
+.pv2-project-levelup__reveal{max-width:48ch;margin:10px 0 0;color:var(--pv2-muted,#686762);font:500 .78rem/1.43 system-ui,sans-serif}
+.pv2-project-levelup__rule{width:100%;height:1px;margin:13px 0 11px;background:rgba(36,36,36,.09)}
+.pv2-project-levelup__choices{display:grid;gap:7px;margin-top:7px}
+
+.pv2-project-levelup__choice{
+  display:grid;grid-template-columns:31px minmax(0,1fr) auto;align-items:center;gap:9px;width:100%;min-height:52px;
+  padding:7px 9px;border:1px solid rgba(36,36,36,.13);border-radius:12px;background:rgba(253,252,248,.82);
+  color:var(--pv2-text,#242424);text-align:left;cursor:pointer;box-shadow:0 3px 9px rgba(36,36,36,.025);
+  opacity:0;transform:translateY(7px) scale(.985);animation:pv2LevelChoiceIn 400ms cubic-bezier(.16,1,.3,1) forwards;
+  transition:border-color 130ms ease,background 130ms ease,box-shadow 130ms ease,opacity 220ms ease,transform 100ms ease
+}
+.pv2-project-levelup__choice:nth-child(1){animation-delay:150ms}
+.pv2-project-levelup__choice:nth-child(2){animation-delay:215ms}
+.pv2-project-levelup__choice:nth-child(3){animation-delay:280ms}
+@keyframes pv2LevelChoiceIn{to{opacity:1;transform:none}}
+.pv2-project-levelup__choice:hover,.pv2-project-levelup__choice:focus-visible{
+  transform:translateY(-2px);border-color:rgba(36,36,36,.3);background:#fff;box-shadow:0 8px 18px rgba(36,36,36,.08);outline:none
+}
+.pv2-project-levelup__choice:hover .pv2-project-levelup__choice-icon,.pv2-project-levelup__choice:focus-visible .pv2-project-levelup__choice-icon{transform:scale(1.08)}
+.pv2-project-levelup__choice:active:not(:disabled){
+  transform:translateY(1px) scale(.975);background:#f5f3ed;box-shadow:0 2px 5px rgba(36,36,36,.06)
+}
+.pv2-project-levelup__choice[data-rarity='uncommon']{border-color:color-mix(in srgb,var(--pv2-upgrade-friction) 44%,rgba(36,36,36,.13))}
+.pv2-project-levelup__choice[data-rarity='rare']{border-color:color-mix(in srgb,var(--pv2-upgrade-flux) 52%,rgba(36,36,36,.13))}
+.pv2-project-levelup__choice-icon{
+  display:grid;place-items:center;width:29px;height:29px;border-radius:8px;background:rgba(36,36,36,.055);color:var(--pv2-text,#242424);
+  transition:transform 160ms cubic-bezier(.16,1,.3,1),background 150ms ease,color 150ms ease
+}
+.pv2-project-levelup__choice[data-rarity='uncommon'] .pv2-project-levelup__choice-icon{background:color-mix(in srgb,var(--pv2-upgrade-friction) 14%,#fff);color:var(--pv2-upgrade-friction)}
+.pv2-project-levelup__choice[data-rarity='rare'] .pv2-project-levelup__choice-icon{background:color-mix(in srgb,var(--pv2-upgrade-flux) 14%,#fff);color:var(--pv2-upgrade-flux)}
+.pv2-project-levelup__choice-icon svg{width:15px;height:15px}
+.pv2-project-levelup__choice-copy{min-width:0;display:grid;gap:1px}
+.pv2-project-levelup__choice-copy small{color:var(--pv2-upgrade-friction);font-size:.48rem;font-weight:850;letter-spacing:.1em}
+.pv2-project-levelup__choice[data-rarity='rare'] .pv2-project-levelup__choice-copy small{color:var(--pv2-upgrade-flux)}
+.pv2-project-levelup__choice-copy strong{font-size:.72rem;font-weight:800;line-height:1.08;letter-spacing:-.02em}
+.pv2-project-levelup__choice-copy span{color:var(--pv2-muted,#686762);font-size:.61rem;line-height:1.18}
+.pv2-project-levelup__choice-arrow{color:var(--pv2-muted,#686762);font:700 .95rem/1 system-ui,sans-serif;transition:transform 160ms cubic-bezier(.16,1,.3,1),color 150ms ease}
+.pv2-project-levelup__choice.is-selected{
+  border-color:rgba(36,36,36,.4);background:#fff;box-shadow:0 0 0 3px rgba(255,216,79,.24),0 9px 22px rgba(36,36,36,.09);
+  transform:scale(1.015);animation:pv2ChoiceConfirm 520ms cubic-bezier(.16,1,.3,1) both
+}
+.pv2-project-levelup__choice.is-selected .pv2-project-levelup__choice-icon{background:var(--pv2-upgrade-affordable,#ffd84f);color:#242424;animation:pv2ChoiceIconConfirm 520ms cubic-bezier(.16,1,.3,1) both}
+.pv2-project-levelup__choice.is-selected .pv2-project-levelup__choice-arrow{color:#242424;transform:scale(1.18)}
+@keyframes pv2ChoiceConfirm{0%{transform:scale(.98)}38%{transform:scale(1.035)}100%{transform:scale(1.015)}}
+@keyframes pv2ChoiceIconConfirm{0%{transform:scale(.84) rotate(-8deg)}45%{transform:scale(1.2) rotate(4deg)}100%{transform:scale(1) rotate(0)}}
+.pv2-project-levelup__choice.is-rejected{opacity:.24!important;transform:scale(.985)}
+.pv2-project-levelup__choice:disabled{cursor:default}
+
+.pv2-project-levelup-overlay.is-confirming .pv2-project-levelup__panel{box-shadow:0 18px 50px rgba(36,36,36,.18),0 0 0 2px rgba(255,216,79,.12)}
+.pv2-float-slot.is-project-upgrade-applied .pv2-visual{animation:pv2UpgradeApplied 800ms cubic-bezier(.16,1,.3,1) both}
+.pv2-float-slot.is-project-upgrade-applied::before{animation:pv2UpgradeAppliedRing 800ms cubic-bezier(.16,1,.3,1) both}
+@keyframes pv2UpgradeApplied{
+  0%{transform:scale(1.035)}
+  22%{transform:scale(.985)}
+  45%{transform:scale(1.09);box-shadow:0 24px 48px rgba(36,36,36,.26),0 0 0 4px rgba(255,216,79,.38)}
+  100%{transform:scale(1)}
+}
+@keyframes pv2UpgradeAppliedRing{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.8)}
+  28%{opacity:.8}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.42)}
+}
+
+@media(max-width:720px){
+  .pv2-project-progress{top:-34px;width:90px}
+  .pv2-project-levelup__panel{width:min(340px,calc(100vw - 24px));max-height:min(420px,calc(100svh - 92px));padding:14px;border-radius:14px}
+  .pv2-project-levelup__panel h2{font-size:1.08rem}
+  .pv2-project-levelup__reveal{font-size:.74rem}
+  .pv2-project-levelup__choice{min-height:48px}
+}
+@media(prefers-reduced-motion:reduce){
+  .pv2-float-slot.is-project-leveling .pv2-visual,.pv2-float-slot.is-project-leveling::before,.pv2-float-slot.is-project-leveling::after,
+  .pv2-project-levelup-fanfare__ring,.pv2-project-levelup-fanfare__ray,.pv2-project-levelup-fanfare__copy,.pv2-project-levelup__header::before,
+  .pv2-project-levelup__choice,.pv2-float-slot.is-project-upgrade-applied .pv2-visual,.pv2-float-slot.is-project-upgrade-applied::before{animation:none}
+  .pv2-project-levelup-overlay,.pv2-project-progress,.pv2-project-progress__fill,.pv2-project-levelup__panel,.pv2-project-levelup__choice{transition:none}
+  .pv2-project-levelup__choice{opacity:1;transform:none}
+}
+
+
+/* ================= Contextual project + tactile sphere FX overrides ================= */
+
+/* Pixel-arcade fanfare treatment based on the supplied LEVEL UP reference.
+   The rest of the panel stays in the portfolio's existing UI language. */
+.pv2-project-levelup-fanfare__copy {
+  min-width: 176px;
+  gap: 8px;
+  filter: none;
+}
+.pv2-project-levelup-fanfare__copy strong {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-family: Impact, Haettenschweiler, "Arial Black", system-ui, sans-serif;
+  font-size: clamp(1.15rem, 2vw, 1.72rem);
+  font-weight: 950;
+  line-height: .72;
+  letter-spacing: -.045em;
+  text-indent: 0;
+  white-space: normal;
+  transform: skew(-1.5deg);
+}
+.pv2-project-levelup-fanfare__copy strong span {
+  display: block;
+  padding: .06em .12em .13em;
+  background: linear-gradient(180deg, #fff4a8 0%, #ffe34d 24%, #ffc51e 68%, #efa20b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,244,168,.92);
+  text-shadow:
+    0 3px 0 #ef9c08,
+    3px 5px 0 #60218e,
+    6px 7px 0 #1b8fcf;
+}
+.pv2-project-levelup-fanfare__copy strong::after { display: none; }
+.pv2-project-levelup-fanfare__copy em {
+  margin-top: 2px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(247,246,242,.88);
+  box-shadow: 0 4px 12px rgba(36,36,36,.08);
+  color: var(--pv2-muted,#686762);
+  font: 800 .54rem/1 system-ui,sans-serif;
+  letter-spacing: .09em;
+}
+.pv2-project-levelup-fanfare__ray:nth-child(3n) {
+  background: var(--pv2-upgrade-flux,#7c55b6);
+}
+.pv2-project-levelup-fanfare__ray:nth-child(4n) {
+  background: #2397d0;
+}
+
+/* The level-up card should never feel glued to a browser edge. JS also
+   enforces this safe area when deciding left/right/above/below placement. */
+.pv2-project-levelup__panel {
+  width: min(372px, calc(100vw - 40px));
+}
+
+/* ---------- Circular friction feedback ---------- */
+.pv2-heat-halo {
+  --pv2-heat: 0;
+  --pv2-heat-rgb: 255, 160, 45;
+  --pv2-flame-opacity: 0;
+  --pv2-smoke-opacity: 0;
+  --pv2-flame-scale: .55;
+  --pv2-smoke-scale: .72;
+  box-shadow: none !important;
+}
+.pv2-heat-glow {
+  position:absolute;inset:-5%;border-radius:50%;
+  border:1px solid rgba(var(--pv2-heat-rgb),calc(.18 + var(--pv2-heat) * .5));
+  background:radial-gradient(circle at center,transparent 58%,rgba(var(--pv2-heat-rgb),calc(.025 + var(--pv2-heat) * .12)) 73%,rgba(var(--pv2-heat-rgb),calc(.08 + var(--pv2-heat) * .34)) 100%);
+  box-shadow:0 0 calc(7px + var(--pv2-heat) * 11px) rgba(var(--pv2-heat-rgb),calc(.12 + var(--pv2-heat) * .3)),0 0 calc(14px + var(--pv2-heat) * 22px) rgba(var(--pv2-heat-rgb),calc(.06 + var(--pv2-heat) * .18));
+  filter:blur(calc(.1px + var(--pv2-heat) * .35px))
+}
+.pv2-heat-flame,
+.pv2-heat-smoke {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  pointer-events: none;
+  transform-origin: 50% 100%;
+  will-change: transform, opacity;
+}
+.pv2-heat-flame {
+  width:calc(7px + var(--pv2-heat) * 4px);
+  height:calc(16px + var(--pv2-heat) * 18px);
+  margin-left:calc(-3.5px - var(--pv2-heat) * 2px);
+  margin-top:calc(-12px - var(--pv2-heat) * 12px);
+  border-radius: 70% 30% 62% 38% / 82% 82% 18% 18%;
+  background:
+    radial-gradient(ellipse at 50% 77%, rgba(255,246,190,.98) 0 13%, transparent 15%),
+    linear-gradient(to top, #ff7a00 0%, #ffb11b 43%, #ffd84f 72%, rgba(255,216,79,0) 100%);
+  box-shadow: 0 0 8px rgba(var(--pv2-heat-rgb), .38);
+  opacity: var(--pv2-flame-opacity);
+  transform: translate(-50%,-50%) rotate(var(--rot)) scaleY(var(--pv2-flame-scale));
+  animation: pv2HeatFlame 620ms ease-in-out calc(var(--i) * -43ms) infinite alternate;
+}
+.pv2-heat-smoke {
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  margin-top: -9px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(66,61,56,.42) 0 32%, rgba(91,84,77,.22) 48%, transparent 72%);
+  filter: blur(2.2px);
+  opacity: var(--pv2-smoke-opacity);
+  transform: translate(-50%,-50%) rotate(var(--rot)) scale(var(--pv2-smoke-scale));
+  animation: pv2HeatSmoke 1450ms ease-out calc(var(--i) * -137ms) infinite;
+}
+@keyframes pv2HeatFlame {
+  0% {
+    transform: translate(-50%,-50%) rotate(var(--rot)) scaleY(var(--pv2-flame-scale)) scale(.82,.78);
+    filter: brightness(.96);
+  }
+  55% {
+    transform: translate(-50%,-54%) rotate(calc(var(--rot) + 3deg)) scaleY(var(--pv2-flame-scale)) scale(1.08);
+    filter: brightness(1.12);
+  }
+  100% {
+    transform: translate(-50%,-59%) rotate(calc(var(--rot) - 2deg)) scaleX(.9) scaleY(var(--pv2-flame-scale));
+    filter: brightness(1.04);
+  }
+}
+@keyframes pv2HeatSmoke {
+  0% {
+    transform: translate(-50%,-45%) rotate(var(--rot)) scale(var(--pv2-smoke-scale)) scale(.7);
+    opacity: 0;
+  }
+  25% { opacity: var(--pv2-smoke-opacity); }
+  100% {
+    transform: translate(-50%,-115%) rotate(calc(var(--rot) + 7deg)) scale(var(--pv2-smoke-scale)) scale(1.22);
+    opacity: 0;
+  }
+}
+
+/* ---------- Playground project context ---------- */
+html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
+.pv2-float-slot.is-project-context-open {
+  z-index: 7350 !important;
+}
+.pv2-float-slot.is-project-context-open .pv2-visual {
+  transform: scale(1.045);
+  box-shadow:
+    0 23px 44px rgba(36,36,36,.24),
+    0 0 0 2px rgba(255,216,79,.25),
+    0 0 20px 5px rgba(255,216,79,.12);
+  transition:
+    transform 360ms cubic-bezier(.16,1,.3,1),
+    box-shadow 360ms cubic-bezier(.16,1,.3,1);
+}
+.pv2-project-context-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 7300;
+  background: rgba(247,246,242,.025);
+  pointer-events: auto;
+}
+.pv2-project-context-panel {
+  position: fixed;
+  z-index: 7420;
+  width: min(390px, calc(100vw - 96px));
+  max-height: min(560px, calc(100svh - 128px));
+  overflow: auto;
+  padding: 18px;
+  border: 1px solid rgba(36,36,36,.15);
+  border-radius: 16px;
+  background: rgba(247,246,242,.975);
+  color: var(--pv2-text,#242424);
+  box-shadow: 0 18px 50px rgba(36,36,36,.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.pv2-project-context-panel::before {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  background: rgba(36,36,36,.18);
+}
+.pv2-project-context-panel[data-side='right']::before { left: -24px; top: 50%; width: 24px; height: 1px; }
+.pv2-project-context-panel[data-side='left']::before { right: -24px; top: 50%; width: 24px; height: 1px; }
+.pv2-project-context-panel[data-side='below']::before { left: 50%; top: -18px; width: 1px; height: 18px; }
+.pv2-project-context-panel[data-side='above']::before { left: 50%; bottom: -18px; width: 1px; height: 18px; }
+
+.pv2-project-context-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.pv2-project-context-panel__header .pv2-overline { margin: 0; }
+.pv2-project-context-panel__close {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  padding: 0;
+  border: 1px solid rgba(36,36,36,.12);
+  border-radius: 999px;
+  background: rgba(255,255,255,.62);
+  color: var(--pv2-text,#242424);
+  font: 600 1.15rem/1 system-ui,sans-serif;
+  cursor: pointer;
+  transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+}
+.pv2-project-context-panel__close:hover,
+.pv2-project-context-panel__close:focus-visible {
+  transform: scale(1.06);
+  border-color: rgba(36,36,36,.28);
+  background: #fff;
+  outline: none;
+}
+.pv2-project-context-panel__close:active { transform: scale(.94); }
+.pv2-project-context-panel h2 {
+  margin: 8px 0 0;
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  font-weight: 690;
+  line-height: 1;
+  letter-spacing: -.045em;
+}
+.pv2-project-context-panel__summary {
+  margin: 13px 0 0;
+  color: var(--pv2-text,#242424);
+  font-size: .86rem;
+  line-height: 1.46;
+}
+.pv2-project-context-panel__purpose {
+  margin: 10px 0 0;
+  color: var(--pv2-muted,#686762);
+  font-size: .75rem;
+  line-height: 1.48;
+}
+.pv2-project-context-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(36,36,36,.09);
+}
+.pv2-project-context-panel__actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 10px;
+  background: var(--pv2-text,#242424);
+  color: #fff;
+  text-decoration: none;
+  font-size: .72rem;
+  font-weight: 750;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+.pv2-project-context-panel__actions a:hover,
+.pv2-project-context-panel__actions a:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 16px rgba(36,36,36,.14);
+  outline: none;
+}
+.pv2-project-context-panel__actions a:active { transform: translateY(1px) scale(.98); }
+.pv2-project-context-panel__actions .pv2-project-context-panel__secondary {
+  border: 1px solid rgba(36,36,36,.14);
+  background: rgba(255,255,255,.7);
+  color: var(--pv2-text,#242424);
+}
+.pv2-project-context-panel__actions > span {
+  color: var(--pv2-muted,#686762);
+  font-size: .72rem;
+}
+
+@media (max-width:720px) {
+  .pv2-project-levelup__panel,
+  .pv2-project-context-panel {
+    width: min(340px, calc(100vw - 48px));
+  }
+  .pv2-project-context-panel {
+    max-height: min(520px, calc(100svh - 116px));
+    padding: 15px;
+  }
+  .pv2-project-context-panel__purpose { font-size: .72rem; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .pv2-heat-flame,
+  .pv2-heat-smoke { animation: none; }
+  .pv2-float-slot.is-project-context-open .pv2-visual { transition: none; }
+}
