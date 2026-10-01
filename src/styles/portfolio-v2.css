@@ -173,32 +173,6 @@ button { font: inherit; }
   }
 }
 
-/* Credit for the backdrop paintings. Lives and dies with the backdrop, and
-   sits above it but under the nav and the tiles. */
-.pv2-work-credit {
-  position: fixed;
-  left: clamp(18px, 3.8vw, 68px);
-  bottom: clamp(12px, 2vh, 22px);
-  z-index: 1;
-  max-width: min(44ch, calc(100vw - 36px));
-  margin: 0;
-  color: #232220;
-  font-size: 11px;
-  line-height: 1.45;
-  letter-spacing: 0.005em;
-  /* The backdrop runs dark under this corner on several of the paintings, and
-     11px text has no weight to spare, so carry a soft cream halo. */
-  text-shadow:
-    0 0 3px rgba(247, 246, 242, 0.95),
-    0 0 8px rgba(247, 246, 242, 0.8);
-}
-
-@media (max-width: 720px) {
-  .pv2-work-credit {
-    font-size: 10px;
-  }
-}
-
 .pv2-overview {
   min-height: calc(100svh - clamp(64px, 9vh, 88px));
 }
