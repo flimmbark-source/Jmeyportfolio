@@ -160,7 +160,7 @@ function SphereFilterDefs() {
   return (
     <svg className="pv2-filter-defs" width="0" height="0" aria-hidden="true" focusable="false">
       <defs>
-        <filter id="pv2-sphere-distortion" x="0%" y="0%" width="100%" height="100%" colorInterpolationFilters="sRGB">
+        <filter id="pv2-sphere-distortion" x="-35%" y="-35%" width="170%" height="170%" colorInterpolationFilters="sRGB">
           <feImage
             href={SPHERE_DISPLACEMENT_MAP}
             x="0%"
