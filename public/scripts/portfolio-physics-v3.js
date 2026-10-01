@@ -1,6 +1,7 @@
 (() => {
   const MOBILE_BREAKPOINT = 720;
   const EDGE_PADDING = 16;
+  const BOTTOM_EDGE_PADDING = 0;
   const NAV_CLEARANCE = 10;
   const BODY_GAP = 10;
   const NORMAL_SPEED = 0.038;
@@ -1618,7 +1619,7 @@
     if (side === 'left') return { x: rect.left + EDGE_PADDING, y: rect.top + body.y + body.h / 2 };
     if (side === 'right') return { x: rect.left + stageRect.width - EDGE_PADDING, y: rect.top + body.y + body.h / 2 };
     if (side === 'top') return { x: rect.left + body.x + body.w / 2, y: rect.top + stageTopLimit(stageRect) };
-    return { x: rect.left + body.x + body.w / 2, y: rect.top + stageRect.height - EDGE_PADDING };
+    return { x: rect.left + body.x + body.w / 2, y: rect.top + stageRect.height - BOTTOM_EDGE_PADDING };
   }
 
   function scoreWallBounce(body, side, stageRect) {
@@ -1636,7 +1637,7 @@
     const projectFx = projectEffects(body);
     const minY = stageTopLimit(stageRect);
     const maxX = Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING);
-    const maxY = Math.max(minY, stageRect.height - body.h - EDGE_PADDING);
+    const maxY = Math.max(minY, stageRect.height - body.h - BOTTOM_EDGE_PADDING);
     let hit = null;
     if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx) * effects.wallKickMult * projectFx.wallKickMult; hit = 'left'; }
     if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx) * effects.wallKickMult * projectFx.wallKickMult; hit = 'right'; }
@@ -2506,7 +2507,7 @@
   function ejectFromBumpers(body, stageRect, bumpers) {
     const minY = stageTopLimit(stageRect);
     const maxX = Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING);
-    const maxY = Math.max(minY, stageRect.height - body.h - EDGE_PADDING);
+    const maxY = Math.max(minY, stageRect.height - body.h - BOTTOM_EDGE_PADDING);
     for (let iter = 0; iter < 30; iter += 1) {
       let moved = false;
       for (const bumper of bumpers) {
