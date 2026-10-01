@@ -255,6 +255,10 @@
         lastBumperAt: -Infinity, lastSharedXpAt: -Infinity, autoTimer: 0,
         // Memoized projectEffects() result; cleared when an upgrade is chosen.
         effectsCache: null,
+        // The yellow bar lags the real xp: it holds what has been banked, and
+        // catches up to the white read-out once the bumping stops.
+        shownXp: 0, shownLevel: 1,
+        xpCommitTimer: 0, xpResetTimer: 0, xpShowFull: false,
       });
     }
     return projectProgressState.get(id);
@@ -308,10 +312,15 @@
       el = document.createElement('div');
       el.className = 'pv2-project-progress';
       el.setAttribute('aria-hidden', 'true');
+      // Three strokes, painted in this order: the empty track, the white
+      // "just earned" read-out, then the committed yellow over the top of it.
+      // What stays visible as white is the gap between the two — the XP that
+      // has landed but has not been banked yet.
       el.innerHTML =
         '<div class="pv2-project-progress__level">LV. <strong>1</strong></div>'
         + '<svg class="pv2-project-progress__arc" viewBox="0 0 100 30" preserveAspectRatio="none">'
         + '<path class="pv2-project-progress__track" d="M5 25 Q50 2 95 25" pathLength="100"></path>'
+        + '<path class="pv2-project-progress__pending" d="M5 25 Q50 2 95 25" pathLength="100"></path>'
         + '<path class="pv2-project-progress__fill" d="M5 25 Q50 2 95 25" pathLength="100"></path>'
         + '</svg>'
         + '<div class="pv2-project-progress__exp">0 / 1 EXP</div>';
@@ -322,18 +331,86 @@
     return el;
   }
 
-  function refreshProjectProgressUI(body, flash = false) {
+  // How long the white read-out waits for the next bump before the yellow is
+  // allowed to catch up to it.
+  const XP_COMMIT_DELAY = 500;
+  // Roughly the yellow stroke's CSS transition, so a filled bar is seen full
+  // before it resets onto the next level.
+  const XP_FULL_HOLD = 430;
+
+  function setProgressStroke(path, ratio, instant) {
+    if (!path) return;
+    // `is-instant` kills the stroke's transition. Setting it in the same frame
+    // as the offset means the browser only ever computes the end state, so no
+    // forced reflow is needed to suppress the animation.
+    path.classList.toggle('is-instant', Boolean(instant));
+    path.style.strokeDashoffset = String(100 - clamp(ratio, 0, 1) * 100);
+    if (instant) requestAnimationFrame(() => path.classList.remove('is-instant'));
+  }
+
+  // The yellow's value. It can sit a whole level behind the white one during
+  // the brief "bar is full" beat, in which case it simply reads as full.
+  function committedXpRatio(state) {
+    if (state.xpShowFull) return 1;
+    if (state.shownLevel < state.level) return 1;
+    return clamp(state.shownXp / projectXpTarget(state.shownLevel), 0, 1);
+  }
+
+  // Bank the white read-out: the yellow animates from wherever it is up to it.
+  function commitProjectXp(projectId) {
+    const state = projectProgressState.get(projectId);
+    if (!state) return;
+    state.xpCommitTimer = 0;
+    state.shownXp = state.xp;
+    state.shownLevel = state.level;
+    const body = liveProjectBody(projectId);
+    if (body) refreshProjectProgressUI(body);
+  }
+
+  function scheduleProjectXpCommit(body) {
+    const state = body.projectState;
+    if (state.xpCommitTimer) window.clearTimeout(state.xpCommitTimer);
+    state.xpCommitTimer = window.setTimeout(() => commitProjectXp(body.projectId), XP_COMMIT_DELAY);
+  }
+
+  // A level-up is the other trigger: the white read-out has run off the end of
+  // the bar, so there is nothing to wait for. Hold both strokes full for a beat
+  // — otherwise xp wrapping onto the next level would snap the bar backwards
+  // before anyone saw it fill — then reset onto the new level.
+  function flashProjectXpFull(body) {
+    const state = body.projectState;
+    if (state.xpCommitTimer) { window.clearTimeout(state.xpCommitTimer); state.xpCommitTimer = 0; }
+    if (state.xpResetTimer) window.clearTimeout(state.xpResetTimer);
+    state.xpShowFull = true;
+    refreshProjectProgressUI(body);
+    state.xpResetTimer = window.setTimeout(() => {
+      state.xpResetTimer = 0;
+      state.xpShowFull = false;
+      state.shownXp = state.xp;
+      state.shownLevel = state.level;
+      const live = liveProjectBody(body.projectId);
+      // `true` so the empty bar appears rather than unwinding backwards.
+      if (live) refreshProjectProgressUI(live, false, true);
+    }, XP_FULL_HOLD);
+  }
+
+  function refreshProjectProgressUI(body, flash = false, instant = false) {
     if (!body?.projectState) return;
     const el = body.progressEl || ensureProjectProgressUI(body);
     const state = body.projectState;
     const target = projectXpTarget(state.level);
-    const ratio = clamp(state.xp / target, 0, 1);
+    const ratio = state.xpShowFull ? 1 : clamp(state.xp / target, 0, 1);
     const level = el.querySelector('.pv2-project-progress__level strong');
     const exp = el.querySelector('.pv2-project-progress__exp');
     const fill = el.querySelector('.pv2-project-progress__fill');
+    const pending = el.querySelector('.pv2-project-progress__pending');
     if (level) level.textContent = String(state.level);
     if (exp) exp.textContent = formatProjectXp(state.xp) + ' / ' + target + ' EXP';
-    if (fill) fill.style.strokeDashoffset = String(100 - ratio * 100);
+    // White tracks the real xp with no easing at all — it is the immediate
+    // "that bump landed" feedback, and carries no CSS transition, so it needs
+    // none of setProgressStroke's machinery. Yellow only moves on a commit.
+    if (pending) pending.style.strokeDashoffset = String(100 - clamp(ratio, 0, 1) * 100);
+    setProgressStroke(fill, committedXpRatio(state), instant);
     if (flash) {
       el.classList.remove('is-exp-flash');
       void el.offsetWidth;
@@ -656,6 +733,10 @@
       if (projectEffects(body).mentor && source !== 'mentor') mentorLowestProject(body);
     }
     refreshProjectProgressUI(body, source === 'bumper');
+    // Two ways the yellow is allowed to catch up: the white read-out ran off
+    // the end of the bar (a level-up), or the bumping stopped for half a second.
+    if (leveled) flashProjectXpFull(body);
+    else scheduleProjectXpCommit(body);
     window.dispatchEvent(new CustomEvent('pv2:project-xp', {
       detail: { id: body.projectId, level: state.level, xp: state.xp, amount, source, leveled },
     }));
@@ -1536,6 +1617,10 @@
       halo.style.setProperty('--pv2-flame-opacity', '0');
       halo.style.setProperty('--pv2-smoke-opacity', '0');
       halo.style.opacity = '0';
+      // A cold sphere should not be paying for ~40 infinite CSS animations,
+      // two blurred layers and a blend mode. `is-cold` takes the fire and
+      // smoke out of the render tree entirely until it heats up again.
+      halo.classList.add('is-cold');
       body.heatOpacity = 0;
       body.heatTier = -1;
       // This branch just overwrote the live properties with 0, so the memo has
@@ -1544,6 +1629,8 @@
       body.heatValue = -1;
       return;
     }
+
+    if (body.heatOpacity === 0) halo.classList.remove('is-cold');
 
     const tier = Math.min(HEAT_TIERS - 1, Math.floor(f * HEAT_TIERS));
     if (tier !== body.heatTier) {
@@ -2109,24 +2196,74 @@
       halo.className = 'pv2-heat-halo';
       halo.setAttribute('aria-hidden', 'true');
 
-      const edgeItem = (className, index, count, radius, jitter = 0) => {
-        const angle = (Math.PI * 2 * index / count) - Math.PI / 2;
-        const radial = radius + (jitter ? ((index * 17) % 5 - 2) * jitter : 0);
+      // Deterministic jitter, so the licks keep their identity across repaints
+      // but no two are alike. Eight evenly spaced, identical lozenges is what
+      // made the old effect read as a clock face rather than as fire.
+      const noise = (index, salt) => {
+        const v = Math.sin((index + 1) * 12.9898 + salt * 78.233) * 43758.5453;
+        return v - Math.floor(v);                    // 0..1
+      };
+      const span = (index, salt, min, max) => min + noise(index, salt) * (max - min);
+
+      // A lick of flame. Two things make this read as fire rather than as a
+      // sunburst: every lick points UP the screen regardless of where on the
+      // rim it is rooted, and licks are longest over the top of the sphere,
+      // tapering to nothing at the sides. Flames rise; they do not radiate.
+      const flame = (index, count) => {
+        // Spread across the full rim, then weight by how high up the sphere the
+        // root sits. Spawning only on the top arc leaves a visible seam.
+        const angle = (Math.PI * 2 * (index + span(index, 1, -.3, .3)) / count) - Math.PI / 2;
+        const radial = 47 + span(index, 2, -2.5, 2.5);
         const x = 50 + Math.cos(angle) * radial;
         const y = 50 + Math.sin(angle) * radial;
-        const degrees = angle * 180 / Math.PI + 90;
-        return '<span class="' + className + '" style="--i:' + index
-          + ';--x:' + x.toFixed(2) + '%;--y:' + y.toFixed(2)
-          + '%;--rot:' + degrees.toFixed(1) + 'deg"></span>';
+        // 1 at the top of the sphere, 0 at the bottom.
+        const upness = (1 - Math.sin(angle)) / 2;
+        const reach = Math.pow(upness, 1.85);
+        if (reach < .08) return '';                 // the underside only smoulders
+        return '<span class="pv2-heat-flame" style="'
+          + '--i:' + index
+          + ';--x:' + x.toFixed(2) + '%'
+          + ';--y:' + y.toFixed(2) + '%'
+          + ';--len:' + (reach * span(index, 4, .74, 1.3)).toFixed(3)
+          + ';--wid:' + span(index, 5, .76, 1.28).toFixed(3)
+          + ';--dur:' + span(index, 6, 520, 980).toFixed(0) + 'ms'
+          + ';--delay:-' + span(index, 7, 0, 1100).toFixed(0) + 'ms'
+          + ';--lean:' + span(index, 3, -13, 13).toFixed(1) + 'deg'
+          + ';--sway:' + span(index, 8, -10, 10).toFixed(1) + 'deg'
+          + '"></span>';
       };
 
-      const flames = Array.from({ length: 8 }, (_, index) =>
-        edgeItem('pv2-heat-flame', index, 8, 48, .45)
-      ).join('');
-      const smoke = Array.from({ length: 5 }, (_, index) =>
-        edgeItem('pv2-heat-smoke', index, 5, 46, .7)
-      ).join('');
-      halo.innerHTML = '<span class="pv2-heat-glow"></span>' + smoke + flames;
+      // Smoke ignores the rim angle: it is the one part of this that obeys
+      // gravity, so every puff rises up the screen no matter where on the
+      // sphere it was born.
+      const smokePuff = (index, count) => {
+        // Spread across the top of the sphere only — that is where the flames
+        // are, and smoke leaves from their tips.
+        const angle = -Math.PI / 2 + (index + span(index, 11, -.35, .35) - (count - 1) / 2)
+          * (Math.PI * 1.15 / count);
+        const radial = 46 + span(index, 12, -5, 5);
+        const x = 50 + Math.cos(angle) * radial;
+        const y = 50 + Math.sin(angle) * radial - span(index, 18, 6, 22);
+        return '<span class="pv2-heat-smoke" style="'
+          + '--i:' + index
+          + ';--x:' + x.toFixed(2) + '%'
+          + ';--y:' + y.toFixed(2) + '%'
+          + ';--size:' + span(index, 13, .72, 1.45).toFixed(3)
+          + ';--dur:' + span(index, 14, 1900, 3200).toFixed(0) + 'ms'
+          + ';--delay:-' + span(index, 15, 0, 3000).toFixed(0) + 'ms'
+          + ';--drift:' + span(index, 16, -46, 46).toFixed(0) + '%'
+          + ';--spin:' + span(index, 17, -70, 70).toFixed(0) + 'deg'
+          + '"></span>';
+      };
+
+      const FLAMES = 34;
+      const SMOKE = 10;
+      const flames = Array.from({ length: FLAMES }, (_, i) => flame(i, FLAMES)).join('');
+      const smoke = Array.from({ length: SMOKE }, (_, i) => smokePuff(i, SMOKE)).join('');
+      halo.innerHTML = '<span class="pv2-heat-glow"></span>'
+        + '<span class="pv2-heat-core"></span>'
+        + '<span class="pv2-heat-fire">' + flames + '</span>'
+        + '<span class="pv2-heat-smokes">' + smoke + '</span>';
       el.appendChild(halo);
     }
 
@@ -2840,7 +2977,11 @@
       body.homeY = body.y;
       body.contacts.clear();
       body.lastWallScore = -Infinity;
-      refreshProjectProgressUI(body);
+      // A cold render after (re)init: no pending xp is in flight, so both
+      // strokes jump straight to the stored value.
+      body.projectState.shownXp = body.projectState.xp;
+      body.projectState.shownLevel = body.projectState.level;
+      refreshProjectProgressUI(body, false, true);
       body.el.style.left = `${body.x}px`;
       body.el.style.top = `${body.y}px`;
       body.lastLeft = NaN;
