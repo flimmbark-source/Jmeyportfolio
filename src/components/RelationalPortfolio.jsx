@@ -593,8 +593,8 @@ export default function RelationalPortfolio() {
       <header className="pv2-nav">
         <a href="/" className="pv2-nav__name">Jacob Meyerkopf</a>
         <nav aria-label="Portfolio navigation">
-          <button type="button" onClick={() => { setSelectedId(null); writeProjectToUrl(null); }}>Work</button>
-          <button type="button" onClick={() => select('unfinished')}>Playground</button>
+          <button type="button" onClick={() => { setSelectedId(null); writeProjectToUrl(null); }}>Playground</button>
+          <button type="button" onClick={() => select('unfinished')}>Work</button>
           <a href="/research">Research</a>
           <a href="/ux">UX</a>
           <a href="/contact">Contact</a>
