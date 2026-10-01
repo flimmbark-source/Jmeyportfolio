@@ -411,7 +411,16 @@
 .pv2-work-backdrop {
   z-index: 0;
 }
-.pv2-nav,
+/* Keep content above the painting without changing the nav's fixed
+   viewport positioning. Including .pv2-nav here made it position:relative,
+   which put the bar back into .pv2-site's padded flow and added an extra
+   viewport-height of layout/scroll offset. */
+.pv2-nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 1000;
+}
+
 .pv2-overview,
 .pv2-workshop,
 .pv2-focus,
