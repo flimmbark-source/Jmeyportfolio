@@ -217,6 +217,7 @@ function ProjectTile({ node, placement, index, onSelect, reducedMotion, register
       ref={(el) => register(node.id, el)}
       className="pv2-float-slot"
       data-node-id={node.id}
+      data-placement={placement}
       style={position || overviewAnchorStyle(node.id)}
     >
       <motion.button
@@ -239,6 +240,10 @@ function ProjectTile({ node, placement, index, onSelect, reducedMotion, register
           <span>{node.kicker?.replace('Playable · ', '').replace('Game · ', '') || 'Project'}</span>
         </span>
       </motion.button>
+      <span className="pv2-project-hover-meta" aria-hidden="true">
+        <strong>{node.title}</strong>
+        {node.made && <span>Made {node.made}</span>}
+      </span>
     </div>
   );
 }
