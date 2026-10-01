@@ -232,3 +232,19 @@
     line-height: 1.38;
   }
 }
+
+
+/* ================= Viewport-edge Playground wall ================= */
+html.pv2-physics-live .pv2-site {
+  padding-bottom: 0;
+}
+
+html.pv2-physics-live .pv2-overview {
+  min-height: calc(100dvh - var(--pv2-nav-height));
+}
+
+html.pv2-physics-live .pv2-overview__stage {
+  height: calc(100dvh - var(--pv2-nav-height));
+  min-height: 0;
+  max-height: none;
+}
