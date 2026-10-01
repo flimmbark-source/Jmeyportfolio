@@ -1847,7 +1847,7 @@
     const rect = el.getBoundingClientRect();
     const minY = stageTopLimit(stageRect);
     const x = clamp(rect.left - stageRect.left, EDGE_PADDING, stageRect.width - rect.width - EDGE_PADDING);
-    const y = clamp(rect.top - stageRect.top, minY, stageRect.height - rect.height - EDGE_PADDING);
+    const y = clamp(rect.top - stageRect.top, minY, stageRect.height - rect.height - BOTTOM_EDGE_PADDING);
     el.style.transform = '';
     el.style.removeProperty('--pv2-scroll-drift-y');
     const angle = .55 + index * 1.19;
