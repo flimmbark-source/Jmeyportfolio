@@ -535,15 +535,26 @@ function WorkBackdrop({ reducedMotion, content = false }) {
 
 function WorkBackdropCredit({ reducedMotion }) {
   return (
-    <motion.p
-      className="pv2-work-credit"
+    <motion.div
+      className="pv2-credit-drawer"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={reducedMotion ? { duration: 0 } : MOTION.interface}
     >
-      Images supplied by The Met Open Access Collection. All Images are Public Domain.
-    </motion.p>
+      <button
+        className="pv2-credit-drawer__trigger"
+        type="button"
+        aria-label="Background image attribution"
+      >
+        ?
+      </button>
+      <span className="pv2-credit-drawer__reveal">
+        <span className="pv2-credit-drawer__text">
+          Images supplied by The Met Open Access Collection. All Images are Public Domain.
+        </span>
+      </span>
+    </motion.div>
   );
 }
 
