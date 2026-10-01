@@ -2160,9 +2160,8 @@
     el.style.position = 'absolute';
     el.style.right = 'auto';
     el.style.bottom = 'auto';
-    el.style.left = '0px';
-    el.style.top = '0px';
-    el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
     el.style.transition = 'none';
     const projectId = el.dataset.nodeId || ('project-' + index);
     const projectState = projectStateFor(projectId);
@@ -2186,23 +2185,14 @@
       heatTier: -1,
       heatOpacity: 0,
       heatValue: -1,
-      // Last transform coordinates written, so tick() can skip no-op writes.
-      lastLeft: x,
-      lastTop: y,
+      // Last values written to style.left/top, so tick() can skip no-op writes.
+      lastLeft: NaN,
+      lastTop: NaN,
       progressEl: null,
       progressHideTimer: 0,
     };
     ensureProjectProgressUI(body);
     return body;
-  }
-
-  function paintBodyPosition(body) {
-    const left = Math.round(body.x * 10) / 10;
-    const top = Math.round(body.y * 10) / 10;
-    if (left === body.lastLeft && top === body.lastTop) return;
-    body.el.style.transform = `translate3d(${left}px, ${top}px, 0)`;
-    body.lastLeft = left;
-    body.lastTop = top;
   }
 
   // Heat conforms to the circular project visual. Smoke and flame sprites sit
@@ -2952,9 +2942,20 @@
       }
       body.contacts = nextContacts;
       constrain(body, stageRect, true);
-      // Compositor-only movement: a single transform write avoids relaying out
-      // the playfield for every moving sphere.
-      paintBodyPosition(body);
+      // Quantize to a tenth of a pixel and skip the write when nothing moved:
+      // a settled or paused block otherwise re-laid itself out every frame, and
+      // toFixed(2) built two throwaway strings per body per frame for precision
+      // no display can show.
+      const left = Math.round(body.x * 10) / 10;
+      const top = Math.round(body.y * 10) / 10;
+      if (left !== body.lastLeft) {
+        body.el.style.left = `${left}px`;
+        body.lastLeft = left;
+      }
+      if (top !== body.lastTop) {
+        body.el.style.top = `${top}px`;
+        body.lastTop = top;
+      }
     }
 
     updateExploreCue(now, stageRect);
@@ -3056,9 +3057,10 @@
       body.projectState.shownXp = body.projectState.xp;
       body.projectState.shownLevel = body.projectState.level;
       refreshProjectProgressUI(body, false, true);
+      body.el.style.left = `${body.x}px`;
+      body.el.style.top = `${body.y}px`;
       body.lastLeft = NaN;
       body.lastTop = NaN;
-      paintBodyPosition(body);
     }
 
     if (gameActive) setScoreVisible(true);
