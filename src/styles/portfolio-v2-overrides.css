@@ -490,3 +490,34 @@
 @media (max-width:720px) {
   .pv2-project-hover-meta { display:none; }
 }
+
+
+/* ================= Mobile HUD correction ================= */
+@media (max-width:720px) {
+  .pv2-score-counter {
+    top: calc(var(--pv2-nav-height) + 9px);
+    right: 12px;
+    gap: 6px;
+    padding: 6px 8px;
+  }
+
+  .pv2-score-counter__label {
+    font-size: .56rem;
+  }
+
+  .pv2-score-counter__value {
+    font-size: .92rem;
+  }
+
+  .pv2-motion-toggle {
+    top: calc(var(--pv2-nav-height) + 47px);
+    right: 12px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .pv2-motion-toggle svg {
+    width: 14px;
+    height: 14px;
+  }
+}
