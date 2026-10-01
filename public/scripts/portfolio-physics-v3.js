@@ -6,7 +6,7 @@
   const NORMAL_SPEED = 0.038;
   const REDUCED_SPEED = 0.012;
   const MOBILE_START_SPEED = 0.018;
-  const MOBILE_UNARMED_BUMPER_KICK = 0.024;
+  const MOBILE_UNARMED_BUMPER_KICK = 0.0192;
   const POINTER_IMPULSE = 0.18;
   const POINTER_MIN_IMPULSE = 0.11;
   const HOME_PULL = 0.00000042;
@@ -14,7 +14,7 @@
   const MAX_SPEED = 0.66;
   const REDUCED_MAX_SPEED = 0.08;
   const POINTER_COOLDOWN = 85;
-  const BUMPER_KICK = 0.48;
+  const BUMPER_KICK = 0.384;
   const WALL_SCORE_COOLDOWN = 220;
   // A flick's "armed" state is finite: after this it decays so a single flick
   // can't power a block off bumpers forever (player input / autoflick re-arm).
@@ -356,7 +356,6 @@
       + '</span>'
       + '<span class="pv2-project-levelup-fanfare__copy">'
       + '<strong><span>LEVEL</span><span>UP!</span></strong>'
-      + '<em>LV. ' + level + '</em>'
       + '</span>';
     document.body.appendChild(el);
     window.setTimeout(() => el.remove(), reducedMotion() ? 320 : 1900);
@@ -429,7 +428,7 @@
     overlay.innerHTML =
       '<section class="pv2-project-levelup__panel">'
       + '<div class="pv2-project-levelup__header">'
-      + '<p class="pv2-project-levelup__eyebrow">Level up</p>'
+      + '<div class="pv2-project-levelup__reward-title"><span>LEVEL</span><span>UP!</span></div>'
       + '<span class="pv2-project-levelup__level">LV. ' + event.level + '</span>'
       + '</div>'
       + '<h2 id="pv2-project-levelup-title">' + reveal.title + '</h2>'
@@ -1182,9 +1181,9 @@
   // Friction now reads as heat on the sphere itself: low values start as faint
   // smoke/glow, then the perimeter catches fire and grows more turbulent.
   function updateHeatVisual(body) {
-    const halo = body.halo;
-    if (!halo) return;
     const f = body.friction;
+    if (!body.halo && f < HEAT_MIN_VISIBLE) return;
+    const halo = body.halo || (body.halo = ensureHeatHalo(body.el));
     if (f < HEAT_MIN_VISIBLE) {
       halo.style.setProperty('--pv2-heat', '0');
       halo.style.setProperty('--pv2-flame-opacity', '0');
@@ -1227,7 +1226,8 @@
     const impact = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
     award(FRICTION_BURN_BASE * effects.frictionBurnMult, 'friction', impact, { vx: body.vx, vy: body.vy });
     window.dispatchEvent(new CustomEvent('pv2:friction-burn', { detail: { x: impact.x, y: impact.y } }));
-    if (reducedMotion() || !body.halo) return;
+    if (reducedMotion()) return;
+    if (!body.halo) body.halo = ensureHeatHalo(body.el);
     try {
       body.halo.animate([
         { transform: 'scale(1)', filter: 'brightness(1) saturate(1)' },
@@ -1717,7 +1717,7 @@
       armedUntil: 0,
       friction: 0,
       frictionSpent: false,
-      halo: ensureHeatHalo(el),
+      halo: null,
       heatTier: -1,
       heatOpacity: 0,
       progressEl: null,
@@ -1746,11 +1746,11 @@
           + '%;--rot:' + degrees.toFixed(1) + 'deg"></span>';
       };
 
-      const flames = Array.from({ length: 14 }, (_, index) =>
-        edgeItem('pv2-heat-flame', index, 14, 48, .45)
+      const flames = Array.from({ length: 8 }, (_, index) =>
+        edgeItem('pv2-heat-flame', index, 8, 48, .45)
       ).join('');
-      const smoke = Array.from({ length: 9 }, (_, index) =>
-        edgeItem('pv2-heat-smoke', index, 9, 46, .7)
+      const smoke = Array.from({ length: 5 }, (_, index) =>
+        edgeItem('pv2-heat-smoke', index, 5, 46, .7)
       ).join('');
       halo.innerHTML = '<span class="pv2-heat-glow"></span>' + smoke + flames;
       el.appendChild(halo);
