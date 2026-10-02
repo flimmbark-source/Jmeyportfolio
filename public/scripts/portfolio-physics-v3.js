@@ -262,9 +262,32 @@
     return 'neutral';
   }
 
+  const MECHANIC_ART = {
+    speed: '/icons/mechanics/speed.webp',
+    'speed-floor': '/icons/mechanics/speed-floor.webp',
+    'velocity-cap': '/icons/mechanics/velocity-cap.webp',
+    launch: '/icons/mechanics/launch.webp',
+    bounce: '/icons/mechanics/bounce.webp',
+    impact: '/icons/mechanics/impact.webp',
+    stack: '/icons/mechanics/stack.webp',
+    friction: '/icons/mechanics/friction.webp',
+    'zero-drag': '/icons/mechanics/zero-drag.webp',
+    collision: '/icons/mechanics/collision.webp',
+    value: '/icons/mechanics/value.webp',
+    multiplier: '/icons/mechanics/multiplier.webp',
+  };
+
   function iconSvg(name, theme = 'neutral') {
     const inner = ICONS[name] || ICONS.core;
     return `<svg class="pv2-mechanic-icon pv2-mechanic-icon--${theme}" data-mechanic="${theme}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+  }
+
+  function upgradeIconMarkup(upgrade, theme = mechanicThemeForUpgrade(upgrade)) {
+    const src = MECHANIC_ART[theme];
+    if (src) {
+      return `<img class="pv2-mechanic-art" src="${src}" alt="" draggable="false" decoding="async">`;
+    }
+    return iconSvg(upgrade.icon, theme);
   }
 
   function projectXpTarget(level) {
@@ -649,9 +672,10 @@
       button.dataset.rarity = upgrade.rarity;
       const mechanicTheme = mechanicThemeForUpgrade(upgrade);
       button.dataset.mechanic = mechanicTheme;
+      if (MECHANIC_ART[mechanicTheme]) button.classList.add('has-art-icon');
       const rarity = upgrade.rarity === 'common' ? '' : '<small>' + upgrade.rarity.toUpperCase() + '</small>';
       button.innerHTML =
-        '<span class="pv2-project-levelup__choice-icon" aria-hidden="true">' + iconSvg(upgrade.icon, mechanicTheme) + '</span>'
+        '<span class="pv2-project-levelup__choice-icon" aria-hidden="true">' + upgradeIconMarkup(upgrade, mechanicTheme) + '</span>'
         + '<span class="pv2-project-levelup__choice-copy">' + rarity
         + '<strong>' + upgrade.title + '</strong><span>' + upgrade.effect + '</span></span>'
         + '<span class="pv2-project-levelup__choice-arrow" aria-hidden="true">›</span>';
@@ -1286,10 +1310,11 @@
     node.dataset.branch = upgrade.branch;
     const mechanicTheme = mechanicThemeForUpgrade(upgrade);
     node.dataset.mechanic = mechanicTheme;
+    if (MECHANIC_ART[mechanicTheme]) node.classList.add('has-art-icon');
     node.style.setProperty('--node-x', `${upgrade.x}px`);
     node.style.setProperty('--node-y', `${upgrade.y}px`);
     node.innerHTML = `
-      <span class="pv2-upgrade-node__icon" aria-hidden="true">${iconSvg(upgrade.icon, mechanicTheme)}</span>
+      <span class="pv2-upgrade-node__icon" aria-hidden="true">${upgradeIconMarkup(upgrade, mechanicTheme)}</span>
       <span class="pv2-upgrade-node__copy">
         <strong class="pv2-upgrade-node__title">${upgrade.title}</strong>
         <span class="pv2-upgrade-node__effect">${upgrade.effect}</span>
