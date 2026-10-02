@@ -1958,3 +1958,65 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
 @media (prefers-reduced-motion:reduce) {
   .pv2-detached-smoke { display:none; }
 }
+
+
+/* ================= Illustrated taxonomy icons =================
+   These are the exact illustrated symbols extracted from the approved
+   taxonomy artwork. Unmapped mechanics keep the lightweight SVG fallback. */
+.pv2-mechanic-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.pv2-project-levelup__choice.has-art-icon .pv2-project-levelup__choice-icon {
+  width: 38px;
+  height: 38px;
+  padding: 2px;
+  border: 0;
+  background: rgba(255,255,255,.64) !important;
+  box-shadow: 0 2px 8px rgba(36,36,36,.07);
+  overflow: visible;
+}
+
+.pv2-upgrade-node.has-art-icon .pv2-upgrade-node__icon {
+  width: 30px;
+  height: 30px;
+  padding: 1px;
+  border: 0;
+  background: rgba(255,255,255,.54) !important;
+  color: inherit !important;
+  box-shadow: 0 2px 7px rgba(36,36,36,.06);
+  overflow: visible;
+}
+
+/* Bought nodes keep their state treatment around the art rather than
+   recoloring the illustrated pixels themselves. */
+.pv2-upgrade-node.is-bought.has-art-icon .pv2-upgrade-node__icon {
+  background: color-mix(in srgb, var(--branch-color) 12%, #fff) !important;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb,var(--branch-color) 30%,transparent),
+    0 2px 7px rgba(36,36,36,.06);
+}
+
+.pv2-upgrade-node.is-locked.has-art-icon .pv2-upgrade-node__icon {
+  filter: grayscale(.58) saturate(.58);
+  opacity: .72;
+}
+
+@media (max-width:720px) {
+  .pv2-project-levelup__choice.has-art-icon .pv2-project-levelup__choice-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .pv2-upgrade-node.has-art-icon .pv2-upgrade-node__icon {
+    width: 28px;
+    height: 28px;
+  }
+}
