@@ -1874,3 +1874,87 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
     line-height: 1.12;
   }
 }
+
+
+/* ================= Mechanic icon taxonomy =================
+   A small semantic color language shared by the upgrade tree and level-up
+   choices. The icon identifies the mechanic family; copy carries exact values. */
+[data-mechanic='speed']        { --pv2-mechanic-color:#16aee9; --pv2-mechanic-soft:#d8f4ff; }
+[data-mechanic='speed-floor']  { --pv2-mechanic-color:#20b996; --pv2-mechanic-soft:#daf8ed; }
+[data-mechanic='velocity-cap'] { --pv2-mechanic-color:#f47a27; --pv2-mechanic-soft:#ffead9; }
+[data-mechanic='launch']       { --pv2-mechanic-color:#ef4e62; --pv2-mechanic-soft:#ffe0e5; }
+[data-mechanic='bounce']       { --pv2-mechanic-color:#e8ad18; --pv2-mechanic-soft:#fff2c9; }
+[data-mechanic='impact']       { --pv2-mechanic-color:#e63aa5; --pv2-mechanic-soft:#ffe0f3; }
+[data-mechanic='stack']        { --pv2-mechanic-color:#8057d6; --pv2-mechanic-soft:#ece3ff; }
+[data-mechanic='friction']     { --pv2-mechanic-color:#35cba7; --pv2-mechanic-soft:#dcfaef; }
+[data-mechanic='zero-drag']    { --pv2-mechanic-color:#27b9e8; --pv2-mechanic-soft:#dcf5ff; }
+[data-mechanic='collision']    { --pv2-mechanic-color:#5557df; --pv2-mechanic-soft:#e4e5ff; }
+[data-mechanic='value']        { --pv2-mechanic-color:#dfa515; --pv2-mechanic-soft:#fff0c4; }
+[data-mechanic='multiplier']   { --pv2-mechanic-color:#ef3f91; --pv2-mechanic-soft:#ffe0ef; }
+[data-mechanic='neutral']      { --pv2-mechanic-color:#5f6469; --pv2-mechanic-soft:#eef0f1; }
+
+.pv2-project-levelup__choice-icon {
+  background: var(--pv2-mechanic-soft, rgba(36,36,36,.055)) !important;
+  color: var(--pv2-mechanic-color, var(--pv2-text,#242424)) !important;
+  border: 1px solid color-mix(in srgb, var(--pv2-mechanic-color,#777) 24%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.8),
+    0 2px 5px color-mix(in srgb, var(--pv2-mechanic-color,#777) 12%, transparent);
+}
+
+.pv2-upgrade-node:not(.is-bought) .pv2-upgrade-node__icon {
+  background: var(--pv2-mechanic-soft, color-mix(in srgb,var(--branch-color) 16%,#fff));
+  color: var(--pv2-mechanic-color, var(--branch-color));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb,var(--pv2-mechanic-color,var(--branch-color)) 26%,transparent),
+    0 2px 5px color-mix(in srgb,var(--pv2-mechanic-color,var(--branch-color)) 10%,transparent);
+}
+
+.pv2-mechanic-icon {
+  color: inherit;
+  filter: drop-shadow(0 1px 0 rgba(255,255,255,.7));
+}
+
+/* Detached world-space smoke: each puff keeps its birth position after the
+   source sphere moves away. Only transform/opacity animate, keeping it on the
+   compositor rather than tying it to the physics layout loop. */
+.pv2-detached-smoke {
+  position: fixed;
+  z-index: 6001;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 32% 36%, rgba(92,86,80,.58) 0%, rgba(88,82,76,.28) 34%, transparent 58%),
+    radial-gradient(circle at 69% 53%, rgba(78,73,68,.44) 0%, rgba(80,75,70,.2) 34%, transparent 58%),
+    radial-gradient(circle at 47% 72%, rgba(108,100,92,.36) 0%, rgba(94,87,81,.16) 38%, transparent 62%);
+  filter: blur(2.8px);
+  transform: translate3d(-50%,-50%,0) scale(.42);
+  animation: pv2DetachedSmoke var(--pv2-smoke-duration,2000ms) linear forwards;
+  will-change: transform, opacity;
+  contain: layout style;
+}
+
+@keyframes pv2DetachedSmoke {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%,-50%,0) scale(.42) rotate(0deg);
+  }
+  14% { opacity: var(--pv2-smoke-alpha,.45); }
+  58% { opacity: calc(var(--pv2-smoke-alpha,.45) * .62); }
+  100% {
+    opacity: 0;
+    transform:
+      translate3d(
+        calc(-50% + var(--pv2-smoke-drift-x,0px)),
+        calc(-50% - var(--pv2-smoke-rise,80px)),
+        0
+      )
+      scale(2.15)
+      rotate(var(--pv2-smoke-spin,0deg));
+  }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .pv2-detached-smoke { display:none; }
+}
