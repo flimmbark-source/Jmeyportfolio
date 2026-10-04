@@ -1368,35 +1368,29 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
   mix-blend-mode: screen;
 }
 
-/* The licks are blended additively and blurred, so where they overlap they
-   merge into one body of fire instead of reading as separate petals. */
+/* Keep the orange silhouette legible on the pale background. A light blur
+   joins overlapping tongues without washing out their edges. */
 .pv2-heat-fire {
   position: absolute;
   inset: 0;
   border-radius: 50%;
   opacity: var(--pv2-flame-opacity);
-  filter: blur(calc(1px + var(--pv2-heat) * 1.4px)) saturate(1.2) contrast(1.08);
-  mix-blend-mode: screen;
+  filter: blur(.45px) saturate(1.15);
 }
 
 .pv2-heat-flame {
   position: absolute;
   left: var(--x);
   top: var(--y);
-  width: calc((9% + var(--pv2-heat) * 4%) * var(--wid));
-  height: calc((13% + var(--pv2-heat) * 15%) * var(--len) * var(--pv2-flame-scale));
-  /* Wide round base tapering to a point: the silhouette is most of what sells
-     it at this size. */
-  border-radius: 46% 46% 44% 44% / 74% 74% 26% 26%;
-  background: linear-gradient(to top,
-    rgba(156, 22, 0, .72) 0%,
-    #e03a00 10%,
-    #ff6a05 28%,
-    #ff9c14 48%,
-    #ffc63a 68%,
-    #ffe894 84%,
-    rgba(255, 246, 206, .42) 94%,
-    rgba(255, 250, 226, 0) 100%);
+  width: calc((11% + var(--pv2-heat) * 5%) * var(--wid));
+  height: calc((22% + var(--pv2-heat) * 22%) * var(--len) * var(--pv2-flame-scale));
+  /* Uneven curling tip, broad fuel bed, and a hotter lower core. */
+  clip-path: polygon(48% 0%, 62% 20%, 58% 34%, 80% 49%,
+    94% 72%, 88% 91%, 66% 100%, 30% 100%, 10% 90%,
+    4% 70%, 22% 48%, 36% 37%, 32% 22%);
+  background: radial-gradient(ellipse at 48% 92%,
+    #fff7cf 0%, #ffe477 20%, #ffb32d 40%,
+    #ff6b0b 64%, #dc3605 82%, rgba(170, 32, 0, .25) 100%);
   /* The base sits on the rim and the body goes straight up the screen, with a
      small per-lick lean. Rotating each lick out along its own radius is what
      turned the old effect into a sunburst. */
@@ -1412,8 +1406,8 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
   position: absolute;
   left: 50%;
   bottom: 4%;
-  width: 54%;
-  height: 46%;
+  width: 48%;
+  height: 62%;
   border-radius: 50% 50% 45% 45% / 70% 70% 30% 30%;
   background: linear-gradient(to top,
     rgba(255, 238, 170, .95) 0%,
@@ -1421,21 +1415,21 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
     rgba(255, 255, 240, 0) 100%);
   transform: translateX(-50%);
   filter: blur(.6px);
-  opacity: calc(.35 + var(--pv2-heat) * .55);
+  opacity: calc(.65 + var(--pv2-heat) * .3);
 }
 
 @keyframes pv2HeatFlame {
   0% {
-    transform: translate(-50%, -100%) rotate(var(--lean)) scale(.84, .7);
-    opacity: .6;
+    transform: translate(-50%, -100%) rotate(var(--lean)) scale(.86, .72) skewX(-6deg);
+    opacity: .82;
   }
   45% {
-    transform: translate(-50%, -100%) rotate(calc(var(--lean) + var(--sway))) scale(1.06, 1.14);
+    transform: translate(-50%, -100%) rotate(calc(var(--lean) + var(--sway))) scale(1.06, 1.18) skewX(8deg);
     opacity: 1;
   }
   100% {
-    transform: translate(-50%, -100%) rotate(calc(var(--lean) - var(--sway) * .6)) scale(.76, .9);
-    opacity: .78;
+    transform: translate(-50%, -100%) rotate(calc(var(--lean) - var(--sway) * .6)) scale(.78, .92) skewX(-4deg);
+    opacity: .9;
   }
 }
 
