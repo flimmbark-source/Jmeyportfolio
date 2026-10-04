@@ -813,11 +813,29 @@
     overlay.setAttribute('aria-labelledby', 'pv2-project-levelup-title');
     overlay.innerHTML =
       '<section class="pv2-project-levelup__floating-choices">'
-      + '<h2 id="pv2-project-levelup-title" class="pv2-project-levelup__game-heading">'
-      + '<span>' + reveal.title + '</span><small>LV. ' + event.level + '</small></h2>'
+      + '<header class="pv2-project-levelup__game-context">'
+      + '<div class="pv2-project-levelup__game-image" aria-hidden="true"></div>'
+      + '<div class="pv2-project-levelup__game-copy">'
+      + '<div class="pv2-project-levelup__game-title"><h2 id="pv2-project-levelup-title">' + reveal.title + '</h2>'
+      + '<span class="pv2-project-levelup__game-level">LV. ' + event.level + '</span></div>'
+      + '<p class="pv2-project-levelup__game-fact">' + reveal.text + '</p></div></header>'
       + '<div class="pv2-project-levelup__choices"></div>'
       + '<p class="pv2-project-levelup__status" role="status"></p></section>'
       + '<div class="pv2-reward-stage-chest">' + projectRewardChest(true) + '</div>';
+    const sourceImage = body.el.querySelector('img.pv2-visual__media');
+    const sourceFrame = body.el.querySelector('.pv2-visual__frame');
+    const frameArtwork = sourceFrame && getComputedStyle(sourceFrame).backgroundImage.match(/url\(["']?([^"')]+)["']?\)/);
+    const artworkSrc = frameArtwork ? frameArtwork[1] : sourceImage && (sourceImage.currentSrc || sourceImage.src);
+    if (artworkSrc) {
+      const image = document.createElement('img');
+      image.src = artworkSrc;
+      image.alt = '';
+      image.decoding = 'async';
+      overlay.querySelector('.pv2-project-levelup__game-image').appendChild(image);
+    } else {
+      overlay.querySelector('.pv2-project-levelup__game-image').remove();
+      overlay.querySelector('.pv2-project-levelup__game-context').classList.add('has-no-image');
+    }
     const rewardChest = overlay.querySelector('.pv2-reward-chest');
     burstProjectChest(rewardChest);
     if (!reducedMotion()) {
