@@ -274,6 +274,30 @@
     multiplier: '/icons/mechanics/multiplier.webp',
   };
 
+  // Fetch and decode reward artwork before any level-up is presented. Keep
+  // these Image objects alive so the four chest frames share one decoded sheet.
+  const projectRewardImages = [
+    '/images/levelup/chest-states.png',
+    ...Object.values(MECHANIC_ART),
+  ].map((src) => {
+    const image = new Image();
+    image.decoding = 'async';
+    const ready = new Promise((resolve) => {
+      image.onload = async () => {
+        try { await image.decode(); } catch { /* Loaded image can still render. */ }
+        resolve();
+      };
+      // A failed asset must not permanently lock the reward queue.
+      image.onerror = resolve;
+    });
+    image.src = src;
+    return { image, ready };
+  });
+  let projectRewardAssetsReady = false;
+  let projectRewardAssetsWaiting = false;
+  const projectRewardAssets = Promise.all(projectRewardImages.map(({ ready }) => ready))
+    .then(() => { projectRewardAssetsReady = true; });
+
   function iconSvg(name, theme = 'neutral') {
     const inner = ICONS[name] || ICONS.core;
     return `<svg class="pv2-mechanic-icon pv2-mechanic-icon--${theme}" data-mechanic="${theme}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
@@ -559,6 +583,18 @@
     // is active, leave the event queued and present it when the Playground
     // mounts again.
     if (activeProjectLevelUp || !projectLevelQueue.length || !playgroundIsVisible()) return;
+
+    if (!projectRewardAssetsReady) {
+      if (!projectRewardAssetsWaiting) {
+        projectRewardAssetsWaiting = true;
+        projectRewardAssets.then(() => {
+          projectRewardAssetsWaiting = false;
+          // Recheck view visibility and live bodies after the asynchronous load.
+          openNextProjectLevelUp();
+        });
+      }
+      return;
+    }
 
     const queued = projectLevelQueue[0];
     const body = liveProjectBody(queued.projectId);
