@@ -2311,3 +2311,16 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
 .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice[data-rarity="rare"] .pv2-project-levelup__rarity { color:#6940ad; }
 
 .pv2-project-levelup-overlay:focus,.pv2-project-levelup__floating-choices:focus { outline:none; }
+
+/* Center the options and let reveal motion extend without creating a scrollbar. */
+.pv2-project-levelup__floating-choices { top:50%; overflow:visible; max-height:none; }
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choices { align-items:stretch; }
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice { align-items:center; }
+.pv2-reward-window-sparkles { visibility:hidden; }
+.pv2-reward-window-sparkles i { animation:none; }
+@media (max-height:600px) {
+  .pv2-project-levelup__floating-choices { top:12px; }
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choices { gap:10px; }
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice { min-height:0; padding:12px 10px; }
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice-copy span { font-size:.8rem; line-height:1.3; }
+}

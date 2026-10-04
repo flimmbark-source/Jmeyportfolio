@@ -1,5 +1,9 @@
 # Level-up presentation review
 
+## Latest correction
+
+The fact window no longer shows perimeter sparkles. Slow rotating border colors remain, along with the chest convergence and particles. The upgrade group is centered horizontally and vertically on regular screens. Its wrapper allows reveal motion to extend without making a scrolling container. Short-screen layouts remain positioned above the chest. Prior screenshots below show the previous presentation and do not represent this correction.
+
 ## Confirmed current decisions
 
 Ivory/charcoal/yellow app windows; colorful arcade emblem; fact first; Press to Continue above the bottom border; 18-second border color rotation; multicolor sparkles converge into a bottom-center chest; chest opens with fanfare; three compact, independently styled opaque upgrade windows outside a shared panel; no pale group backdrop; Click an Upgrade; choose exactly one upgrade and resume. Existing project facts and upgrade effects remain unchanged.
