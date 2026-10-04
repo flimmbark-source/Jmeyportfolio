@@ -801,6 +801,7 @@
 
   function buildProjectLevelUpDialog(event) {
     const body = event.body;
+    const reveal = projectReveal(body, event.level);
     const choices = event.choices || rollProjectUpgrades(body, 3);
     removeProjectLevelOverlay();
     const overlay = document.createElement('div');
@@ -812,7 +813,8 @@
     overlay.setAttribute('aria-labelledby', 'pv2-project-levelup-title');
     overlay.innerHTML =
       '<section class="pv2-project-levelup__floating-choices">'
-      + '<h2 id="pv2-project-levelup-title">Click an Upgrade</h2>'
+      + '<h2 id="pv2-project-levelup-title" class="pv2-project-levelup__game-heading">'
+      + '<span>' + reveal.title + '</span><small>LV. ' + event.level + '</small></h2>'
       + '<div class="pv2-project-levelup__choices"></div>'
       + '<p class="pv2-project-levelup__status" role="status"></p></section>'
       + '<div class="pv2-reward-stage-chest">' + projectRewardChest(true) + '</div>';
@@ -889,8 +891,6 @@
     if (arrow) arrow.textContent = '✓';
     const status = projectLevelUpOverlay?.querySelector('[role="status"]');
     if (status) status.textContent = upgrade.title + ' selected.';
-    const heading = projectLevelUpOverlay?.querySelector('#pv2-project-levelup-title');
-    if (heading) heading.textContent = 'Upgrade selected';
     projectLevelUpOverlay?.classList.add('is-confirming');
     event.body.el.classList.add('is-project-upgrade-applied');
     projectLevelUpOverlay?.querySelectorAll('.pv2-project-levelup__choice').forEach((choice) => {
