@@ -2242,3 +2242,72 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
   background:#fff1c9; border-bottom:1px solid #e7dfc6; border-radius:2px 2px 0 0;
   pointer-events:none;
 }
+
+/* Shared reward presentation: app windows, readable copy, calm transitions. */
+:root {
+  --pv2-reward-paper:#faf8f2;
+  --pv2-reward-ink:#242424;
+  --pv2-reward-border:#45443f;
+  --pv2-reward-header:#fff1c9;
+  --pv2-reward-muted:#64635d;
+  --pv2-reward-ease:cubic-bezier(.16,1,.3,1);
+}
+html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
+.pv2-project-levelup-overlay { transition:opacity 220ms ease; }
+.pv2-project-levelup-overlay .pv2-project-levelup__panel,
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice {
+  background:var(--pv2-reward-paper); color:var(--pv2-reward-ink);
+  border-color:var(--pv2-reward-border); font-family:system-ui,sans-serif;
+}
+.pv2-project-levelup-overlay.is-fact .pv2-project-levelup__panel { padding-bottom:58px; }
+.pv2-project-levelup-overlay.is-chest-opening .pv2-project-levelup__panel {
+  opacity:0; transform:translateY(12px) scale(.97);
+  transition:opacity 220ms ease,transform 220ms var(--pv2-reward-ease);
+  pointer-events:none;
+}
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__floating-choices h2 {
+  display:table; margin:0 auto 24px; padding:8px 16px;
+  border:1px solid var(--pv2-reward-border); border-radius:3px;
+  background:var(--pv2-reward-paper); color:var(--pv2-reward-ink);
+  box-shadow:2px 2px 0 rgba(36,36,36,.16);
+  font:750 1rem/1.3 system-ui,sans-serif; letter-spacing:0;
+}
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice {
+  transition:background-color 140ms ease,border-color 140ms ease,box-shadow 140ms ease,opacity 180ms ease;
+}
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice-copy { gap:6px; width:100%; }
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__rarity { min-height:12px; line-height:12px; letter-spacing:.1em; }
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice-copy strong { font:750 1.05rem/1.25 system-ui,sans-serif; letter-spacing:-.015em; }
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice-copy span { font:500 .875rem/1.4 system-ui,sans-serif; color:var(--pv2-reward-muted); }
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice:hover,
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice:focus-visible { border-color:#bc951e; background:#fff6d9; }
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.is-selected { background:#fff1b7; border-color:#bc951e; }
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.is-selected .pv2-project-levelup__choice-arrow {
+  display:block; position:absolute; right:12px; top:15px; color:var(--pv2-reward-ink); font-size:1rem;
+}
+.pv2-reward-chest.is-spewing .pv2-reward-chest__light { animation:pv2RewardGlow 2400ms ease-in-out infinite alternate; }
+@keyframes pv2RewardGlow { from { opacity:.12; transform:scaleY(.9); } to { opacity:.3; transform:scaleY(1.1); } }
+@media (max-width:720px) {
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice { padding-right:30px; }
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__rarity[aria-hidden="true"] { display:none; }
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice-copy { gap:4px; }
+}
+@media (max-height:600px) {
+  .pv2-project-levelup__floating-choices { top:12px; transform:translateX(-50%); max-height:calc(100svh - 150px); }
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__floating-choices h2 { margin-bottom:16px; }
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice { min-height:160px; padding:16px 12px; gap:8px; }
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice-icon,
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.has-art-icon .pv2-project-levelup__choice-icon { width:48px; height:48px; }
+  .pv2-reward-stage-chest { bottom:12px; }
+  .pv2-reward-stage-chest .pv2-reward-chest { width:120px; height:111px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .pv2-project-levelup-overlay,.pv2-project-levelup-overlay.is-chest-opening .pv2-project-levelup__panel,
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice { transition:none; }
+  .pv2-reward-chest.is-spewing .pv2-reward-chest__light { animation:none; }
+}
+
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice[data-rarity="uncommon"] .pv2-project-levelup__rarity { color:#216747; }
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice[data-rarity="rare"] .pv2-project-levelup__rarity { color:#6940ad; }
+
+.pv2-project-levelup-overlay:focus,.pv2-project-levelup__floating-choices:focus { outline:none; }
