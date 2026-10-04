@@ -2148,7 +2148,7 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
 /* Fact footer, converging sparkles, and rewards directly on the playfield. */
 .pv2-project-levelup-overlay.is-fact .pv2-project-levelup__panel { padding-bottom:40px; overflow:visible; }
 .pv2-project-levelup-overlay.is-fact .pv2-project-levelup__open {
-  position:absolute; left:50%; bottom:-10px; transform:translateX(-50%);
+  position:absolute; left:50%; bottom:12px; transform:translateX(-50%);
   display:block; width:max-content; max-width:calc(100% - 32px);
   margin:0; padding:2px 12px; border-radius:0; background:#faf8f2;
 }
@@ -2217,7 +2217,7 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
   -webkit-mask-composite:xor;
   mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
   mask-composite:exclude;
-  animation:pv2WindowEdgeTurn 6s linear infinite;
+  animation:pv2WindowEdgeTurn 18s linear infinite;
 }
 @keyframes pv2WindowEdgeTurn { to { --pv2-frame-angle:360deg; } }
 .pv2-reward-window-sparkles { position:absolute; inset:-1px; pointer-events:none; z-index:3; }
