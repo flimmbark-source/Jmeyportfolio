@@ -61,13 +61,13 @@
                                     // still sits just under it, but launches/bumper
                                     // kicks clear it and heat again (a ×margin scaled
                                     // with the floor and swallowed every launch speed).
-  const FRICTION_GAIN = 0.0044;     // heat gained per (speed − threshold) per ms
+  const FRICTION_GAIN = 0.0014;     // heat gained per (speed − threshold) per ms
   const FRICTION_RELIEF = 0.00045;  // heat shed per ms while below threshold
   const FRICTION_DAMP_BASE = 0.988; // extra per-ms damping, exponent-scaled by heat
   const FRICTION_REARM = 0.35;      // heat must fall below this before it can burn again
   const FRICTION_BURN_BASE = 6;     // base points for a full-meter burn (× upgrades)
   const FLICK_COOL = 0.05;           // heat a player flick sheds (wakes a settled block)
-  const HEAT_MIN_VISIBLE = 0.02;    // below this the heat halo stays hidden
+  const HEAT_MIN_VISIBLE = 0.04;    // below this the heat halo stays hidden
   const HEAT_TIERS = 5;             // box-shadow color steps (rewritten only on change)
   const TREE_WIDTH = 1240;
   const TREE_HEIGHT = 900;
