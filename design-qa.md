@@ -15,3 +15,5 @@ Validation: production Astro build, JavaScript syntax, whitespace checks, deskto
 Final result: passed.
 
 Window-edge correction: added a rotating masked conic color texture confined to a 3px border and 28 pink, cyan, violet, and yellow perimeter sparkles. Spark positions use measured window dimensions on resize. Continue captures the actual spark positions/colors before converging them into the bottom-center chest. Chest particles carry the multicolor palette. Reduced-motion mode retains a static colored border and sparkles. These are CSS/DOM visuals available with the initial stylesheet, with no new network assets. Screenshot inspection caught incorrect motion-path placement and it was replaced with measured perimeter positions and twinkling sparkles.
+
+Upgrade window correction: individual choices retain the established window styling while appearing outside a shared container. Replaced translucent white backings with opaque ivory, 2px charcoal borders, 4px corners, offset shadows, and pale yellow top accents. Superseded interpretation: outside the shared window does not mean unstyled or translucent individual choices.
