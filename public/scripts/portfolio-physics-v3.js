@@ -61,13 +61,13 @@
                                     // still sits just under it, but launches/bumper
                                     // kicks clear it and heat again (a ×margin scaled
                                     // with the floor and swallowed every launch speed).
-  const FRICTION_GAIN = 0.0024;     // heat gained per (speed − threshold) per ms
+  const FRICTION_GAIN = 0.0074;     // heat gained per (speed − threshold) per ms
   const FRICTION_RELIEF = 0.00045;  // heat shed per ms while below threshold
   const FRICTION_DAMP_BASE = 0.988; // extra per-ms damping, exponent-scaled by heat
   const FRICTION_REARM = 0.35;      // heat must fall below this before it can burn again
   const FRICTION_BURN_BASE = 6;     // base points for a full-meter burn (× upgrades)
-  const FLICK_COOL = 0.6;           // heat a player flick sheds (wakes a settled block)
-  const HEAT_MIN_VISIBLE = 0.02;    // below this the heat halo stays hidden
+  const FLICK_COOL = 0.05;           // heat a player flick sheds (wakes a settled block)
+  const HEAT_MIN_VISIBLE = 0.01;    // below this the heat halo stays hidden
   const HEAT_TIERS = 5;             // box-shadow color steps (rewritten only on change)
   const TREE_WIDTH = 1240;
   const TREE_HEIGHT = 900;
@@ -98,49 +98,46 @@
     'get-to-the-cafe': {
       title: 'Get to the Café',
       reveals: [
-        'A browser game that turns the invisible effort behind an ordinary social outing into the player\'s moment-to-moment workload.',
-        'Built from concept to playable release in three days for GMTK Game Jam 2026.',
-        'I designed the interaction, narrative, 3D environment, timed systems, and accessibility framing as one experience.',
-        'The mechanics carry the argument: pressure accumulates through play instead of being explained to the player.',
-        'The game is now the basis for a study design testing whether play changes how people interpret apparently ordinary functioning.',
+        'I made this game to explore how disability can make an ordinary outing feel very different from what someone else sees.',
+        'Unseen demands affect what we can do, whether we want them to or not.',
+        'I wanted to question how easily we read someone\'s behaviour as personality or attitude when we cannot see what they\'re dealing with.',
+        'I turned those demands into accumulating tasks so the player encounters the pressure through play.',
+        'I built the game in three days for GMTK Game Jam 2026. What you take from it is yours to discover.',
       ],
     },
     'letter-river': {
       title: 'Letter River',
       reveals: [
-        'An experimental Hebrew-learning game designed around the friction of beginning a new language and script.',
-        'I designed one connected path from letter recognition to vocabulary, reading, and practical dialogue.',
-        'Learning stages build on the same material, turning recognition into increasingly usable language instead of isolated exercises.',
-        'I built and iterated the system as a responsive React web app with persisted progress and reusable learning content.',
-        'I designed the interaction model, content structure, learning flow, and deployment end to end.',
+        'Learning Hebrew letters and words frustrated me. I wanted an enjoyable way for adults to learn through play.',
+        'Letters float across the phone screen. You drag each one into the box for the sound it makes.',
+        'I chose a simple, active interaction that players could immerse themselves in.',
       ],
     },
     'last-reading': {
       title: 'The Last Reading',
       reveals: [
-        'A tarot-strategy horror roguelike about constructing five-card readings and finding patterns in incomplete information.',
-        'Its strategy layer combines custom scoring, card abilities, deck manipulation, and progression to reshape future readings.',
-        'Major Arcana can be spent as abilities, turning symbolic cards into tactical resources.',
-        'A narrative layer sits underneath the card game, rewarding players who notice connections across different readings.',
-        'The same pattern-recognition skill used to play the strategy game is also used to uncover its story.',
+        'Tarot interests me because it can feel deeply personal and mystical, reflecting something of the person interpreting it.',
+        'I\'ve spent much of my life learning to recognise patterns I couldn\'t initially understand. I love that experience in games.',
+        'The Last Reading explores finding meaning in incomplete information.',
+        'I\'m developing a tarot horror roguelike where recognising patterns helps you play and uncover the story.',
+        'I\'m still exploring how to weave mystery through its mechanics and narrative.',
       ],
     },
     rotogo: {
       title: 'Rotogo',
       reveals: [
-        'A physical game idea that became the project that pulled me into programming.',
-        'I used the game\'s rules as a concrete problem through which to teach myself React and JavaScript.',
-        'Building it took me from generated boilerplate into debugging, Git, version control, deployment, and iteration on a live product.',
-        'The project taught me to treat AI output as material to inspect, test, and correct rather than something to accept automatically.',
-        'Rotogo marks the point where I moved from designing systems I could describe to systems I could implement myself.',
+        'Rotogo was the first game I made that people really enjoyed playing and felt offered them something different.',
+        'It began as a physical game and became my first serious attempt to build a game with AI.',
+        'Player research taught me to reduce mental load and make decisions quick and easy.',
+        'The project helped me understand how research can shape a compelling product and its position in the market.',
       ],
     },
     'gig-duel': {
       title: 'Venue Rivals',
       reveals: [
-        'A small mobile game experiment conceived while I was sitting in a shelter during missile attacks.',
-        'It began as an attempt to translate the party-building tension I liked in Party House into a compact playable game.',
-        'I took the idea from a passing concept to a defined ruleset and a working browser build.',
+        'Party House drew me in with simple rules, layered complexity, and room to take my time.',
+        'I started Venue Rivals as something to occupy my mind and practise building with AI without requiring too much mental effort.',
+        'I brought that inspiration to mobile, where friends can battle competing parties. The mobile game and friend battles are fully playable.',
       ],
     },
   };
