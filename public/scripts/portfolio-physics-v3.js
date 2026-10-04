@@ -242,9 +242,52 @@
     core: '<circle cx="12" cy="12" r="3.4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.4 5.4l2.1 2.1M16.5 16.5l2.1 2.1M18.6 5.4l-2.1 2.1M7.5 16.5l-2.1 2.1"/>',
   };
 
-  function iconSvg(name) {
+  function mechanicThemeForUpgrade(upgrade) {
+    const text = ((upgrade?.title || '') + ' ' + (upgrade?.effect || '')).toLowerCase();
+
+    // Order matters: value/multiplier and energy phrases contain words like
+    // "bumper", "wall" and "collision", but should use their own taxonomy icon.
+    if (/×\s*(2|5)|multiply|compound interest/.test(text)) return 'multiplier';
+    if (/\+\s*\d+(?:\.\d+)?\s*\/\s*(bumper|wall)|\bpoints?\b|\bvalue\b/.test(text)) return 'value';
+    if (/near-zero drag|perpetual motion/.test(text)) return 'zero-drag';
+    if (/collision energy|energy retained|collision keep|kinetic keep/.test(text)) return 'collision';
+    if (/speed floor|acceleration/.test(text)) return 'speed-floor';
+    if (/velocity cap|top speed|momentum/.test(text)) return 'velocity-cap';
+    if (/flick force|flick impulse|\bflick\b|quick launch|\blaunch|\bkick\b/.test(text)) return 'launch';
+    if (/hits? stack|\bstack\b|combo|chain/.test(text)) return 'stack';
+    if (/\bdrag\b|friction|\bglide\b/.test(text)) return 'friction';
+    if (/bumper|bounce|rebound|ricochet/.test(text)) return 'bounce';
+    if (/critical|\bcrit\b|\bhit\b/.test(text)) return 'impact';
+    if (/drift speed|\bspeed\b/.test(text)) return 'speed';
+    return 'neutral';
+  }
+
+  const MECHANIC_ART = {
+    speed: '/icons/mechanics/speed.webp',
+    'speed-floor': '/icons/mechanics/speed-floor.webp',
+    'velocity-cap': '/icons/mechanics/velocity-cap.webp',
+    launch: '/icons/mechanics/launch.webp',
+    bounce: '/icons/mechanics/bounce.webp',
+    impact: '/icons/mechanics/impact.webp',
+    stack: '/icons/mechanics/stack.webp',
+    friction: '/icons/mechanics/friction.webp',
+    'zero-drag': '/icons/mechanics/zero-drag.webp',
+    collision: '/icons/mechanics/collision.webp',
+    value: '/icons/mechanics/value.webp',
+    multiplier: '/icons/mechanics/multiplier.webp',
+  };
+
+  function iconSvg(name, theme = 'neutral') {
     const inner = ICONS[name] || ICONS.core;
-    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+    return `<svg class="pv2-mechanic-icon pv2-mechanic-icon--${theme}" data-mechanic="${theme}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+  }
+
+  function upgradeIconMarkup(upgrade, theme = mechanicThemeForUpgrade(upgrade)) {
+    const src = MECHANIC_ART[theme];
+    if (src) {
+      return `<img class="pv2-mechanic-art" src="${src}" alt="" draggable="false" decoding="async">`;
+    }
+    return iconSvg(upgrade.icon, theme);
   }
 
   function projectXpTarget(level) {
@@ -627,9 +670,12 @@
       button.type = 'button';
       button.className = 'pv2-project-levelup__choice';
       button.dataset.rarity = upgrade.rarity;
+      const mechanicTheme = mechanicThemeForUpgrade(upgrade);
+      button.dataset.mechanic = mechanicTheme;
+      if (MECHANIC_ART[mechanicTheme]) button.classList.add('has-art-icon');
       const rarity = upgrade.rarity === 'common' ? '' : '<small>' + upgrade.rarity.toUpperCase() + '</small>';
       button.innerHTML =
-        '<span class="pv2-project-levelup__choice-icon" aria-hidden="true">' + iconSvg(upgrade.icon) + '</span>'
+        '<span class="pv2-project-levelup__choice-icon" aria-hidden="true">' + upgradeIconMarkup(upgrade, mechanicTheme) + '</span>'
         + '<span class="pv2-project-levelup__choice-copy">' + rarity
         + '<strong>' + upgrade.title + '</strong><span>' + upgrade.effect + '</span></span>'
         + '<span class="pv2-project-levelup__choice-arrow" aria-hidden="true">›</span>';
@@ -833,6 +879,7 @@
   let points = 0;
   let ghostColorIndex = 0;
   let fxLayer = null;
+  let activeSmokeParticles = 0;
   let upgradeOverlay = null;
   let upgradeTree = null;
   const purchased = new Set();
@@ -1261,10 +1308,13 @@
     if (upgrade.soon) node.classList.add('pv2-upgrade-node--soon');
     node.dataset.upgradeId = upgrade.id;
     node.dataset.branch = upgrade.branch;
+    const mechanicTheme = mechanicThemeForUpgrade(upgrade);
+    node.dataset.mechanic = mechanicTheme;
+    if (MECHANIC_ART[mechanicTheme]) node.classList.add('has-art-icon');
     node.style.setProperty('--node-x', `${upgrade.x}px`);
     node.style.setProperty('--node-y', `${upgrade.y}px`);
     node.innerHTML = `
-      <span class="pv2-upgrade-node__icon" aria-hidden="true">${iconSvg(upgrade.icon)}</span>
+      <span class="pv2-upgrade-node__icon" aria-hidden="true">${upgradeIconMarkup(upgrade, mechanicTheme)}</span>
       <span class="pv2-upgrade-node__copy">
         <strong class="pv2-upgrade-node__title">${upgrade.title}</strong>
         <span class="pv2-upgrade-node__effect">${upgrade.effect}</span>
@@ -1610,9 +1660,61 @@
       `0 0 ${(6 + f * 14).toFixed(0)}px rgba(${c},0.5)`;
   }
 
+  // Smoke becomes a world-space particle the instant it is created. It no
+  // longer lives inside the moving sphere DOM, so the sphere can continue
+  // travelling while the puff drifts and fades independently.
+  function spawnDetachedSmoke(body, now, stageRect) {
+    if (reducedMotion() || body.friction < .12 || now < body.smokeNextAt) return;
+
+    const mobile = window.innerWidth <= MOBILE_BREAKPOINT;
+    const maxParticles = mobile ? 10 : 22;
+    if (activeSmokeParticles >= maxParticles) {
+      body.smokeNextAt = now + 180;
+      return;
+    }
+
+    const heat = clamp(body.friction, 0, 1);
+    const cadence = (mobile ? 620 : 430) - heat * (mobile ? 180 : 150);
+    body.smokeNextAt = now + cadence + Math.random() * (mobile ? 170 : 130);
+
+    const puff = document.createElement('span');
+    puff.className = 'pv2-detached-smoke';
+    const diameter = (mobile ? 11 : 15) + heat * (mobile ? 8 : 14);
+    const startX = stageRect.left + body.x + body.w * (.34 + Math.random() * .32);
+    const startY = stageRect.top + body.y + body.w * (.08 + Math.random() * .10);
+    const drift = (Math.random() - .5) * (mobile ? 42 : 72);
+    const rise = (mobile ? 52 : 78) + Math.random() * (mobile ? 34 : 58) + heat * 26;
+    const spin = (Math.random() - .5) * 90;
+    const duration = (mobile ? 1500 : 1800) + Math.random() * 900;
+
+    Object.assign(puff.style, {
+      left: startX.toFixed(1) + 'px',
+      top: startY.toFixed(1) + 'px',
+      width: diameter.toFixed(1) + 'px',
+      height: diameter.toFixed(1) + 'px',
+      '--pv2-smoke-drift-x': drift.toFixed(1) + 'px',
+      '--pv2-smoke-rise': rise.toFixed(1) + 'px',
+      '--pv2-smoke-spin': spin.toFixed(1) + 'deg',
+      '--pv2-smoke-alpha': (0.26 + heat * .34).toFixed(2),
+      '--pv2-smoke-duration': duration.toFixed(0) + 'ms',
+    });
+
+    activeSmokeParticles += 1;
+    ensureFxLayer().appendChild(puff);
+    let cleaned = false;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      puff.remove();
+      activeSmokeParticles = Math.max(0, activeSmokeParticles - 1);
+    };
+    puff.addEventListener('animationend', cleanup, { once: true });
+    window.setTimeout(cleanup, duration + 120);
+  }
+
   // Friction now reads as heat on the sphere itself: low values start as faint
   // smoke/glow, then the perimeter catches fire and grows more turbulent.
-  function updateHeatVisual(body) {
+  function updateHeatVisual(body, now, stageRect) {
     const f = body.friction;
     if (!body.halo && f < HEAT_MIN_VISIBLE) return;
     const halo = body.halo || (body.halo = ensureHeatHalo(body.el));
@@ -1623,7 +1725,6 @@
       if (body.heatOpacity === 0) return;
       halo.style.setProperty('--pv2-heat', '0');
       halo.style.setProperty('--pv2-flame-opacity', '0');
-      halo.style.setProperty('--pv2-smoke-opacity', '0');
       halo.style.opacity = '0';
       // A cold sphere should not be paying for ~40 infinite CSS animations,
       // two blurred layers and a blend mode. `is-cold` takes the fire and
@@ -1650,14 +1751,13 @@
     // These are all derived from `heat`, so one comparison gates all five.
     if (heat !== body.heatValue) {
       const flame = Math.round(clamp((f - .22) / .78, 0, 1) * 100) / 100;
-      const smoke = Math.round(clamp(.24 + f * .7, 0, .92) * 100) / 100;
       halo.style.setProperty('--pv2-heat', String(heat));
       halo.style.setProperty('--pv2-flame-opacity', String(flame));
-      halo.style.setProperty('--pv2-smoke-opacity', String(smoke));
       halo.style.setProperty('--pv2-flame-scale', String(.55 + heat * .85));
-      halo.style.setProperty('--pv2-smoke-scale', String(.72 + heat * .62));
       body.heatValue = heat;
     }
+
+    spawnDetachedSmoke(body, now, stageRect);
 
     const op = Math.round(Math.min(1, Math.sqrt(f)) * 40) / 40;
     if (op !== body.heatOpacity) {
@@ -1668,10 +1768,12 @@
 
   // Full meter → cash in a "friction burn" through the normal scoring path
   // (so point mult / combo / crit all apply) and flash the halo.
-  function frictionBurn(body) {
+  function frictionBurn(body, stageRect) {
     const effects = currentEffects();
-    const rect = body.el.getBoundingClientRect();
-    const impact = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    const impact = {
+      x: stageRect.left + body.x + body.w / 2,
+      y: stageRect.top + body.y + body.h / 2,
+    };
     award(FRICTION_BURN_BASE * effects.frictionBurnMult, 'friction', impact, { vx: body.vx, vy: body.vy });
     window.dispatchEvent(new CustomEvent('pv2:friction-burn', { detail: { x: impact.x, y: impact.y } }));
     if (reducedMotion()) return;
@@ -2187,6 +2289,7 @@
       heatTier: -1,
       heatOpacity: 0,
       heatValue: -1,
+      smokeNextAt: 0,
       // Last values written to style.left/top, so tick() can skip no-op writes.
       lastLeft: NaN,
       lastTop: NaN,
@@ -2267,14 +2370,11 @@
       };
 
       const mobileHeat = window.innerWidth <= MOBILE_BREAKPOINT;
-      const FLAMES = mobileHeat ? 18 : 34;
-      const SMOKE = mobileHeat ? 5 : 10;
+      const FLAMES = mobileHeat ? 10 : 20;
       const flames = Array.from({ length: FLAMES }, (_, i) => flame(i, FLAMES)).join('');
-      const smoke = Array.from({ length: SMOKE }, (_, i) => smokePuff(i, SMOKE)).join('');
       halo.innerHTML = '<span class="pv2-heat-glow"></span>'
         + '<span class="pv2-heat-core"></span>'
-        + '<span class="pv2-heat-fire">' + flames + '</span>'
-        + '<span class="pv2-heat-smokes">' + smoke + '</span>';
+        + '<span class="pv2-heat-fire">' + flames + '</span>';
       el.appendChild(halo);
     }
 
@@ -2863,7 +2963,7 @@
         body.vx += (desiredVx - body.vx) * response;
         body.vy += (desiredVy - body.vy) * response;
         body.friction = Math.max(0, body.friction - FRICTION_RELIEF * dt * 2);
-        updateHeatVisual(body);
+        updateHeatVisual(body, now, stageRect);
         body.x += body.vx * dt;
         body.y += body.vy * dt;
         constrain(body, stageRect, false);
@@ -2907,11 +3007,11 @@
       else body.friction = Math.max(0, body.friction - FRICTION_RELIEF * dt);
       if (body.friction >= 1 && !body.frictionSpent) {
         body.frictionSpent = true;
-        if (gameActive && body.armed) frictionBurn(body);
+        if (gameActive && body.armed) frictionBurn(body, stageRect);
       } else if (body.friction < FRICTION_REARM) {
         body.frictionSpent = false;
       }
-      updateHeatVisual(body);
+      updateHeatVisual(body, now, stageRect);
       // Heat suppresses the drift floor so a hot block can actually come to rest
       // (at full heat the floor is zero); it returns as the block cools.
       const effFloor = bodySpeedFloor * (1 - body.friction);
