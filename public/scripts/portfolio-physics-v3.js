@@ -623,6 +623,20 @@
     panel.style.maxWidth = Math.max(80, width - 24) + 'px';
     panel.style.left = (left + Math.max(12, (width - panel.offsetWidth) / 2)) + 'px';
     panel.style.top = (top + Math.max(12, (height - panel.offsetHeight) / 2)) + 'px';
+    const edgeWidth = panel.offsetWidth - 2;
+    const edgeHeight = panel.offsetHeight - 2;
+    const sparks = [...overlay.querySelectorAll('.pv2-reward-window-sparkles i')];
+    const perimeter = (edgeWidth + edgeHeight) * 2;
+    sparks.forEach((spark, index) => {
+      const distance = index / sparks.length * perimeter;
+      let x, y;
+      if (distance < edgeWidth) { x = distance; y = 0; }
+      else if (distance < edgeWidth + edgeHeight) { x = edgeWidth; y = distance - edgeWidth; }
+      else if (distance < edgeWidth * 2 + edgeHeight) { x = edgeWidth * 2 + edgeHeight - distance; y = edgeHeight; }
+      else { x = 0; y = perimeter - distance; }
+      spark.style.left = x + 'px';
+      spark.style.top = y + 'px';
+    });
     panel.dataset.side = 'center';
   }
 
@@ -708,13 +722,28 @@
       + '<span class="pv2-project-levelup__open-label">Press to Continue</span></button>'
       + '<p class="pv2-project-levelup__status" role="status"></p>'
       + '</section>';
+    const edge = document.createElement('span');
+    edge.className = 'pv2-reward-window-edge';
+    edge.setAttribute('aria-hidden', 'true');
+    const sparkles = document.createElement('span');
+    sparkles.className = 'pv2-reward-window-sparkles';
+    sparkles.setAttribute('aria-hidden', 'true');
+    for (let i = 0; i < 28; i++) {
+      const spark = document.createElement('i');
+      spark.style.setProperty('--delay', (-i * 190) + 'ms');
+      sparkles.appendChild(spark);
+    }
+    overlay.querySelector('.pv2-project-levelup__panel').append(edge, sparkles);
     const opener = overlay.querySelector('button');
     opener.addEventListener('click', () => {
       if (activeProjectLevelUp !== event || event.phase !== 'fact') return;
       event.phase = 'fanfare';
       event.choices = rollProjectUpgrades(event.body, 3);
       opener.disabled = true;
-      const panelRect = overlay.querySelector('.pv2-project-levelup__panel').getBoundingClientRect();
+      const sparkOrigins = [...sparkles.children].map((spark) => ({
+        rect: spark.getBoundingClientRect(),
+        color: getComputedStyle(spark).backgroundColor,
+      }));
       overlay.classList.add('is-chest-opening');
       overlay.innerHTML = '<div class="pv2-reward-convergence" aria-hidden="true"></div>'
         + '<div class="pv2-reward-stage-chest">' + projectRewardChest() + '</div>'
@@ -727,11 +756,12 @@
       if (!reducedMotion()) {
         for (let i = 0; i < 28; i++) {
           const spark = document.createElement('i');
-          const angle = i / 28 * Math.PI * 2;
+          const start = sparkOrigins[i];
+          spark.style.background = start.color;
           spark.style.left = (origin.left + origin.width / 2) + 'px';
           spark.style.top = (origin.top + origin.height / 2) + 'px';
-          spark.style.setProperty('--sx', (panelRect.left + panelRect.width / 2 + Math.cos(angle) * panelRect.width / 2 - origin.left - origin.width / 2) + 'px');
-          spark.style.setProperty('--sy', (panelRect.top + panelRect.height / 2 + Math.sin(angle) * panelRect.height / 2 - origin.top - origin.height / 2) + 'px');
+          spark.style.setProperty('--sx', (start.rect.left + start.rect.width / 2 - origin.left - origin.width / 2) + 'px');
+          spark.style.setProperty('--sy', (start.rect.top + start.rect.height / 2 - origin.top - origin.height / 2) + 'px');
           spark.style.setProperty('--delay', (i % 7 * 24) + 'ms');
           convergence.appendChild(spark);
         }

@@ -2207,3 +2207,33 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
 .pv2-project-levelup-overlay.is-choices { background:rgba(236,231,219,.93); }
 .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice { background:rgba(250,248,242,.92); }
 .pv2-reward-chest.is-spewing .pv2-reward-chest__particles i { width:8px; height:8px; box-shadow:0 0 8px rgba(255,210,76,.7); }
+
+/* Arcade color travels around the fact window's edge, with perimeter sparkles. */
+@property --pv2-frame-angle { syntax:'<angle>'; initial-value:0deg; inherits:false; }
+.pv2-reward-window-edge {
+  position:absolute; inset:-2px; padding:3px; border-radius:4px;
+  pointer-events:none; z-index:2;
+  background:repeating-conic-gradient(from var(--pv2-frame-angle),#ffd34f 0deg 16deg,#fff5bc 16deg 22deg,#f86eae 22deg 38deg,#854df3 38deg 54deg,#40cfff 54deg 70deg,#fff 70deg 76deg,#ffd34f 76deg 90deg);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;
+  mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  mask-composite:exclude;
+  animation:pv2WindowEdgeTurn 6s linear infinite;
+}
+@keyframes pv2WindowEdgeTurn { to { --pv2-frame-angle:360deg; } }
+.pv2-reward-window-sparkles { position:absolute; inset:-1px; pointer-events:none; z-index:3; }
+.pv2-reward-window-sparkles i {
+  position:absolute; width:9px; height:9px; background:#ffd34f;
+  clip-path:polygon(50% 0,63% 36%,100% 50%,63% 64%,50% 100%,37% 64%,0 50%,37% 36%);
+  transform:translate(-50%,-50%);
+  animation:pv2WindowSparkTwinkle 1400ms ease-in-out var(--delay) infinite alternate;
+}
+.pv2-reward-window-sparkles i:nth-child(4n+2),.pv2-reward-convergence i:nth-child(4n+2),.pv2-reward-chest__particles i:nth-child(4n+2) { background:#f86eae; }
+.pv2-reward-window-sparkles i:nth-child(4n+3),.pv2-reward-convergence i:nth-child(4n+3),.pv2-reward-chest__particles i:nth-child(4n+3) { background:#854df3; }
+.pv2-reward-window-sparkles i:nth-child(4n),.pv2-reward-convergence i:nth-child(4n),.pv2-reward-chest__particles i:nth-child(4n) { background:#40cfff; }
+@keyframes pv2WindowSparkTwinkle { from { opacity:.45; scale:.65; } to { opacity:1; scale:1.4; } }
+.pv2-project-levelup-overlay.is-fact .pv2-project-levelup__open { z-index:4; }
+@media (prefers-reduced-motion:reduce) {
+  .pv2-reward-window-edge,.pv2-reward-window-sparkles i { animation:none; }
+  .pv2-reward-window-sparkles i { opacity:.8; }
+}
