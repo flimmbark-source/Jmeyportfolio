@@ -61,7 +61,7 @@
                                     // still sits just under it, but launches/bumper
                                     // kicks clear it and heat again (a ×margin scaled
                                     // with the floor and swallowed every launch speed).
-  const FRICTION_GAIN = 0.0014;     // heat gained per (speed − threshold) per ms
+  const FRICTION_GAIN = 0.0010;     // heat gained per (speed − threshold) per ms
   const FRICTION_RELIEF = 0.00045;  // heat shed per ms while below threshold
   const FRICTION_DAMP_BASE = 0.988; // extra per-ms damping, exponent-scaled by heat
   const FRICTION_REARM = 0.35;      // heat must fall below this before it can burn again
