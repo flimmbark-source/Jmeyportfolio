@@ -631,6 +631,26 @@
     });
   }
 
+  function projectRewardChest(open = false) {
+    return '<span class="pv2-reward-chest' + (open ? ' is-unlocked is-lid-opening is-lid-open' : '') + '" aria-hidden="true">'
+      + '<span class="pv2-reward-chest__light"></span>'
+      + '<span class="pv2-reward-chest__sprite"></span>'
+      + '<span class="pv2-reward-chest__particles"></span>'
+      + '</span>';
+  }
+
+  function burstProjectChest(chest) {
+    if (reducedMotion()) return;
+    const particles = chest.querySelector('.pv2-reward-chest__particles');
+    for (let i = 0; i < 24; i++) {
+      const particle = document.createElement('i');
+      particle.style.setProperty('--dx', ((Math.random() - .5) * 280).toFixed(0) + 'px');
+      particle.style.setProperty('--dy', (-70 - Math.random() * 190).toFixed(0) + 'px');
+      particle.style.setProperty('--delay', (Math.random() * 240).toFixed(0) + 'ms');
+      particles.appendChild(particle);
+    }
+  }
+
   function buildProjectFactDialog(event) {
     const reveal = projectReveal(event.body, event.level);
     removeProjectLevelOverlay();
@@ -641,24 +661,47 @@
     overlay.setAttribute('aria-labelledby', 'pv2-project-fact-title');
     overlay.setAttribute('aria-describedby', 'pv2-project-fact-text');
     overlay.innerHTML = '<section class="pv2-project-levelup__panel">'
-      + '<p class="pv2-project-levelup__project-label">' + reveal.title + ' · LV. ' + event.level + '</p>'
-      + '<h2 id="pv2-project-fact-title">Project fact</h2>'
-      + '<p id="pv2-project-fact-text" class="pv2-project-levelup__fact-text">' + reveal.text + '</p>'
-      + '<button type="button" class="pv2-project-levelup__open">Open upgrades <span aria-hidden="true">✦</span></button>'
+      + '<div class="pv2-project-levelup__header">'
+      + '<div class="pv2-project-levelup__reward-title"><span>LEVEL</span><span>UP!</span></div>'
+      + '<span class="pv2-project-levelup__level">LV. ' + event.level + '</span></div>'
+      + '<div class="pv2-project-levelup__fact-content">'
+      + '<p class="pv2-project-levelup__project-label">Project</p>'
+      + '<h2 id="pv2-project-fact-title">' + reveal.title + '</h2>'
+      + '<p id="pv2-project-fact-text" class="pv2-project-levelup__fact-text">' + reveal.text + '</p></div>'
+      + '<button type="button" class="pv2-project-levelup__open" aria-label="Open upgrades">'
+      + projectRewardChest() + '<span class="pv2-project-levelup__open-label">Open upgrades</span></button>'
+      + '<p class="pv2-project-levelup__status" role="status"></p>'
       + '</section>';
-    overlay.querySelector('button').addEventListener('click', () => {
+    const opener = overlay.querySelector('button');
+    const chest = opener.querySelector('.pv2-reward-chest');
+    opener.addEventListener('click', () => {
       if (activeProjectLevelUp !== event || event.phase !== 'fact') return;
       event.phase = 'fanfare';
-      overlay.querySelector('button').disabled = true;
-      overlay.classList.add('is-opening');
-      spawnProjectLevelFanfare(event.body, event.level, true);
+      event.choices = rollProjectUpgrades(event.body, 3);
+      opener.disabled = true;
+      overlay.querySelector('[role="status"]').textContent = 'Opening upgrades…';
+      overlay.classList.add('is-chest-opening');
+      chest.classList.add('is-unlocked');
+      const advance = (fn, delay) => window.setTimeout(() => {
+        if (activeProjectLevelUp === event && projectLevelUpOverlay === overlay && playgroundIsVisible()) fn();
+      }, reducedMotion() ? 0 : delay);
+      advance(() => chest.classList.add('is-lid-opening'), 180);
+      advance(() => {
+        chest.classList.add('is-lid-open');
+        burstProjectChest(chest);
+      }, 360);
+      advance(() => {
+        spawnProjectLevelFanfare({ el: chest }, event.level, false);
+        eventFanfare = document.body.querySelector('.pv2-project-levelup-fanfare:last-child');
+      }, 440);
       window.setTimeout(() => {
         if (activeProjectLevelUp !== event || !playgroundIsVisible()) return;
+        event.chestOrigin = chest.getBoundingClientRect();
         eventFanfare?.remove();
         eventFanfare = null;
         event.phase = 'choices';
         buildProjectLevelUpDialog(event);
-      }, reducedMotion() ? 320 : 1900);
+      }, reducedMotion() ? 180 : 1180);
     });
     mountProjectLevelOverlay(overlay, event, '.pv2-project-levelup__open');
   }
@@ -666,7 +709,7 @@
   function buildProjectLevelUpDialog(event) {
     const body = event.body;
     const reveal = projectReveal(body, event.level);
-    const choices = rollProjectUpgrades(body, 3);
+    const choices = event.choices || rollProjectUpgrades(body, 3);
     removeProjectLevelOverlay();
     const overlay = document.createElement('div');
     overlay.className = 'pv2-project-levelup-overlay is-choices';
@@ -686,6 +729,7 @@
       + '<div class="pv2-project-levelup__rule" aria-hidden="true"></div>'
       + '<p class="pv2-project-levelup__choose">Choose one</p>'
       + '<div class="pv2-project-levelup__choices"></div>'
+      + '<div class="pv2-project-levelup__chest-rest">' + projectRewardChest(true) + '</div>'
       + '</section>';
 
     const list = overlay.querySelector('.pv2-project-levelup__choices');
@@ -708,6 +752,26 @@
     }
 
     mountProjectLevelOverlay(overlay, event, '.pv2-project-levelup__choice');
+    requestAnimationFrame(() => {
+      if (projectLevelUpOverlay !== overlay || activeProjectLevelUp !== event || reducedMotion()) return;
+      const chest = overlay.querySelector('.pv2-reward-chest');
+      const origin = event.chestOrigin || chest.getBoundingClientRect();
+      const chestRect = chest.getBoundingClientRect();
+      chest.animate([
+        { transform: 'translate(' + (origin.left - chestRect.left) + 'px,' + (origin.top - chestRect.top) + 'px)' },
+        { transform: 'translate(0,0)' },
+      ], { duration: 480, easing: 'cubic-bezier(.16,1,.3,1)' });
+      overlay.querySelectorAll('.pv2-project-levelup__choice').forEach((choice, index) => {
+        const rect = choice.getBoundingClientRect();
+        const dx = origin.left + origin.width / 2 - rect.left - rect.width / 2;
+        const dy = origin.top + origin.height / 2 - rect.top - rect.height / 2;
+        choice.animate([
+          { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(.14)', opacity: 0 },
+          { transform: 'translate(' + (dx * .35) + 'px,' + (dy * .45) + 'px) scale(.6)', opacity: 1, offset: .4 },
+          { transform: 'translate(0,0) scale(1)', opacity: 1 },
+        ], { duration: 680, delay: index * 110, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
+      });
+    });
   }
 
   function chooseProjectUpgrade(event, upgrade, button) {
