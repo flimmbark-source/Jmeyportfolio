@@ -503,13 +503,16 @@
     return choices;
   }
 
-  function spawnProjectLevelFanfare(body, level) {
+  let eventFanfare = null;
+
+  function spawnProjectLevelFanfare(body, level, centered = false) {
     const rect = body.el.getBoundingClientRect();
     const el = document.createElement('div');
     el.className = 'pv2-project-levelup-fanfare';
-    el.style.left = (rect.left + rect.width / 2) + 'px';
-    el.style.top = (rect.top + rect.height / 2) + 'px';
-    el.style.setProperty('--pv2-level-label-y', (-rect.height / 2 - 34) + 'px');
+    el.style.left = (centered ? window.innerWidth / 2 : rect.left + rect.width / 2) + 'px';
+    el.style.top = (centered ? window.innerHeight / 2 : rect.top + rect.height / 2) + 'px';
+    el.style.setProperty('--pv2-level-label-y', centered ? '-70px' : (-rect.height / 2 - 34) + 'px');
+    if (centered) eventFanfare = el;
     const rays = Array.from({ length: 12 }, (_, index) =>
       '<i class="pv2-project-levelup-fanfare__ray" style="--ray:' + index + '"></i>'
     ).join('');
@@ -568,80 +571,105 @@
     activeProjectLevelUp = event;
     document.documentElement.classList.add('pv2-project-levelup-open');
     event.body.el.classList.add('is-project-leveling');
-    spawnProjectLevelFanfare(event.body, event.level);
-    window.setTimeout(() => {
-      if (activeProjectLevelUp === event && playgroundIsVisible()) buildProjectLevelUpDialog(event);
-    }, reducedMotion() ? 0 : 1450);
+    event.phase = 'fact';
+    buildProjectFactDialog(event);
   }
 
-  function positionProjectLevelUpDialog(overlay, body) {
+  function positionProjectLevelUpDialog(overlay) {
     const panel = overlay.querySelector('.pv2-project-levelup__panel');
-    if (!panel || !body?.el?.isConnected) return;
-    const sphere = body.el.getBoundingClientRect();
-    const navBottom = document.querySelector('.pv2-nav')?.getBoundingClientRect().bottom || 72;
-    const pad = window.innerWidth <= MOBILE_BREAKPOINT
-      ? 24
-      : Math.max(48, Math.min(72, window.innerWidth * .045));
-    const gap = window.innerWidth <= MOBILE_BREAKPOINT ? 16 : 26;
-    const panelRect = panel.getBoundingClientRect();
-    const minTop = navBottom + Math.max(16, pad * .45);
-    const maxTop = Math.max(minTop, window.innerHeight - pad - panelRect.height);
+    if (!panel) return;
+    const viewport = window.visualViewport;
+    const top = viewport?.offsetTop || 0;
+    const height = viewport?.height || window.innerHeight;
+    const width = viewport?.width || window.innerWidth;
+    const left = viewport?.offsetLeft || 0;
+    panel.style.maxHeight = Math.max(80, height - 24) + 'px';
+    panel.style.maxWidth = Math.max(80, width - 24) + 'px';
+    panel.style.left = (left + Math.max(12, (width - panel.offsetWidth) / 2)) + 'px';
+    panel.style.top = (top + Math.max(12, (height - panel.offsetHeight) / 2)) + 'px';
+    panel.dataset.side = 'center';
+  }
 
-    if (window.innerWidth <= MOBILE_BREAKPOINT) {
-      const viewport = window.visualViewport;
-      const viewportTop = viewport?.offsetTop || 0;
-      const viewportHeight = viewport?.height || window.innerHeight;
-      const viewportBottom = viewportTop + viewportHeight;
-      const sphereCenterY = sphere.top + sphere.height / 2;
-      const availableWidth = window.innerWidth - pad * 2;
-      const left = pad + Math.max(0, (availableWidth - panelRect.width) / 2);
-      const safeTop = Math.max(minTop, viewportTop + 12);
-      const safeBottom = viewportBottom - Math.max(18, pad);
-      let side = sphereCenterY < viewportTop + viewportHeight / 2 ? 'mobile-bottom' : 'mobile-top';
-      let top = side === 'mobile-bottom'
-        ? safeBottom - panelRect.height
-        : safeTop;
-      if (top < safeTop) {
-        top = safeTop;
-        side = 'mobile-top';
+  function removeProjectLevelOverlay() {
+    const overlay = projectLevelUpOverlay;
+    if (overlay?._pv2Reposition) {
+      window.removeEventListener('resize', overlay._pv2Reposition);
+      window.visualViewport?.removeEventListener('resize', overlay._pv2Reposition);
+      window.visualViewport?.removeEventListener('scroll', overlay._pv2Reposition);
+    }
+    overlay?.remove();
+    projectLevelUpOverlay = null;
+  }
+
+  function mountProjectLevelOverlay(overlay, event, focusSelector) {
+    document.body.appendChild(overlay);
+    projectLevelUpOverlay = overlay;
+    const reposition = () => {
+      if (projectLevelUpOverlay === overlay) positionProjectLevelUpDialog(overlay);
+    };
+    overlay._pv2Reposition = reposition;
+    window.addEventListener('resize', reposition);
+    window.visualViewport?.addEventListener('resize', reposition);
+    window.visualViewport?.addEventListener('scroll', reposition);
+    reposition();
+    overlay.addEventListener('keydown', (keyEvent) => {
+      if (keyEvent.key !== 'Tab') return;
+      const buttons = [...overlay.querySelectorAll('button:not(:disabled)')];
+      if (!buttons.length) { keyEvent.preventDefault(); return; }
+      const first = buttons[0];
+      const last = buttons[buttons.length - 1];
+      if (keyEvent.shiftKey && document.activeElement === first) {
+        keyEvent.preventDefault(); last.focus();
+      } else if (!keyEvent.shiftKey && document.activeElement === last) {
+        keyEvent.preventDefault(); first.focus();
       }
-      panel.style.left = left.toFixed(1) + 'px';
-      panel.style.top = top.toFixed(1) + 'px';
-      panel.dataset.side = side;
-      return;
-    }
+    });
+    requestAnimationFrame(() => {
+      if (projectLevelUpOverlay !== overlay || activeProjectLevelUp !== event) return;
+      overlay.classList.add('is-open');
+      overlay.querySelector(focusSelector)?.focus({ preventScroll: true });
+    });
+  }
 
-    let side = 'right';
-    let left = sphere.right + gap;
-    let top = clamp(sphere.top + sphere.height / 2 - panelRect.height / 2, minTop, maxTop);
-
-    if (left + panelRect.width > window.innerWidth - pad) {
-      side = 'left';
-      left = sphere.left - gap - panelRect.width;
-    }
-    if (left < pad) {
-      side = 'below';
-      left = clamp(sphere.left + sphere.width / 2 - panelRect.width / 2, pad, window.innerWidth - pad - panelRect.width);
-      top = sphere.bottom + gap;
-      if (top + panelRect.height > window.innerHeight - pad) {
-        side = 'above';
-        top = sphere.top - gap - panelRect.height;
-      }
-      top = clamp(top, minTop, maxTop);
-    }
-
-    panel.style.left = left.toFixed(1) + 'px';
-    panel.style.top = top.toFixed(1) + 'px';
-    panel.dataset.side = side;
+  function buildProjectFactDialog(event) {
+    const reveal = projectReveal(event.body, event.level);
+    removeProjectLevelOverlay();
+    const overlay = document.createElement('div');
+    overlay.className = 'pv2-project-levelup-overlay is-fact';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'pv2-project-fact-title');
+    overlay.setAttribute('aria-describedby', 'pv2-project-fact-text');
+    overlay.innerHTML = '<section class="pv2-project-levelup__panel">'
+      + '<p class="pv2-project-levelup__project-label">' + reveal.title + ' · LV. ' + event.level + '</p>'
+      + '<h2 id="pv2-project-fact-title">Project fact</h2>'
+      + '<p id="pv2-project-fact-text" class="pv2-project-levelup__fact-text">' + reveal.text + '</p>'
+      + '<button type="button" class="pv2-project-levelup__open">Open upgrades <span aria-hidden="true">✦</span></button>'
+      + '</section>';
+    overlay.querySelector('button').addEventListener('click', () => {
+      if (activeProjectLevelUp !== event || event.phase !== 'fact') return;
+      event.phase = 'fanfare';
+      overlay.querySelector('button').disabled = true;
+      overlay.classList.add('is-opening');
+      spawnProjectLevelFanfare(event.body, event.level, true);
+      window.setTimeout(() => {
+        if (activeProjectLevelUp !== event || !playgroundIsVisible()) return;
+        eventFanfare?.remove();
+        eventFanfare = null;
+        event.phase = 'choices';
+        buildProjectLevelUpDialog(event);
+      }, reducedMotion() ? 320 : 1900);
+    });
+    mountProjectLevelOverlay(overlay, event, '.pv2-project-levelup__open');
   }
 
   function buildProjectLevelUpDialog(event) {
     const body = event.body;
     const reveal = projectReveal(body, event.level);
     const choices = rollProjectUpgrades(body, 3);
-    projectLevelUpOverlay?.remove();
+    removeProjectLevelOverlay();
     const overlay = document.createElement('div');
-    overlay.className = 'pv2-project-levelup-overlay';
+    overlay.className = 'pv2-project-levelup-overlay is-choices';
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-labelledby', 'pv2-project-levelup-title');
@@ -654,7 +682,6 @@
       + '<div class="pv2-project-levelup__project-info">'
       + '<p class="pv2-project-levelup__project-label">Project</p>'
       + '<h2 id="pv2-project-levelup-title">' + reveal.title + '</h2>'
-      + '<p class="pv2-project-levelup__reveal">' + reveal.text + '</p>'
       + '</div>'
       + '<div class="pv2-project-levelup__rule" aria-hidden="true"></div>'
       + '<p class="pv2-project-levelup__choose">Choose one</p>'
@@ -680,24 +707,11 @@
       list?.appendChild(button);
     }
 
-    document.body.appendChild(overlay);
-    projectLevelUpOverlay = overlay;
-    positionProjectLevelUpDialog(overlay, body);
-    const reposition = () => {
-      if (projectLevelUpOverlay === overlay && body.el?.isConnected) {
-        positionProjectLevelUpDialog(overlay, body);
-      }
-    };
-    overlay._pv2Reposition = reposition;
-    window.addEventListener('resize', reposition);
-    window.visualViewport?.addEventListener('resize', reposition);
-    window.visualViewport?.addEventListener('scroll', reposition);
-    requestAnimationFrame(() => overlay.classList.add('is-open'));
-    window.setTimeout(() => overlay.querySelector('.pv2-project-levelup__choice')?.focus(), reducedMotion() ? 0 : 420);
+    mountProjectLevelOverlay(overlay, event, '.pv2-project-levelup__choice');
   }
 
   function chooseProjectUpgrade(event, upgrade, button) {
-    if (activeProjectLevelUp !== event || !event.body?.projectState) return;
+    if (activeProjectLevelUp !== event || event.phase !== 'choices' || event.choiceCommitted || !event.body?.projectState) return;
     event.choiceCommitted = true;
     const upgrades = event.body.projectState.upgrades;
     upgrades.set(upgrade.id, (upgrades.get(upgrade.id) || 0) + 1);
@@ -756,8 +770,9 @@
     }
 
     activeProjectLevelUp = null;
-    projectLevelUpOverlay?.remove();
-    projectLevelUpOverlay = null;
+    eventFanfare?.remove();
+    eventFanfare = null;
+    removeProjectLevelOverlay();
     document.documentElement.classList.remove('pv2-project-levelup-open');
   }
 
