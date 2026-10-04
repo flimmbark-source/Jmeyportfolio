@@ -1750,16 +1750,16 @@
     const heat = Math.round(clamp(f, 0, 1) * 100) / 100;
     // These are all derived from `heat`, so one comparison gates all five.
     if (heat !== body.heatValue) {
-      const flame = Math.round(clamp((f - .22) / .78, 0, 1) * 100) / 100;
+      const flame = Math.round(Math.pow(clamp((f - .02) / .38, 0, 1), .45) * 100) / 100;
       halo.style.setProperty('--pv2-heat', String(heat));
       halo.style.setProperty('--pv2-flame-opacity', String(flame));
-      halo.style.setProperty('--pv2-flame-scale', String(.55 + heat * .85));
+      halo.style.setProperty('--pv2-flame-scale', String(.9 + heat * .65));
       body.heatValue = heat;
     }
 
     spawnDetachedSmoke(body, now, stageRect);
 
-    const op = Math.round(Math.min(1, Math.sqrt(f)) * 40) / 40;
+    const op = Math.round(Math.min(1, .65 + Math.sqrt(f) * .35) * 40) / 40;
     if (op !== body.heatOpacity) {
       halo.style.opacity = String(op);
       body.heatOpacity = op;
@@ -2331,7 +2331,7 @@
         const y = 50 + Math.sin(angle) * radial;
         // 1 at the top of the sphere, 0 at the bottom.
         const upness = (1 - Math.sin(angle)) / 2;
-        const reach = Math.pow(upness, 1.85);
+        const reach = Math.pow(upness, 1.25);
         if (reach < .08) return '';                 // the underside only smoulders
         return '<span class="pv2-heat-flame" style="'
           + '--i:' + index
@@ -2339,7 +2339,7 @@
           + ';--y:' + y.toFixed(2) + '%'
           + ';--len:' + (reach * span(index, 4, .74, 1.3)).toFixed(3)
           + ';--wid:' + span(index, 5, .76, 1.28).toFixed(3)
-          + ';--dur:' + span(index, 6, 520, 980).toFixed(0) + 'ms'
+          + ';--dur:' + span(index, 6, 340, 720).toFixed(0) + 'ms'
           + ';--delay:-' + span(index, 7, 0, 1100).toFixed(0) + 'ms'
           + ';--lean:' + span(index, 3, -13, 13).toFixed(1) + 'deg'
           + ';--sway:' + span(index, 8, -10, 10).toFixed(1) + 'deg'
