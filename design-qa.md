@@ -1,43 +1,86 @@
 # Level-up presentation review
 
-## Latest correction
+## What this pass changed
 
-The fact window no longer shows perimeter sparkles. Slow rotating border colors remain, along with the chest convergence and particles. The upgrade group is centered horizontally and vertically on regular screens. Its wrapper allows reveal motion to extend without making a scrolling container. Short-screen layouts remain positioned above the chest. Prior screenshots below show the previous presentation and do not represent this correction.
+The reward sequence was rebuilt around how card-choice level-ups work in the
+genre: celebrate briefly, let the player skip, and put the decision-relevant
+information on the card.
 
-## Confirmed current decisions
+1. **Pacing.** Reading the previous code, a card became clickable 2180 ms after
+   "Press to Continue" (the chest cinematic) plus a further 900 ms during which
+   every card was `disabled` while it flew in — about 3.1 s before the player
+   could act, with no way out. The cinematic is now 980 ms, the deal is 320 ms
+   with a 40 ms stagger, and the cards are never disabled. Measured in Chromium,
+   click to interactive card is ~1.56–1.63 s.
+2. **Skippable.** A Skip control, a click anywhere, and Enter / Space / Escape
+   each jump straight to the cards. A reward animation the player has already
+   seen is a delay, not a reward.
+3. **Rarity is the card.** The tier now sets the frame colour, the banner, the
+   label and the icon-tile accent through one pair of custom properties
+   (`--pv2-rarity` / `--pv2-rarity-wash`). Previously rarity survived only as a
+   0.6 rem word, because the choices layer repainted every border the same
+   charcoal.
+4. **Rank and stacks.** Each card states `Rank 2 → 3 of 4` with matching pips.
+   "+15% drift speed" is not a decision until the player knows whether this is
+   their first copy or their last; the data (`maxStacks`, the per-project
+   upgrade map) was already there and simply was not shown.
+5. **Queue count.** When several projects cross a threshold together, both the
+   reveal and the choices screen carry a `+N more` chip, refreshed live as
+   further level-ups queue behind an open window.
+6. **Keyboard.** 1–3 choose, ← → ↑ ↓ move, Home / End jump, Enter / Space /
+   Escape skip the cinematic. Tab wrapping is unchanged. The key badges and the
+   hint row appear only under `(hover:hover) and (pointer:fine)`.
+7. **One scrim.** Both phases dim the playfield equally. The choices screen
+   previously used no scrim, so moving from the reveal to the cards looked like
+   the interface had dropped a layer.
 
-Ivory/charcoal/yellow app windows; colorful arcade emblem; fact first; Press to Continue above the bottom border; 18-second border color rotation; multicolor sparkles converge into a bottom-center chest; chest opens with fanfare; three compact, independently styled opaque upgrade windows outside a shared panel; no pale group backdrop; Click an Upgrade; choose exactly one upgrade and resume. Existing project facts and upgrade effects remain unchanged.
+## Confirmed decisions carried forward
 
-## Rejected or superseded
+Ivory / charcoal / yellow app windows; the arcade LEVEL UP emblem; fact first;
+the rotating multicolour window border; the chest; three independently styled
+opaque upgrade windows outside a shared panel; choose exactly one upgrade and
+resume. Project facts and upgrade effects are unchanged. The chest button stays
+out of the fact screen, and there is still no pale backing behind the card
+group.
 
-Generic purple panels, wallpaper-themed medieval windows, the chest button inside the fact screen, upgrades enclosed in a shared window, translucent individual card backgrounds, and a pale backing over the full choices screen. None are reintroduced.
+## Stylesheet consolidation
 
-## Findings and fixes
+The level-up presentation had accumulated eight override layers. Removed as part
+of this pass, because they made any visual change unpredictable:
 
-1. Fact: healthy. Footer has room above the border. The window fades for 220ms while existing perimeter sparkles converge, replacing the abrupt removal. Decorative effects remain off under reduced motion.
-2. Chest reveal: healthy. Persistent chest coordinates avoid a fade-to-empty frame when the choices replace the reveal. The existing fanfare is retained. Light is softer than the particles and options.
-3. Choices: healthy. Shared typography, opacity, border, and spacing tokens follow the app. Rarity slots align desktop titles and effects; common slots collapse on mobile. Rarity labels use darker colors. Portfolio headline hides for the reward so it does not compete. Click an Upgrade has its own small opaque label without restoring a shared backdrop. Cards cannot accept selection until the 900ms travel/stagger has finished. Short-screen layout keeps options above the chest.
-4. Selection and return: healthy. Selected upgrade gets a visible checkmark and Upgrade selected heading, plus a live announcement. Exactly one choice applies. The confirmation holds 520ms, then the overlay fades 220ms before gameplay resumes. Keyboard focus returns to the prior control or project tile. Exit and reveal callbacks check the current event and overlay.
+- `.pv2-project-levelup__project-info` and its keyframe — styled, never emitted.
+- The eight `[data-side]` placement rules — the panel is always centred.
+- Two competing `@media (max-width:720px)` panel blocks, both using `!important`.
+- The perimeter sparkle machinery: 28 nodes built in JS and repositioned on every
+  resize, under a `visibility:hidden` rule.
+- Duplicate `@keyframes pv2RewardGlow`, and `__reveal` / `__rule` /
+  `__chest-rest` / `__game-heading`, none of which the script emits.
+- Two `!important` rules setting the card icon tile from opposite directions.
+
+Every selector the reward flow uses is now defined once, in one block.
 
 ## Browser evidence
 
-New captures in this review, using authorized headless Chromium: desktop 1440 × 1024, mobile 390 × 844, landscape 844 × 390. Mobile choice group x30, y181, width330, height347. Landscape x42, y12, width760, height240. No page script errors.
+Headless Chromium, production Astro build served by `astro preview`, at
+1440 × 1024, 390 × 844 and 844 × 390. 18 scripted checks pass on three
+consecutive runs with no page errors: cinematic timing, Skip control, Escape
+skip, number-key selection, double-press guard, dismissal of the unchosen
+cards, the live-region announcement with rank, arrow and End focus movement,
+rank text, pip counts, three distinct tier colours, rarity labels, the
+assistive label, the queue chip on both screens, reduced-motion timing and
+particle suppression, and overlay teardown with requeue when the player leaves
+mid-cinematic.
 
-![Four reward stages](docs/levelup-review/flow.webp)
+## Limits and open items
 
-![Before and after choices](docs/levelup-review/comparison.webp)
-
-![Mobile choices](docs/levelup-review/mobile.webp)
-
-Tests: fact/open/three choices/single selection/resume; reduced-motion sequence; keyboard Enter and Tab wrapping; synthetic click while revealing rejected; repeated selection applies one upgrade; hiding Playground and interrupting reveal does not resurrect an overlay. Production Astro build and syntax/whitespace checks passed. Test-only queue hooks were injected by the browser harness, not added to the production script.
-
-## Design grounding and limits
-
-Game Accessibility Guidelines advise clear language, clear interactive controls, and motion alternatives. Those support the clarity and input checks here, but they do not prescribe a universal visual style or certify this implementation. Source references:
-- https://gameaccessibilityguidelines.com/use-simple-clear-language/
-- https://gameaccessibilityguidelines.com/give-a-clear-indication-that-interactive-elements-are-interactive/
-- https://gameaccessibilityguidelines.com/provide-an-option-to-turn-off-hide-background-movement/
-
-Unresolved: full assistive-technology testing and device performance profiling are outside these browser checks. Some mechanics, such as Mentor, still use the existing neutral fallback icon. A replacement illustration needs a confirmed mapping and is not invented in this pass. Random painting and rolled options differ between before/after captures; layout and typography are the comparison focus. No claim of universal professional/game-design standards compliance.
-
-Final result: presentation and tested flow checks passed.
+- Full assistive-technology testing and device performance profiling are outside
+  these browser checks.
+- Mechanics with no illustrated icon (Mentor, Gravity Well, Autopilot and the
+  other `neutral` theme entries) still fall back to the line-art SVG. The tile
+  now matches the illustrated ones in size and treatment so the fallback reads
+  as quieter rather than broken, but the artwork itself is not invented here.
+- Separate from this work: `/v2/` does not import `portfolio-chrome.css`, so
+  `--pv2-nav-height` is unset there, `.pv2-overview__stage` computes to `0px`,
+  and `playgroundIsVisible()` returns false — level-ups never present on that
+  route. `/` is unaffected. Not fixed in this pass.
+- No claim of universal professional or game-design standards compliance.

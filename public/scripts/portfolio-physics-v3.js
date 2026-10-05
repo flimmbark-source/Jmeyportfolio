@@ -576,6 +576,7 @@
       choiceCommitted: false,
     });
     if (!activeProjectLevelUp && playgroundIsVisible()) openNextProjectLevelUp();
+    else refreshProjectQueueChips();
   }
 
   function openNextProjectLevelUp() {
@@ -623,21 +624,6 @@
     panel.style.maxWidth = Math.max(80, width - 24) + 'px';
     panel.style.left = (left + Math.max(12, (width - panel.offsetWidth) / 2)) + 'px';
     panel.style.top = (top + Math.max(12, (height - panel.offsetHeight) / 2)) + 'px';
-    const edgeWidth = panel.offsetWidth - 2;
-    const edgeHeight = panel.offsetHeight - 2;
-    const sparks = [...overlay.querySelectorAll('.pv2-reward-window-sparkles i')];
-    const perimeter = (edgeWidth + edgeHeight) * 2;
-    sparks.forEach((spark, index) => {
-      const distance = index / sparks.length * perimeter;
-      let x, y;
-      if (distance < edgeWidth) { x = distance; y = 0; }
-      else if (distance < edgeWidth + edgeHeight) { x = edgeWidth; y = distance - edgeWidth; }
-      else if (distance < edgeWidth * 2 + edgeHeight) { x = edgeWidth * 2 + edgeHeight - distance; y = edgeHeight; }
-      else { x = 0; y = perimeter - distance; }
-      spark.style.left = x + 'px';
-      spark.style.top = y + 'px';
-    });
-    panel.dataset.side = 'center';
   }
 
   function removeProjectLevelOverlay() {
@@ -701,6 +687,46 @@
     }
   }
 
+  // Several projects can cross a level threshold in the same collision burst.
+  // Standing reward screens state how many are still waiting, so the player
+  // reads the pause as a run of rewards rather than one that will not end.
+  function projectQueueChipMarkup() {
+    return projectLevelQueue.length
+      ? '<span class="pv2-reward-queue" title="Level-ups still waiting">+'
+        + projectLevelQueue.length + ' more</span>'
+      : '';
+  }
+
+  function refreshProjectQueueChips() {
+    const overlay = projectLevelUpOverlay;
+    if (!overlay) return;
+    const pending = projectLevelQueue.length;
+    overlay.querySelectorAll('.pv2-project-levelup__header-meta').forEach((meta) => {
+      let chip = meta.querySelector('.pv2-reward-queue');
+      if (!pending) { chip?.remove(); return; }
+      if (!chip) {
+        chip = document.createElement('span');
+        chip.className = 'pv2-reward-queue';
+        chip.title = 'Level-ups still waiting';
+        meta.appendChild(chip);
+      }
+      chip.textContent = '+' + pending + ' more';
+    });
+  }
+
+  function projectKeyHintMarkup(keys, action) {
+    return '<p class="pv2-reward-hint" aria-hidden="true">'
+      + keys.map((key) => '<kbd>' + key + '</kbd>').join('<span>·</span>')
+      + '<span class="pv2-reward-hint__action">' + action + '</span></p>';
+  }
+
+  // Timers belonging to one reward event, so a skip can retire the whole
+  // remaining cinematic in a single call instead of racing it.
+  function clearProjectRewardTimers(event) {
+    (event.rewardTimers || []).forEach((id) => window.clearTimeout(id));
+    event.rewardTimers = [];
+  }
+
   function buildProjectFactDialog(event) {
     const reveal = projectReveal(event.body, event.level);
     removeProjectLevelOverlay();
@@ -713,90 +739,120 @@
     overlay.innerHTML = '<section class="pv2-project-levelup__panel">'
       + '<div class="pv2-project-levelup__header">'
       + '<div class="pv2-project-levelup__reward-title"><span>LEVEL</span><span>UP!</span></div>'
-      + '<span class="pv2-project-levelup__level">LV. ' + event.level + '</span></div>'
+      + '<div class="pv2-project-levelup__header-meta">'
+      + '<span class="pv2-project-levelup__level">LV. ' + event.level + '</span>'
+      + projectQueueChipMarkup() + '</div></div>'
       + '<div class="pv2-project-levelup__fact-content">'
       + '<p class="pv2-project-levelup__project-label">Project</p>'
       + '<h2 id="pv2-project-fact-title">' + reveal.title + '</h2>'
       + '<p id="pv2-project-fact-text" class="pv2-project-levelup__fact-text">' + reveal.text + '</p></div>'
-      + '<button type="button" class="pv2-project-levelup__open" aria-label="Press to Continue">'
-      + '<span class="pv2-project-levelup__open-label">Press to Continue</span></button>'
+      + '<button type="button" class="pv2-project-levelup__open">'
+      + '<span class="pv2-project-levelup__open-label">Open the reward</span></button>'
+      + projectKeyHintMarkup(['Enter'], 'open')
       + '<p class="pv2-project-levelup__status" role="status"></p>'
       + '</section>';
     const edge = document.createElement('span');
     edge.className = 'pv2-reward-window-edge';
     edge.setAttribute('aria-hidden', 'true');
-    const sparkles = document.createElement('span');
-    sparkles.className = 'pv2-reward-window-sparkles';
-    sparkles.setAttribute('aria-hidden', 'true');
-    for (let i = 0; i < 28; i++) {
-      const spark = document.createElement('i');
-      spark.style.setProperty('--delay', (-i * 190) + 'ms');
-      sparkles.appendChild(spark);
-    }
-    overlay.querySelector('.pv2-project-levelup__panel').append(edge, sparkles);
-    const opener = overlay.querySelector('button');
-    opener.addEventListener('click', () => {
-      if (activeProjectLevelUp !== event || event.phase !== 'fact') return;
-      event.phase = 'fanfare';
-      event.choices = rollProjectUpgrades(event.body, 3);
-      opener.disabled = true;
-      const sparkOrigins = [...sparkles.children].map((spark) => ({
-        rect: spark.getBoundingClientRect(),
-        color: getComputedStyle(spark).backgroundColor,
-      }));
-      overlay.classList.add('is-chest-opening');
-      const departingPanel = overlay.querySelector('.pv2-project-levelup__panel');
-      overlay.insertAdjacentHTML('beforeend', '<div class="pv2-reward-convergence" aria-hidden="true"></div>'
-        + '<div class="pv2-reward-stage-chest">' + projectRewardChest() + '</div>'
-        + '<p class="pv2-project-levelup__status" role="status">Opening upgrades…</p>');
-      overlay.removeAttribute('aria-labelledby');
-      overlay.removeAttribute('aria-describedby');
-      overlay.setAttribute('aria-label', 'Level ' + event.level + ' rewards');
-      overlay.tabIndex = -1;
-      overlay.focus({ preventScroll: true });
-      const chest = overlay.querySelector('.pv2-reward-chest');
-      const origin = chest.getBoundingClientRect();
-      const convergence = overlay.querySelector('.pv2-reward-convergence');
-      if (!reducedMotion()) {
-        for (let i = 0; i < 28; i++) {
-          const spark = document.createElement('i');
-          const start = sparkOrigins[i];
-          spark.style.background = start.color;
-          spark.style.left = (origin.left + origin.width / 2) + 'px';
-          spark.style.top = (origin.top + origin.height / 2) + 'px';
-          spark.style.setProperty('--sx', (start.rect.left + start.rect.width / 2 - origin.left - origin.width / 2) + 'px');
-          spark.style.setProperty('--sy', (start.rect.top + start.rect.height / 2 - origin.top - origin.height / 2) + 'px');
-          spark.style.setProperty('--delay', (i % 7 * 24) + 'ms');
-          convergence.appendChild(spark);
-        }
-      }
-      const advance = (fn, delay, motionDelay = 0) => window.setTimeout(() => {
+    overlay.querySelector('.pv2-project-levelup__panel').append(edge);
+    const opener = overlay.querySelector('.pv2-project-levelup__open');
+    opener.addEventListener('click', () => openProjectRewardChest(event, overlay, opener));
+    mountProjectLevelOverlay(overlay, event, '.pv2-project-levelup__open');
+  }
+
+  // The chest sequence is a reward, and a reward the player has already seen is
+  // a delay. It runs short, and any click or confirm key during it lands on the
+  // choices immediately rather than being swallowed.
+  function openProjectRewardChest(event, overlay, opener) {
+    if (activeProjectLevelUp !== event || event.phase !== 'fact') return;
+    event.phase = 'fanfare';
+    event.choices = event.choices || rollProjectUpgrades(event.body, 3);
+    event.rewardTimers = [];
+    opener.disabled = true;
+    overlay.classList.add('is-chest-opening');
+    const departingPanel = overlay.querySelector('.pv2-project-levelup__panel');
+    overlay.insertAdjacentHTML('beforeend',
+      '<div class="pv2-reward-stage-chest">' + projectRewardChest() + '</div>'
+      + '<button type="button" class="pv2-reward-skip">Skip</button>'
+      + '<p class="pv2-project-levelup__status" role="status">Opening upgrades…</p>');
+    overlay.removeAttribute('aria-labelledby');
+    overlay.removeAttribute('aria-describedby');
+    overlay.setAttribute('aria-label', 'Level ' + event.level + ' rewards');
+    overlay.tabIndex = -1;
+    overlay.focus({ preventScroll: true });
+    const chest = overlay.querySelector('.pv2-reward-chest');
+
+    const toChoices = () => {
+      if (activeProjectLevelUp !== event || projectLevelUpOverlay !== overlay) return;
+      clearProjectRewardTimers(event);
+      event.chestOrigin = chest.getBoundingClientRect();
+      eventFanfare?.remove();
+      eventFanfare = null;
+      event.phase = 'choices';
+      buildProjectLevelUpDialog(event);
+    };
+    const advance = (fn, delay, motionDelay = 0) => {
+      const id = window.setTimeout(() => {
         if (activeProjectLevelUp === event && projectLevelUpOverlay === overlay && playgroundIsVisible()) fn();
       }, reducedMotion() ? motionDelay : delay);
-      advance(() => departingPanel.remove(), 220);
-      advance(() => {
-        overlay.classList.add('is-chest-formed');
-        convergence.remove();
-      }, 850);
-      advance(() => chest.classList.add('is-unlocked'), 1000);
-      advance(() => chest.classList.add('is-lid-opening'), 1180);
-      advance(() => {
-        chest.classList.add('is-lid-open');
-        burstProjectChest(chest);
-      }, 1360);
-      advance(() => {
-        spawnProjectLevelFanfare({ el: chest }, event.level, false);
-        eventFanfare = document.body.querySelector('.pv2-project-levelup-fanfare:last-child');
-      }, 1440);
-      advance(() => {
-        event.chestOrigin = chest.getBoundingClientRect();
-        eventFanfare?.remove();
-        eventFanfare = null;
-        event.phase = 'choices';
-        buildProjectLevelUpDialog(event);
-      }, 2180, 180);
+      event.rewardTimers.push(id);
+      return id;
+    };
+
+    overlay.querySelector('.pv2-reward-skip').addEventListener('click', (clickEvent) => {
+      clickEvent.stopPropagation();
+      toChoices();
     });
-    mountProjectLevelOverlay(overlay, event, '.pv2-project-levelup__open');
+    overlay.addEventListener('pointerdown', () => { if (event.phase === 'fanfare') toChoices(); });
+    overlay.addEventListener('keydown', (keyEvent) => {
+      if (event.phase !== 'fanfare') return;
+      if (keyEvent.key !== 'Enter' && keyEvent.key !== ' ' && keyEvent.key !== 'Escape') return;
+      keyEvent.preventDefault();
+      toChoices();
+    });
+
+    advance(() => departingPanel.remove(), 170);
+    advance(() => overlay.classList.add('is-chest-formed'), 30);
+    advance(() => chest.classList.add('is-unlocked'), 300);
+    advance(() => chest.classList.add('is-lid-opening'), 430);
+    advance(() => {
+      chest.classList.add('is-lid-open');
+      burstProjectChest(chest);
+    }, 570);
+    advance(() => {
+      spawnProjectLevelFanfare({ el: chest }, event.level, false);
+      eventFanfare = document.body.querySelector('.pv2-project-levelup-fanfare:last-child');
+    }, 630);
+    advance(toChoices, 980, 140);
+  }
+
+  function projectChoiceCardMarkup(upgrade, index, owned) {
+    const mechanicTheme = mechanicThemeForUpgrade(upgrade);
+    const max = upgrade.maxStacks;
+    // Rank is the single piece of information the old cards withheld: "+15%
+    // drift speed" is not a decision until you know whether it is your first
+    // copy or your fourth. Pips read at a glance; the rank line is the number.
+    const pips = max > 1
+      ? '<span class="pv2-project-levelup__stacks" aria-hidden="true">'
+        + Array.from({ length: max }, (_, slot) =>
+          '<i' + (slot < owned ? ' class="is-owned"' : (slot === owned ? ' class="is-next"' : '')) + '></i>').join('')
+        + '</span>'
+      : '';
+    const rank = owned
+      ? '<span class="pv2-project-levelup__rank">Rank ' + owned + ' → ' + (owned + 1)
+        + (max > 1 ? ' of ' + max : '') + '</span>'
+      : (max > 1 ? '<span class="pv2-project-levelup__rank">New · up to ' + max + '</span>'
+        : '<span class="pv2-project-levelup__rank">New · unique</span>');
+    return '<span class="pv2-project-levelup__choice-key" aria-hidden="true">' + (index + 1) + '</span>'
+      + '<span class="pv2-project-levelup__choice-icon" aria-hidden="true">'
+      + upgradeIconMarkup(upgrade, mechanicTheme) + '</span>'
+      + '<span class="pv2-project-levelup__choice-copy">'
+      + '<small class="pv2-project-levelup__rarity">' + upgrade.rarity.toUpperCase() + '</small>'
+      + '<strong>' + upgrade.title + '</strong>'
+      + '<span class="pv2-project-levelup__choice-effect">' + upgrade.effect + '</span>'
+      + '<span class="pv2-project-levelup__choice-meta">' + rank + pips + '</span>'
+      + '</span>'
+      + '<span class="pv2-project-levelup__choice-arrow" aria-hidden="true">✓</span>';
   }
 
   function buildProjectLevelUpDialog(event) {
@@ -806,8 +862,8 @@
     removeProjectLevelOverlay();
     const overlay = document.createElement('div');
     overlay.className = 'pv2-project-levelup-overlay is-choices is-open';
-    const revealing = !reducedMotion();
-    event.phase = revealing ? 'revealing' : 'choices';
+    const dealing = !reducedMotion();
+    event.phase = 'choices';
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-labelledby', 'pv2-project-levelup-title');
@@ -817,9 +873,13 @@
       + '<div class="pv2-project-levelup__game-image" aria-hidden="true"></div>'
       + '<div class="pv2-project-levelup__game-copy">'
       + '<div class="pv2-project-levelup__game-title"><h2 id="pv2-project-levelup-title">' + reveal.title + '</h2>'
-      + '<span class="pv2-project-levelup__game-level">LV. ' + event.level + '</span></div>'
+      + '<div class="pv2-project-levelup__header-meta">'
+      + '<span class="pv2-project-levelup__game-level">LV. ' + event.level + '</span>'
+      + projectQueueChipMarkup() + '</div></div>'
       + '<p class="pv2-project-levelup__game-fact">' + reveal.text + '</p></div></header>'
+      + '<p class="pv2-project-levelup__choose">Choose one upgrade</p>'
       + '<div class="pv2-project-levelup__choices"></div>'
+      + projectKeyHintMarkup(['1', '2', '3'], 'choose')
       + '<p class="pv2-project-levelup__status" role="status"></p></section>'
       + '<div class="pv2-reward-stage-chest">' + projectRewardChest(true) + '</div>';
     const sourceImage = body.el.querySelector('img.pv2-visual__media');
@@ -847,35 +907,56 @@
     }
 
     const list = overlay.querySelector('.pv2-project-levelup__choices');
-    for (const upgrade of choices) {
+    choices.forEach((upgrade, index) => {
+      const owned = projectUpgradeCount(body, upgrade.id);
       const button = document.createElement('button');
       button.type = 'button';
-      button.className = 'pv2-project-levelup__choice';
-      button.disabled = revealing;
+      button.className = 'pv2-project-levelup__choice' + (dealing ? ' is-dealing' : '');
       button.dataset.rarity = upgrade.rarity;
+      button.dataset.choiceIndex = String(index);
       const mechanicTheme = mechanicThemeForUpgrade(upgrade);
       button.dataset.mechanic = mechanicTheme;
       if (MECHANIC_ART[mechanicTheme]) button.classList.add('has-art-icon');
-      const rarity = '<small class="pv2-project-levelup__rarity"' + (upgrade.rarity === 'common' ? ' aria-hidden="true"' : '') + '>'
-        + (upgrade.rarity === 'common' ? '&nbsp;' : upgrade.rarity.toUpperCase()) + '</small>';
-      button.innerHTML =
-        '<span class="pv2-project-levelup__choice-icon" aria-hidden="true">' + upgradeIconMarkup(upgrade, mechanicTheme) + '</span>'
-        + '<span class="pv2-project-levelup__choice-copy">' + rarity
-        + '<strong>' + upgrade.title + '</strong><span>' + upgrade.effect + '</span></span>'
-        + '<span class="pv2-project-levelup__choice-arrow" aria-hidden="true">›</span>';
+      button.innerHTML = projectChoiceCardMarkup(upgrade, index, owned);
+      // The pips and the rank line are decorative duplicates of one sentence,
+      // so assistive tech gets that sentence once instead of a row of blanks.
+      button.setAttribute('aria-label', 'Option ' + (index + 1) + ': ' + upgrade.title
+        + ', ' + upgrade.rarity + '. ' + upgrade.effect + '. '
+        + (owned ? 'Rank ' + owned + ' of ' + upgrade.maxStacks + ' owned.' : 'Not yet owned.'));
       button.addEventListener('click', () => chooseProjectUpgrade(event, upgrade, button));
       list?.appendChild(button);
-    }
+    });
 
-    const heading = overlay.querySelector('.pv2-project-levelup__floating-choices');
-    heading.tabIndex = -1;
-    mountProjectLevelOverlay(overlay, event, revealing ? '.pv2-project-levelup__floating-choices' : '.pv2-project-levelup__choice');
-    if (revealing) window.setTimeout(() => {
-      if (activeProjectLevelUp !== event || projectLevelUpOverlay !== overlay || event.phase !== 'revealing') return;
-      event.phase = 'choices';
-      overlay.querySelectorAll('.pv2-project-levelup__choice').forEach((button) => { button.disabled = false; });
-      overlay.querySelector('.pv2-project-levelup__choice')?.focus({ preventScroll: true });
-    }, 900);
+    const cards = [...overlay.querySelectorAll('.pv2-project-levelup__choice')];
+    // Number keys and arrows are what this genre trained players to reach for.
+    // Tab still works; these are the fast path, not a replacement.
+    overlay.addEventListener('keydown', (keyEvent) => {
+      if (event.phase !== 'choices' || event.choiceCommitted || keyEvent.metaKey || keyEvent.ctrlKey || keyEvent.altKey) return;
+      const index = cards.indexOf(document.activeElement);
+      if (/^[1-9]$/.test(keyEvent.key)) {
+        const target = cards[Number(keyEvent.key) - 1];
+        if (!target) return;
+        keyEvent.preventDefault();
+        target.focus({ preventScroll: true });
+        target.click();
+        return;
+      }
+      if (keyEvent.key === 'ArrowRight' || keyEvent.key === 'ArrowDown') {
+        keyEvent.preventDefault();
+        cards[(Math.max(0, index) + 1) % cards.length]?.focus({ preventScroll: true });
+      } else if (keyEvent.key === 'ArrowLeft' || keyEvent.key === 'ArrowUp') {
+        keyEvent.preventDefault();
+        cards[(Math.max(0, index) - 1 + cards.length) % cards.length]?.focus({ preventScroll: true });
+      } else if (keyEvent.key === 'Home') {
+        keyEvent.preventDefault();
+        cards[0]?.focus({ preventScroll: true });
+      } else if (keyEvent.key === 'End') {
+        keyEvent.preventDefault();
+        cards[cards.length - 1]?.focus({ preventScroll: true });
+      }
+    });
+
+    mountProjectLevelOverlay(overlay, event, '.pv2-project-levelup__choice');
     requestAnimationFrame(() => {
       if (projectLevelUpOverlay !== overlay || activeProjectLevelUp !== event || reducedMotion()) return;
       const chest = overlay.querySelector('.pv2-reward-chest');
@@ -884,16 +965,26 @@
       chest.animate([
         { transform: 'translate(' + (origin.left - chestRect.left) + 'px,' + (origin.top - chestRect.top) + 'px)' },
         { transform: 'translate(0,0)' },
-      ], { duration: 480, easing: 'cubic-bezier(.16,1,.3,1)' });
-      overlay.querySelectorAll('.pv2-project-levelup__choice').forEach((choice, index) => {
+      ], { duration: 340, easing: 'cubic-bezier(.16,1,.3,1)' });
+      // Cards deal out of the chest, but the deal is short and only blocks the
+      // pointer while a card is still travelling away from where it looks. The
+      // player never waits on a disabled button for the privilege of choosing.
+      let last = null;
+      cards.forEach((choice, index) => {
         const rect = choice.getBoundingClientRect();
         const dx = origin.left + origin.width / 2 - rect.left - rect.width / 2;
         const dy = origin.top + origin.height / 2 - rect.top - rect.height / 2;
-        choice.animate([
-          { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(.14)', opacity: 0 },
-          { transform: 'translate(' + (dx * .35) + 'px,' + (dy * .45) + 'px) scale(.6)', opacity: 1, offset: .4 },
+        last = choice.animate([
+          { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(.2)', opacity: 0 },
+          { transform: 'translate(' + (dx * .28) + 'px,' + (dy * .4) + 'px) scale(.72)', opacity: 1, offset: .45 },
           { transform: 'translate(0,0) scale(1)', opacity: 1 },
-        ], { duration: 680, delay: index * 110, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
+        ], { duration: 320, delay: index * 40, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
+      });
+      last?.finished.then(() => {
+        if (projectLevelUpOverlay !== overlay) return;
+        cards.forEach((choice) => choice.classList.remove('is-dealing'));
+      }).catch(() => {
+        cards.forEach((choice) => choice.classList.remove('is-dealing'));
       });
     });
   }
@@ -902,13 +993,15 @@
     if (activeProjectLevelUp !== event || event.phase !== 'choices' || event.choiceCommitted || !event.body?.projectState) return;
     event.choiceCommitted = true;
     const upgrades = event.body.projectState.upgrades;
-    upgrades.set(upgrade.id, (upgrades.get(upgrade.id) || 0) + 1);
+    const owned = (upgrades.get(upgrade.id) || 0) + 1;
+    upgrades.set(upgrade.id, owned);
     invalidateProjectEffects(event.body);
     button?.classList.add('is-selected');
-    const arrow = button?.querySelector('.pv2-project-levelup__choice-arrow');
-    if (arrow) arrow.textContent = '✓';
     const status = projectLevelUpOverlay?.querySelector('[role="status"]');
-    if (status) status.textContent = upgrade.title + ' selected.';
+    if (status) {
+      status.textContent = upgrade.title + ' taken. Rank ' + owned
+        + (upgrade.maxStacks > 1 ? ' of ' + upgrade.maxStacks : '') + '.';
+    }
     projectLevelUpOverlay?.classList.add('is-confirming');
     event.body.el.classList.add('is-project-upgrade-applied');
     projectLevelUpOverlay?.querySelectorAll('.pv2-project-levelup__choice').forEach((choice) => {
@@ -916,11 +1009,12 @@
       if (choice !== button) choice.classList.add('is-rejected');
     });
     window.setTimeout(() => event.body?.el?.classList.remove('is-project-upgrade-applied'), reducedMotion() ? 60 : 820);
-    window.setTimeout(() => finishProjectLevelUp(event), reducedMotion() ? 60 : 520);
+    window.setTimeout(() => finishProjectLevelUp(event), reducedMotion() ? 60 : 440);
   }
 
   function finishProjectLevelUp(event) {
     if (activeProjectLevelUp !== event) return;
+    clearProjectRewardTimers(event);
     projectLevelUpOverlay?.classList.remove('is-open');
     const overlay = projectLevelUpOverlay;
     if (overlay?._pv2Reposition) {
@@ -940,11 +1034,12 @@
         ? event.returnFocus : event.body?.el?.querySelector('.pv2-project-tile');
       returnFocus?.focus({ preventScroll: true });
       window.setTimeout(openNextProjectLevelUp, reducedMotion() ? 0 : 60);
-    }, reducedMotion() ? 0 : 220);
+    }, reducedMotion() ? 0 : 200);
   }
 
   function suspendProjectLevelUp() {
     const active = activeProjectLevelUp;
+    if (active) clearProjectRewardTimers(active);
     if (active?.body?.el) {
       active.body.el.classList.remove('is-project-leveling');
       active.body.el.classList.remove('is-project-upgrade-applied');
