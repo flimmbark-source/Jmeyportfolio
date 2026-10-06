@@ -1684,12 +1684,12 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
    reward window. */
 html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
 
-/* Both phases dim the playfield by the same amount. The old choices screen used
-   no scrim at all, so passing from the reveal to the cards looked like the
-   interface had dropped a layer. */
+/* No scrim: the playfield stays at full strength behind the reward, and the
+   windows carry their own contrast. Both phases are treated alike, so passing
+   from the reveal to the cards does not change the backdrop. */
 .pv2-project-levelup-overlay {
   position:fixed; inset:0; z-index:7400;
-  background:rgba(236,231,219,.62);
+  background:transparent;
   opacity:0; pointer-events:none;
   transition:opacity 180ms ease;
 }

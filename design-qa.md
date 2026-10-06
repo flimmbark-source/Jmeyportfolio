@@ -6,31 +6,10 @@ The reward sequence was rebuilt around how card-choice level-ups work in the
 genre: celebrate briefly, let the player skip, and put the decision-relevant
 information on the card.
 
-1. **Pacing.** Reading the previous code, a card became clickable 2180 ms after
-   "Press to Continue" (the chest cinematic) plus a further 900 ms during which
-   every card was `disabled` while it flew in — about 3.1 s before the player
-   could act, with no way out. The cinematic is now 980 ms, the deal is 320 ms
-   with a 40 ms stagger, and the cards are never disabled. Measured in Chromium,
-   click to interactive card is ~1.56–1.63 s.
-2. **Skippable.** A Skip control, a click anywhere, and Enter / Space / Escape
-   each jump straight to the cards. A reward animation the player has already
-   seen is a delay, not a reward.
-3. **Rarity is the card.** The tier now sets the frame colour, the banner, the
-   label and the icon-tile accent through one pair of custom properties
-   (`--pv2-rarity` / `--pv2-rarity-wash`). Previously rarity survived only as a
-   0.6 rem word, because the choices layer repainted every border the same
-   charcoal.
-4. **Rank and stacks.** Each card names the rank it would grant — `Rank 3` —
-   over pips showing copies held against `maxStacks`. "+15% drift speed" is not
-   a decision until the player knows whether this is their first copy or their
-   last; the data was already there and simply was not shown. The assistive
-   label carries the same sentence the card shows.
-5. **Keyboard.** 1–3 choose, ← → ↑ ↓ move, Home / End jump, Enter / Space /
-   Escape skip the cinematic. Tab wrapping is unchanged. The key badges and the
-   hint row appear only under `(hover:hover) and (pointer:fine)`.
-6. **One scrim.** Both phases dim the playfield equally. The choices screen
-   previously used no scrim, so moving from the reveal to the cards looked like
-   the interface had dropped a layer.
+6. **No scrim.** The playfield stays at full strength behind the reward and the
+   windows carry their own contrast, so the backdrop painting is not muted and
+   neither phase changes what is behind it. An earlier pass dimmed both phases
+   equally; that wash is gone.
 
 ## Confirmed decisions carried forward
 
