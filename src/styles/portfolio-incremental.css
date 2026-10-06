@@ -1730,7 +1730,6 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
   border-bottom:1px solid #e7dfc6;
   background:var(--pv2-reward-header);
 }
-.pv2-project-levelup__header-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
 
 /* The one piece of arcade lettering in the system. */
 .pv2-project-levelup__reward-title {
@@ -1754,15 +1753,6 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
   background:var(--pv2-reward-paper); color:var(--pv2-reward-ink);
   box-shadow:2px 2px 0 #e1dac8;
   font:800 .8rem/1 system-ui,sans-serif; letter-spacing:.05em;
-}
-
-/* Several projects can level in one collision burst. Saying how many are left
-   turns an unexplained run of windows into a countdown. */
-.pv2-reward-queue {
-  flex:none; padding:6px 9px;
-  border:1px solid var(--pv2-reward-border); border-radius:2px;
-  background:#ffe9a3; color:#4a3c08;
-  font:800 .68rem/1 system-ui,sans-serif; letter-spacing:.06em; text-transform:uppercase;
 }
 
 /* ---------- Reveal window ---------- */

@@ -576,7 +576,6 @@
       choiceCommitted: false,
     });
     if (!activeProjectLevelUp && playgroundIsVisible()) openNextProjectLevelUp();
-    else refreshProjectQueueChips();
   }
 
   function openNextProjectLevelUp() {
@@ -687,33 +686,6 @@
     }
   }
 
-  // Several projects can cross a level threshold in the same collision burst.
-  // Standing reward screens state how many are still waiting, so the player
-  // reads the pause as a run of rewards rather than one that will not end.
-  function projectQueueChipMarkup() {
-    return projectLevelQueue.length
-      ? '<span class="pv2-reward-queue" title="Level-ups still waiting">+'
-        + projectLevelQueue.length + ' more</span>'
-      : '';
-  }
-
-  function refreshProjectQueueChips() {
-    const overlay = projectLevelUpOverlay;
-    if (!overlay) return;
-    const pending = projectLevelQueue.length;
-    overlay.querySelectorAll('.pv2-project-levelup__header-meta').forEach((meta) => {
-      let chip = meta.querySelector('.pv2-reward-queue');
-      if (!pending) { chip?.remove(); return; }
-      if (!chip) {
-        chip = document.createElement('span');
-        chip.className = 'pv2-reward-queue';
-        chip.title = 'Level-ups still waiting';
-        meta.appendChild(chip);
-      }
-      chip.textContent = '+' + pending + ' more';
-    });
-  }
-
   function projectKeyHintMarkup(keys, action) {
     return '<p class="pv2-reward-hint" aria-hidden="true">'
       + keys.map((key) => '<kbd>' + key + '</kbd>').join('<span>·</span>')
@@ -739,9 +711,7 @@
     overlay.innerHTML = '<section class="pv2-project-levelup__panel">'
       + '<div class="pv2-project-levelup__header">'
       + '<div class="pv2-project-levelup__reward-title"><span>LEVEL</span><span>UP!</span></div>'
-      + '<div class="pv2-project-levelup__header-meta">'
-      + '<span class="pv2-project-levelup__level">LV. ' + event.level + '</span>'
-      + projectQueueChipMarkup() + '</div></div>'
+      + '<span class="pv2-project-levelup__level">LV. ' + event.level + '</span></div>'
       + '<div class="pv2-project-levelup__fact-content">'
       + '<p class="pv2-project-levelup__project-label">Project</p>'
       + '<h2 id="pv2-project-fact-title">' + reveal.title + '</h2>'
@@ -838,11 +808,7 @@
           '<i' + (slot < owned ? ' class="is-owned"' : (slot === owned ? ' class="is-next"' : '')) + '></i>').join('')
         + '</span>'
       : '';
-    const rank = owned
-      ? '<span class="pv2-project-levelup__rank">Rank ' + owned + ' → ' + (owned + 1)
-        + (max > 1 ? ' of ' + max : '') + '</span>'
-      : (max > 1 ? '<span class="pv2-project-levelup__rank">New · up to ' + max + '</span>'
-        : '<span class="pv2-project-levelup__rank">New · unique</span>');
+    const rank = '<span class="pv2-project-levelup__rank">Rank ' + (owned + 1) + '</span>';
     return '<span class="pv2-project-levelup__choice-key" aria-hidden="true">' + (index + 1) + '</span>'
       + '<span class="pv2-project-levelup__choice-icon" aria-hidden="true">'
       + upgradeIconMarkup(upgrade, mechanicTheme) + '</span>'
@@ -873,9 +839,7 @@
       + '<div class="pv2-project-levelup__game-image" aria-hidden="true"></div>'
       + '<div class="pv2-project-levelup__game-copy">'
       + '<div class="pv2-project-levelup__game-title"><h2 id="pv2-project-levelup-title">' + reveal.title + '</h2>'
-      + '<div class="pv2-project-levelup__header-meta">'
-      + '<span class="pv2-project-levelup__game-level">LV. ' + event.level + '</span>'
-      + projectQueueChipMarkup() + '</div></div>'
+      + '<span class="pv2-project-levelup__game-level">LV. ' + event.level + '</span></div>'
       + '<p class="pv2-project-levelup__game-fact">' + reveal.text + '</p></div></header>'
       + '<p class="pv2-project-levelup__choose">Choose one upgrade</p>'
       + '<div class="pv2-project-levelup__choices"></div>'
@@ -918,11 +882,11 @@
       button.dataset.mechanic = mechanicTheme;
       if (MECHANIC_ART[mechanicTheme]) button.classList.add('has-art-icon');
       button.innerHTML = projectChoiceCardMarkup(upgrade, index, owned);
-      // The pips and the rank line are decorative duplicates of one sentence,
-      // so assistive tech gets that sentence once instead of a row of blanks.
+      // The pips duplicate the rank line visually, so assistive tech gets the
+      // same sentence the card shows, once, with the maximum the pips imply.
       button.setAttribute('aria-label', 'Option ' + (index + 1) + ': ' + upgrade.title
-        + ', ' + upgrade.rarity + '. ' + upgrade.effect + '. '
-        + (owned ? 'Rank ' + owned + ' of ' + upgrade.maxStacks + ' owned.' : 'Not yet owned.'));
+        + ', ' + upgrade.rarity + '. ' + upgrade.effect + '. Rank ' + (owned + 1)
+        + (upgrade.maxStacks > 1 ? ' of ' + upgrade.maxStacks : '') + '.');
       button.addEventListener('click', () => chooseProjectUpgrade(event, upgrade, button));
       list?.appendChild(button);
     });

@@ -20,17 +20,15 @@ information on the card.
    (`--pv2-rarity` / `--pv2-rarity-wash`). Previously rarity survived only as a
    0.6 rem word, because the choices layer repainted every border the same
    charcoal.
-4. **Rank and stacks.** Each card states `Rank 2 → 3 of 4` with matching pips.
-   "+15% drift speed" is not a decision until the player knows whether this is
-   their first copy or their last; the data (`maxStacks`, the per-project
-   upgrade map) was already there and simply was not shown.
-5. **Queue count.** When several projects cross a threshold together, both the
-   reveal and the choices screen carry a `+N more` chip, refreshed live as
-   further level-ups queue behind an open window.
-6. **Keyboard.** 1–3 choose, ← → ↑ ↓ move, Home / End jump, Enter / Space /
+4. **Rank and stacks.** Each card names the rank it would grant — `Rank 3` —
+   over pips showing copies held against `maxStacks`. "+15% drift speed" is not
+   a decision until the player knows whether this is their first copy or their
+   last; the data was already there and simply was not shown. The assistive
+   label carries the same sentence the card shows.
+5. **Keyboard.** 1–3 choose, ← → ↑ ↓ move, Home / End jump, Enter / Space /
    Escape skip the cinematic. Tab wrapping is unchanged. The key badges and the
    hint row appear only under `(hover:hover) and (pointer:fine)`.
-7. **One scrim.** Both phases dim the playfield equally. The choices screen
+6. **One scrim.** Both phases dim the playfield equally. The choices screen
    previously used no scrim, so moving from the reveal to the cards looked like
    the interface had dropped a layer.
 
@@ -67,9 +65,8 @@ consecutive runs with no page errors: cinematic timing, Skip control, Escape
 skip, number-key selection, double-press guard, dismissal of the unchosen
 cards, the live-region announcement with rank, arrow and End focus movement,
 rank text, pip counts, three distinct tier colours, rarity labels, the
-assistive label, the queue chip on both screens, reduced-motion timing and
-particle suppression, and overlay teardown with requeue when the player leaves
-mid-cinematic.
+assistive label, reduced-motion timing and particle suppression, and overlay
+teardown with requeue when the player leaves mid-cinematic.
 
 ## Limits and open items
 
