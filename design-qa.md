@@ -10,7 +10,10 @@ information on the card.
    it is), footer (the one action), in that order and on one alignment. The
    primary action is a filled button in its own footer bar rather than an
    outlined text link floating centred under left-aligned copy, with the
-   keyboard route beside it. The window carries the project's own artwork, so
+   keyboard route beside it. The button carries a closed treasure chest and no
+   visible label; `aria-label` keeps its accessible name, the sprite advances a
+   frame on hover but not on focus (it is focused on open, and a chest that is
+   already ajar stops reading as unopened), and the target stays 56px. The window carries the project's own artwork, so
    the reveal and the choices header represent the same object the same way.
    The focus ring is charcoal, not the gold accent — the button is focused the
    moment the dialog opens, and a gold ring on a gold button is barely a ring.
@@ -29,9 +32,13 @@ information on the card.
 Ivory / charcoal / yellow app windows; the arcade LEVEL UP emblem; fact first;
 the rotating multicolour window border; the chest; three independently styled
 opaque upgrade windows outside a shared panel; choose exactly one upgrade and
-resume. Project facts and upgrade effects are unchanged. The chest button stays
-out of the fact screen, and there is still no pale backing behind the card
-group.
+resume. Project facts and upgrade effects are unchanged. There is still no pale
+backing behind the card group.
+
+Reversed since the earlier review: the chest button, previously kept out of the
+fact screen, is now the fact screen's only action, at the user's request. It is
+a closed chest on a filled button in the footer, labelled for assistive tech
+and advancing one sprite frame on hover.
 
 ## Stylesheet consolidation
 

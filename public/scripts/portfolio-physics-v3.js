@@ -740,7 +740,8 @@
       + '</div></div>'
       + '<footer class="pv2-project-levelup__footer">'
       + projectKeyHintMarkup(['Enter'], 'open')
-      + '<button type="button" class="pv2-project-levelup__open">Open the reward</button>'
+      + '<button type="button" class="pv2-project-levelup__open" aria-label="Open the reward">'
+      + '<span class="pv2-reward-chest-icon" aria-hidden="true"></span></button>'
       + '</footer>'
       + '<p class="pv2-project-levelup__status" role="status"></p>'
       + '</section>';
