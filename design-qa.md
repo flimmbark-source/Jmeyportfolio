@@ -26,7 +26,12 @@ information on the card.
    from the first frame regardless, so a player who has read this screen before
    is never held behind the delay, and under reduced motion the chest is simply
    present with no pops at all.
-10. **No scrim.** The playfield stays at full strength behind the reward and the
+10. **The choices screen is just the project and the cards.** The "Choose one
+   upgrade" label and the `1 · 2 · 3` keyboard row are gone; the number badge
+   on each card already says which key picks it. The description and the three
+   cards share the same edges and the group sits dead centre in the viewport
+   on both axes.
+11. **No scrim.** The playfield stays at full strength behind the reward and the
    windows carry their own contrast, so the backdrop painting is not muted and
    neither phase changes what is behind it. An earlier pass dimmed both phases
    equally; that wash is gone.

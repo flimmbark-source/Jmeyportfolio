@@ -11,13 +11,13 @@
   const POINTER_IMPULSE = 0.18;
   const POINTER_MIN_IMPULSE = 0.11;
   const HOME_PULL = 0.00000042;
-  const DAMPING = 0.9992;
+  const DAMPING = 0.9989;
   const MAX_SPEED = 0.66;
   const REDUCED_MAX_SPEED = 0.08;
   const POINTER_COOLDOWN = 85;
-  // Context hover: after the same 1s dwell used by the label, gently settle
-  // the hovered sphere onto the pointer so the player can inspect it in place.
-  const CONTEXT_HOVER_DELAY = 1000;
+  // Context hover: after a short dwell, gently settle the hovered sphere onto
+  // the pointer so the player can inspect it in place.
+  const CONTEXT_HOVER_DELAY = 600;
   const CONTEXT_HOVER_FOLLOW_SPEED = 0.0018;
   const CONTEXT_HOVER_RESPONSE_MS = 110;
   const CONTEXT_HOVER_RELEASE_PAD = 28;
@@ -705,12 +705,6 @@
     return image;
   }
 
-  function projectKeyHintMarkup(keys, action) {
-    return '<p class="pv2-reward-hint" aria-hidden="true">'
-      + keys.map((key) => '<kbd>' + key + '</kbd>').join('<span>·</span>')
-      + '<span class="pv2-reward-hint__action">' + action + '</span></p>';
-  }
-
   // Timers belonging to one reward event, so a skip can retire the whole
   // remaining cinematic in a single call instead of racing it.
   function clearProjectRewardTimers(event) {
@@ -888,9 +882,7 @@
       + '<div class="pv2-project-levelup__game-title"><h2 id="pv2-project-levelup-title">' + reveal.title + '</h2>'
       + '<span class="pv2-project-levelup__game-level">LV. ' + event.level + '</span></div>'
       + '<p class="pv2-project-levelup__game-fact">' + reveal.text + '</p></div></header>'
-      + '<p class="pv2-project-levelup__choose">Choose one upgrade</p>'
       + '<div class="pv2-project-levelup__choices"></div>'
-      + projectKeyHintMarkup(['1', '2', '3'], 'choose')
       + '<p class="pv2-project-levelup__status" role="status"></p></section>'
       + '<div class="pv2-reward-stage-chest">' + projectRewardChest(true) + '</div>';
     const artworkSrc = projectArtworkSrc(body);
