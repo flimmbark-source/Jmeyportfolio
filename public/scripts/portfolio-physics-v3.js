@@ -967,15 +967,20 @@
       // pointer while a card is still travelling away from where it looks. The
       // player never waits on a disabled button for the privilege of choosing.
       let last = null;
+      // Each card leaves the chest turned slightly out from centre and
+      // straightens as it lands, so three identical rectangles read as a hand
+      // being dealt rather than three boxes appearing.
+      const centre = (cards.length - 1) / 2;
       cards.forEach((choice, index) => {
         const rect = choice.getBoundingClientRect();
         const dx = origin.left + origin.width / 2 - rect.left - rect.width / 2;
         const dy = origin.top + origin.height / 2 - rect.top - rect.height / 2;
+        const tilt = (index - centre) * 9;
         last = choice.animate([
-          { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(.2)', opacity: 0 },
-          { transform: 'translate(' + (dx * .28) + 'px,' + (dy * .4) + 'px) scale(.72)', opacity: 1, offset: .45 },
-          { transform: 'translate(0,0) scale(1)', opacity: 1 },
-        ], { duration: 320, delay: index * 40, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
+          { transform: 'translate(' + dx + 'px,' + dy + 'px) rotate(' + (-tilt) + 'deg) scale(.2)', opacity: 0 },
+          { transform: 'translate(' + (dx * .28) + 'px,' + (dy * .4) + 'px) rotate(' + (tilt * .5) + 'deg) scale(.72)', opacity: 1, offset: .45 },
+          { transform: 'translate(0,0) rotate(0deg) scale(1)', opacity: 1 },
+        ], { duration: 380, delay: index * 45, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
       });
       last?.finished.then(() => {
         if (projectLevelUpOverlay !== overlay) return;

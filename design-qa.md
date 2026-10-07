@@ -31,7 +31,19 @@ information on the card.
    on each card already says which key picks it. The description and the three
    cards share the same edges and the group sits dead centre in the viewport
    on both axes.
-11. **No scrim.** The playfield stays at full strength behind the reward and the
+11. **Motion pass.** One spring curve (`--pv2-reward-pop`) and one staged
+   order throughout. The window springs in and collapses toward the chest on
+   its way out; the emblem stamps from oversize with a slight rotation; the
+   artwork and fact pop in behind it; the chest pops in at four seconds and
+   then bobs slowly, pausing on hover so the target holds still under the
+   cursor. On the choices screen the project card leads, the three cards deal
+   out of the chest turned slightly out from centre and straighten as they
+   land, the rare tier breathes its glow, and committing leaves an expanding
+   ring in the tier's colour while the cards not taken desaturate and drop
+   back. Arcade colour runs around the frame as one band — top right, right
+   down, bottom left, left up. Every one of these is silenced under
+   `prefers-reduced-motion`.
+12. **No scrim.** The playfield stays at full strength behind the reward and the
    windows carry their own contrast, so the backdrop painting is not muted and
    neither phase changes what is behind it. An earlier pass dimmed both phases
    equally; that wash is gone.
