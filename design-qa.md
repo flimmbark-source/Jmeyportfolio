@@ -6,23 +6,27 @@ The reward sequence was rebuilt around how card-choice level-ups work in the
 genre: celebrate briefly, let the player skip, and put the decision-relevant
 information on the card.
 
-6. **The reveal is a conventional dialog.** Header (what happened), body (what
-   it is), footer (the one action), in that order and on one alignment. The
-   primary action is a filled button in its own footer bar rather than an
-   outlined text link floating centred under left-aligned copy, with the
-   keyboard route beside it. The button carries a closed treasure chest and no
-   visible label; `aria-label` keeps its accessible name, the sprite advances a
-   frame on hover but not on focus (it is focused on open, and a chest that is
-   already ajar stops reading as unopened), and the target stays 56px. The window carries the project's own artwork, so
-   the reveal and the choices header represent the same object the same way.
-   The focus ring is charcoal, not the gold accent — the button is focused the
-   moment the dialog opens, and a gold ring on a gold button is barely a ring.
-7. **Top accent instead of a conic frame.** The arcade colour used to sweep
-   around the whole perimeter as a `repeating-conic-gradient`; swept from the
-   centre of a wide rectangle it broke into uneven slabs at the corners and
-   read as a rendering glitch. It is now an even segmented bar along the top
-   edge, travelling slowly, still off under reduced motion.
-8. **No scrim.** The playfield stays at full strength behind the reward and the
+6. **The reveal follows the supplied mockup.** Emblem centred on a pale chip at
+   the top, the project's artwork beside the fact, the chest centred below. The
+   level badge, the "Project" eyebrow and the project-title heading are not
+   drawn; the artwork identifies the project and the choices screen names it a
+   second later. Both ride the heading as hidden text so the dialog still has a
+   name and the level is still announced.
+7. **Arcade frame around the whole perimeter.** Each edge carries its own
+   repeating gradient along its own axis, which gives even blocks on all four
+   sides. The earlier conic version swept from the panel's centre and broke
+   into uneven slabs at the corners.
+8. **The fact is set in Baloo 2.** Rounded and warm, so three lines of someone
+   talking about their own work are inviting rather than clinical. It joins the
+   existing Google Fonts request rather than opening a second one. Inter stays
+   the interface face everywhere else.
+9. **The window animates in and the chest is held back.** The artwork and the
+   fact pop in on open. The chest pops in four seconds later, so the fact has
+   time to land before the way forward appears. Enter and Space open the reward
+   from the first frame regardless, so a player who has read this screen before
+   is never held behind the delay, and under reduced motion the chest is simply
+   present with no pops at all.
+10. **No scrim.** The playfield stays at full strength behind the reward and the
    windows carry their own contrast, so the backdrop painting is not muted and
    neither phase changes what is behind it. An earlier pass dimmed both phases
    equally; that wash is gone.

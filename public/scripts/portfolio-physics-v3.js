@@ -527,6 +527,9 @@
     return choices;
   }
 
+  // Long enough to read three lines before the way forward appears.
+  const PROJECT_FACT_ACTION_DELAY = 4000;
+
   let eventFanfare = null;
 
   function spawnProjectLevelFanfare(body, level, centered = false) {
@@ -724,34 +727,54 @@
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-labelledby', 'pv2-project-fact-title');
     overlay.setAttribute('aria-describedby', 'pv2-project-fact-text');
-    // Header states what happened, body states what it is, footer carries the
-    // one action. The dialog reads top to bottom with a single alignment.
-    overlay.innerHTML = '<section class="pv2-project-levelup__panel">'
+    // Emblem, then the project's artwork beside the fact, then the chest. The
+    // level and the project name are not drawn — the artwork identifies the
+    // project and the choices screen names it — so they ride the heading for
+    // anyone who cannot see the thumbnail.
+    overlay.innerHTML = '<section class="pv2-project-levelup__panel" tabindex="-1">'
       + '<span class="pv2-reward-accent" aria-hidden="true"></span>'
-      + '<header class="pv2-project-levelup__header">'
-      + '<div class="pv2-project-levelup__reward-title"><span>LEVEL</span><span>UP!</span></div>'
-      + '<span class="pv2-project-levelup__level">LV. ' + event.level + '</span></header>'
+      + '<h2 id="pv2-project-fact-title" class="pv2-project-levelup__reward-title">'
+      + '<span aria-hidden="true">LEVEL</span><span aria-hidden="true">UP!</span>'
+      + '<span class="pv2-reward-sr">Level up. ' + reveal.title + ', level ' + event.level + '.</span></h2>'
       + '<div class="pv2-project-levelup__body">'
       + '<div class="pv2-project-levelup__fact-media" aria-hidden="true"></div>'
-      + '<div class="pv2-project-levelup__fact-content">'
-      + '<p class="pv2-project-levelup__project-label">Project</p>'
-      + '<h2 id="pv2-project-fact-title">' + reveal.title + '</h2>'
       + '<p id="pv2-project-fact-text" class="pv2-project-levelup__fact-text">' + reveal.text + '</p>'
-      + '</div></div>'
-      + '<footer class="pv2-project-levelup__footer">'
-      + projectKeyHintMarkup(['Enter'], 'open')
+      + '</div>'
+      + '<div class="pv2-project-levelup__action">'
       + '<button type="button" class="pv2-project-levelup__open" aria-label="Open the reward">'
-      + '<span class="pv2-reward-chest-icon" aria-hidden="true"></span></button>'
-      + '</footer>'
+      + '<span class="pv2-reward-chest-icon" aria-hidden="true"></span></button></div>'
       + '<p class="pv2-project-levelup__status" role="status"></p>'
       + '</section>';
     const factArtwork = projectArtworkSrc(event.body);
     const media = overlay.querySelector('.pv2-project-levelup__fact-media');
     if (factArtwork) media.appendChild(projectArtworkImage(factArtwork));
     else media.remove();
+    const panel = overlay.querySelector('.pv2-project-levelup__panel');
     const opener = overlay.querySelector('.pv2-project-levelup__open');
     opener.addEventListener('click', () => openProjectRewardChest(event, overlay, opener));
-    mountProjectLevelOverlay(overlay, event, '.pv2-project-levelup__open');
+
+    // The chest pops in after the fact has had time to land. Enter and Space
+    // work from the first frame regardless, so a player who has read this
+    // screen before is never held behind the delay.
+    event.rewardTimers = [];
+    const revealAction = () => {
+      if (activeProjectLevelUp !== event || projectLevelUpOverlay !== overlay) return;
+      panel.classList.add('is-action-ready');
+      const resting = document.activeElement;
+      if (resting === panel || resting === overlay || resting === document.body) {
+        opener.focus({ preventScroll: true });
+      }
+    };
+    event.rewardTimers.push(window.setTimeout(revealAction, reducedMotion() ? 0 : PROJECT_FACT_ACTION_DELAY));
+
+    overlay.addEventListener('keydown', (keyEvent) => {
+      if (event.phase !== 'fact') return;
+      if (keyEvent.key !== 'Enter' && keyEvent.key !== ' ') return;
+      if (document.activeElement === opener) return;
+      keyEvent.preventDefault();
+      openProjectRewardChest(event, overlay, opener);
+    });
+    mountProjectLevelOverlay(overlay, event, '.pv2-project-levelup__panel');
   }
 
   // The chest sequence is a reward, and a reward the player has already seen is
@@ -761,7 +784,7 @@
     if (activeProjectLevelUp !== event || event.phase !== 'fact') return;
     event.phase = 'fanfare';
     event.choices = event.choices || rollProjectUpgrades(event.body, 3);
-    event.rewardTimers = [];
+    clearProjectRewardTimers(event);
     opener.disabled = true;
     overlay.classList.add('is-chest-opening');
     const departingPanel = overlay.querySelector('.pv2-project-levelup__panel');

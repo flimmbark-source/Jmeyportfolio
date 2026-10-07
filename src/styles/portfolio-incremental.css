@@ -1669,6 +1669,7 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
   --pv2-reward-accent:#bc951e;
   --pv2-reward-shadow:4px 4px 0 rgba(36,36,36,.18);
   --pv2-reward-ease:cubic-bezier(.16,1,.3,1);
+  --pv2-reward-pop:cubic-bezier(.34,1.56,.64,1);
   /* Rarity is a three-step scale, stated once. Cards read the active pair out
      of --pv2-rarity / --pv2-rarity-wash, so a tier is one declaration and not
      a new copy of every card rule. */
@@ -1711,43 +1712,44 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
 
 .pv2-project-levelup__panel {
   position:fixed;
-  width:min(560px,calc(100vw - 32px));
-  padding:0; overflow:hidden;
+  width:min(680px,calc(100vw - 28px));
+  padding:9px; overflow:hidden;
   opacity:0; transform:translateY(8px) scale(.98);
   transform-origin:center;
   transition:opacity 200ms ease,transform 280ms var(--pv2-reward-ease);
 }
 
-/* The arcade colour signature, as an even bar along the top edge. It used to
-   be a conic gradient swept around the whole perimeter, which broke into
-   uneven slabs at the corners of a wide window and read as a glitch. */
+/* Arcade colour around the whole perimeter, as even blocks. Each edge gets its
+   own repeating gradient running along its own axis; a single gradient swept
+   from the centre is what used to break into uneven slabs at the corners. */
 .pv2-reward-accent {
-  position:absolute; left:0; right:0; top:0; height:4px; z-index:3;
+  position:absolute; inset:0; z-index:3;
   pointer-events:none;
-  background:repeating-linear-gradient(90deg,
-    #ffd34f 0 28px,#f86eae 28px 56px,#854df3 56px 84px,#40cfff 84px 112px);
-  background-size:112px 100%;
-  animation:pv2RewardAccentTravel 7s linear infinite;
+  background-image:
+    repeating-linear-gradient(90deg,#40cfff 0 26px,#854df3 26px 52px,#ffd34f 52px 78px,#f86eae 78px 104px),
+    repeating-linear-gradient(90deg,#ffd34f 0 26px,#f86eae 26px 52px,#40cfff 52px 78px,#854df3 78px 104px),
+    repeating-linear-gradient(180deg,#f86eae 0 26px,#40cfff 26px 52px,#854df3 52px 78px,#ffd34f 78px 104px),
+    repeating-linear-gradient(180deg,#854df3 0 26px,#ffd34f 26px 52px,#f86eae 52px 78px,#40cfff 78px 104px);
+  background-position:0 0,0 100%,0 0,100% 0;
+  background-size:100% 9px,100% 9px,9px 100%,9px 100%;
+  background-repeat:repeat-x,repeat-x,repeat-y,repeat-y;
 }
-@keyframes pv2RewardAccentTravel { to { background-position:112px 0; } }
 .pv2-project-levelup-overlay.is-open .pv2-project-levelup__panel { opacity:1; transform:none; }
 .pv2-project-levelup-overlay.is-chest-opening .pv2-project-levelup__panel {
   opacity:0; transform:translateY(10px) scale(.97); pointer-events:none;
   transition:opacity 150ms ease,transform 150ms var(--pv2-reward-ease);
 }
 
-.pv2-project-levelup__header {
-  display:flex; align-items:center; justify-content:space-between; gap:16px;
-  margin:0; padding:16px 24px;
-  border-bottom:1px solid #e7dfc6;
-  background:var(--pv2-reward-header);
-}
+/* Visually hidden, but read: the level and project name are no longer drawn. */
+.pv2-reward-sr { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
 
 /* The one piece of arcade lettering in the system. */
 .pv2-project-levelup__reward-title {
-  display:flex; align-items:baseline; gap:.22em;
+  display:flex; align-items:baseline; justify-content:center; gap:.22em;
+  width:max-content; margin:16px auto 2px; padding:5px 16px 7px;
+  border-radius:4px; background:#fdeeb0;
   font-family:Impact,Haettenschweiler,'Arial Black',system-ui,sans-serif;
-  font-size:1.5rem; font-weight:900; line-height:1; letter-spacing:.01em;
+  font-size:1.45rem; font-weight:900; line-height:1; letter-spacing:.01em;
   filter:drop-shadow(2px 2px 0 #71269f);
 }
 .pv2-project-levelup__reward-title span {
@@ -1770,35 +1772,49 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
 /* The project's own artwork opens the body here and heads the choices screen,
    so the same object is represented the same way on both. */
 .pv2-project-levelup__body {
-  display:grid; grid-template-columns:72px minmax(0,1fr); gap:18px;
-  align-items:start; padding:22px 24px;
+  display:grid; grid-template-columns:116px minmax(0,1fr); gap:24px;
+  align-items:start; padding:14px 26px 4px;
 }
 .pv2-project-levelup__fact-media {
-  width:72px; height:72px; overflow:hidden;
-  border:1px solid var(--pv2-reward-rule); border-radius:3px;
+  width:116px; height:116px; overflow:hidden;
+  border:1px solid var(--pv2-reward-rule); border-radius:6px;
 }
 .pv2-project-levelup__fact-media img { display:block; width:100%; height:100%; object-fit:cover; }
 .pv2-project-levelup__body:not(:has(.pv2-project-levelup__fact-media)) { grid-template-columns:minmax(0,1fr); }
-.pv2-project-levelup__project-label {
-  margin:0 0 6px;
-  color:#8a782f;
-  font:800 .66rem/1 system-ui,sans-serif; letter-spacing:.14em; text-transform:uppercase;
-}
-.pv2-project-levelup-overlay.is-fact h2 {
-  margin:0 0 10px;
-  font:800 1.5rem/1.15 system-ui,sans-serif; letter-spacing:-.03em;
-}
+
+/* Rounded and warm, so three lines of someone talking about their own work are
+   inviting rather than clinical. Inter stays the interface face everywhere else. */
 .pv2-project-levelup__fact-text {
-  margin:0; max-width:46ch;
-  color:var(--pv2-reward-muted); font:500 .9375rem/1.55 system-ui,sans-serif;
+  margin:0; max-width:48ch;
+  color:#3f3e39;
+  font:500 1.0625rem/1.5 'Baloo 2',Nunito,'Segoe UI',system-ui,sans-serif;
 }
 
-/* The one action sits in a footer of its own, where a dialog's action belongs,
-   with the keyboard route beside it rather than stacked under a text link. */
-.pv2-project-levelup__footer {
-  display:flex; align-items:center; justify-content:space-between; gap:16px;
-  padding:14px 24px; border-top:1px solid #e7dfc6;
-  background:#f4f1e8;
+/* Both pop in on open rather than simply being there. */
+.pv2-project-levelup__fact-media,
+.pv2-project-levelup__fact-text {
+  animation:pv2RewardPopIn 420ms var(--pv2-reward-pop) both;
+}
+.pv2-project-levelup__fact-media { animation-delay:90ms; }
+.pv2-project-levelup__fact-text { animation-delay:200ms; }
+@keyframes pv2RewardPopIn {
+  0% { opacity:0; transform:scale(.86); }
+  60% { opacity:1; transform:scale(1.03); }
+  100% { opacity:1; transform:scale(1); }
+}
+
+/* The chest is held back until the fact has had time to land, then pops in.
+   Enter and Space already work, so the hold never traps a repeat player. */
+.pv2-project-levelup__action {
+  display:flex; justify-content:center;
+  padding:6px 26px 20px; min-height:76px;
+}
+.pv2-project-levelup__action .pv2-project-levelup__open {
+  opacity:0; transform:scale(.4); pointer-events:none;
+}
+.pv2-project-levelup__panel.is-action-ready .pv2-project-levelup__open {
+  pointer-events:auto;
+  animation:pv2RewardPopIn 440ms var(--pv2-reward-pop) both;
 }
 .pv2-project-levelup__open {
   flex:none;
@@ -2111,17 +2127,13 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
 
 /* ---------- Narrow and short viewports ---------- */
 @media (max-width:760px) {
-  .pv2-project-levelup__panel { width:calc(100vw - 24px); }
-  .pv2-project-levelup__header { padding:12px 16px; }
-  .pv2-project-levelup__reward-title { font-size:1.22rem; }
-  .pv2-project-levelup__level { padding:5px 8px; font-size:.7rem; }
-  .pv2-project-levelup__body { grid-template-columns:52px minmax(0,1fr); gap:14px; padding:16px; }
-  .pv2-project-levelup__fact-media { width:52px; height:52px; }
-  .pv2-project-levelup-overlay.is-fact h2 { font-size:1.26rem; }
-  .pv2-project-levelup__fact-text { font-size:.9rem; }
-  /* The action goes full width rather than clinging to one corner of a narrow
-     footer, and the keyboard hint is already hidden on touch. */
-  .pv2-project-levelup__footer { padding:12px 16px; justify-content:space-between; }
+  .pv2-project-levelup__panel { width:calc(100vw - 20px); padding:7px; }
+  .pv2-reward-accent { background-size:100% 7px,100% 7px,7px 100%,7px 100%; }
+  .pv2-project-levelup__reward-title { margin-top:12px; padding:4px 12px 6px; font-size:1.18rem; }
+  .pv2-project-levelup__body { grid-template-columns:72px minmax(0,1fr); gap:14px; padding:12px 16px 2px; }
+  .pv2-project-levelup__fact-media { width:72px; height:72px; }
+  .pv2-project-levelup__fact-text { font-size:.95rem; line-height:1.45; }
+  .pv2-project-levelup__action { padding:4px 16px 16px; min-height:68px; }
   .pv2-reward-chest { width:140px; height:130px; }
 
   .pv2-project-levelup__floating-choices { width:calc(100vw - 20px); padding:8px; }
@@ -2199,6 +2211,11 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
   .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice:focus-visible { transform:none; }
   .pv2-project-levelup__open,
   .pv2-reward-chest-icon { transition:none; }
+  /* No pops, and the chest is simply present from the start. */
+  .pv2-project-levelup__fact-media,
+  .pv2-project-levelup__fact-text,
+  .pv2-project-levelup__panel.is-action-ready .pv2-project-levelup__open { animation:none; }
+  .pv2-project-levelup__panel.is-action-ready .pv2-project-levelup__open { opacity:1; transform:none; }
   .pv2-project-levelup__open:hover,
   .pv2-project-levelup__open:active:not(:disabled) { transform:none; }
   .pv2-project-levelup__open:hover .pv2-reward-chest-icon { transform:none; }
