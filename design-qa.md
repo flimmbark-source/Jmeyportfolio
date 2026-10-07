@@ -6,7 +6,20 @@ The reward sequence was rebuilt around how card-choice level-ups work in the
 genre: celebrate briefly, let the player skip, and put the decision-relevant
 information on the card.
 
-6. **No scrim.** The playfield stays at full strength behind the reward and the
+6. **The reveal is a conventional dialog.** Header (what happened), body (what
+   it is), footer (the one action), in that order and on one alignment. The
+   primary action is a filled button in its own footer bar rather than an
+   outlined text link floating centred under left-aligned copy, with the
+   keyboard route beside it. The window carries the project's own artwork, so
+   the reveal and the choices header represent the same object the same way.
+   The focus ring is charcoal, not the gold accent — the button is focused the
+   moment the dialog opens, and a gold ring on a gold button is barely a ring.
+7. **Top accent instead of a conic frame.** The arcade colour used to sweep
+   around the whole perimeter as a `repeating-conic-gradient`; swept from the
+   centre of a wide rectangle it broke into uneven slabs at the corners and
+   read as a rendering glitch. It is now an even segmented bar along the top
+   edge, travelling slowly, still off under reduced motion.
+8. **No scrim.** The playfield stays at full strength behind the reward and the
    windows carry their own contrast, so the backdrop painting is not muted and
    neither phase changes what is behind it. An earlier pass dimmed both phases
    equally; that wash is gone.

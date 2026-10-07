@@ -686,6 +686,22 @@
     }
   }
 
+  function projectArtworkSrc(body) {
+    const sourceImage = body.el.querySelector('img.pv2-visual__media');
+    const sourceFrame = body.el.querySelector('.pv2-visual__frame');
+    const frameArtwork = sourceFrame
+      && getComputedStyle(sourceFrame).backgroundImage.match(/url\(["']?([^"')]+)["']?\)/);
+    return frameArtwork ? frameArtwork[1] : sourceImage && (sourceImage.currentSrc || sourceImage.src);
+  }
+
+  function projectArtworkImage(src) {
+    const image = document.createElement('img');
+    image.src = src;
+    image.alt = '';
+    image.decoding = 'async';
+    return image;
+  }
+
   function projectKeyHintMarkup(keys, action) {
     return '<p class="pv2-reward-hint" aria-hidden="true">'
       + keys.map((key) => '<kbd>' + key + '</kbd>').join('<span>·</span>')
@@ -708,23 +724,30 @@
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-labelledby', 'pv2-project-fact-title');
     overlay.setAttribute('aria-describedby', 'pv2-project-fact-text');
+    // Header states what happened, body states what it is, footer carries the
+    // one action. The dialog reads top to bottom with a single alignment.
     overlay.innerHTML = '<section class="pv2-project-levelup__panel">'
-      + '<div class="pv2-project-levelup__header">'
+      + '<span class="pv2-reward-accent" aria-hidden="true"></span>'
+      + '<header class="pv2-project-levelup__header">'
       + '<div class="pv2-project-levelup__reward-title"><span>LEVEL</span><span>UP!</span></div>'
-      + '<span class="pv2-project-levelup__level">LV. ' + event.level + '</span></div>'
+      + '<span class="pv2-project-levelup__level">LV. ' + event.level + '</span></header>'
+      + '<div class="pv2-project-levelup__body">'
+      + '<div class="pv2-project-levelup__fact-media" aria-hidden="true"></div>'
       + '<div class="pv2-project-levelup__fact-content">'
       + '<p class="pv2-project-levelup__project-label">Project</p>'
       + '<h2 id="pv2-project-fact-title">' + reveal.title + '</h2>'
-      + '<p id="pv2-project-fact-text" class="pv2-project-levelup__fact-text">' + reveal.text + '</p></div>'
-      + '<button type="button" class="pv2-project-levelup__open">'
-      + '<span class="pv2-project-levelup__open-label">Open the reward</span></button>'
+      + '<p id="pv2-project-fact-text" class="pv2-project-levelup__fact-text">' + reveal.text + '</p>'
+      + '</div></div>'
+      + '<footer class="pv2-project-levelup__footer">'
       + projectKeyHintMarkup(['Enter'], 'open')
+      + '<button type="button" class="pv2-project-levelup__open">Open the reward</button>'
+      + '</footer>'
       + '<p class="pv2-project-levelup__status" role="status"></p>'
       + '</section>';
-    const edge = document.createElement('span');
-    edge.className = 'pv2-reward-window-edge';
-    edge.setAttribute('aria-hidden', 'true');
-    overlay.querySelector('.pv2-project-levelup__panel').append(edge);
+    const factArtwork = projectArtworkSrc(event.body);
+    const media = overlay.querySelector('.pv2-project-levelup__fact-media');
+    if (factArtwork) media.appendChild(projectArtworkImage(factArtwork));
+    else media.remove();
     const opener = overlay.querySelector('.pv2-project-levelup__open');
     opener.addEventListener('click', () => openProjectRewardChest(event, overlay, opener));
     mountProjectLevelOverlay(overlay, event, '.pv2-project-levelup__open');
@@ -846,16 +869,10 @@
       + projectKeyHintMarkup(['1', '2', '3'], 'choose')
       + '<p class="pv2-project-levelup__status" role="status"></p></section>'
       + '<div class="pv2-reward-stage-chest">' + projectRewardChest(true) + '</div>';
-    const sourceImage = body.el.querySelector('img.pv2-visual__media');
-    const sourceFrame = body.el.querySelector('.pv2-visual__frame');
-    const frameArtwork = sourceFrame && getComputedStyle(sourceFrame).backgroundImage.match(/url\(["']?([^"')]+)["']?\)/);
-    const artworkSrc = frameArtwork ? frameArtwork[1] : sourceImage && (sourceImage.currentSrc || sourceImage.src);
+    const artworkSrc = projectArtworkSrc(body);
     if (artworkSrc) {
-      const image = document.createElement('img');
-      image.src = artworkSrc;
-      image.alt = '';
-      image.decoding = 'async';
-      overlay.querySelector('.pv2-project-levelup__game-image').appendChild(image);
+      overlay.querySelector('.pv2-project-levelup__game-image')
+        .appendChild(projectArtworkImage(artworkSrc));
     } else {
       overlay.querySelector('.pv2-project-levelup__game-image').remove();
       overlay.querySelector('.pv2-project-levelup__game-context').classList.add('has-no-image');

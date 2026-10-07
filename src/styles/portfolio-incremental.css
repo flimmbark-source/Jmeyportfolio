@@ -1711,12 +1711,25 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
 
 .pv2-project-levelup__panel {
   position:fixed;
-  width:min(620px,calc(100vw - 32px));
-  padding:26px 26px 20px;
+  width:min(560px,calc(100vw - 32px));
+  padding:0; overflow:hidden;
   opacity:0; transform:translateY(8px) scale(.98);
   transform-origin:center;
   transition:opacity 200ms ease,transform 280ms var(--pv2-reward-ease);
 }
+
+/* The arcade colour signature, as an even bar along the top edge. It used to
+   be a conic gradient swept around the whole perimeter, which broke into
+   uneven slabs at the corners of a wide window and read as a glitch. */
+.pv2-reward-accent {
+  position:absolute; left:0; right:0; top:0; height:4px; z-index:3;
+  pointer-events:none;
+  background:repeating-linear-gradient(90deg,
+    #ffd34f 0 28px,#f86eae 28px 56px,#854df3 56px 84px,#40cfff 84px 112px);
+  background-size:112px 100%;
+  animation:pv2RewardAccentTravel 7s linear infinite;
+}
+@keyframes pv2RewardAccentTravel { to { background-position:112px 0; } }
 .pv2-project-levelup-overlay.is-open .pv2-project-levelup__panel { opacity:1; transform:none; }
 .pv2-project-levelup-overlay.is-chest-opening .pv2-project-levelup__panel {
   opacity:0; transform:translateY(10px) scale(.97); pointer-events:none;
@@ -1725,19 +1738,17 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
 
 .pv2-project-levelup__header {
   display:flex; align-items:center; justify-content:space-between; gap:16px;
-  min-height:72px;
-  margin:-26px -26px 22px; padding:16px 26px;
+  margin:0; padding:16px 24px;
   border-bottom:1px solid #e7dfc6;
   background:var(--pv2-reward-header);
 }
 
 /* The one piece of arcade lettering in the system. */
 .pv2-project-levelup__reward-title {
-  display:grid; justify-items:start;
+  display:flex; align-items:baseline; gap:.22em;
   font-family:Impact,Haettenschweiler,'Arial Black',system-ui,sans-serif;
-  font-size:1.6rem; font-weight:900; line-height:.74; letter-spacing:-.035em;
-  transform:scaleX(1.025);
-  filter:drop-shadow(2px 2px 0 #71269f) drop-shadow(4px 4px 0 #1e9fe1);
+  font-size:1.5rem; font-weight:900; line-height:1; letter-spacing:.01em;
+  filter:drop-shadow(2px 2px 0 #71269f);
 }
 .pv2-project-levelup__reward-title span {
   display:block;
@@ -1756,48 +1767,62 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
 }
 
 /* ---------- Reveal window ---------- */
-.pv2-project-levelup__fact-content {
-  padding:2px 0 2px 20px;
-  border-left:4px solid #ffd34f;
+/* The project's own artwork opens the body here and heads the choices screen,
+   so the same object is represented the same way on both. */
+.pv2-project-levelup__body {
+  display:grid; grid-template-columns:72px minmax(0,1fr); gap:18px;
+  align-items:start; padding:22px 24px;
 }
+.pv2-project-levelup__fact-media {
+  width:72px; height:72px; overflow:hidden;
+  border:1px solid var(--pv2-reward-rule); border-radius:3px;
+}
+.pv2-project-levelup__fact-media img { display:block; width:100%; height:100%; object-fit:cover; }
+.pv2-project-levelup__body:not(:has(.pv2-project-levelup__fact-media)) { grid-template-columns:minmax(0,1fr); }
 .pv2-project-levelup__project-label {
-  margin:0 0 10px;
+  margin:0 0 6px;
   color:#8a782f;
-  font:800 .7rem/1 system-ui,sans-serif; letter-spacing:.14em; text-transform:uppercase;
+  font:800 .66rem/1 system-ui,sans-serif; letter-spacing:.14em; text-transform:uppercase;
 }
 .pv2-project-levelup-overlay.is-fact h2 {
-  margin:0 0 14px;
-  font:850 clamp(1.5rem,3vw,2rem)/1.1 system-ui,sans-serif; letter-spacing:-.045em;
+  margin:0 0 10px;
+  font:800 1.5rem/1.15 system-ui,sans-serif; letter-spacing:-.03em;
 }
 .pv2-project-levelup__fact-text {
-  margin:0; max-width:56ch;
-  color:var(--pv2-reward-muted); font:500 1rem/1.5 system-ui,sans-serif;
+  margin:0; max-width:46ch;
+  color:var(--pv2-reward-muted); font:500 .9375rem/1.55 system-ui,sans-serif;
 }
-.pv2-project-levelup-overlay.is-chest-opening .pv2-project-levelup__fact-content { opacity:.35; transition:opacity 150ms; }
 
-/* The reveal window states the reward plainly and opens it; the chest itself
-   belongs to the sequence that follows, not to this window. */
+/* The one action sits in a footer of its own, where a dialog's action belongs,
+   with the keyboard route beside it rather than stacked under a text link. */
+.pv2-project-levelup__footer {
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding:14px 24px; border-top:1px solid #e7dfc6;
+  background:#f4f1e8;
+}
 .pv2-project-levelup__open {
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
-  width:max-content; max-width:100%;
-  margin:12px auto 0; padding:0;
-  border:0; background:transparent; color:var(--pv2-reward-ink);
+  flex:none;
+  padding:11px 20px;
+  border:2px solid var(--pv2-reward-border); border-radius:3px;
+  background:#ffd34f; color:var(--pv2-reward-ink);
+  box-shadow:3px 3px 0 rgba(36,36,36,.22);
+  font:750 .9375rem/1 system-ui,sans-serif; letter-spacing:.01em;
   cursor:pointer;
+  transition:background-color 120ms ease,box-shadow 120ms ease,transform 120ms var(--pv2-reward-ease);
 }
-.pv2-project-levelup__open:hover .pv2-project-levelup__open-label { text-decoration:underline; text-underline-offset:3px; }
-.pv2-project-levelup__open:focus-visible { outline:3px solid var(--pv2-reward-accent); outline-offset:4px; border-radius:3px; }
+.pv2-project-levelup__open:hover { background:#ffdf7a; box-shadow:4px 5px 0 rgba(36,36,36,.24); transform:translateY(-1px); }
+.pv2-project-levelup__open:active:not(:disabled) { transform:translateY(2px); box-shadow:1px 1px 0 rgba(36,36,36,.22); }
+/* Charcoal, not the gold accent: a gold ring on a gold button is barely a
+   ring, and this button is focused the moment the dialog opens. */
+.pv2-project-levelup__open:focus-visible { outline:3px solid var(--pv2-reward-border); outline-offset:3px; }
 .pv2-project-levelup__open:disabled { cursor:default; }
-.pv2-project-levelup__open-label {
-  font:750 .86rem/1.3 system-ui,sans-serif; letter-spacing:.03em;
-}
-.pv2-project-levelup-overlay.is-chest-opening .pv2-project-levelup__open-label { opacity:0; }
 
 /* Keyboard affordances are shown only where there is a keyboard to use. */
 .pv2-reward-hint { display:none; }
 @media (hover:hover) and (pointer:fine) {
   .pv2-reward-hint {
-    display:flex; align-items:center; justify-content:center; gap:6px;
-    margin:14px 0 0;
+    display:flex; align-items:center; gap:6px;
+    margin:0;
     color:var(--pv2-reward-muted); font:600 .68rem/1 system-ui,sans-serif;
   }
   .pv2-reward-hint kbd {
@@ -1808,6 +1833,10 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
     text-align:center;
   }
   .pv2-reward-hint__action { margin-left:2px; letter-spacing:.06em; text-transform:uppercase; }
+}
+
+@media (hover:hover) and (pointer:fine) {
+  .pv2-project-levelup-overlay.is-choices .pv2-reward-hint { justify-content:center; margin-top:14px; }
 }
 
 .pv2-project-levelup__status { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
@@ -1878,20 +1907,6 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
 }
 .pv2-reward-skip:hover,
 .pv2-reward-skip:focus-visible { background:#fff6d9; border-color:var(--pv2-reward-accent); outline:none; }
-
-/* Arcade colour travels slowly around the reveal window's edge. */
-@property --pv2-frame-angle { syntax:'<angle>'; initial-value:0deg; inherits:false; }
-.pv2-reward-window-edge {
-  position:absolute; inset:-2px; padding:3px; border-radius:4px;
-  pointer-events:none; z-index:2;
-  background:repeating-conic-gradient(from var(--pv2-frame-angle),#ffd34f 0deg 16deg,#fff5bc 16deg 22deg,#f86eae 22deg 38deg,#854df3 38deg 54deg,#40cfff 54deg 70deg,#fff 70deg 76deg,#ffd34f 76deg 90deg);
-  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
-  -webkit-mask-composite:xor;
-  mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
-  mask-composite:exclude;
-  animation:pv2WindowEdgeTurn 18s linear infinite;
-}
-@keyframes pv2WindowEdgeTurn { to { --pv2-frame-angle:360deg; } }
 
 /* ---------- Choices screen ---------- */
 .pv2-project-levelup__floating-choices {
@@ -2077,12 +2092,18 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
 
 /* ---------- Narrow and short viewports ---------- */
 @media (max-width:760px) {
-  .pv2-project-levelup__panel { width:calc(100vw - 24px); padding:16px 16px 14px; }
-  .pv2-project-levelup__header { min-height:60px; margin:-16px -16px 16px; padding:12px 16px; }
+  .pv2-project-levelup__panel { width:calc(100vw - 24px); }
+  .pv2-project-levelup__header { padding:12px 16px; }
   .pv2-project-levelup__reward-title { font-size:1.22rem; }
   .pv2-project-levelup__level { padding:5px 8px; font-size:.7rem; }
-  .pv2-project-levelup__fact-content { padding-left:14px; }
-  .pv2-project-levelup__fact-text { font-size:.92rem; }
+  .pv2-project-levelup__body { grid-template-columns:52px minmax(0,1fr); gap:14px; padding:16px; }
+  .pv2-project-levelup__fact-media { width:52px; height:52px; }
+  .pv2-project-levelup-overlay.is-fact h2 { font-size:1.26rem; }
+  .pv2-project-levelup__fact-text { font-size:.9rem; }
+  /* The action goes full width rather than clinging to one corner of a narrow
+     footer, and the keyboard hint is already hidden on touch. */
+  .pv2-project-levelup__footer { padding:12px 16px; }
+  .pv2-project-levelup__open { flex:1 1 auto; padding:12px 16px; }
   .pv2-reward-chest { width:140px; height:130px; }
 
   .pv2-project-levelup__floating-choices { width:calc(100vw - 20px); padding:8px; }
@@ -2151,11 +2172,14 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
   .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice,
   .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice-icon { transition:none; }
   .pv2-project-levelup__panel { opacity:1; transform:none; }
-  .pv2-reward-window-edge,
+  .pv2-reward-accent,
   .pv2-reward-chest.is-spewing .pv2-reward-chest__light,
   .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.is-selected { animation:none; }
   .pv2-reward-chest__particles { display:none; }
   .pv2-reward-chest.is-lid-open .pv2-reward-chest__light { animation:none; opacity:.12; transform:none; }
   .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice:hover,
   .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice:focus-visible { transform:none; }
+  .pv2-project-levelup__open { transition:none; }
+  .pv2-project-levelup__open:hover,
+  .pv2-project-levelup__open:active:not(:disabled) { transform:none; }
 }
