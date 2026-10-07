@@ -40,10 +40,20 @@ information on the card.
    out of the chest turned slightly out from centre and straighten as they
    land, the rare tier breathes its glow, and committing leaves an expanding
    ring in the tier's colour while the cards not taken desaturate and drop
-   back. Arcade colour runs around the frame as one band — top right, right
-   down, bottom left, left up. Every one of these is silenced under
+   back. The frame no longer travels: a moving band in peripheral
+   vision is one of the strongest pulls there is, and it was pulling against
+   the sentence it surrounds. Every animation here is silenced under
    `prefers-reduced-motion`.
-12. **No scrim.** The playfield stays at full strength behind the reward and the
+12. **The fact is the focal point, by measurement.** It had been losing: the
+   emblem was set in *larger* type than the sentence (17.28px against 17px),
+   a 116px saturated thumbnail sat level with it on the left, and a four-colour
+   band travelled around the frame. The sentence is now the largest type in the
+   window (24px), the darkest ink (14.8:1 against the paper, up from 10.1:1),
+   held to a 34ch measure, and given the most space around it. The emblem drops
+   to 1.08rem, the thumbnail to 68px at 88% opacity and 82% saturation, and the
+   frame to a static 5px. The fact's rendered area went from 2.4× the
+   thumbnail's to 17×. Checks in the suite hold this ordering.
+13. **No scrim.** The playfield stays at full strength behind the reward and the
    windows carry their own contrast, so the backdrop painting is not muted and
    neither phase changes what is behind it. An earlier pass dimmed both phases
    equally; that wash is gone.
