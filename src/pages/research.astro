@@ -1,5 +1,6 @@
 ---
 import PortfolioBackdrop from '../components/PortfolioBackdrop.astro';
+import PortfolioPolish from '../components/PortfolioPolish.astro';
 import '../styles/portfolio-v2.css';
 import '../styles/portfolio-chrome.css';
 ---
@@ -15,16 +16,17 @@ import '../styles/portfolio-chrome.css';
     <title>Experiments & Research — Jacob Meyerkopf</title>
   </head>
   <body class="pv2-body">
+    <PortfolioPolish />
     <PortfolioBackdrop />
     <div class="pv2-site">
       <header class="pv2-nav">
         <a href="/" class="pv2-nav__name">Jacob Meyerkopf</a>
         <nav aria-label="Portfolio navigation">
-          <a href="/">Playground</a>
-          <a href="/?project=unfinished">Work</a>
-          <a href="/research" aria-current="page">Research</a>
-          <a href="/ux">UX</a>
-          <a href="/contact">Contact</a>
+          <a data-polish="magnet" href="/"><span class="pv2-polish-label">Playground</span></a>
+          <a data-polish="magnet" href="/?project=unfinished"><span class="pv2-polish-label">Work</span></a>
+          <a data-polish="magnet" href="/research" aria-current="page"><span class="pv2-polish-label">Research</span></a>
+          <a data-polish="magnet" href="/ux"><span class="pv2-polish-label">UX</span></a>
+          <a data-polish="magnet" href="/contact"><span class="pv2-polish-label">Contact</span></a>
         </nav>
       </header>
 
