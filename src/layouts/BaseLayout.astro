@@ -1,5 +1,6 @@
 ---
 import '../styles/tailwind.css';
+import PortfolioPolish from '../components/PortfolioPolish.astro';
 
 interface NavLink {
   href: string;
@@ -58,6 +59,7 @@ const { title, description, mainClass = '', navLinks = defaultNavLinks } = Astro
   <body
     class="relative min-h-screen text-slate-800 antialiased transition-colors duration-300 dark:bg-slate-950 dark:text-slate-200"
   >
+    <PortfolioPolish />
     <div aria-hidden="true" class="fixed inset-0 -z-10">
       <div
         data-parallax-layer
