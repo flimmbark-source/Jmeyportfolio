@@ -178,6 +178,7 @@ function ProjectVisual({ node, large = false }) {
           <span className="pv2-visual__status">{node.status === 'unfinished' ? 'in progress' : 'interactive work'}</span>
         </div>
       </div>
+      <span className="pv2-polish-light" aria-hidden="true" />
     </div>
   );
 }
@@ -195,6 +196,7 @@ function ProjectTile({ node, placement, index, onSelect, reducedMotion, register
         layoutId={`project-${node.id}`}
         type="button"
         className={`pv2-project-tile pv2-project-tile--${placement}`}
+        data-polish="orb"
         onClick={() => onSelect(node.id)}
         initial={reducedMotion ? false : { opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -557,6 +559,7 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
 
         <motion.div
           className="pv2-focus__artifact"
+          data-polish="surface"
           layoutId={`project-${node.id}`}
           exit={reducedMotion ? undefined : { opacity: 0.7, scale: 0.99 }}
           transition={reducedMotion ? { duration: 0 } : MOTION.major}
@@ -575,8 +578,8 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
             </div>
             <div className="pv2-focus__actions">
               {primaryPlayUrl && (
-                <a href={primaryPlayUrl} target={primaryPlayExternal ? '_blank' : undefined} rel={primaryPlayExternal ? 'noreferrer' : undefined}>
-                  {node.localPlayUrl ? 'Play here →' : 'Play in browser ↗'}
+                <a data-polish="magnet" href={primaryPlayUrl} target={primaryPlayExternal ? '_blank' : undefined} rel={primaryPlayExternal ? 'noreferrer' : undefined}>
+                  <span className="pv2-polish-label">{node.localPlayUrl ? 'Play here →' : 'Play in browser ↗'}</span>
                 </a>
               )}
               {node.localPlayUrl && node.playUrl && (
@@ -626,10 +629,11 @@ function Workshop({ onBack, onSelect, reducedMotion }) {
             key={node.id}
             type="button"
             className="pv2-workshop-card"
+            data-polish="card"
             onClick={() => onSelect(node.id)}
             initial={reducedMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            whileHover={reducedMotion ? undefined : { y: -5, rotate: index % 2 ? 0.3 : -0.3 }}
+            whileHover={reducedMotion ? undefined : { y: -3, transition: { type: 'spring', stiffness: 260, damping: 26 } }}
             whileTap={reducedMotion ? undefined : { scale: 0.99 }}
             transition={reducedMotion ? { duration: 0 } : { ...MOTION.interface, delay: index * 0.012 }}
           >
@@ -780,11 +784,11 @@ export default function RelationalPortfolio() {
       <header className="pv2-nav">
         <a href="/" className="pv2-nav__name">Jacob Meyerkopf</a>
         <nav aria-label="Portfolio navigation">
-          <button type="button" onClick={() => { setSelectedId(null); writeProjectToUrl(null); }}>Playground</button>
-          <button type="button" onClick={() => select('unfinished')}>Work</button>
-          <a href="/research">Research</a>
-          <a href="/ux">UX</a>
-          <a href="/contact">Contact</a>
+          <button data-polish="magnet" type="button" aria-current={!selected ? 'page' : undefined} onClick={() => { setSelectedId(null); writeProjectToUrl(null); }}><span className="pv2-polish-label">Playground</span></button>
+          <button data-polish="magnet" type="button" aria-current={selected && selected.id !== 'ux-work' ? 'page' : undefined} onClick={() => select('unfinished')}><span className="pv2-polish-label">Work</span></button>
+          <a data-polish="magnet" href="/research"><span className="pv2-polish-label">Research</span></a>
+          <a data-polish="magnet" href="/ux"><span className="pv2-polish-label">UX</span></a>
+          <a data-polish="magnet" href="/contact"><span className="pv2-polish-label">Contact</span></a>
         </nav>
       </header>
 
