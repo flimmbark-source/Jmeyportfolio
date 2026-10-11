@@ -44,6 +44,13 @@ const artwork = [
   'letterriverscreen.png',
   'Thelastreadingscreen.png',
   'oiz8uf.png',
+  // Case-study screens, used as the UX tile on the entry page. The sources are
+  // up to 1024x1536 PNGs rendered into a quarter of a card, so they need the
+  // same treatment as the game artwork rather than shipping at full size.
+  'earth-hero.png',
+  'idl-case-study.png',
+  'ai-archiver.png',
+  'agora21.png',
 ];
 
 /**

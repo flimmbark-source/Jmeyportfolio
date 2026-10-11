@@ -16,8 +16,25 @@ const destinations = [
     href: '/playground',
     title: 'Playground',
     line: 'The work, floating',
+    // The painting is only the backdrop the playground sits on — on its own it
+    // said "landscape", not "a space with my work floating in it". The card
+    // rebuilds the playground's actual composition instead: the same project
+    // orbs over the same backdrop, drifting. A screenshot would have been more
+    // literal, but the playground is a wide landscape and a portrait crop of
+    // one loses most of the orbs and softens what is left.
     art: '/images/derived/work-backgrounds/landers-peak-900.webp',
     pos: 'center 55%',
+    // Centres and diameters as a percentage of the card's width. Kept inside
+    // the edges with room for the drift, and clear of the "Enter" chip.
+    orbs: [
+      { art: '/images/derived/oiz8uf-768.webp', x: 48, y: 23, size: 38 },
+      { art: '/images/derived/letterriverscreen-768.webp', x: 17, y: 42, size: 30 },
+      // The interesting half of this one is the tarot hand along the bottom;
+      // a centred circular crop is just the empty green table above it.
+      { art: '/images/derived/Thelastreadingscreen-768.webp', x: 76, y: 44, size: 26, pos: 'center 74%' },
+      { art: '/images/derived/rotogoscreen-768.webp', x: 27, y: 66, size: 29 },
+      { art: '/images/derived/VenueRivalsscreen-768.webp', x: 68, y: 72, size: 25 },
+    ],
   },
   {
     href: '/playground?project=unfinished',
@@ -41,22 +58,39 @@ const destinations = [
     href: '/ux',
     title: 'UX',
     line: 'Product & research work',
-    art: '/images/derived/work-backgrounds/rococo-room-900.webp',
-    pos: 'center 40%',
+    // Four case studies off the UX page itself. A grid rather than the Games
+    // strip, so the two cards do not read as the same thing twice.
+    grid: [
+      '/images/derived/idl-case-study-768.webp',
+      '/images/derived/earth-hero-768.webp',
+      '/images/derived/ai-archiver-768.webp',
+      '/images/derived/agora21-768.webp',
+    ],
+    art: '/images/derived/idl-case-study-768.webp',
+    pos: 'center top',
   },
   {
     href: '/research',
     title: 'Research',
     line: 'The open question',
-    art: '/images/derived/work-backgrounds/bronze-lamp-boat-900.webp',
+    // The Café gameplay loop — the build the study is actually about — with
+    // the page's own evidence ladder over it. The derivative is an animated
+    // WebP, so the card plays the thing being studied.
+    art: '/images/derived/sRdmVj-600.webp',
     pos: 'center',
+    // Mirrors the evidence states on `/research`, in the page's own order.
+    chips: ['Player observation', 'Current question', 'Active study', 'Finding'],
   },
   {
     href: '/contact',
     title: 'Contact',
     line: 'Say hello',
+    // The only destination with no artifact of its own to show, so the card
+    // shows what is actually there: the note form, over a painting to keep it
+    // in family with the rest of the arc.
     art: '/images/derived/work-backgrounds/at-the-seaside-900.webp',
     pos: 'center 65%',
+    form: true,
   },
 ];
 
@@ -107,13 +141,39 @@ const playableCount = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotog
                 data-card
                 style={`--art: url('${d.art}'); --art-pos: ${d.pos}`}
               >
-                {d.tiles
-                  ? (
-                    <span class="dcard__art dcard__art--stack" aria-hidden="true">
-                      {d.tiles.map((tile) => <span style={`--art: url('${tile}')`} />)}
-                    </span>
-                  )
-                  : <span class="dcard__art" aria-hidden="true" />}
+                {d.tiles && (
+                  <span class="dcard__art dcard__art--stack" aria-hidden="true">
+                    {d.tiles.map((tile) => <span style={`--art: url('${tile}')`} />)}
+                  </span>
+                )}
+                {d.orbs && (
+                  <span class="dcard__art dcard__art--play" aria-hidden="true">
+                    {d.orbs.map((orb, j) => (
+                      <span
+                        class="dcard__orb"
+                        style={`--art: url('${orb.art}'); --x: ${orb.x}%; --y: ${orb.y}%; --size: ${orb.size}%; --drift: ${j}; --orb-pos: ${orb.pos ?? 'center'}`}
+                      />
+                    ))}
+                  </span>
+                )}
+                {d.grid && (
+                  <span class="dcard__art dcard__art--grid" aria-hidden="true">
+                    {d.grid.map((cell) => <span style={`--art: url('${cell}')`} />)}
+                  </span>
+                )}
+                {!d.tiles && !d.orbs && !d.grid && <span class="dcard__art" aria-hidden="true" />}
+                {d.chips && (
+                  <span class="dcard__chips" aria-hidden="true">
+                    {d.chips.map((chip) => <span>{chip}</span>)}
+                  </span>
+                )}
+                {d.form && (
+                  <span class="dcard__form" aria-hidden="true">
+                    <span class="dcard__field" /><span class="dcard__field" />
+                    <span class="dcard__field dcard__field--tall" />
+                    <span class="dcard__send">Send</span>
+                  </span>
+                )}
                 <span class="dcard__veil" aria-hidden="true" />
                 <span class="dcard__text">
                   <strong>{d.title}</strong>
@@ -516,6 +576,140 @@ const playableCount = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotog
     background: var(--art) center / cover no-repeat;
   }
 
+  /* The playground's own composition, rebuilt: project orbs over the backdrop
+     the real page paints behind them. */
+  .dcard__art--play {
+    background-image: var(--art);
+    background-position: var(--art-pos, center);
+    background-size: cover;
+    /* The 6% overscan the other cards use to hide a zoom seam would push the
+       outer orbs past the card's edge and crop them. This layer is composed to
+       the card, so it sits flush. */
+    transform: none;
+  }
+
+  .dcard__orb {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--size);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--art) var(--orb-pos, center) / cover no-repeat;
+    transform: translate(-50%, -50%);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 252, 244, .5),
+      inset 0 8px 14px rgba(255, 255, 255, .18),
+      0 7px 16px rgba(26, 24, 20, .34);
+  }
+
+  /* Only the card in front drifts: the rest are slivers at a steep angle where
+     the motion would read as jitter, and five animations each would be paid
+     for on a card nobody can see. */
+  @media (prefers-reduced-motion: no-preference) {
+    .dcard.is-active .dcard__orb {
+      animation: dcard-drift calc(6.5s + var(--drift) * 1.4s) var(--pv2-ease) infinite alternate;
+      animation-delay: calc(var(--drift) * -1.9s);
+    }
+  }
+
+  @keyframes dcard-drift {
+    from { transform: translate(-50%, -50%); }
+    to { transform: translate(calc(-50% + 4px), calc(-50% - 7px)); }
+  }
+
+  /* UX: four case studies, so the card is plainly a body of client work and
+     not another games card. */
+  .dcard__art--grid {
+    display: grid;
+    grid-template: repeat(2, 1fr) / repeat(2, 1fr);
+    gap: 2px;
+    background: none;
+    transform: none;
+  }
+
+  /* `contain`, not `cover`. These four sources run from an 816x263 banner to a
+     1024x1536 page, and filling a quarter-card with each blew the widest ones
+     up past three times and left a quarter of a sentence as the whole tile.
+     Shown whole on a tile they read as what they are: four case studies. */
+  .dcard__art--grid > span {
+    background: var(--art) center / contain no-repeat;
+    background-color: #f1eee8;
+  }
+
+  /* Research: the evidence ladder off `/research`, over the build it studies.
+     Only the first rung is filled in, which is the page's actual position. */
+  .dcard__chips {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    top: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .dcard__chips span {
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, .34);
+    background: rgba(22, 20, 17, .52);
+    color: rgba(255, 255, 255, .82);
+    font-size: .6rem;
+    font-weight: 650;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .dcard__chips span:first-child {
+    border-color: rgba(216, 255, 99, .66);
+    background: rgba(216, 255, 99, .88);
+    color: #15170e;
+  }
+
+  /* Contact: the note form, which is the whole page. On its own the fields
+     were white on a bright painting and all but vanished, so they sit on a
+     panel the way they do on the page itself. */
+  .dcard__form {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    top: 52px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 12px;
+    border-radius: 13px;
+    border: 1px solid rgba(255, 255, 255, .5);
+    background: rgba(250, 249, 245, .8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 10px 24px rgba(26, 24, 20, .18);
+  }
+
+  .dcard__field {
+    height: 19px;
+    border-radius: 7px;
+    border: 1px solid rgba(36, 36, 36, .16);
+    background: #fff;
+  }
+
+  .dcard__field--tall { height: 46px; }
+
+  .dcard__send {
+    align-self: flex-start;
+    margin-top: 1px;
+    padding: 5px 13px;
+    border-radius: 999px;
+    background: #d8ff63;
+    color: #15170e;
+    font-size: .64rem;
+    font-weight: 700;
+  }
+
   .dcard__veil {
     position: absolute;
     inset: 0;
@@ -583,7 +777,7 @@ const playableCount = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotog
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .is-live .dcard.is-active:hover .dcard__art { transform: scale(1.11); }
+    .is-live .dcard.is-active:hover .dcard__art:not(.dcard__art--play) { transform: scale(1.11); }
   }
 
   /* --- Dots and hint ---------------------------------------------------- */
