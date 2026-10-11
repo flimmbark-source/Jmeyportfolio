@@ -1,0 +1,110 @@
+---
+import RelationalPortfolio from '../components/RelationalPortfolio.jsx';
+import PortfolioPolish from '../components/PortfolioPolish.astro';
+import '../styles/portfolio-v2.css';
+import '../styles/portfolio-chrome.css';
+import '../styles/portfolio-v2-overrides.css';
+import '../styles/portfolio-v2-adaptive.css';
+import '../styles/portfolio-loading.css';
+import '../styles/portfolio-incremental.css';
+import '../styles/portfolio-battle.css';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="The playground: Jacob Meyerkopf's work as a physics-driven, playable space. Games, disability experiences, learning systems, and unfinished experiments."
+    />
+    <!-- The entry page is the front door. The playground is one route through it,
+         so it should not compete with `/` in search results. -->
+    <link rel="canonical" href="/playground" />
+    <link rel="preload" as="image" href="/images/levelup/chest-states.png" />
+    <title>Playground — Jacob Meyerkopf</title>
+  </head>
+  <body class="pv2-body">
+    <PortfolioPolish />
+    <a class="pv2-skip" href="#portfolio-v2">Skip to work</a>
+    <div class="pv2-boot-loader" aria-label="Loading portfolio" role="status">
+      <div class="pv2-loader-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
+    <div id="portfolio-v2">
+      <RelationalPortfolio client:load />
+    </div>
+    <script is:inline>
+      (() => {
+        const loader = document.querySelector('.pv2-boot-loader');
+        if (!loader) return;
+
+        const waitForPortfolio = new Promise((resolve) => {
+          const check = () => {
+            if (document.querySelector('#portfolio-v2 .pv2-site')) {
+              requestAnimationFrame(resolve);
+              return;
+            }
+            requestAnimationFrame(check);
+          };
+          check();
+        });
+
+        const finish = () => {
+          if (!loader.isConnected) return;
+          loader.classList.add('is-done');
+          window.setTimeout(() => loader.remove(), 150);
+        };
+
+        // The shell is the critical content. Project media and the randomized
+        // painting reveal progressively after it is interactive instead of
+        // holding the visitor behind an artificial minimum loading screen.
+        waitForPortfolio.then(finish);
+        window.setTimeout(finish, 1500);
+      })();
+    </script>
+    <script src="/scripts/portfolio-physics-v3.js?v=62" defer></script>
+    <script src="/scripts/portfolio-battle.js?v=1" defer></script>
+    <script src="/scripts/ux-direct-link.js?v=1" defer></script>
+    <script src="/scripts/letter-river-preview.js?v=7" defer></script>
+  </body>
+</html>
+
+<style is:global>
+  .pv2-skip {
+    position: fixed;
+    left: 12px;
+    top: 12px;
+    z-index: 1100;
+    transform: translateY(-160%);
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: #d8ff63;
+    color: #15170e;
+    font: 700 14px/1 system-ui, sans-serif;
+  }
+
+  .pv2-skip:focus {
+    transform: translateY(0);
+  }
+
+  .pv2-overview__statement {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
+  }
+
+  @media (max-width: 720px) {
+    html.pv2-physics-live .pv2-overview__statement {
+      top: 50% !important;
+    }
+
+    html:not(.pv2-physics-live) .pv2-overview__statement {
+      position: relative !important;
+      inset: auto !important;
+      transform: none !important;
+    }
+  }
+</style>

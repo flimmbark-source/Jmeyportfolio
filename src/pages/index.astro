@@ -1,13 +1,83 @@
 ---
-import RelationalPortfolio from '../components/RelationalPortfolio.jsx';
+/**
+ * The front door.
+ *
+ * The playground (`/playground`) used to be the site root, which meant every
+ * visitor was dropped straight into a physics sim with an incremental game
+ * running underneath it. That is the most interesting thing here and it stays
+ * the headline route — but it answered "what is this?" with a toy, and a
+ * visitor who wanted the UX work or a single build had to work it out from
+ * motion. This page answers the question first, points at the playground
+ * deliberately, and lists the direct routes beside it so nobody is funnelled.
+ */
+import PortfolioBackdrop from '../components/PortfolioBackdrop.astro';
 import PortfolioPolish from '../components/PortfolioPolish.astro';
+import { portfolioV2NodeMap } from '../data/portfolioV2';
 import '../styles/portfolio-v2.css';
 import '../styles/portfolio-chrome.css';
-import '../styles/portfolio-v2-overrides.css';
-import '../styles/portfolio-v2-adaptive.css';
-import '../styles/portfolio-loading.css';
-import '../styles/portfolio-incremental.css';
-import '../styles/portfolio-battle.css';
+
+/**
+ * Artwork already shipped for these projects, reused here. Same derived WebP
+ * the tiles and workshop cards paint from — see `portfolio-v2-overrides.css`.
+ */
+const artwork: Record<string, string> = {
+  'get-to-the-cafe': '/images/derived/oiz8uf-768.webp',
+  'letter-river': '/images/derived/letterriverscreen-768.webp',
+  'last-reading': '/images/derived/Thelastreadingscreen-768.webp',
+  rotogo: '/images/derived/rotogoscreen-768.webp',
+  'gig-duel': '/images/derived/VenueRivalsscreen-768.webp',
+};
+
+/**
+ * Door copy, held here rather than read from `portfolioV2.ts`. The node
+ * summaries are written for a focused project view and run to a paragraph;
+ * this page needs one scannable line per card. Titles, kickers and launch
+ * links still come from the data so they cannot drift.
+ */
+const blurbs: Record<string, string> = {
+  'get-to-the-cafe': 'Run an errand through a body that is already overwhelmed, and decide what to drop.',
+  'letter-river': 'A language-learning game that treats learning as something you do, not something delivered.',
+  'last-reading': 'A solitaire horror roguelike about building, scoring and interpreting tarot readings.',
+  rotogo: 'A physical game idea rebuilt in React — the project that taught me to program.',
+  'gig-duel': 'A small venue-booking game, written in a shelter to have something to think about.',
+};
+
+const featuredIds = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotogo', 'gig-duel'];
+
+const featured = featuredIds.map((id) => {
+  const node = portfolioV2NodeMap.get(id)!;
+  // Prefer a build hosted here over an external one, so the visitor stays put.
+  const play = node.localPlayUrl ?? node.playUrl ?? node.route ?? null;
+  return {
+    id,
+    title: node.title,
+    kicker: node.kicker ?? 'Project',
+    made: node.made,
+    blurb: blurbs[id],
+    art: artwork[id],
+    play,
+    playsHere: Boolean(node.localPlayUrl),
+    detail: `/playground?project=${id}`,
+  };
+});
+
+const routes = [
+  {
+    href: '/ux',
+    label: 'UX & product work',
+    body: 'The conventional portfolio: research, service design, workflow systems, and case studies with outcomes attached.',
+  },
+  {
+    href: '/research',
+    label: 'Research',
+    body: 'The open question behind the games — whether an interactive framework changes how someone reads a lived experience.',
+  },
+  {
+    href: '/contact',
+    label: 'Contact',
+    body: 'Collaborations, roles, playtests, and odd experiments. A note here reaches me directly.',
+  },
+];
 ---
 <!doctype html>
 <html lang="en">
@@ -16,58 +86,219 @@ import '../styles/portfolio-battle.css';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Interactive work by Jacob Meyerkopf: games, disability experiences, learning systems, unfinished experiments, and UX work."
+      content="Jacob Meyerkopf makes games, interactive art, and UX work about perspective, disability, systems, and learning. Enter the playground or go straight to a project."
     />
-    <link rel="preload" as="image" href="/images/levelup/chest-states.png" />
-    <title>Jacob Meyerkopf — Interactive Work</title>
+    <title>Jacob Meyerkopf — Interactive Designer</title>
+    <script is:inline>
+      // `/?project=x` was the shareable deep link while the playground lived at
+      // the root. Those URLs are in the wild (and still linked from a few pages
+      // of the build history), so forward them instead of showing the door with
+      // a parameter it has no use for. `replace`, not `assign`: the door must
+      // not become a back-button trap between the link and the playground.
+      (() => {
+        const params = new URLSearchParams(window.location.search);
+        if (!params.has('project')) return;
+        window.location.replace('/playground' + window.location.search + window.location.hash);
+      })();
+    </script>
   </head>
   <body class="pv2-body">
     <PortfolioPolish />
-    <a class="pv2-skip" href="#portfolio-v2">Skip to work</a>
-    <div class="pv2-boot-loader" aria-label="Loading portfolio" role="status">
-      <div class="pv2-loader-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+    <PortfolioBackdrop />
+    <a class="entry-skip" href="#entry-main">Skip to content</a>
+    <div class="pv2-site">
+      <header class="pv2-nav">
+        <a href="/" class="pv2-nav__name" aria-current="page">Jacob Meyerkopf</a>
+        <nav aria-label="Portfolio navigation">
+          <a data-polish="magnet" href="/playground"><span class="pv2-polish-label">Playground</span></a>
+          <a data-polish="magnet" href="/playground?project=unfinished"><span class="pv2-polish-label">Work</span></a>
+          <a data-polish="magnet" href="/research"><span class="pv2-polish-label">Research</span></a>
+          <a data-polish="magnet" href="/ux"><span class="pv2-polish-label">UX</span></a>
+          <a data-polish="magnet" href="/contact"><span class="pv2-polish-label">Contact</span></a>
+        </nav>
+      </header>
+
+      <main class="entry" id="entry-main">
+        <section class="entry__hero">
+          <p class="pv2-overline">Jacob Meyerkopf — interactive designer</p>
+          <h1>I build things you move through.</h1>
+          <p class="entry__lede">
+            Games, interactive art, thought experiments, and UX work — made to find out how
+            interaction fosters growth, connection, and positive change.
+          </p>
+          <p class="entry__note">
+            This site has two speeds. You can walk into the playground, where the work floats in a
+            space you can push around, or take a direct route to any single piece of it. Both end up
+            in the same places.
+          </p>
+        </section>
+
+        <section class="entry__door" aria-labelledby="entry-door-title">
+          <div class="entry__door-copy">
+            <p class="pv2-overline">The long way in</p>
+            <h2 id="entry-door-title">The playground</h2>
+            <p>
+              Every project floats in a physics space. You can drag them, throw them, and bounce
+              them off each other, and the collisions quietly keep score. It is the closest thing
+              here to how I actually think about interaction — so it is the route I would pick.
+            </p>
+            <ul class="entry__door-list">
+              <li>
+                <strong>Push it around.</strong>
+                Everything is draggable and everything collides. Nothing here can be broken by playing with it.
+              </li>
+              <li>
+                <strong>The pieces open the work.</strong>
+                Click a project to read what it is and launch the build.
+              </li>
+              <li>
+                <strong>There is a game underneath.</strong>
+                Hits score points, points buy upgrades, upgrades level you up. Entirely optional — you
+                can ignore it and just read.
+              </li>
+            </ul>
+            <div class="entry__door-actions">
+              <a class="entry__primary" data-entry-enter data-polish="magnet" href="/playground">
+                <span class="pv2-polish-label">Enter the playground →</span>
+              </a>
+              <span class="entry__door-caveat">
+                Best with a mouse. On a phone it settles into a calmer, scrollable layout.
+              </span>
+            </div>
+          </div>
+          <div class="entry__door-art" aria-hidden="true">
+            <span class="entry__door-block entry__door-block--a"></span>
+            <span class="entry__door-block entry__door-block--b"></span>
+            <span class="entry__door-block entry__door-block--c"></span>
+            <span class="entry__door-block entry__door-block--d"></span>
+          </div>
+        </section>
+
+        <section class="entry__section" aria-labelledby="entry-work-title">
+          <div class="entry__section-heading">
+            <p class="pv2-overline">The short way in</p>
+            <h2 id="entry-work-title">Or start with one thing.</h2>
+            <p>
+              Five finished, playable projects. Launch one straight away, or open its page in the
+              playground to read why it exists.
+            </p>
+          </div>
+
+          <ul class="entry__work">
+            {featured.map((project) => (
+              <li class="entry-card" data-polish="panel">
+                <span
+                  class="entry-card__art"
+                  style={`background-image: url('${project.art}')`}
+                  aria-hidden="true"
+                />
+                <div class="entry-card__body">
+                  <p class="entry-card__kicker">
+                    {project.kicker}{project.made ? ` · ${project.made}` : ''}
+                  </p>
+                  <h3>{project.title}</h3>
+                  <p class="entry-card__blurb">{project.blurb}</p>
+                  <p class="entry-card__links">
+                    {project.play && (
+                      <a
+                        class="entry-card__play"
+                        href={project.play}
+                        {...(project.playsHere ? {} : { target: '_blank', rel: 'noreferrer' })}
+                      >
+                        {project.playsHere ? 'Play it here →' : 'Play it ↗'}
+                      </a>
+                    )}
+                    <a class="entry-card__detail" data-entry-enter href={project.detail}>Why I made it →</a>
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <p class="entry__work-more">
+            <a href="/playground?project=unfinished" data-entry-enter>All work, including the unfinished prototypes →</a>
+          </p>
+        </section>
+
+        <section class="entry__section" aria-labelledby="entry-routes-title">
+          <div class="entry__section-heading">
+            <p class="pv2-overline">No games required</p>
+            <h2 id="entry-routes-title">The straightforward routes.</h2>
+          </div>
+
+          <ul class="entry__routes">
+            {routes.map((route) => (
+              <li>
+                <a class="entry-route" data-polish="panel" href={route.href}>
+                  <strong>{route.label} →</strong>
+                  <span>{route.body}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </main>
     </div>
-    <div id="portfolio-v2">
-      <RelationalPortfolio client:load />
-    </div>
+
     <script is:inline>
+      // The nav is fixed and `.pv2-site` clears it with `--pv2-nav-height`, a
+      // clamp that assumes one row. Below ~720px the five links wrap to two and
+      // the hero slides underneath the bar. Measuring is the only way to know
+      // whether it wrapped, so the token is rewritten from the real height.
       (() => {
-        const loader = document.querySelector('.pv2-boot-loader');
-        if (!loader) return;
-
-        const waitForPortfolio = new Promise((resolve) => {
-          const check = () => {
-            if (document.querySelector('#portfolio-v2 .pv2-site')) {
-              requestAnimationFrame(resolve);
-              return;
-            }
-            requestAnimationFrame(check);
-          };
-          check();
-        });
-
-        const finish = () => {
-          if (!loader.isConnected) return;
-          loader.classList.add('is-done');
-          window.setTimeout(() => loader.remove(), 150);
+        const nav = document.querySelector('.pv2-nav');
+        if (!nav || typeof ResizeObserver === 'undefined') return;
+        const sync = () => {
+          document.documentElement.style.setProperty(
+            '--pv2-nav-height',
+            Math.ceil(nav.getBoundingClientRect().height) + 'px',
+          );
         };
-
-        // The shell is the critical content. Project media and the randomized
-        // painting reveal progressively after it is interactive instead of
-        // holding the visitor behind an artificial minimum loading screen.
-        waitForPortfolio.then(finish);
-        window.setTimeout(finish, 1500);
+        new ResizeObserver(sync).observe(nav);
+        sync();
       })();
     </script>
-    <script src="/scripts/portfolio-physics-v3.js?v=62" defer></script>
-    <script src="/scripts/portfolio-battle.js?v=1" defer></script>
-    <script src="/scripts/ux-direct-link.js?v=1" defer></script>
-    <script src="/scripts/letter-river-preview.js?v=7" defer></script>
+
+    <script is:inline>
+      // Returning visitors should not be walked through the door every time.
+      // The flag is set when they take any link into the playground, and on a
+      // later visit the primary action is relabelled so the familiar route is
+      // the obvious one. Deliberately no redirect: an automatic jump would
+      // strand anyone who came back for the UX work instead.
+      (() => {
+        const KEY = 'pv2-entered-playground';
+        const primary = document.querySelector('.entry__primary .pv2-polish-label');
+        const resume = () => {
+          try {
+            return window.localStorage.getItem(KEY) === '1';
+          } catch {
+            // Private mode or blocked storage. Showing the first-visit label is
+            // the correct fallback; it is never wrong, only occasionally stale.
+            return false;
+          }
+        };
+
+        if (primary && resume()) {
+          primary.textContent = 'Back to the playground →';
+          document.querySelector('.entry__door')?.setAttribute('data-returning', 'true');
+        }
+
+        document.querySelectorAll('[data-entry-enter]').forEach((link) => {
+          link.addEventListener('click', () => {
+            try {
+              window.localStorage.setItem(KEY, '1');
+            } catch {
+              /* Nothing to do: the label just stays on its first-visit wording. */
+            }
+          });
+        });
+      })();
+    </script>
   </body>
 </html>
 
 <style is:global>
-  .pv2-skip {
+  .entry-skip {
     position: fixed;
     left: 12px;
     top: 12px;
@@ -78,30 +309,385 @@ import '../styles/portfolio-battle.css';
     background: #d8ff63;
     color: #15170e;
     font: 700 14px/1 system-ui, sans-serif;
+    text-decoration: none;
   }
 
-  .pv2-skip:focus {
-    transform: translateY(0);
+  .entry-skip:focus { transform: translateY(0); }
+
+  .entry {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: clamp(28px, 6vh, 74px) 0 clamp(64px, 10vh, 120px);
   }
 
-  .pv2-overview__statement {
-    position: absolute !important;
-    left: 50% !important;
-    top: 50% !important;
-    right: auto !important;
-    bottom: auto !important;
-    transform: translate(-50%, -50%) !important;
+  .entry__hero { max-width: 860px; }
+
+  .entry__hero h1 {
+    margin: 0 0 clamp(18px, 3vh, 30px);
+    font-size: clamp(2.7rem, 7vw, 6rem);
+    line-height: .95;
+    letter-spacing: -.06em;
+    font-weight: 510;
+    text-wrap: balance;
+  }
+
+  .entry__lede {
+    max-width: 58ch;
+    margin: 0;
+    font-size: clamp(1.1rem, 1.7vw, 1.4rem);
+    line-height: 1.46;
+  }
+
+  .entry__note {
+    max-width: 62ch;
+    margin: clamp(16px, 2.4vh, 22px) 0 0;
+    color: var(--pv2-muted);
+    font-size: clamp(.98rem, 1.3vw, 1.1rem);
+    line-height: 1.58;
+  }
+
+  /* --- The featured route ------------------------------------------------ */
+
+  .entry__door {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr);
+    gap: clamp(26px, 4vw, 54px);
+    align-items: center;
+    margin-top: clamp(48px, 8vh, 96px);
+    padding: clamp(24px, 4vw, 44px);
+    border: 1px solid var(--pv2-line);
+    border-radius: 26px;
+    background: rgba(255, 255, 255, .62);
+  }
+
+  .entry__door h2 {
+    margin: 0 0 16px;
+    font-size: clamp(2.1rem, 4.4vw, 3.7rem);
+    line-height: 1;
+    letter-spacing: -.05em;
+    font-weight: 530;
+  }
+
+  .entry__door-copy > p {
+    max-width: 60ch;
+    margin: 0;
+    font-size: clamp(1rem, 1.35vw, 1.14rem);
+    line-height: 1.56;
+  }
+
+  .entry__door-list {
+    margin: clamp(20px, 3vh, 28px) 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 12px;
+    max-width: 62ch;
+  }
+
+  .entry__door-list li {
+    position: relative;
+    padding-left: 18px;
+    color: var(--pv2-muted);
+    font-size: .98rem;
+    line-height: 1.5;
+  }
+
+  .entry__door-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: .62em;
+    width: 6px;
+    height: 6px;
+    border-radius: 2px;
+    background: rgba(36, 36, 36, .28);
+  }
+
+  .entry__door-list strong {
+    color: var(--pv2-text);
+    font-weight: 620;
+  }
+
+  .entry__door-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px 24px;
+    flex-wrap: wrap;
+    margin-top: clamp(24px, 3.4vh, 34px);
+  }
+
+  .entry__primary {
+    display: inline-flex;
+    padding: 13px 24px;
+    border-radius: 999px;
+    background: var(--pv2-text);
+    color: #f7f6f2;
+    text-decoration: none;
+    font-weight: 640;
+    font-size: 1.02rem;
+    transition: transform var(--pv2-fast) var(--pv2-ease), box-shadow var(--pv2-fast) ease;
+  }
+
+  .entry__primary:hover,
+  .entry__primary:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px rgba(36, 36, 36, .18);
+  }
+
+  .entry__door-caveat {
+    max-width: 34ch;
+    color: var(--pv2-muted);
+    font-size: .88rem;
+    line-height: 1.45;
+  }
+
+  /* A still life of the thing being described: four project orbs scattered the
+     way the sim leaves them, at the sizes the playground actually uses. It
+     drifts on hover of the panel, so the promise of a pushable space is made
+     before the click without shipping a second copy of the simulation here. */
+  .entry__door-art {
+    position: relative;
+    min-height: 240px;
+    border-radius: 18px;
+    background:
+      linear-gradient(to bottom, rgba(255, 255, 255, .5), rgba(236, 234, 228, .62));
+    border: 1px solid rgba(36, 36, 36, .08);
+    overflow: hidden;
+  }
+
+  .entry__door-block {
+    position: absolute;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .95), rgba(236, 234, 228, .88) 58%, rgba(214, 210, 200, .9));
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, .6),
+      0 8px 20px rgba(36, 36, 36, .12);
+    transition: transform var(--pv2-major) var(--pv2-ease-major);
+  }
+
+  .entry__door-block--a { left:  6%; bottom: 10%; width: 33%; }
+  .entry__door-block--b { left: 46%; bottom:  6%; width: 27%; }
+  .entry__door-block--c { left: 30%; bottom: 42%; width: 39%; }
+  .entry__door-block--d { left: 70%; bottom: 46%; width: 24%; }
+
+  /* Scoped to a fine pointer with motion allowed, rather than reset in a
+     reduced-motion block further down: these rules carry the blocks' resting
+     rotation as well as the drift, so overriding them with `transform: none`
+     would snap the still life square instead of holding it still. */
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .entry__door:hover .entry__door-block--a { transform: translate(6px, -5px); }
+    .entry__door:hover .entry__door-block--b { transform: translate(-7px, -3px); }
+    .entry__door:hover .entry__door-block--c { transform: translate(5px, -8px); }
+    .entry__door:hover .entry__door-block--d { transform: translate(-6px, -6px); }
+  }
+
+  /* --- Sections --------------------------------------------------------- */
+
+  .entry__section { margin-top: clamp(64px, 10vh, 126px); }
+
+  .entry__section-heading {
+    max-width: 760px;
+    margin-bottom: clamp(24px, 3.6vh, 34px);
+  }
+
+  .entry__section-heading h2 {
+    margin: 0 0 14px;
+    font-size: clamp(2rem, 4.2vw, 3.7rem);
+    line-height: 1;
+    letter-spacing: -.045em;
+    font-weight: 520;
+    text-wrap: balance;
+  }
+
+  .entry__section-heading > p:last-child {
+    max-width: 64ch;
+    margin: 0;
+    color: var(--pv2-muted);
+    font-size: clamp(1rem, 1.35vw, 1.16rem);
+    line-height: 1.58;
+  }
+
+  /* --- Project cards ----------------------------------------------------- */
+
+  .entry__work {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .entry-card {
+    display: flex;
+    gap: 16px;
+    padding: 18px;
+    border: 1px solid var(--pv2-line);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, .55);
+  }
+
+  .entry-card__art {
+    flex: 0 0 auto;
+    width: 76px;
+    height: 76px;
+    border-radius: 14px;
+    background-color: var(--pv2-soft);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    border: 1px solid rgba(36, 36, 36, .1);
+  }
+
+  .entry-card__body { min-width: 0; }
+
+  .entry-card__kicker {
+    margin: 0 0 6px;
+    color: var(--pv2-muted);
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+
+  .entry-card h3 {
+    margin: 0 0 8px;
+    font-size: 1.32rem;
+    line-height: 1.1;
+    letter-spacing: -.02em;
+    font-weight: 600;
+  }
+
+  .entry-card__blurb {
+    margin: 0;
+    color: var(--pv2-muted);
+    font-size: .94rem;
+    line-height: 1.5;
+  }
+
+  .entry-card__links {
+    display: flex;
+    gap: 8px 18px;
+    flex-wrap: wrap;
+    margin: 14px 0 0;
+  }
+
+  .entry-card__links a {
+    color: var(--pv2-text);
+    text-decoration: none;
+    font-size: .92rem;
+    font-weight: 620;
+    border-bottom: 1px solid rgba(36, 36, 36, .22);
+  }
+
+  .entry-card__links a:hover,
+  .entry-card__links a:focus-visible { border-bottom-color: var(--pv2-text); }
+
+  .entry-card__detail {
+    color: var(--pv2-muted) !important;
+    font-weight: 540 !important;
+    border-bottom-color: transparent !important;
+  }
+
+  .entry-card__detail:hover,
+  .entry-card__detail:focus-visible { color: var(--pv2-text) !important; }
+
+  .entry__work-more {
+    margin: clamp(20px, 3vh, 28px) 0 0;
+  }
+
+  .entry__work-more a {
+    color: var(--pv2-text);
+    text-decoration: none;
+    font-weight: 620;
+    border-bottom: 1px solid rgba(36, 36, 36, .22);
+  }
+
+  .entry__work-more a:hover { border-bottom-color: var(--pv2-text); }
+
+  /* --- Conventional routes ---------------------------------------------- */
+
+  .entry__routes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .entry-route {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+    padding: 22px;
+    border: 1px solid var(--pv2-line);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, .42);
+    color: var(--pv2-text);
+    text-decoration: none;
+    transition: transform var(--pv2-fast) var(--pv2-ease), background var(--pv2-fast) ease;
+  }
+
+  .entry-route:hover,
+  .entry-route:focus-visible {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, .66);
+  }
+
+  .entry-route strong {
+    font-size: 1.16rem;
+    font-weight: 620;
+    letter-spacing: -.015em;
+  }
+
+  .entry-route span {
+    color: var(--pv2-muted);
+    font-size: .94rem;
+    line-height: 1.52;
+  }
+
+  @media (max-width: 900px) {
+    .entry__door {
+      grid-template-columns: 1fr;
+      align-items: stretch;
+    }
+
+    /* The still life is decoration, and on one column it would push the
+       primary action below the fold on a short viewport. */
+    .entry__door-art { display: none; }
   }
 
   @media (max-width: 720px) {
-    html.pv2-physics-live .pv2-overview__statement {
-      top: 50% !important;
+    .pv2-nav {
+      height: auto;
+      min-height: 64px;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+      padding: 16px clamp(18px, 3.8vw, 68px) 12px;
     }
 
-    html:not(.pv2-physics-live) .pv2-overview__statement {
-      position: relative !important;
-      inset: auto !important;
-      transform: none !important;
+    .pv2-nav nav {
+      flex-wrap: wrap;
+      gap: 12px 18px;
     }
+
+    .entry-card { flex-direction: column; }
+
+    .entry-card__art { width: 100%; height: 132px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .entry__primary,
+    .entry-route,
+    .entry__door-block { transition: none; }
+
+    .entry__primary:hover,
+    .entry__primary:focus-visible,
+    .entry-route:hover,
+    .entry-route:focus-visible { transform: none; }
   }
 </style>
