@@ -11,6 +11,14 @@
 import { portfolioV2NodeMap } from '../data/portfolioV2';
 import '../styles/portfolio-v2.css';
 
+/**
+ * The five destinations.
+ *
+ * A card either shows a photograph (`art`) or a drawn field (`field`). The
+ * field's `amb` is the mid-tone the page backdrop takes behind that card:
+ * the backdrop blurs the card's artwork under a cream scrim, and handing it
+ * a near-black gradient just turns the whole page grey.
+ */
 const destinations = [
   {
     href: '/playground',
@@ -61,12 +69,10 @@ const destinations = [
     // Four shrunken screenshots said "four screens", not "UX". What this page
     // actually leads with is outcomes, so the card leads with them too. Every
     // figure is one the case studies already publish.
-    // The IDL source is a photo of paper sketches; this one is the archiving
-    // dashboard in use, which reads as product work at a glance and is dark
-    // enough to carry type.
-    art: '/images/derived/ai-archiver-768.webp',
-    pos: 'center',
-    dim: true,
+    // No photograph. The dashboard shot was a desk, a monitor and UI too small
+    // to read, and dimming it far enough to carry type turned it to sludge.
+    // The outcomes are the content; the ground is a drawn field behind them.
+    field: { from: '#26313f', to: '#0d1219', pattern: 'grid', amb: '#6d8099' },
     metrics: [
       { value: '8h → 37min', label: 'Document processing, IDL' },
       { value: '+30%', label: 'Daily habits, Earth Hero' },
@@ -80,9 +86,7 @@ const destinations = [
     // The Café gameplay loop — the build the study is actually about — with
     // the page's own evidence ladder over it. The derivative is an animated
     // WebP, so the card plays the thing being studied.
-    art: '/images/derived/sRdmVj-600.webp',
-    pos: 'center',
-    dim: true,
+    field: { from: '#213934', to: '#0a1413', pattern: 'scatter', amb: '#71937f' },
     // The evidence ladder needed four labels to say what the page's own
     // heading says in one line. The question is the page; the status is the
     // page being honest that nothing has been measured yet.
@@ -93,11 +97,10 @@ const destinations = [
     href: '/contact',
     title: 'Contact',
     line: 'Say hello',
-    // The only destination with no artifact of its own to show, so the card
-    // shows what is actually there: the note form, over a painting to keep it
-    // in family with the rest of the arc.
-    art: '/images/derived/work-backgrounds/at-the-seaside-900.webp',
-    pos: 'center 65%',
+    // The only destination with no artifact of its own to show. A loose
+    // seaside painting behind a crisp white form read as stock art, so the
+    // form gets a quiet field to sit on instead.
+    field: { from: '#2c2824', to: '#13100e', pattern: 'glow', amb: '#a08e7a' },
     form: true,
   },
 ];
@@ -142,9 +145,14 @@ const playableCount = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotog
       <div class="entry__stage" data-stage>
         <ul class="entry__rail" data-rail>
           {destinations.map((d, i) => (
-            <li class="entry__slot" data-art={d.art}>
+            <li
+              class="entry__slot"
+              data-ambient={d.field
+                ? `linear-gradient(150deg, ${d.field.amb}, ${d.field.from})`
+                : `url('${d.art}')`}
+            >
               <a
-                class={`dcard${d.dim ? ' dcard--dim' : ''}`}
+                class={`dcard${d.field ? ' dcard--field' : ''}`}
                 href={d.href}
                 data-card
                 style={`--art: url('${d.art}'); --art-pos: ${d.pos}`}
@@ -164,7 +172,14 @@ const playableCount = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotog
                     ))}
                   </span>
                 )}
-                {!d.tiles && !d.orbs && <span class="dcard__art" aria-hidden="true" />}
+                {d.field && (
+                  <span
+                    class={`dcard__art dcard__art--field dcard__art--${d.field.pattern}`}
+                    style={`--f1: ${d.field.from}; --f2: ${d.field.to}`}
+                    aria-hidden="true"
+                  />
+                )}
+                {!d.tiles && !d.orbs && !d.field && <span class="dcard__art" aria-hidden="true" />}
                 {d.metrics && (
                   <span class="dcard__metrics" aria-hidden="true">
                     {d.metrics.map((metric) => (
@@ -257,11 +272,14 @@ const playableCount = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotog
           // whole screen belongs to whatever is being considered. Two layers,
           // alternating, because repainting one would blink on the swap.
           if (ambient.length === 2) {
-            const art = slots[here].dataset.art;
+            // A photographic card hands over its image; a drawn card hands
+            // over its gradient. Either way it is blurred past recognition
+            // and only the colour survives.
+            const art = slots[here].dataset.ambient;
             const next = ambient[ambientLayer ^ 1];
-            if (next.dataset.art !== art) {
-              next.style.backgroundImage = `url('${art}')`;
-              next.dataset.art = art;
+            if (next.dataset.ambient !== art) {
+              next.style.backgroundImage = art;
+              next.dataset.ambient = art;
             }
             ambientLayer ^= 1;
             ambient.forEach((layer, i) => layer.classList.toggle('is-on', i === ambientLayer));
@@ -633,19 +651,57 @@ const playableCount = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotog
     to { transform: translate(calc(-50% + 4px), calc(-50% - 7px)); }
   }
 
-  /* Two cards carry type as their subject, so they need a floor of contrast
-     the photographic cards do not. */
-  /* Enough to settle the ground under a panel, not so much that the screen
-     being shown goes black — the panel is what makes the type legible. */
-  .dcard--dim .dcard__art { filter: saturate(.8) brightness(.66); }
+  /* Drawn grounds for the three cards whose subject is type. A photograph
+     under a panel had to be dimmed so far to carry the type that it became
+     sludge, and a desk, a monitor and a loose seaside painting were not
+     showing anything the page actually contains. Each field is a graded
+     wash plus one quiet pattern that belongs to its page. */
+  .dcard__art--field {
+    transform: none;
+    background-image:
+      radial-gradient(118% 86% at 26% 8%, color-mix(in oklab, var(--f1) 78%, white) 0%, transparent 56%),
+      linear-gradient(152deg, var(--f1) 0%, var(--f2) 86%);
+  }
 
-  .dcard--dim .dcard__veil {
-    background: linear-gradient(
-      to bottom,
-      rgba(16, 15, 12, .4) 0%,
-      rgba(16, 15, 12, .3) 42%,
-      rgba(16, 15, 12, .86) 100%
-    );
+  /* Service blueprints and flows: a drafting grid. */
+  .dcard__art--grid::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: .4;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, .07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, .07) 1px, transparent 1px);
+    background-size: 26px 26px;
+    -webkit-mask-image: radial-gradient(96% 72% at 50% 34%, #000 24%, transparent 78%);
+    mask-image: radial-gradient(96% 72% at 50% 34%, #000 24%, transparent 78%);
+  }
+
+  /* Observations, not yet a finding: a scatter that thins out. */
+  .dcard__art--scatter::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: .5;
+    background-image: radial-gradient(rgba(216, 255, 99, .3) 1.4px, transparent 1.6px);
+    background-size: 22px 22px;
+    -webkit-mask-image: linear-gradient(195deg, #000 4%, transparent 62%);
+    mask-image: linear-gradient(195deg, #000 4%, transparent 62%);
+  }
+
+  /* Nothing to diagram here — just a warm light to write under. */
+  .dcard__art--glow::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: .7;
+    background-image: radial-gradient(64% 42% at 72% 86%, rgba(216, 255, 99, .14) 0%, transparent 70%);
+  }
+
+  /* A drawn ground is already dark and even, so the heavy bottom gradient the
+     photographic cards need would only flatten it. */
+  .dcard--field .dcard__veil {
+    background: linear-gradient(to bottom, transparent 0%, transparent 56%, rgba(10, 9, 7, .5) 100%);
   }
 
   /* Three cards state their page in type rather than only showing it, and all
@@ -658,7 +714,10 @@ const playableCount = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotog
     position: absolute;
     left: 14px;
     right: 14px;
-    top: 50px;
+    /* Centred in the space between the chip and the title rather than pinned
+       under the chip, which left the bottom two thirds of the card empty. */
+    top: 50%;
+    transform: translateY(-54%);
     display: flex;
     flex-direction: column;
     padding: 13px;
@@ -739,28 +798,30 @@ const playableCount = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotog
   /* Contact: the note form, which is the whole page. On its own the fields
      were white on a bright painting and all but vanished, so they sit on a
      panel the way they do on the page itself. */
+  /* The one light panel in the set, so the form reads as a sheet to write on
+     rather than another dark slab. Cream, not white, and the fields are a
+     wash rather than solid blocks — a white-on-white stack was a lot of
+     nothing at card size. */
   .dcard__form {
-    gap: 7px;
-    /* Light, because this one sits on a bright painting rather than a dark
-       screen, and its fields are white. */
-    --panel-bg: rgba(250, 249, 245, .8);
-    --panel-edge: rgba(255, 255, 255, .5);
-    box-shadow: 0 10px 24px rgba(26, 24, 20, .18);
+    gap: 6px;
+    --panel-bg: rgba(247, 246, 242, .93);
+    --panel-edge: rgba(255, 255, 255, .62);
+    box-shadow: 0 14px 30px rgba(10, 9, 7, .3);
   }
 
   .dcard__field {
-    height: 19px;
-    border-radius: 7px;
-    border: 1px solid rgba(36, 36, 36, .16);
-    background: #fff;
+    height: 16px;
+    border-radius: 5px;
+    border: 1px solid rgba(36, 36, 36, .1);
+    background: rgba(36, 36, 36, .045);
   }
 
-  .dcard__field--tall { height: 46px; }
+  .dcard__field--tall { height: 38px; }
 
   .dcard__send {
     align-self: flex-start;
-    margin-top: 1px;
-    padding: 5px 13px;
+    margin-top: 3px;
+    padding: 5px 14px;
     border-radius: 999px;
     background: #d8ff63;
     color: #15170e;
@@ -826,9 +887,7 @@ const playableCount = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotog
     box-shadow: 0 30px 68px rgba(26, 24, 20, .36);
   }
 
-  /* `:not()` on the card, not on the art: a dimmed card keeps its dim when it
-     comes to the front, and this needs no Selectors-4 complex `:not()`. */
-  .is-live .dcard.is-active:not(.dcard--dim) .dcard__art { filter: saturate(1) brightness(1); }
+  .is-live .dcard.is-active .dcard__art { filter: saturate(1) brightness(1); }
   .is-live .dcard.is-active .dcard__enter { opacity: 1; transform: translateY(0); }
 
   .dcard:focus-visible {
