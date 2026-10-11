@@ -58,16 +58,20 @@ const destinations = [
     href: '/ux',
     title: 'UX',
     line: 'Product & research work',
-    // Four case studies off the UX page itself. A grid rather than the Games
-    // strip, so the two cards do not read as the same thing twice.
-    grid: [
-      '/images/derived/idl-case-study-768.webp',
-      '/images/derived/earth-hero-768.webp',
-      '/images/derived/ai-archiver-768.webp',
-      '/images/derived/agora21-768.webp',
+    // Four shrunken screenshots said "four screens", not "UX". What this page
+    // actually leads with is outcomes, so the card leads with them too. Every
+    // figure is one the case studies already publish.
+    // The IDL source is a photo of paper sketches; this one is the archiving
+    // dashboard in use, which reads as product work at a glance and is dark
+    // enough to carry type.
+    art: '/images/derived/ai-archiver-768.webp',
+    pos: 'center',
+    dim: true,
+    metrics: [
+      { value: '8h → 37min', label: 'Document processing, IDL' },
+      { value: '+30%', label: 'Daily habits, Earth Hero' },
+      { value: '5h a week', label: 'Per researcher, AI Archiving' },
     ],
-    art: '/images/derived/idl-case-study-768.webp',
-    pos: 'center top',
   },
   {
     href: '/research',
@@ -78,8 +82,12 @@ const destinations = [
     // WebP, so the card plays the thing being studied.
     art: '/images/derived/sRdmVj-600.webp',
     pos: 'center',
-    // Mirrors the evidence states on `/research`, in the page's own order.
-    chips: ['Player observation', 'Current question', 'Active study', 'Finding'],
+    dim: true,
+    // The evidence ladder needed four labels to say what the page's own
+    // heading says in one line. The question is the page; the status is the
+    // page being honest that nothing has been measured yet.
+    question: 'Can interaction help to interpret a lived experience?',
+    status: 'Study in design · no data yet',
   },
   {
     href: '/contact',
@@ -136,7 +144,7 @@ const playableCount = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotog
           {destinations.map((d, i) => (
             <li class="entry__slot" data-art={d.art}>
               <a
-                class="dcard"
+                class={`dcard${d.dim ? ' dcard--dim' : ''}`}
                 href={d.href}
                 data-card
                 style={`--art: url('${d.art}'); --art-pos: ${d.pos}`}
@@ -156,15 +164,22 @@ const playableCount = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotog
                     ))}
                   </span>
                 )}
-                {d.grid && (
-                  <span class="dcard__art dcard__art--grid" aria-hidden="true">
-                    {d.grid.map((cell) => <span style={`--art: url('${cell}')`} />)}
+                {!d.tiles && !d.orbs && <span class="dcard__art" aria-hidden="true" />}
+                {d.metrics && (
+                  <span class="dcard__metrics" aria-hidden="true">
+                    {d.metrics.map((metric) => (
+                      <span>
+                        <strong>{metric.value}</strong>
+                        <em>{metric.label}</em>
+                      </span>
+                    ))}
                   </span>
                 )}
-                {!d.tiles && !d.orbs && !d.grid && <span class="dcard__art" aria-hidden="true" />}
-                {d.chips && (
-                  <span class="dcard__chips" aria-hidden="true">
-                    {d.chips.map((chip) => <span>{chip}</span>)}
+                {d.question && (
+                  <span class="dcard__ask" aria-hidden="true">
+                    <span class="dcard__ask-mark">?</span>
+                    <span class="dcard__ask-text">{d.question}</span>
+                    {d.status && <span class="dcard__ask-status">{d.status}</span>}
                   </span>
                 )}
                 {d.form && (
@@ -618,75 +633,118 @@ const playableCount = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotog
     to { transform: translate(calc(-50% + 4px), calc(-50% - 7px)); }
   }
 
-  /* UX: four case studies, so the card is plainly a body of client work and
-     not another games card. */
-  .dcard__art--grid {
-    display: grid;
-    grid-template: repeat(2, 1fr) / repeat(2, 1fr);
-    gap: 2px;
-    background: none;
-    transform: none;
+  /* Two cards carry type as their subject, so they need a floor of contrast
+     the photographic cards do not. */
+  /* Enough to settle the ground under a panel, not so much that the screen
+     being shown goes black — the panel is what makes the type legible. */
+  .dcard--dim .dcard__art { filter: saturate(.8) brightness(.66); }
+
+  .dcard--dim .dcard__veil {
+    background: linear-gradient(
+      to bottom,
+      rgba(16, 15, 12, .4) 0%,
+      rgba(16, 15, 12, .3) 42%,
+      rgba(16, 15, 12, .86) 100%
+    );
   }
 
-  /* `contain`, not `cover`. These four sources run from an 816x263 banner to a
-     1024x1536 page, and filling a quarter-card with each blew the widest ones
-     up past three times and left a quarter of a sentence as the whole tile.
-     Shown whole on a tile they read as what they are: four case studies. */
-  .dcard__art--grid > span {
-    background: var(--art) center / contain no-repeat;
-    background-color: #f1eee8;
-  }
-
-  /* Research: the evidence ladder off `/research`, over the build it studies.
-     Only the first rung is filled in, which is the page's actual position. */
-  .dcard__chips {
+  /* Three cards state their page in type rather than only showing it, and all
+     three sit on real screenshots that are busy under the text. One frosted
+     panel carries all of them; only its tint changes, because the contact
+     painting is bright where the other two grounds are dark. */
+  .dcard__metrics,
+  .dcard__ask,
+  .dcard__form {
     position: absolute;
     left: 14px;
     right: 14px;
-    top: 48px;
+    top: 50px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 5px;
+    padding: 13px;
+    border-radius: 14px;
+    border: 1px solid var(--panel-edge, rgba(255, 255, 255, .13));
+    background: var(--panel-bg, rgba(14, 13, 11, .62));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 
-  .dcard__chips span {
-    padding: 4px 8px;
+  .dcard__metrics > span {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 11px 0;
+    border-top: 1px solid rgba(255, 255, 255, .17);
+  }
+
+  .dcard__metrics > span:first-child { border-top: 0; padding-top: 0; }
+
+  .dcard__metrics > span:last-child { padding-bottom: 0; }
+
+  .dcard__metrics strong {
+    font-size: clamp(1.1rem, 1.5vw, 1.34rem);
+    font-weight: 600;
+    letter-spacing: -.028em;
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dcard__metrics em {
+    font-style: normal;
+    font-size: .66rem;
+    line-height: 1.3;
+    letter-spacing: .02em;
+    color: rgba(255, 255, 255, .62);
+  }
+
+  /* Research: the page's own heading is the whole card. The four evidence
+     chips this replaces needed a vocabulary lesson to say the same thing. */
+  .dcard__ask {
+    align-items: flex-start;
+    gap: 9px;
+  }
+
+  .dcard__ask-mark {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid rgba(216, 255, 99, .5);
+    color: #d8ff63;
+    font-size: .92rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .dcard__ask-text {
+    font-size: clamp(1rem, 1.3vw, 1.16rem);
+    font-weight: 500;
+    line-height: 1.26;
+    letter-spacing: -.022em;
+    text-wrap: balance;
+  }
+
+  .dcard__ask-status {
+    padding: 4px 9px;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, .34);
-    background: rgba(22, 20, 17, .52);
-    color: rgba(255, 255, 255, .82);
+    border: 1px solid rgba(255, 255, 255, .22);
+    color: rgba(255, 255, 255, .7);
     font-size: .6rem;
     font-weight: 650;
-    letter-spacing: .07em;
+    letter-spacing: .06em;
     text-transform: uppercase;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-  }
-
-  .dcard__chips span:first-child {
-    border-color: rgba(216, 255, 99, .66);
-    background: rgba(216, 255, 99, .88);
-    color: #15170e;
   }
 
   /* Contact: the note form, which is the whole page. On its own the fields
      were white on a bright painting and all but vanished, so they sit on a
      panel the way they do on the page itself. */
   .dcard__form {
-    position: absolute;
-    left: 14px;
-    right: 14px;
-    top: 52px;
-    display: flex;
-    flex-direction: column;
     gap: 7px;
-    padding: 12px;
-    border-radius: 13px;
-    border: 1px solid rgba(255, 255, 255, .5);
-    background: rgba(250, 249, 245, .8);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    /* Light, because this one sits on a bright painting rather than a dark
+       screen, and its fields are white. */
+    --panel-bg: rgba(250, 249, 245, .8);
+    --panel-edge: rgba(255, 255, 255, .5);
     box-shadow: 0 10px 24px rgba(26, 24, 20, .18);
   }
 
@@ -768,7 +826,9 @@ const playableCount = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotog
     box-shadow: 0 30px 68px rgba(26, 24, 20, .36);
   }
 
-  .is-live .dcard.is-active .dcard__art { filter: saturate(1) brightness(1); }
+  /* `:not()` on the card, not on the art: a dimmed card keeps its dim when it
+     comes to the front, and this needs no Selectors-4 complex `:not()`. */
+  .is-live .dcard.is-active:not(.dcard--dim) .dcard__art { filter: saturate(1) brightness(1); }
   .is-live .dcard.is-active .dcard__enter { opacity: 1; transform: translateY(0); }
 
   .dcard:focus-visible {
