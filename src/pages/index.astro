@@ -1,83 +1,68 @@
 ---
 /**
- * The front door.
+ * The front door — a navigator, not a page of prose.
  *
- * The playground (`/playground`) used to be the site root, which meant every
- * visitor was dropped straight into a physics sim with an incremental game
- * running underneath it. That is the most interesting thing here and it stays
- * the headline route — but it answered "what is this?" with a toy, and a
- * visitor who wanted the UX work or a single build had to work it out from
- * motion. This page answers the question first, points at the playground
- * deliberately, and lists the direct routes beside it so nobody is funnelled.
+ * The playground (`/playground`) used to be the site root, so every visitor
+ * was dropped straight into a physics sim. This replaces that with one screen
+ * that does a single job: pick where to go. Five destinations on a coverflow
+ * arc, a word each. The playground is first because it is the headline route,
+ * but nothing funnels toward it.
  */
-import PortfolioBackdrop from '../components/PortfolioBackdrop.astro';
-import PortfolioPolish from '../components/PortfolioPolish.astro';
 import { portfolioV2NodeMap } from '../data/portfolioV2';
 import '../styles/portfolio-v2.css';
-import '../styles/portfolio-chrome.css';
 
-/**
- * Artwork already shipped for these projects, reused here. Same derived WebP
- * the tiles and workshop cards paint from — see `portfolio-v2-overrides.css`.
- */
-const artwork: Record<string, string> = {
-  'get-to-the-cafe': '/images/derived/oiz8uf-768.webp',
-  'letter-river': '/images/derived/letterriverscreen-768.webp',
-  'last-reading': '/images/derived/Thelastreadingscreen-768.webp',
-  rotogo: '/images/derived/rotogoscreen-768.webp',
-  'gig-duel': '/images/derived/VenueRivalsscreen-768.webp',
-};
-
-/**
- * Door copy, held here rather than read from `portfolioV2.ts`. The node
- * summaries are written for a focused project view and run to a paragraph;
- * this page needs one scannable line per card. Titles, kickers and launch
- * links still come from the data so they cannot drift.
- */
-const blurbs: Record<string, string> = {
-  'get-to-the-cafe': 'Run an errand through a body that is already overwhelmed, and decide what to drop.',
-  'letter-river': 'A language-learning game that treats learning as something you do, not something delivered.',
-  'last-reading': 'A solitaire horror roguelike about building, scoring and interpreting tarot readings.',
-  rotogo: 'A physical game idea rebuilt in React — the project that taught me to program.',
-  'gig-duel': 'A small venue-booking game, written in a shelter to have something to think about.',
-};
-
-const featuredIds = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotogo', 'gig-duel'];
-
-const featured = featuredIds.map((id) => {
-  const node = portfolioV2NodeMap.get(id)!;
-  // Prefer a build hosted here over an external one, so the visitor stays put.
-  const play = node.localPlayUrl ?? node.playUrl ?? node.route ?? null;
-  return {
-    id,
-    title: node.title,
-    kicker: node.kicker ?? 'Project',
-    made: node.made,
-    blurb: blurbs[id],
-    art: artwork[id],
-    play,
-    playsHere: Boolean(node.localPlayUrl),
-    detail: `/playground?project=${id}`,
-  };
-});
-
-const routes = [
+const destinations = [
+  {
+    href: '/playground',
+    title: 'Playground',
+    line: 'The work, floating',
+    art: '/images/derived/work-backgrounds/landers-peak-900.webp',
+    pos: 'center 55%',
+  },
+  {
+    href: '/playground?project=unfinished',
+    title: 'Games',
+    line: 'Five playable projects',
+    // One band per game rather than a single key art: the Café source is only
+    // 315px wide and a portrait card had to blow it up and crop its title off.
+    // The stack also just says "five" without the card needing to.
+    tiles: [
+      '/images/derived/oiz8uf-768.webp',
+      '/images/derived/letterriverscreen-768.webp',
+      '/images/derived/Thelastreadingscreen-768.webp',
+      '/images/derived/rotogoscreen-768.webp',
+      '/images/derived/VenueRivalsscreen-768.webp',
+    ],
+    // Behind the arc the artwork is blurred past recognition, so one is enough.
+    art: '/images/derived/oiz8uf-768.webp',
+    pos: 'center',
+  },
   {
     href: '/ux',
-    label: 'UX & product work',
-    body: 'The conventional portfolio: research, service design, workflow systems, and case studies with outcomes attached.',
+    title: 'UX',
+    line: 'Product & research work',
+    art: '/images/derived/work-backgrounds/rococo-room-900.webp',
+    pos: 'center 40%',
   },
   {
     href: '/research',
-    label: 'Research',
-    body: 'The open question behind the games — whether an interactive framework changes how someone reads a lived experience.',
+    title: 'Research',
+    line: 'The open question',
+    art: '/images/derived/work-backgrounds/bronze-lamp-boat-900.webp',
+    pos: 'center',
   },
   {
     href: '/contact',
-    label: 'Contact',
-    body: 'Collaborations, roles, playtests, and odd experiments. A note here reaches me directly.',
+    title: 'Contact',
+    line: 'Say hello',
+    art: '/images/derived/work-backgrounds/at-the-seaside-900.webp',
+    pos: 'center 65%',
   },
 ];
+
+// Named here only so the description stays true if the roster changes.
+const playableCount = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotogo', 'gig-duel']
+  .filter((id) => portfolioV2NodeMap.has(id)).length;
 ---
 <!doctype html>
 <html lang="en">
@@ -86,608 +71,620 @@ const routes = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Jacob Meyerkopf makes games, interactive art, and UX work about perspective, disability, systems, and learning. Enter the playground or go straight to a project."
+      content={`Jacob Meyerkopf — interactive designer. ${playableCount} playable projects, a physics playground, UX and research work.`}
     />
     <title>Jacob Meyerkopf — Interactive Designer</title>
+    <link rel="preload" as="image" href={destinations[0].art} />
     <script is:inline>
       // `/?project=x` was the shareable deep link while the playground lived at
-      // the root. Those URLs are in the wild (and still linked from a few pages
-      // of the build history), so forward them instead of showing the door with
-      // a parameter it has no use for. `replace`, not `assign`: the door must
-      // not become a back-button trap between the link and the playground.
+      // the root. Those URLs are in the wild, so forward them rather than
+      // showing a navigator that has no use for the parameter. `replace`, not
+      // `assign`: the door must not become a back-button trap.
       (() => {
-        const params = new URLSearchParams(window.location.search);
-        if (!params.has('project')) return;
+        if (!new URLSearchParams(window.location.search).has('project')) return;
         window.location.replace('/playground' + window.location.search + window.location.hash);
       })();
     </script>
   </head>
-  <body class="pv2-body">
-    <PortfolioPolish />
-    <PortfolioBackdrop />
-    <a class="entry-skip" href="#entry-main">Skip to content</a>
-    <div class="pv2-site">
-      <header class="pv2-nav">
-        <a href="/" class="pv2-nav__name" aria-current="page">Jacob Meyerkopf</a>
-        <nav aria-label="Portfolio navigation">
-          <a data-polish="magnet" href="/playground"><span class="pv2-polish-label">Playground</span></a>
-          <a data-polish="magnet" href="/playground?project=unfinished"><span class="pv2-polish-label">Work</span></a>
-          <a data-polish="magnet" href="/research"><span class="pv2-polish-label">Research</span></a>
-          <a data-polish="magnet" href="/ux"><span class="pv2-polish-label">UX</span></a>
-          <a data-polish="magnet" href="/contact"><span class="pv2-polish-label">Contact</span></a>
-        </nav>
-      </header>
-
-      <main class="entry" id="entry-main">
-        <section class="entry__hero">
-          <p class="pv2-overline">Jacob Meyerkopf — interactive designer</p>
-          <h1>I build things you move through.</h1>
-          <p class="entry__lede">
-            Games, interactive art, thought experiments, and UX work — made to find out how
-            interaction fosters growth, connection, and positive change.
-          </p>
-          <p class="entry__note">
-            This site has two speeds. You can walk into the playground, where the work floats in a
-            space you can push around, or take a direct route to any single piece of it. Both end up
-            in the same places.
-          </p>
-        </section>
-
-        <section class="entry__door" aria-labelledby="entry-door-title">
-          <div class="entry__door-copy">
-            <p class="pv2-overline">The long way in</p>
-            <h2 id="entry-door-title">The playground</h2>
-            <p>
-              Every project floats in a physics space. You can drag them, throw them, and bounce
-              them off each other, and the collisions quietly keep score. It is the closest thing
-              here to how I actually think about interaction — so it is the route I would pick.
-            </p>
-            <ul class="entry__door-list">
-              <li>
-                <strong>Push it around.</strong>
-                Everything is draggable and everything collides. Nothing here can be broken by playing with it.
-              </li>
-              <li>
-                <strong>The pieces open the work.</strong>
-                Click a project to read what it is and launch the build.
-              </li>
-              <li>
-                <strong>There is a game underneath.</strong>
-                Hits score points, points buy upgrades, upgrades level you up. Entirely optional — you
-                can ignore it and just read.
-              </li>
-            </ul>
-            <div class="entry__door-actions">
-              <a class="entry__primary" data-entry-enter data-polish="magnet" href="/playground">
-                <span class="pv2-polish-label">Enter the playground →</span>
-              </a>
-              <span class="entry__door-caveat">
-                Best with a mouse. On a phone it settles into a calmer, scrollable layout.
-              </span>
-            </div>
-          </div>
-          <div class="entry__door-art" aria-hidden="true">
-            <span class="entry__door-block entry__door-block--a"></span>
-            <span class="entry__door-block entry__door-block--b"></span>
-            <span class="entry__door-block entry__door-block--c"></span>
-            <span class="entry__door-block entry__door-block--d"></span>
-          </div>
-        </section>
-
-        <section class="entry__section" aria-labelledby="entry-work-title">
-          <div class="entry__section-heading">
-            <p class="pv2-overline">The short way in</p>
-            <h2 id="entry-work-title">Or start with one thing.</h2>
-            <p>
-              Five finished, playable projects. Launch one straight away, or open its page in the
-              playground to read why it exists.
-            </p>
-          </div>
-
-          <ul class="entry__work">
-            {featured.map((project) => (
-              <li class="entry-card" data-polish="panel">
-                <span
-                  class="entry-card__art"
-                  style={`background-image: url('${project.art}')`}
-                  aria-hidden="true"
-                />
-                <div class="entry-card__body">
-                  <p class="entry-card__kicker">
-                    {project.kicker}{project.made ? ` · ${project.made}` : ''}
-                  </p>
-                  <h3>{project.title}</h3>
-                  <p class="entry-card__blurb">{project.blurb}</p>
-                  <p class="entry-card__links">
-                    {project.play && (
-                      <a
-                        class="entry-card__play"
-                        href={project.play}
-                        {...(project.playsHere ? {} : { target: '_blank', rel: 'noreferrer' })}
-                      >
-                        {project.playsHere ? 'Play it here →' : 'Play it ↗'}
-                      </a>
-                    )}
-                    <a class="entry-card__detail" data-entry-enter href={project.detail}>Why I made it →</a>
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          <p class="entry__work-more">
-            <a href="/playground?project=unfinished" data-entry-enter>All work, including the unfinished prototypes →</a>
-          </p>
-        </section>
-
-        <section class="entry__section" aria-labelledby="entry-routes-title">
-          <div class="entry__section-heading">
-            <p class="pv2-overline">No games required</p>
-            <h2 id="entry-routes-title">The straightforward routes.</h2>
-          </div>
-
-          <ul class="entry__routes">
-            {routes.map((route) => (
-              <li>
-                <a class="entry-route" data-polish="panel" href={route.href}>
-                  <strong>{route.label} →</strong>
-                  <span>{route.body}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </main>
+  <body class="pv2-body entry-body">
+    <div class="entry__amb" aria-hidden="true">
+      <span data-amb></span><span data-amb></span>
     </div>
 
-    <script is:inline>
-      // The nav is fixed and `.pv2-site` clears it with `--pv2-nav-height`, a
-      // clamp that assumes one row. Below ~720px the five links wrap to two and
-      // the hero slides underneath the bar. Measuring is the only way to know
-      // whether it wrapped, so the token is rewritten from the real height.
-      (() => {
-        const nav = document.querySelector('.pv2-nav');
-        if (!nav || typeof ResizeObserver === 'undefined') return;
-        const sync = () => {
-          document.documentElement.style.setProperty(
-            '--pv2-nav-height',
-            Math.ceil(nav.getBoundingClientRect().height) + 'px',
-          );
-        };
-        new ResizeObserver(sync).observe(nav);
-        sync();
-      })();
-    </script>
+    <main class="entry">
+      <header class="entry__bar">
+        <strong>Jacob Meyerkopf</strong>
+        <span>Interactive designer</span>
+      </header>
+
+      <div class="entry__stage" data-stage>
+        <ul class="entry__rail" data-rail>
+          {destinations.map((d, i) => (
+            <li class="entry__slot" data-art={d.art}>
+              <a
+                class="dcard"
+                href={d.href}
+                data-card
+                style={`--art: url('${d.art}'); --art-pos: ${d.pos}`}
+              >
+                {d.tiles
+                  ? (
+                    <span class="dcard__art dcard__art--stack" aria-hidden="true">
+                      {d.tiles.map((tile) => <span style={`--art: url('${tile}')`} />)}
+                    </span>
+                  )
+                  : <span class="dcard__art" aria-hidden="true" />}
+                <span class="dcard__veil" aria-hidden="true" />
+                <span class="dcard__text">
+                  <strong>{d.title}</strong>
+                  <em>{d.line}</em>
+                </span>
+                <span class="dcard__enter" aria-hidden="true">Enter →</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <nav class="entry__dots" aria-label="Choose a destination" data-dots>
+        {destinations.map((d, i) => (
+          <button type="button" data-dot={i} aria-label={d.title}><span /></button>
+        ))}
+      </nav>
+
+      <p class="entry__hint" aria-hidden="true">
+        <span class="entry__hint-pointer">Drag &middot; scroll &middot; <kbd>←</kbd> <kbd>→</kbd></span>
+        <span class="entry__hint-touch">Swipe to choose</span>
+      </p>
+    </main>
 
     <script is:inline>
-      // Returning visitors should not be walked through the door every time.
-      // The flag is set when they take any link into the playground, and on a
-      // later visit the primary action is relabelled so the familiar route is
-      // the obvious one. Deliberately no redirect: an automatic jump would
-      // strand anyone who came back for the UX work instead.
       (() => {
-        const KEY = 'pv2-entered-playground';
-        const primary = document.querySelector('.entry__primary .pv2-polish-label');
-        const resume = () => {
-          try {
-            return window.localStorage.getItem(KEY) === '1';
-          } catch {
-            // Private mode or blocked storage. Showing the first-visit label is
-            // the correct fallback; it is never wrong, only occasionally stale.
-            return false;
+        const stage = document.querySelector('[data-stage]');
+        const rail = document.querySelector('[data-rail]');
+        if (!stage || !rail) return;
+
+        const slots = Array.from(rail.children);
+        const cards = slots.map((slot) => slot.querySelector('[data-card]'));
+        const dots = Array.from(document.querySelectorAll('[data-dot]'));
+        const ambient = Array.from(document.querySelectorAll('[data-amb]'));
+        const n = slots.length;
+
+        // Without JS the rail is a plain scroll-snap row, which is a working
+        // navigation on its own. The arc is the enhancement, so it is only
+        // switched on once the code that drives it is running.
+        stage.classList.add('is-live');
+
+        // `active` is unbounded and the ring is read modulo the card count, so
+        // the fan is always two cards deep on both sides. Clamping at the ends
+        // instead left the first and last card sitting against a bare half of
+        // the stage, which read as a layout fault rather than an edge.
+        let active = 0;
+        let ambientLayer = 0;
+
+        const index = () => ((active % n) + n) % n;
+
+        function layout() {
+          const here = index();
+          slots.forEach((slot, i) => {
+            let offset = (((i - here) % n) + n) % n;
+            if (offset > n / 2) offset -= n;
+            const far = Math.abs(offset);
+            slot.style.setProperty('--offset', String(offset));
+            slot.style.setProperty('--far', String(far));
+            slot.style.zIndex = String(n - far);
+            cards[i].classList.toggle('is-active', offset === 0);
+            cards[i].tabIndex = offset === 0 ? 0 : -1;
+          });
+          dots.forEach((dot, i) => dot.setAttribute('aria-current', i === here ? 'true' : 'false'));
+
+          // Crossfade the front card's artwork into the page behind it, so the
+          // whole screen belongs to whatever is being considered. Two layers,
+          // alternating, because repainting one would blink on the swap.
+          if (ambient.length === 2) {
+            const art = slots[here].dataset.art;
+            const next = ambient[ambientLayer ^ 1];
+            if (next.dataset.art !== art) {
+              next.style.backgroundImage = `url('${art}')`;
+              next.dataset.art = art;
+            }
+            ambientLayer ^= 1;
+            ambient.forEach((layer, i) => layer.classList.toggle('is-on', i === ambientLayer));
           }
-        };
-
-        if (primary && resume()) {
-          primary.textContent = 'Back to the playground →';
-          document.querySelector('.entry__door')?.setAttribute('data-returning', 'true');
         }
 
-        document.querySelectorAll('[data-entry-enter]').forEach((link) => {
-          link.addEventListener('click', () => {
-            try {
-              window.localStorage.setItem(KEY, '1');
-            } catch {
-              /* Nothing to do: the label just stays on its first-visit wording. */
-            }
+        function go(next) {
+          if (next === active) return;
+          active = next;
+          layout();
+        }
+
+        layout();
+
+        dots.forEach((dot, i) => dot.addEventListener('click', () => {
+          // Step to the nearest copy of that card on the ring rather than its
+          // raw index, so the arc turns the short way round.
+          let delta = (((i - index()) % n) + n) % n;
+          if (delta > n / 2) delta -= n;
+          go(active + delta);
+          cards[i].focus();
+        }));
+
+        const stepTo = (i) => {
+          let delta = (((i - index()) % n) + n) % n;
+          if (delta > n / 2) delta -= n;
+          go(active + delta);
+        };
+
+        // Which card was in front when the press started. Pressing a card also
+        // focuses it, and the focus handler below brings it forward, so by the
+        // time its click fires it is already the front card — reading `index()`
+        // there made every side card follow its link on the first click.
+        // `null` means no pointer was involved (Enter on a focused card), which
+        // is always a deliberate go.
+        let pressedFront = null;
+        stage.addEventListener('pointerdown', () => { pressedFront = index(); });
+
+        cards.forEach((card, i) => {
+          card.addEventListener('click', (event) => {
+            const wasFront = pressedFront === null || pressedFront === i;
+            pressedFront = null;
+            if (wasFront) return;
+            // A card off to the side is a target to bring forward, not a link
+            // to follow: a glancing click on a steeply angled sliver should
+            // never navigate somewhere the visitor never actually looked at.
+            event.preventDefault();
+            stepTo(i);
+            card.focus();
           });
+          // Tabbing or a screen reader moving through the rail should bring the
+          // card it lands on to the front, so focus and the arc never disagree.
+          card.addEventListener('focus', () => stepTo(i));
         });
+
+        document.addEventListener('keydown', (event) => {
+          if (event.metaKey || event.ctrlKey || event.altKey) return;
+          const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+          if (!step) return;
+          event.preventDefault();
+          go(active + step);
+          cards[index()].focus();
+        });
+
+        // One notch of a wheel or trackpad flick per card. Without the cooldown
+        // a single trackpad swipe emits dozens of events and throws the rail to
+        // the far end.
+        let wheelLock = 0;
+        stage.addEventListener('wheel', (event) => {
+          const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+          if (Math.abs(delta) < 8) return;
+          event.preventDefault();
+          const now = event.timeStamp;
+          if (now - wheelLock < 320) return;
+          wheelLock = now;
+          go(active + Math.sign(delta));
+        }, { passive: false });
+
+        // Drag. Tracked on the stage rather than the card, so a gesture that
+        // starts on one card and ends over another still counts.
+        let startX = null;
+        let startIndex = 0;
+        let dragged = false;
+
+        stage.addEventListener('pointerdown', (event) => {
+          if (event.button !== 0) return;
+          startX = event.clientX;
+          startIndex = active;
+          dragged = false;
+        });
+
+        stage.addEventListener('pointermove', (event) => {
+          if (startX === null) return;
+          const travel = event.clientX - startX;
+          if (Math.abs(travel) <= 8) return;
+          if (!dragged) {
+            dragged = true;
+            // Captured only now, not on pointerdown. Capture retargets the
+            // click that pointerup synthesises to the capturing element, so
+            // taking it up front meant no card ever received its own click and
+            // none of the links could be followed at all.
+            stage.setPointerCapture(event.pointerId);
+          }
+          // One card per ~22% of the stage, so the gesture feels the same on a
+          // phone and on a wide desktop.
+          const perCard = Math.max(90, stage.clientWidth * 0.22);
+          go(startIndex - Math.round(travel / perCard));
+        });
+
+        const endDrag = (event) => {
+          if (startX === null) return;
+          startX = null;
+          if (stage.hasPointerCapture?.(event.pointerId)) stage.releasePointerCapture(event.pointerId);
+        };
+        stage.addEventListener('pointerup', endDrag);
+        stage.addEventListener('pointercancel', endDrag);
+        stage.addEventListener('click', (event) => {
+          if (dragged) {
+            event.preventDefault();
+            event.stopPropagation();
+            dragged = false;
+          }
+        }, true);
+
+        // Pointer parallax on the whole arc. Purely atmospheric, and only where
+        // a real pointer and motion are both welcome.
+        if (matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)').matches) {
+          stage.addEventListener('pointermove', (event) => {
+            const rect = stage.getBoundingClientRect();
+            rail.style.setProperty('--tilt-y', ((event.clientX - rect.left) / rect.width - 0.5).toFixed(3));
+            rail.style.setProperty('--tilt-x', ((event.clientY - rect.top) / rect.height - 0.5).toFixed(3));
+          });
+          stage.addEventListener('pointerleave', () => {
+            rail.style.setProperty('--tilt-y', '0');
+            rail.style.setProperty('--tilt-x', '0');
+          });
+        }
       })();
     </script>
   </body>
 </html>
 
 <style is:global>
-  .entry-skip {
+  .entry-body {
+    overflow: hidden;
+    /* The navigator is one screen. Nothing below it, so nothing to scroll to. */
+    height: 100svh;
+  }
+
+  .entry {
+    display: grid;
+    grid-template-rows: auto 1fr auto auto;
+    height: 100svh;
+    padding: clamp(16px, 2.4vh, 26px) clamp(16px, 3.4vw, 46px) clamp(18px, 3vh, 30px);
+  }
+
+  .entry__bar {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .entry__bar strong {
+    font-size: clamp(.95rem, 1.1vw, 1.04rem);
+    font-weight: 650;
+    letter-spacing: -.01em;
+  }
+
+  .entry__bar span {
+    color: var(--pv2-muted);
+    font-size: clamp(.78rem, .9vw, .86rem);
+  }
+
+  /* The front card's artwork, blown up and blurred behind everything. It is
+     the only colour on the screen, so the door takes its mood from whichever
+     destination is being considered. */
+  .entry__amb {
     position: fixed;
-    left: 12px;
-    top: 12px;
-    z-index: 1100;
-    transform: translateY(-160%);
-    padding: 10px 14px;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    background: var(--pv2-bg);
+  }
+
+  .entry__amb span {
+    position: absolute;
+    inset: -14%;
+    background-position: center;
+    background-size: cover;
+    filter: blur(68px) saturate(1.1);
+    opacity: 0;
+    transform: scale(1.18);
+    transition: opacity 780ms var(--pv2-ease);
+  }
+
+  .entry__amb span.is-on { opacity: .66; }
+
+  /* A cream wash over the blur, so the card edges and the dark type on the
+     chrome keep their contrast whatever painting is behind them. */
+  .entry__amb::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(128% 90% at 50% 44%, rgba(247, 246, 242, .1) 0%, rgba(247, 246, 242, .6) 52%, rgba(247, 246, 242, .92) 100%);
+  }
+
+  /* --- Stage ------------------------------------------------------------ */
+
+  .entry__stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 0;
+    perspective: 1500px;
+    perspective-origin: 50% 46%;
+  }
+
+  .is-live.entry__stage {
+    touch-action: pan-y;
+    cursor: grab;
+  }
+
+  .is-live.entry__stage:active { cursor: grabbing; }
+
+  .entry__rail {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin: 0;
+    padding: 0 max(16px, 50% - 170px);
+    list-style: none;
+    max-width: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .entry__rail::-webkit-scrollbar { display: none; }
+
+  .entry__slot {
+    scroll-snap-align: center;
+    /* On the flat row a card is `width: 100%` of its slot, so the slot's
+       min-content size is zero and the flex line squeezes all five into
+       slivers. Fixed basis, no shrink. */
+    flex: 0 0 auto;
+  }
+
+  /* The arc, switched on only once its script is running. */
+  .is-live .entry__rail {
+    position: absolute;
+    inset: 0;
+    display: block;
+    padding: 0;
+    overflow: visible;
+    transform-style: preserve-3d;
+    transform:
+      rotateY(calc(var(--tilt-y, 0) * 5deg))
+      rotateX(calc(var(--tilt-x, 0) * -4deg));
+    transition: transform 420ms var(--pv2-ease);
+    /* The rail fills the stage at z = 0, and every card but the front one is
+       pushed behind that plane, so the rail won hit-testing for all of them
+       and only the front card could be clicked. It is a positioning frame, not
+       a target: the drag listeners live on the stage, so it can step aside. */
+    pointer-events: none;
+  }
+
+  .is-live .entry__slot {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    /* Sized off the short axis as well as the wide one: on a laptop the stage
+       has far more height than a 20vw card was using. */
+    width: clamp(190px, min(26vw, 40svh), 380px);
+    transform-style: preserve-3d;
+    transform:
+      translate(-50%, -50%)
+      translateX(calc(var(--offset) * clamp(104px, min(14vw, 22svh), 214px)))
+      translateZ(calc(var(--far) * -165px))
+      rotateY(calc(var(--offset) * -27deg))
+      scale(calc(1 - var(--far) * .05));
+    opacity: calc(1 - var(--far) * .26);
+    pointer-events: auto;
+    transition:
+      transform 520ms var(--pv2-ease-major),
+      opacity 420ms var(--pv2-ease);
+  }
+
+  /* --- Card ------------------------------------------------------------- */
+
+  .dcard {
+    position: relative;
+    display: block;
+    width: clamp(190px, min(26vw, 40svh), 380px);
+    aspect-ratio: 3 / 4.1;
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--pv2-soft);
+    color: #fff;
+    text-decoration: none;
+    box-shadow: 0 18px 44px rgba(26, 24, 20, .28);
+    transition: box-shadow 420ms var(--pv2-ease);
+  }
+
+  .is-live .dcard { width: 100%; }
+
+  .dcard__art {
+    position: absolute;
+    inset: 0;
+    background-image: var(--art);
+    background-position: var(--art-pos, center);
+    background-size: cover;
+    transform: scale(1.06);
+    filter: saturate(.86) brightness(.94);
+    transition: transform 620ms var(--pv2-ease-major), filter 420ms var(--pv2-ease);
+  }
+
+  .dcard__art--stack {
+    display: grid;
+    grid-template-rows: repeat(5, 1fr);
+    gap: 2px;
+    background: none;
+  }
+
+  .dcard__art--stack > span {
+    background: var(--art) center / cover no-repeat;
+  }
+
+  .dcard__veil {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(18, 16, 13, .1) 0%,
+      rgba(18, 16, 13, .34) 48%,
+      rgba(18, 16, 13, .82) 100%
+    );
+    transition: opacity 420ms var(--pv2-ease);
+  }
+
+  .dcard__text {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .dcard__text strong {
+    font-size: clamp(1.18rem, 1.7vw, 1.5rem);
+    font-weight: 600;
+    letter-spacing: -.028em;
+    line-height: 1.05;
+  }
+
+  .dcard__text em {
+    font-style: normal;
+    font-size: .8rem;
+    line-height: 1.3;
+    color: rgba(255, 255, 255, .74);
+  }
+
+  .dcard__enter {
+    position: absolute;
+    left: 16px;
+    top: 15px;
+    padding: 6px 12px;
     border-radius: 999px;
     background: #d8ff63;
     color: #15170e;
-    font: 700 14px/1 system-ui, sans-serif;
-    text-decoration: none;
-  }
-
-  .entry-skip:focus { transform: translateY(0); }
-
-  .entry {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: clamp(28px, 6vh, 74px) 0 clamp(64px, 10vh, 120px);
-  }
-
-  .entry__hero { max-width: 860px; }
-
-  .entry__hero h1 {
-    margin: 0 0 clamp(18px, 3vh, 30px);
-    font-size: clamp(2.7rem, 7vw, 6rem);
-    line-height: .95;
-    letter-spacing: -.06em;
-    font-weight: 510;
-    text-wrap: balance;
-  }
-
-  .entry__lede {
-    max-width: 58ch;
-    margin: 0;
-    font-size: clamp(1.1rem, 1.7vw, 1.4rem);
-    line-height: 1.46;
-  }
-
-  .entry__note {
-    max-width: 62ch;
-    margin: clamp(16px, 2.4vh, 22px) 0 0;
-    color: var(--pv2-muted);
-    font-size: clamp(.98rem, 1.3vw, 1.1rem);
-    line-height: 1.58;
-  }
-
-  /* --- The featured route ------------------------------------------------ */
-
-  .entry__door {
-    display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr);
-    gap: clamp(26px, 4vw, 54px);
-    align-items: center;
-    margin-top: clamp(48px, 8vh, 96px);
-    padding: clamp(24px, 4vw, 44px);
-    border: 1px solid var(--pv2-line);
-    border-radius: 26px;
-    background: rgba(255, 255, 255, .62);
-  }
-
-  .entry__door h2 {
-    margin: 0 0 16px;
-    font-size: clamp(2.1rem, 4.4vw, 3.7rem);
-    line-height: 1;
-    letter-spacing: -.05em;
-    font-weight: 530;
-  }
-
-  .entry__door-copy > p {
-    max-width: 60ch;
-    margin: 0;
-    font-size: clamp(1rem, 1.35vw, 1.14rem);
-    line-height: 1.56;
-  }
-
-  .entry__door-list {
-    margin: clamp(20px, 3vh, 28px) 0 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    gap: 12px;
-    max-width: 62ch;
-  }
-
-  .entry__door-list li {
-    position: relative;
-    padding-left: 18px;
-    color: var(--pv2-muted);
-    font-size: .98rem;
-    line-height: 1.5;
-  }
-
-  .entry__door-list li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: .62em;
-    width: 6px;
-    height: 6px;
-    border-radius: 2px;
-    background: rgba(36, 36, 36, .28);
-  }
-
-  .entry__door-list strong {
-    color: var(--pv2-text);
-    font-weight: 620;
-  }
-
-  .entry__door-actions {
-    display: flex;
-    align-items: center;
-    gap: 16px 24px;
-    flex-wrap: wrap;
-    margin-top: clamp(24px, 3.4vh, 34px);
-  }
-
-  .entry__primary {
-    display: inline-flex;
-    padding: 13px 24px;
-    border-radius: 999px;
-    background: var(--pv2-text);
-    color: #f7f6f2;
-    text-decoration: none;
-    font-weight: 640;
-    font-size: 1.02rem;
-    transition: transform var(--pv2-fast) var(--pv2-ease), box-shadow var(--pv2-fast) ease;
-  }
-
-  .entry__primary:hover,
-  .entry__primary:focus-visible {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 26px rgba(36, 36, 36, .18);
-  }
-
-  .entry__door-caveat {
-    max-width: 34ch;
-    color: var(--pv2-muted);
-    font-size: .88rem;
-    line-height: 1.45;
-  }
-
-  /* A still life of the thing being described: four project orbs scattered the
-     way the sim leaves them, at the sizes the playground actually uses. It
-     drifts on hover of the panel, so the promise of a pushable space is made
-     before the click without shipping a second copy of the simulation here. */
-  .entry__door-art {
-    position: relative;
-    min-height: 240px;
-    border-radius: 18px;
-    background:
-      linear-gradient(to bottom, rgba(255, 255, 255, .5), rgba(236, 234, 228, .62));
-    border: 1px solid rgba(36, 36, 36, .08);
-    overflow: hidden;
-  }
-
-  .entry__door-block {
-    position: absolute;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background:
-      radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .95), rgba(236, 234, 228, .88) 58%, rgba(214, 210, 200, .9));
-    box-shadow:
-      inset 0 0 0 1px rgba(255, 255, 255, .6),
-      0 8px 20px rgba(36, 36, 36, .12);
-    transition: transform var(--pv2-major) var(--pv2-ease-major);
-  }
-
-  .entry__door-block--a { left:  6%; bottom: 10%; width: 33%; }
-  .entry__door-block--b { left: 46%; bottom:  6%; width: 27%; }
-  .entry__door-block--c { left: 30%; bottom: 42%; width: 39%; }
-  .entry__door-block--d { left: 70%; bottom: 46%; width: 24%; }
-
-  /* Scoped to a fine pointer with motion allowed, rather than reset in a
-     reduced-motion block further down: these rules carry the blocks' resting
-     rotation as well as the drift, so overriding them with `transform: none`
-     would snap the still life square instead of holding it still. */
-  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-    .entry__door:hover .entry__door-block--a { transform: translate(6px, -5px); }
-    .entry__door:hover .entry__door-block--b { transform: translate(-7px, -3px); }
-    .entry__door:hover .entry__door-block--c { transform: translate(5px, -8px); }
-    .entry__door:hover .entry__door-block--d { transform: translate(-6px, -6px); }
-  }
-
-  /* --- Sections --------------------------------------------------------- */
-
-  .entry__section { margin-top: clamp(64px, 10vh, 126px); }
-
-  .entry__section-heading {
-    max-width: 760px;
-    margin-bottom: clamp(24px, 3.6vh, 34px);
-  }
-
-  .entry__section-heading h2 {
-    margin: 0 0 14px;
-    font-size: clamp(2rem, 4.2vw, 3.7rem);
-    line-height: 1;
-    letter-spacing: -.045em;
-    font-weight: 520;
-    text-wrap: balance;
-  }
-
-  .entry__section-heading > p:last-child {
-    max-width: 64ch;
-    margin: 0;
-    color: var(--pv2-muted);
-    font-size: clamp(1rem, 1.35vw, 1.16rem);
-    line-height: 1.58;
-  }
-
-  /* --- Project cards ----------------------------------------------------- */
-
-  .entry__work {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 14px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .entry-card {
-    display: flex;
-    gap: 16px;
-    padding: 18px;
-    border: 1px solid var(--pv2-line);
-    border-radius: 20px;
-    background: rgba(255, 255, 255, .55);
-  }
-
-  .entry-card__art {
-    flex: 0 0 auto;
-    width: 76px;
-    height: 76px;
-    border-radius: 14px;
-    background-color: var(--pv2-soft);
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
-    border: 1px solid rgba(36, 36, 36, .1);
-  }
-
-  .entry-card__body { min-width: 0; }
-
-  .entry-card__kicker {
-    margin: 0 0 6px;
-    color: var(--pv2-muted);
-    font-size: .68rem;
+    font-size: .74rem;
     font-weight: 700;
-    letter-spacing: .1em;
-    text-transform: uppercase;
+    letter-spacing: .01em;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity 320ms var(--pv2-ease), transform 320ms var(--pv2-ease);
   }
 
-  .entry-card h3 {
-    margin: 0 0 8px;
-    font-size: 1.32rem;
-    line-height: 1.1;
-    letter-spacing: -.02em;
-    font-weight: 600;
+  /* The front card is the one that is actually followed on click, so it is the
+     only one that reads as live: brighter, lifted, and wearing the call. */
+  .is-live .dcard.is-active {
+    box-shadow: 0 30px 68px rgba(26, 24, 20, .36);
   }
 
-  .entry-card__blurb {
-    margin: 0;
+  .is-live .dcard.is-active .dcard__art { filter: saturate(1) brightness(1); }
+  .is-live .dcard.is-active .dcard__enter { opacity: 1; transform: translateY(0); }
+
+  .dcard:focus-visible {
+    outline: 3px solid #d8ff63;
+    outline-offset: 3px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .is-live .dcard.is-active:hover .dcard__art { transform: scale(1.11); }
+  }
+
+  /* --- Dots and hint ---------------------------------------------------- */
+
+  .entry__dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: clamp(14px, 2.4vh, 24px);
+  }
+
+  .entry__dots button {
+    padding: 8px 5px;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    line-height: 0;
+  }
+
+  .entry__dots span {
+    display: block;
+    width: 24px;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(36, 36, 36, .18);
+    transition: background 300ms var(--pv2-ease), width 300ms var(--pv2-ease);
+  }
+
+  .entry__dots button[aria-current='true'] span {
+    width: 40px;
+    background: var(--pv2-text);
+  }
+
+  .entry__dots button:focus-visible span { background: rgba(36, 36, 36, .5); }
+
+  .entry__hint {
+    margin: 10px 0 0;
+    text-align: center;
     color: var(--pv2-muted);
-    font-size: .94rem;
-    line-height: 1.5;
+    font-size: .74rem;
+    letter-spacing: .04em;
   }
 
-  .entry-card__links {
-    display: flex;
-    gap: 8px 18px;
-    flex-wrap: wrap;
-    margin: 14px 0 0;
+  /* A phone has no arrow keys and no wheel; a desktop has no swipe. Only the
+     instruction that applies to the device in hand is shown. */
+  .entry__hint-touch { display: none; }
+
+  @media (hover: none) {
+    .entry__hint-pointer { display: none; }
+    .entry__hint-touch { display: inline; }
   }
 
-  .entry-card__links a {
-    color: var(--pv2-text);
-    text-decoration: none;
-    font-size: .92rem;
-    font-weight: 620;
-    border-bottom: 1px solid rgba(36, 36, 36, .22);
-  }
-
-  .entry-card__links a:hover,
-  .entry-card__links a:focus-visible { border-bottom-color: var(--pv2-text); }
-
-  .entry-card__detail {
-    color: var(--pv2-muted) !important;
-    font-weight: 540 !important;
-    border-bottom-color: transparent !important;
-  }
-
-  .entry-card__detail:hover,
-  .entry-card__detail:focus-visible { color: var(--pv2-text) !important; }
-
-  .entry__work-more {
-    margin: clamp(20px, 3vh, 28px) 0 0;
-  }
-
-  .entry__work-more a {
-    color: var(--pv2-text);
-    text-decoration: none;
-    font-weight: 620;
-    border-bottom: 1px solid rgba(36, 36, 36, .22);
-  }
-
-  .entry__work-more a:hover { border-bottom-color: var(--pv2-text); }
-
-  /* --- Conventional routes ---------------------------------------------- */
-
-  .entry__routes {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 14px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .entry-route {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    height: 100%;
-    padding: 22px;
+  .entry__hint kbd {
+    padding: 1px 5px;
     border: 1px solid var(--pv2-line);
-    border-radius: 18px;
-    background: rgba(255, 255, 255, .42);
-    color: var(--pv2-text);
-    text-decoration: none;
-    transition: transform var(--pv2-fast) var(--pv2-ease), background var(--pv2-fast) ease;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, .6);
+    font: inherit;
   }
 
-  .entry-route:hover,
-  .entry-route:focus-visible {
-    transform: translateY(-2px);
-    background: rgba(255, 255, 255, .66);
-  }
-
-  .entry-route strong {
-    font-size: 1.16rem;
-    font-weight: 620;
-    letter-spacing: -.015em;
-  }
-
-  .entry-route span {
-    color: var(--pv2-muted);
-    font-size: .94rem;
-    line-height: 1.52;
-  }
-
-  @media (max-width: 900px) {
-    .entry__door {
-      grid-template-columns: 1fr;
-      align-items: stretch;
+  @media (max-width: 640px) {
+    .is-live .entry__slot {
+      width: clamp(200px, min(64vw, 44svh), 300px);
+      transform:
+        translate(-50%, -50%)
+        translateX(calc(var(--offset) * 32vw))
+        translateZ(calc(var(--far) * -124px))
+        rotateY(calc(var(--offset) * -24deg))
+        scale(calc(1 - var(--far) * .06));
     }
 
-    /* The still life is decoration, and on one column it would push the
-       primary action below the fold on a short viewport. */
-    .entry__door-art { display: none; }
-  }
-
-  @media (max-width: 720px) {
-    .pv2-nav {
-      height: auto;
-      min-height: 64px;
-      flex-wrap: wrap;
-      gap: 12px 18px;
-      padding: 16px clamp(18px, 3.8vw, 68px) 12px;
-    }
-
-    .pv2-nav nav {
-      flex-wrap: wrap;
-      gap: 12px 18px;
-    }
-
-    .entry-card { flex-direction: column; }
-
-    .entry-card__art { width: 100%; height: 132px; }
+    .dcard { width: clamp(200px, min(64vw, 44svh), 300px); }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .entry__primary,
-    .entry-route,
-    .entry__door-block { transition: none; }
+    .is-live .entry__rail,
+    .is-live .entry__slot,
+    .dcard,
+    .dcard__art,
+    .dcard__enter { transition: none; }
 
-    .entry__primary:hover,
-    .entry__primary:focus-visible,
-    .entry-route:hover,
-    .entry-route:focus-visible { transform: none; }
+    /* No arc and no tilt: the rail stays the flat, snapping row it is without
+       the script, which is the whole navigation with none of the motion. */
+    .is-live .entry__rail {
+      position: static;
+      display: flex;
+      padding: 0 max(16px, 50% - 170px);
+      overflow-x: auto;
+      transform: none;
+      /* Flat again, so the row scrolls under the pointer as itself. */
+      pointer-events: auto;
+    }
+
+    .is-live.entry__stage { cursor: default; }
+
+    .is-live .entry__slot {
+      position: static;
+      width: clamp(190px, min(26vw, 40svh), 380px);
+      transform: none;
+      opacity: 1;
+    }
+
   }
 </style>
