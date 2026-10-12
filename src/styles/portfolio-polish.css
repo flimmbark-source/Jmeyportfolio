@@ -1,0 +1,129 @@
+/* One opt-in material treatment. Motion owns page transitions and the game
+   owns body geometry. This sheet only lights surfaces and moves inner media. */
+[data-polish] {
+  --polish-x: 50%;
+  --polish-y: 50%;
+  --polish-dx: 0;
+  --polish-dy: 0;
+}
+
+.pv2-polish-light {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(ellipse at var(--polish-x) var(--polish-y), rgba(255, 255, 255, .32), rgba(255, 255, 255, .08) 28%, transparent 65%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .45);
+  transition: opacity 360ms cubic-bezier(.22, 1, .36, 1);
+}
+
+/* Stable artwork beneath a clear coat. No image warp or sphere transform. */
+.pv2-project-tile[data-polish='orb'] .pv2-polish-light {
+  background: radial-gradient(ellipse at var(--polish-x) var(--polish-y), rgba(255, 255, 255, .24), rgba(255, 244, 222, .08) 24%, transparent 60%);
+  box-shadow: inset 0 0 0 1px rgba(255, 250, 234, .7);
+}
+
+/* Keep the existing page/card geometry, give the artwork a finished frame. */
+.pv2-workshop-card[data-polish='card'] .pv2-visual,
+.pv2-focus__artifact[data-polish='surface'] {
+  border-radius: 14px;
+  box-shadow: 0 2px 4px rgba(36, 36, 36, .04), 0 14px 30px -18px rgba(36, 36, 36, .3);
+}
+
+.pv2-workshop-card[data-polish='card'] .pv2-visual {
+  border: 1px solid rgba(36, 36, 36, .12);
+  transform: perspective(1100px) rotateX(0deg) rotateY(0deg);
+  transition: transform 360ms cubic-bezier(.22, 1, .36, 1), box-shadow 360ms cubic-bezier(.22, 1, .36, 1);
+}
+
+.pv2-workshop-card[data-polish='card'] > strong {
+  transition: color 140ms ease;
+}
+
+.pv2-workshop-card[data-polish='card']:is(:hover, :focus-visible) .pv2-visual {
+  box-shadow: 0 3px 6px rgba(36, 36, 36, .06), 0 22px 36px -18px rgba(36, 36, 36, .36);
+}
+
+.pv2-focus__artifact[data-polish='surface'] > .pv2-visual {
+  border-radius: 7px;
+}
+
+/* A short magnetic response belongs to the label, not the target box. */
+.pv2-polish-label {
+  display: inline-block;
+  transform: translate(0, 0);
+  transition: transform 360ms cubic-bezier(.22, 1, .36, 1);
+}
+
+.pv2-focus__artifact-footer a .pv2-polish-label {
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.pv2-nav nav :is(a, button)[aria-current='page'] {
+  color: var(--pv2-text);
+}
+
+.pv2-nav nav :is(a, button)[aria-current='page']::after {
+  right: 0;
+  opacity: .65;
+}
+
+/* A material edge and local light for contact/UX cards, never a moving form. */
+[data-polish='panel'] {
+  position: relative;
+  isolation: isolate;
+}
+
+[data-polish='panel']::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border: 1px solid transparent;
+  border-radius: inherit;
+  background: radial-gradient(320px circle at var(--polish-x) var(--polish-y), rgba(255, 255, 255, .55), transparent 75%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 360ms cubic-bezier(.22, 1, .36, 1), border-color 360ms ease;
+}
+
+.dark [data-polish='panel']::after {
+  background: radial-gradient(320px circle at var(--polish-x) var(--polish-y), rgba(255, 255, 255, .065), transparent 75%);
+}
+
+[data-polish='panel']:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  [data-polish-active] .pv2-polish-light { opacity: 1; }
+
+  [data-polish='card'][data-polish-active] .pv2-visual {
+    transform: perspective(1100px) rotateX(calc(var(--polish-dy) * -5deg)) rotateY(calc(var(--polish-dx) * 5deg));
+  }
+
+  [data-polish='magnet'][data-polish-active] .pv2-polish-label {
+    transform: translate(calc(var(--polish-dx) * 6px), calc(var(--polish-dy) * 4px));
+  }
+
+  [data-polish='panel'][data-polish-active]::after {
+    opacity: 1;
+    border-color: rgba(155, 138, 105, .28);
+  }
+}
+
+/* Keyboard has a stable material response, never simulated pointer movement. */
+[data-polish]:focus-visible .pv2-polish-light { opacity: .45; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pv2-polish-light,
+  .pv2-polish-label,
+  [data-polish='panel']::after,
+  .pv2-workshop-card[data-polish='card'] .pv2-visual { transition: none; }
+}

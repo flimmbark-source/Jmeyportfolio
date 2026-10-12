@@ -1,5 +1,6 @@
 ---
 import PortfolioBackdrop from '../components/PortfolioBackdrop.astro';
+import PortfolioPolish from '../components/PortfolioPolish.astro';
 import '../styles/portfolio-v2.css';
 import '../styles/portfolio-chrome.css';
 ---
@@ -15,16 +16,17 @@ import '../styles/portfolio-chrome.css';
     <title>Contact — Jacob Meyerkopf</title>
   </head>
   <body class="pv2-body">
+    <PortfolioPolish />
     <PortfolioBackdrop />
     <div class="pv2-site">
       <header class="pv2-nav">
         <a href="/" class="pv2-nav__name">Jacob Meyerkopf</a>
         <nav aria-label="Portfolio navigation">
-          <a href="/">Playground</a>
-          <a href="/?project=unfinished">Work</a>
-          <a href="/research">Research</a>
-          <a href="/ux">UX</a>
-          <a href="/contact" aria-current="page">Contact</a>
+          <a data-polish="magnet" href="/"><span class="pv2-polish-label">Playground</span></a>
+          <a data-polish="magnet" href="/?project=unfinished"><span class="pv2-polish-label">Work</span></a>
+          <a data-polish="magnet" href="/research"><span class="pv2-polish-label">Research</span></a>
+          <a data-polish="magnet" href="/ux"><span class="pv2-polish-label">UX</span></a>
+          <a data-polish="magnet" href="/contact" aria-current="page"><span class="pv2-polish-label">Contact</span></a>
         </nav>
       </header>
 
@@ -40,11 +42,11 @@ import '../styles/portfolio-chrome.css';
 
         <section class="contact__grid">
           <aside class="contact__methods" aria-label="Direct contact">
-            <a class="contact__method" href="mailto:jmeyerkopf@gmail.com">
+            <a class="contact__method" data-polish="panel" href="mailto:jmeyerkopf@gmail.com">
               <span class="contact__method-label">Email</span>
               <strong class="contact__method-value">jmeyerkopf@gmail.com</strong>
             </a>
-            <a class="contact__method" href="https://www.linkedin.com/in/jacobmeyerkopf/" target="_blank" rel="noreferrer">
+            <a class="contact__method" data-polish="panel" href="https://www.linkedin.com/in/jacobmeyerkopf/" target="_blank" rel="noreferrer">
               <span class="contact__method-label">LinkedIn</span>
               <strong class="contact__method-value">in/jacobmeyerkopf ↗</strong>
             </a>
@@ -79,7 +81,7 @@ import '../styles/portfolio-chrome.css';
                 <textarea id="c-message" name="message" rows="5" required></textarea>
               </div>
 
-              <button class="contact__submit" type="submit">Send message</button>
+              <button class="contact__submit" type="submit" data-polish="magnet"><span class="pv2-polish-label">Send message</span></button>
 
               <p class="contact__status" role="status" aria-live="polite" hidden></p>
             </form>

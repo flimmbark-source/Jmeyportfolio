@@ -1,0 +1,31 @@
+---
+/**
+ * The playground lived here for one release, while `/` was a carousel
+ * navigator. The playground is the start page again, so this route only
+ * forwards — `/playground?project=x` links were shared while it was live and
+ * must keep working.
+ *
+ * Static hosting, so this is a meta refresh with a script in front of it: the
+ * script keeps the query string, which the meta refresh alone would drop.
+ */
+const target = '/';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={target} />
+    <title>Jacob Meyerkopf</title>
+    <script is:inline>
+      // `replace`, not `assign`: this page must not sit in the back history
+      // between the link and where it goes.
+      window.location.replace('/' + window.location.search + window.location.hash);
+    </script>
+    <meta http-equiv="refresh" content={`0; url=${target}`} />
+  </head>
+  <body>
+    <p><a href={target}>Continue to the playground</a></p>
+  </body>
+</html>

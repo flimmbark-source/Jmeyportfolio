@@ -127,6 +127,7 @@ const processSteps = [
           const copy = data.slug ? flagshipCopy[data.slug] : undefined;
           return (
             <article
+              data-polish="panel"
               class="relative overflow-hidden rounded-3xl border-2 border-brand-500/30 bg-white/90 p-8 shadow-xl transition hover:-translate-y-1 hover:shadow-2xl dark:border-brand-400/30 dark:bg-slate-900/80"
               data-animate-on-scroll
               data-animate-delay={`${index * 80}ms`}
@@ -179,6 +180,7 @@ const processSteps = [
               const data = project.data;
               return (
                 <article
+                  data-polish="panel"
                   class="rounded-2xl border border-slate-200/80 bg-white/70 p-6 shadow-md transition hover:-translate-y-1 hover:shadow-lg dark:border-slate-800/60 dark:bg-slate-900/70"
                   data-animate-on-scroll
                   data-animate-delay={`${index * 60}ms`}

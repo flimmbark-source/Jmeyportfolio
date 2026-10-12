@@ -49,7 +49,9 @@ npm run prepare:gttc
 
 ## Project structure
 
-- `src/pages/index.astro` — main interactive portfolio entry
+- `src/pages/index.astro` — the playground: the interactive portfolio itself (floating physics, incremental game). Deep links are `/?project=<id>`
+- `src/pages/start.astro` — a carousel navigator over the five destinations. Sidelined and unlinked; kept in case a front door is wanted again
+- `src/pages/playground.astro` — a redirect to `/`, so links shared while the playground lived at `/playground` keep working
 - `src/components/RelationalPortfolio.jsx` — Work, project, and Playground UI
 - `src/data/portfolioV2.ts` — portfolio/game metadata and links
 - `public/scripts/portfolio-physics-v3.js` — floating-block physics and incremental-game interactions

@@ -1082,144 +1082,6 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
   100%{opacity:0;transform:translate(-50%,calc(var(--pv2-level-label-y) - 10px)) scale(.98)}
 }
 
-/* Keep the playfield visible; only interaction is paused while the choice is open. */
-.pv2-project-levelup-overlay{
-  position:fixed;inset:0;z-index:7400;background:rgba(247,246,242,.025);opacity:0;pointer-events:none;
-  transition:opacity 300ms ease
-}
-.pv2-project-levelup-overlay.is-open{opacity:1;pointer-events:auto}
-
-.pv2-project-levelup__panel{
-  position:fixed;width:min(372px,calc(100vw - 96px));max-height:min(520px,calc(100svh - 112px));overflow:auto;
-  padding:15px;border:1px solid rgba(36,36,36,.15);border-radius:16px;background:rgba(247,246,242,.975);
-  color:var(--pv2-text,#242424);box-shadow:0 18px 50px rgba(36,36,36,.18);
-  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);opacity:0;transform:translateY(6px) scale(.975);
-  transform-origin:center;transition:opacity 320ms ease,transform 460ms cubic-bezier(.16,1,.3,1)
-}
-.pv2-project-levelup__panel::before{
-  content:'';position:absolute;pointer-events:none;background:rgba(36,36,36,.16)
-}
-.pv2-project-levelup__panel[data-side='right']::before{left:-22px;top:50%;width:22px;height:1px}
-.pv2-project-levelup__panel[data-side='left']::before{right:-22px;top:50%;width:22px;height:1px}
-.pv2-project-levelup__panel[data-side='below']::before{left:50%;top:-18px;width:1px;height:18px}
-.pv2-project-levelup__panel[data-side='above']::before{left:50%;bottom:-18px;width:1px;height:18px}
-.pv2-project-levelup__panel[data-side='right']{transform:translateX(-14px) scale(.975);transform-origin:left center}
-.pv2-project-levelup__panel[data-side='left']{transform:translateX(14px) scale(.975);transform-origin:right center}
-.pv2-project-levelup__panel[data-side='below']{transform:translateY(-12px) scale(.975);transform-origin:center top}
-.pv2-project-levelup__panel[data-side='above']{transform:translateY(12px) scale(.975);transform-origin:center bottom}
-.pv2-project-levelup-overlay.is-open .pv2-project-levelup__panel{opacity:1;transform:none}
-
-.pv2-project-levelup__header{
-  position:relative;isolation:isolate;display:flex;justify-content:space-between;align-items:center;gap:12px;
-  margin:-15px -15px 14px;padding:15px 15px 13px;overflow:hidden;
-  border-bottom:1px solid rgba(36,36,36,.1);
-  background:
-    radial-gradient(circle at 18% 50%,rgba(255,216,79,.34),transparent 44%),
-    linear-gradient(105deg,rgba(255,216,79,.16),rgba(120,62,166,.055) 66%,rgba(30,159,225,.07))
-}
-.pv2-project-levelup__header::before{
-  content:'';position:absolute;left:-22px;top:50%;z-index:-1;width:150px;height:150px;transform:translateY(-50%);
-  background:repeating-conic-gradient(from 8deg,rgba(255,216,79,.24) 0 3deg,transparent 3deg 16deg);
-  -webkit-mask:radial-gradient(circle,transparent 0 24%,#000 27% 66%,transparent 70%);
-  mask:radial-gradient(circle,transparent 0 24%,#000 27% 66%,transparent 70%);
-  opacity:.7;animation:pv2RewardHeaderBurst 620ms cubic-bezier(.16,1,.3,1) both
-}
-.pv2-project-levelup__reward-title{
-  display:grid;justify-items:start;gap:0;font-family:Impact,Haettenschweiler,'Arial Black',sans-serif;
-  font-size:1.22rem;font-weight:900;line-height:.72;letter-spacing:-.035em;transform:scaleX(1.025);
-  filter:drop-shadow(2px 2px 0 #71269f) drop-shadow(4px 4px 0 #1e9fe1)
-}
-.pv2-project-levelup__reward-title span{
-  display:block;background:linear-gradient(180deg,#fff6bd 0%,#ffd72e 48%,#ffad00 100%);
-  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:.6px rgba(91,38,105,.58)
-}
-.pv2-project-levelup__choose{
-  margin:0;
-  color:var(--pv2-muted,#686762);
-  font-size:.55rem;
-  font-weight:820;
-  letter-spacing:.13em;
-  text-transform:uppercase;
-  transform-origin:left center;
-  animation:pv2ChooseOnePulse 4s ease-in-out 1.8s infinite;
-}
-@keyframes pv2ChooseOnePulse{
-  0%,72%,100%{
-    color:var(--pv2-muted,#686762);
-    transform:scale(1);
-    text-shadow:none;
-  }
-  79%{
-    color:var(--pv2-text,#242424);
-    transform:scale(1.06);
-    text-shadow:0 0 10px rgba(255,216,79,.34);
-  }
-  86%{
-    color:var(--pv2-muted,#686762);
-    transform:scale(1);
-    text-shadow:none;
-  }
-}
-.pv2-project-levelup__level{
-  flex:none;padding:5px 8px;border:1px solid rgba(36,36,36,.14);border-radius:999px;background:rgba(247,246,242,.9);
-  color:var(--pv2-text,#242424);font-size:.58rem;font-weight:850;letter-spacing:.06em;
-  box-shadow:0 3px 10px rgba(36,36,36,.06)
-}
-@keyframes pv2RewardHeaderBurst{
-  0%{opacity:0;transform:translateY(-50%) scale(.58) rotate(-8deg)}
-  55%{opacity:.82;transform:translateY(-50%) scale(1.06) rotate(1deg)}
-  100%{opacity:.7;transform:translateY(-50%) scale(1) rotate(0)}
-}
-.pv2-project-levelup__panel h2{margin:5px 0 0;font:720 1.22rem/1.05 system-ui,sans-serif;letter-spacing:-.04em}
-.pv2-project-levelup__reveal{max-width:48ch;margin:10px 0 0;color:var(--pv2-muted,#686762);font:500 .78rem/1.43 system-ui,sans-serif}
-.pv2-project-levelup__rule{width:100%;height:1px;margin:13px 0 11px;background:rgba(36,36,36,.09)}
-.pv2-project-levelup__choices{display:grid;gap:7px;margin-top:7px}
-
-.pv2-project-levelup__choice{
-  display:grid;grid-template-columns:31px minmax(0,1fr) auto;align-items:center;gap:9px;width:100%;min-height:52px;
-  padding:7px 9px;border:1px solid rgba(36,36,36,.13);border-radius:12px;background:rgba(253,252,248,.82);
-  color:var(--pv2-text,#242424);text-align:left;cursor:pointer;box-shadow:0 3px 9px rgba(36,36,36,.025);
-  opacity:0;transform:translateY(7px) scale(.985);animation:pv2LevelChoiceIn 400ms cubic-bezier(.16,1,.3,1) forwards;
-  transition:border-color 130ms ease,background 130ms ease,box-shadow 130ms ease,opacity 220ms ease,transform 100ms ease
-}
-.pv2-project-levelup__choice:nth-child(1){animation-delay:150ms}
-.pv2-project-levelup__choice:nth-child(2){animation-delay:215ms}
-.pv2-project-levelup__choice:nth-child(3){animation-delay:280ms}
-@keyframes pv2LevelChoiceIn{to{opacity:1;transform:none}}
-.pv2-project-levelup__choice:hover,.pv2-project-levelup__choice:focus-visible{
-  transform:translateY(-2px);border-color:rgba(36,36,36,.3);background:#fff;box-shadow:0 8px 18px rgba(36,36,36,.08);outline:none
-}
-.pv2-project-levelup__choice:hover .pv2-project-levelup__choice-icon,.pv2-project-levelup__choice:focus-visible .pv2-project-levelup__choice-icon{transform:scale(1.08)}
-.pv2-project-levelup__choice:active:not(:disabled){
-  transform:translateY(1px) scale(.975);background:#f5f3ed;box-shadow:0 2px 5px rgba(36,36,36,.06)
-}
-.pv2-project-levelup__choice[data-rarity='uncommon']{border-color:color-mix(in srgb,var(--pv2-upgrade-friction) 44%,rgba(36,36,36,.13))}
-.pv2-project-levelup__choice[data-rarity='rare']{border-color:color-mix(in srgb,var(--pv2-upgrade-flux) 52%,rgba(36,36,36,.13))}
-.pv2-project-levelup__choice-icon{
-  display:grid;place-items:center;width:29px;height:29px;border-radius:8px;background:rgba(36,36,36,.055);color:var(--pv2-text,#242424);
-  transition:transform 160ms cubic-bezier(.16,1,.3,1),background 150ms ease,color 150ms ease
-}
-.pv2-project-levelup__choice[data-rarity='uncommon'] .pv2-project-levelup__choice-icon{background:color-mix(in srgb,var(--pv2-upgrade-friction) 14%,#fff);color:var(--pv2-upgrade-friction)}
-.pv2-project-levelup__choice[data-rarity='rare'] .pv2-project-levelup__choice-icon{background:color-mix(in srgb,var(--pv2-upgrade-flux) 14%,#fff);color:var(--pv2-upgrade-flux)}
-.pv2-project-levelup__choice-icon svg{width:15px;height:15px}
-.pv2-project-levelup__choice-copy{min-width:0;display:grid;gap:1px}
-.pv2-project-levelup__choice-copy small{color:var(--pv2-upgrade-friction);font-size:.48rem;font-weight:850;letter-spacing:.1em}
-.pv2-project-levelup__choice[data-rarity='rare'] .pv2-project-levelup__choice-copy small{color:var(--pv2-upgrade-flux)}
-.pv2-project-levelup__choice-copy strong{font-size:.72rem;font-weight:800;line-height:1.08;letter-spacing:-.02em}
-.pv2-project-levelup__choice-copy span{color:var(--pv2-muted,#686762);font-size:.61rem;line-height:1.18}
-.pv2-project-levelup__choice-arrow{color:var(--pv2-muted,#686762);font:700 .95rem/1 system-ui,sans-serif;transition:transform 160ms cubic-bezier(.16,1,.3,1),color 150ms ease}
-.pv2-project-levelup__choice.is-selected{
-  border-color:rgba(36,36,36,.4);background:#fff;box-shadow:0 0 0 3px rgba(255,216,79,.24),0 9px 22px rgba(36,36,36,.09);
-  transform:scale(1.015);animation:pv2ChoiceConfirm 520ms cubic-bezier(.16,1,.3,1) both
-}
-.pv2-project-levelup__choice.is-selected .pv2-project-levelup__choice-icon{background:var(--pv2-upgrade-affordable,#ffd84f);color:#242424;animation:pv2ChoiceIconConfirm 520ms cubic-bezier(.16,1,.3,1) both}
-.pv2-project-levelup__choice.is-selected .pv2-project-levelup__choice-arrow{color:#242424;transform:scale(1.18)}
-@keyframes pv2ChoiceConfirm{0%{transform:scale(.98)}38%{transform:scale(1.035)}100%{transform:scale(1.015)}}
-@keyframes pv2ChoiceIconConfirm{0%{transform:scale(.84) rotate(-8deg)}45%{transform:scale(1.2) rotate(4deg)}100%{transform:scale(1) rotate(0)}}
-.pv2-project-levelup__choice.is-rejected{opacity:.24!important;transform:scale(.985)}
-.pv2-project-levelup__choice:disabled{cursor:default}
-
-.pv2-project-levelup-overlay.is-confirming .pv2-project-levelup__panel{box-shadow:0 18px 50px rgba(36,36,36,.18),0 0 0 2px rgba(255,216,79,.12)}
 .pv2-float-slot.is-project-upgrade-applied .pv2-visual{animation:pv2UpgradeApplied 800ms cubic-bezier(.16,1,.3,1) both}
 .pv2-float-slot.is-project-upgrade-applied::before{animation:pv2UpgradeAppliedRing 800ms cubic-bezier(.16,1,.3,1) both}
 @keyframes pv2UpgradeApplied{
@@ -1236,14 +1098,10 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
 
 @media(max-width:720px){
   .pv2-project-progress{top:-34px;width:90px}
-  .pv2-project-levelup__panel{width:min(340px,calc(100vw - 24px));max-height:min(420px,calc(100svh - 92px));padding:14px;border-radius:14px}
-  .pv2-project-levelup__panel h2{font-size:1.08rem}
-  .pv2-project-levelup__reveal{font-size:.74rem}
-  .pv2-project-levelup__choice{min-height:48px}
 }
 @media(prefers-reduced-motion:reduce){
   .pv2-float-slot.is-project-leveling .pv2-visual,.pv2-float-slot.is-project-leveling::before,.pv2-float-slot.is-project-leveling::after,
-  .pv2-project-levelup-fanfare__ring,.pv2-project-levelup-fanfare__ray,.pv2-project-levelup-fanfare__copy,.pv2-project-levelup__header::before,.pv2-project-target-link,.pv2-project-target-impact,.pv2-score-spend-cue,
+  .pv2-project-levelup-fanfare__ring,.pv2-project-levelup-fanfare__ray,.pv2-project-levelup-fanfare__copy,.pv2-project-target-link,.pv2-project-target-impact,.pv2-score-spend-cue,
   .pv2-project-levelup__choice,.pv2-float-slot.is-project-upgrade-applied .pv2-visual,.pv2-float-slot.is-project-upgrade-applied::before{animation:none}
   .pv2-explore-cue.is-visible .pv2-explore-cue__box{animation:none}
   .pv2-explore-cue{transition:none}
@@ -1254,8 +1112,7 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
 
 /* ================= Contextual project + tactile sphere FX overrides ================= */
 
-/* Pixel-arcade fanfare treatment based on the supplied LEVEL UP reference.
-   The rest of the panel stays in the portfolio's existing UI language. */
+/* Pixel-arcade fanfare treatment based on the supplied LEVEL UP reference. */
 .pv2-project-levelup-fanfare__copy {
   min-width: 176px;
   gap: 8px;
@@ -1368,35 +1225,29 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
   mix-blend-mode: screen;
 }
 
-/* The licks are blended additively and blurred, so where they overlap they
-   merge into one body of fire instead of reading as separate petals. */
+/* Keep the orange silhouette legible on the pale background. A light blur
+   joins overlapping tongues without washing out their edges. */
 .pv2-heat-fire {
   position: absolute;
   inset: 0;
   border-radius: 50%;
   opacity: var(--pv2-flame-opacity);
-  filter: blur(calc(1px + var(--pv2-heat) * 1.4px)) saturate(1.2) contrast(1.08);
-  mix-blend-mode: screen;
+  filter: blur(.45px) saturate(1.15);
 }
 
 .pv2-heat-flame {
   position: absolute;
   left: var(--x);
   top: var(--y);
-  width: calc((9% + var(--pv2-heat) * 4%) * var(--wid));
-  height: calc((13% + var(--pv2-heat) * 15%) * var(--len) * var(--pv2-flame-scale));
-  /* Wide round base tapering to a point: the silhouette is most of what sells
-     it at this size. */
-  border-radius: 46% 46% 44% 44% / 74% 74% 26% 26%;
-  background: linear-gradient(to top,
-    rgba(156, 22, 0, .72) 0%,
-    #e03a00 10%,
-    #ff6a05 28%,
-    #ff9c14 48%,
-    #ffc63a 68%,
-    #ffe894 84%,
-    rgba(255, 246, 206, .42) 94%,
-    rgba(255, 250, 226, 0) 100%);
+  width: calc((11% + var(--pv2-heat) * 5%) * var(--wid));
+  height: calc((22% + var(--pv2-heat) * 22%) * var(--len) * var(--pv2-flame-scale));
+  /* Uneven curling tip, broad fuel bed, and a hotter lower core. */
+  clip-path: polygon(48% 0%, 62% 20%, 58% 34%, 80% 49%,
+    94% 72%, 88% 91%, 66% 100%, 30% 100%, 10% 90%,
+    4% 70%, 22% 48%, 36% 37%, 32% 22%);
+  background: radial-gradient(ellipse at 48% 92%,
+    #fff7cf 0%, #ffe477 20%, #ffb32d 40%,
+    #ff6b0b 64%, #dc3605 82%, rgba(170, 32, 0, .25) 100%);
   /* The base sits on the rim and the body goes straight up the screen, with a
      small per-lick lean. Rotating each lick out along its own radius is what
      turned the old effect into a sunburst. */
@@ -1412,8 +1263,8 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
   position: absolute;
   left: 50%;
   bottom: 4%;
-  width: 54%;
-  height: 46%;
+  width: 48%;
+  height: 62%;
   border-radius: 50% 50% 45% 45% / 70% 70% 30% 30%;
   background: linear-gradient(to top,
     rgba(255, 238, 170, .95) 0%,
@@ -1421,21 +1272,21 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
     rgba(255, 255, 240, 0) 100%);
   transform: translateX(-50%);
   filter: blur(.6px);
-  opacity: calc(.35 + var(--pv2-heat) * .55);
+  opacity: calc(.65 + var(--pv2-heat) * .3);
 }
 
 @keyframes pv2HeatFlame {
   0% {
-    transform: translate(-50%, -100%) rotate(var(--lean)) scale(.84, .7);
-    opacity: .6;
+    transform: translate(-50%, -100%) rotate(var(--lean)) scale(.86, .72) skewX(-6deg);
+    opacity: .82;
   }
   45% {
-    transform: translate(-50%, -100%) rotate(calc(var(--lean) + var(--sway))) scale(1.06, 1.14);
+    transform: translate(-50%, -100%) rotate(calc(var(--lean) + var(--sway))) scale(1.06, 1.18) skewX(8deg);
     opacity: 1;
   }
   100% {
-    transform: translate(-50%, -100%) rotate(calc(var(--lean) - var(--sway) * .6)) scale(.76, .9);
-    opacity: .78;
+    transform: translate(-50%, -100%) rotate(calc(var(--lean) - var(--sway) * .6)) scale(.78, .92) skewX(-4deg);
+    opacity: .9;
   }
 }
 
@@ -1675,207 +1526,6 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
 }
 
 
-/* ================= Level-up project hierarchy ================= */
-.pv2-project-levelup__project-info {
-  position: relative;
-  margin: 0 -2px;
-  padding: 13px 14px 14px 16px;
-  border: 1px solid rgba(36,36,36,.10);
-  border-radius: 12px;
-  background:
-    linear-gradient(100deg, rgba(255,216,79,.11), rgba(255,255,255,.74) 34%, rgba(255,255,255,.58));
-  box-shadow:
-    inset 3px 0 0 var(--pv2-upgrade-affordable,#ffd84f),
-    0 6px 18px rgba(36,36,36,.045);
-  opacity: 0;
-  transform: translateY(5px);
-  animation: pv2ProjectInfoIn 420ms cubic-bezier(.16,1,.3,1) 80ms forwards;
-}
-.pv2-project-levelup__project-label {
-  margin: 0 0 5px;
-  color: #8b761d;
-  font-size: .52rem;
-  font-weight: 850;
-  letter-spacing: .13em;
-  text-transform: uppercase;
-}
-.pv2-project-levelup__project-info h2 {
-  margin: 0;
-  color: var(--pv2-text,#242424);
-  font: 850 clamp(1.32rem,2.1vw,1.65rem)/1.02 system-ui,sans-serif;
-  letter-spacing: -.045em;
-}
-.pv2-project-levelup__project-info .pv2-project-levelup__reveal {
-  max-width: 44ch;
-  margin: 8px 0 0;
-  color: #625f59;
-  font-size: .86rem;
-  font-weight: 560;
-  line-height: 1.42;
-}
-@keyframes pv2ProjectInfoIn {
-  to { opacity: 1; transform: none; }
-}
-.pv2-project-levelup__rule {
-  margin-top: 12px;
-}
-
-/* Mobile level-up cards use a stable safe-area layout rather than desktop
-   side-placement. This keeps the playfield and leveled sphere visible. */
-@media (max-width:720px) {
-  .pv2-project-levelup__panel {
-    width: calc(100vw - 32px) !important;
-    max-width: 390px;
-    padding: 12px;
-    border-radius: 14px;
-  }
-  .pv2-project-levelup__panel[data-side='mobile-top'],
-  .pv2-project-levelup__panel[data-side='mobile-bottom'] {
-    transform: translateY(8px) scale(.985);
-    transform-origin: center;
-  }
-  .pv2-project-levelup-overlay.is-open .pv2-project-levelup__panel[data-side='mobile-top'],
-  .pv2-project-levelup-overlay.is-open .pv2-project-levelup__panel[data-side='mobile-bottom'] {
-    transform: none;
-  }
-  .pv2-project-levelup__panel[data-side='mobile-top']::before,
-  .pv2-project-levelup__panel[data-side='mobile-bottom']::before {
-    display: none;
-  }
-  .pv2-project-levelup__header {
-    margin: -12px -12px 11px;
-    padding: 12px 12px 11px;
-  }
-  .pv2-project-levelup__reward-title {
-    font-size: 1.04rem;
-  }
-  .pv2-project-levelup__project-info {
-    padding: 11px 12px 12px 14px;
-  }
-  .pv2-project-levelup__project-info h2 {
-    font-size: 1.28rem;
-  }
-  .pv2-project-levelup__project-info .pv2-project-levelup__reveal {
-    margin-top: 6px;
-    font-size: .79rem;
-    line-height: 1.36;
-  }
-  .pv2-project-levelup__rule {
-    margin: 10px 0 9px;
-  }
-  .pv2-project-levelup__choices {
-    gap: 6px;
-    margin-top: 6px;
-  }
-  .pv2-project-levelup__choice {
-    min-height: 46px;
-    padding: 6px 8px;
-    border-radius: 11px;
-  }
-  .pv2-project-levelup__choice-copy strong {
-    font-size: .7rem;
-  }
-  .pv2-project-levelup__choice-copy span {
-    font-size: .59rem;
-  }
-}
-
-@media (prefers-reduced-motion:reduce) {
-  .pv2-project-levelup__choose { animation: none; }
-
-  .pv2-project-levelup__project-info { animation: none; opacity: 1; transform: none; }
-}
-
-
-/* ================= Mobile level-up correction ================= */
-@media (max-width:720px) {
-  .pv2-project-levelup__panel {
-    width: calc(100vw - 24px) !important;
-    max-width: 356px;
-    padding: 10px;
-    border-radius: 13px;
-    box-shadow: 0 14px 38px rgba(36,36,36,.18);
-  }
-
-  .pv2-project-levelup__header {
-    min-height: 50px;
-    margin: -10px -10px 9px;
-    padding: 9px 10px 8px;
-  }
-
-  .pv2-project-levelup__reward-title {
-    font-size: .92rem;
-  }
-
-  .pv2-project-levelup__level {
-    padding: 4px 7px;
-    font-size: .52rem;
-  }
-
-  .pv2-project-levelup__project-info {
-    padding: 9px 10px 10px 12px;
-    border-radius: 10px;
-  }
-
-  .pv2-project-levelup__project-label {
-    margin-bottom: 3px;
-    font-size: .46rem;
-  }
-
-  .pv2-project-levelup__project-info h2 {
-    font-size: 1.14rem;
-    line-height: 1;
-  }
-
-  .pv2-project-levelup__project-info .pv2-project-levelup__reveal {
-    margin-top: 5px;
-    font-size: .71rem;
-    line-height: 1.32;
-  }
-
-  .pv2-project-levelup__rule {
-    margin: 8px 0 7px;
-  }
-
-  .pv2-project-levelup__choose {
-    font-size: .5rem;
-  }
-
-  .pv2-project-levelup__choices {
-    gap: 5px;
-    margin-top: 5px;
-  }
-
-  .pv2-project-levelup__choice {
-    grid-template-columns: 28px minmax(0,1fr) auto;
-    gap: 7px;
-    min-height: 42px;
-    padding: 5px 7px;
-    border-radius: 10px;
-  }
-
-  .pv2-project-levelup__choice-icon {
-    width: 27px;
-    height: 27px;
-    border-radius: 7px;
-  }
-
-  .pv2-project-levelup__choice-icon svg {
-    width: 14px;
-    height: 14px;
-  }
-
-  .pv2-project-levelup__choice-copy strong {
-    font-size: .66rem;
-  }
-
-  .pv2-project-levelup__choice-copy span {
-    font-size: .55rem;
-    line-height: 1.12;
-  }
-}
-
-
 /* ================= Mechanic icon taxonomy =================
    A small semantic color language shared by the upgrade tree and level-up
    choices. The icon identifies the mechanic family; copy carries exact values. */
@@ -1892,15 +1542,6 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
 [data-mechanic='value']        { --pv2-mechanic-color:#dfa515; --pv2-mechanic-soft:#fff0c4; }
 [data-mechanic='multiplier']   { --pv2-mechanic-color:#ef3f91; --pv2-mechanic-soft:#ffe0ef; }
 [data-mechanic='neutral']      { --pv2-mechanic-color:#5f6469; --pv2-mechanic-soft:#eef0f1; }
-
-.pv2-project-levelup__choice-icon {
-  background: var(--pv2-mechanic-soft, rgba(36,36,36,.055)) !important;
-  color: var(--pv2-mechanic-color, var(--pv2-text,#242424)) !important;
-  border: 1px solid color-mix(in srgb, var(--pv2-mechanic-color,#777) 24%, transparent);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.8),
-    0 2px 5px color-mix(in srgb, var(--pv2-mechanic-color,#777) 12%, transparent);
-}
 
 .pv2-upgrade-node:not(.is-bought) .pv2-upgrade-node__icon {
   background: var(--pv2-mechanic-soft, color-mix(in srgb,var(--branch-color) 16%,#fff));
@@ -1974,16 +1615,6 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
   -webkit-user-drag: none;
 }
 
-.pv2-project-levelup__choice.has-art-icon .pv2-project-levelup__choice-icon {
-  width: 38px;
-  height: 38px;
-  padding: 2px;
-  border: 0;
-  background: rgba(255,255,255,.64) !important;
-  box-shadow: 0 2px 8px rgba(36,36,36,.07);
-  overflow: visible;
-}
-
 .pv2-upgrade-node.has-art-icon .pv2-upgrade-node__icon {
   width: 30px;
   height: 30px;
@@ -2010,13 +1641,612 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
 }
 
 @media (max-width:720px) {
-  .pv2-project-levelup__choice.has-art-icon .pv2-project-levelup__choice-icon {
-    width: 34px;
-    height: 34px;
-  }
-
   .pv2-upgrade-node.has-art-icon .pv2-upgrade-node__icon {
     width: 28px;
     height: 28px;
   }
+}
+
+
+/* ================= Reward presentation =================
+   One definition per selector, in one place. Everything the level-up shows —
+   the reveal window, the chest, the three cards — is an ivory/charcoal app
+   window with a hard offset shadow, and the only colour that carries meaning
+   is the rarity of an upgrade. The arcade LEVEL UP emblem and the pixel chest
+   are the two deliberate exceptions: they are the celebration, and they are
+   over in about a second.
+
+   Reading order on the choices screen is fixed: which project levelled, what
+   you learned about it, then three cards whose frame tells you how rare the
+   upgrade is and whose footer tells you how many copies you already hold. */
+:root {
+  --pv2-reward-paper:#faf8f2;
+  --pv2-reward-ink:#242424;
+  --pv2-reward-border:#45443f;
+  --pv2-reward-header:#fff1c9;
+  --pv2-reward-muted:#64635d;
+  --pv2-reward-rule:#c7c5bc;
+  --pv2-reward-accent:#bc951e;
+  --pv2-reward-shadow:4px 4px 0 rgba(36,36,36,.18);
+  --pv2-reward-ease:cubic-bezier(.16,1,.3,1);
+  --pv2-reward-pop:cubic-bezier(.34,1.56,.64,1);
+  /* Rarity is a three-step scale, stated once. Cards read the active pair out
+     of --pv2-rarity / --pv2-rarity-wash, so a tier is one declaration and not
+     a new copy of every card rule. */
+  --pv2-rarity-common:#5f5e57;
+  --pv2-rarity-common-wash:#f1eee4;
+  --pv2-rarity-uncommon:#1c7351;
+  --pv2-rarity-uncommon-wash:#e3f3eb;
+  --pv2-rarity-rare:#64379f;
+  --pv2-rarity-rare-wash:#eee7fb;
+}
+
+/* The portfolio headline would otherwise read as a second heading behind the
+   reward window. */
+html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
+
+/* No scrim: the playfield stays at full strength behind the reward, and the
+   windows carry their own contrast. Both phases are treated alike, so passing
+   from the reveal to the cards does not change the backdrop. */
+.pv2-project-levelup-overlay {
+  position:fixed; inset:0; z-index:7400;
+  background:transparent;
+  opacity:0; pointer-events:none;
+  transition:opacity 180ms ease;
+}
+.pv2-project-levelup-overlay.is-open { opacity:1; pointer-events:auto; }
+.pv2-project-levelup-overlay:focus,
+.pv2-project-levelup__floating-choices:focus { outline:none; }
+
+/* ---------- Shared window chrome ---------- */
+.pv2-project-levelup__panel,
+.pv2-project-levelup__game-context,
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice {
+  border:2px solid var(--pv2-reward-border);
+  border-radius:4px;
+  background:var(--pv2-reward-paper);
+  color:var(--pv2-reward-ink);
+  box-shadow:var(--pv2-reward-shadow);
+  font-family:system-ui,sans-serif;
+}
+
+.pv2-project-levelup__panel {
+  position:fixed;
+  width:min(620px,calc(100vw - 28px));
+  padding:5px; overflow:hidden;
+  opacity:0; transform:translateY(14px) scale(.92);
+  transform-origin:center;
+  transition:opacity 180ms ease,transform 420ms var(--pv2-reward-pop);
+}
+
+/* Arcade colour around the whole perimeter, as even blocks. Each edge gets its
+   own repeating gradient running along its own axis; a single gradient swept
+   from the centre is what used to break into uneven slabs at the corners. */
+.pv2-reward-accent {
+  position:absolute; inset:0; z-index:3;
+  pointer-events:none;
+  background-image:
+    repeating-linear-gradient(90deg,#40cfff 0 26px,#854df3 26px 52px,#ffd34f 52px 78px,#f86eae 78px 104px),
+    repeating-linear-gradient(90deg,#ffd34f 0 26px,#f86eae 26px 52px,#40cfff 52px 78px,#854df3 78px 104px),
+    repeating-linear-gradient(180deg,#f86eae 0 26px,#40cfff 26px 52px,#854df3 52px 78px,#ffd34f 78px 104px),
+    repeating-linear-gradient(180deg,#854df3 0 26px,#ffd34f 26px 52px,#f86eae 52px 78px,#40cfff 78px 104px);
+  background-position:0 0,0 100%,0 0,100% 0;
+  background-size:100% 5px,100% 5px,5px 100%,5px 100%;
+  background-repeat:repeat-x,repeat-x,repeat-y,repeat-y;
+}
+.pv2-project-levelup-overlay.is-open .pv2-project-levelup__panel { opacity:1; transform:none; }
+/* Out the way it came in: the window collapses toward the chest rather than
+   dissolving, so the next beat feels caused by this one. */
+.pv2-project-levelup-overlay.is-chest-opening .pv2-project-levelup__panel {
+  opacity:0; transform:translateY(26px) scale(.86); pointer-events:none;
+  transition:opacity 170ms ease,transform 230ms cubic-bezier(.55,0,.78,.3);
+}
+
+/* Visually hidden, but read: the level and project name are no longer drawn. */
+.pv2-reward-sr { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+
+/* The one piece of arcade lettering in the system. It still stamps in, but it
+   labels the moment rather than carrying it, so it sits a step below the
+   sentence in size and contrast instead of above it. */
+.pv2-project-levelup__reward-title {
+  display:flex; align-items:baseline; justify-content:center; gap:.22em;
+  width:max-content; margin:14px auto 0; padding:4px 13px 6px;
+  border-radius:4px; background:#fbeec2;
+  animation:pv2RewardStamp 520ms cubic-bezier(.2,1.5,.5,1) 40ms both;
+  font-family:Impact,Haettenschweiler,'Arial Black',system-ui,sans-serif;
+  font-size:1.08rem; font-weight:900; line-height:1; letter-spacing:.02em;
+  filter:drop-shadow(1.5px 1.5px 0 rgba(113,38,159,.8));
+}
+@keyframes pv2RewardStamp {
+  0% { opacity:0; transform:scale(1.9) rotate(-7deg); }
+  55% { opacity:1; transform:scale(.94) rotate(1.5deg); }
+  100% { opacity:1; transform:scale(1) rotate(0); }
+}
+.pv2-project-levelup__reward-title span {
+  display:block;
+  background:linear-gradient(180deg,#fff6bd 0%,#ffd72e 48%,#ffad00 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  -webkit-text-stroke:.6px rgba(91,38,105,.58);
+}
+
+.pv2-project-levelup__level,
+.pv2-project-levelup__game-level {
+  flex:none; padding:7px 11px;
+  border:1px solid var(--pv2-reward-border); border-radius:2px;
+  background:var(--pv2-reward-paper); color:var(--pv2-reward-ink);
+  box-shadow:2px 2px 0 #e1dac8;
+  font:800 .8rem/1 system-ui,sans-serif; letter-spacing:.05em;
+}
+
+/* ---------- Reveal window ---------- */
+/* The project's own artwork opens the body here and heads the choices screen,
+   so the same object is represented the same way on both. */
+.pv2-project-levelup__body {
+  display:grid; grid-template-columns:68px minmax(0,1fr); gap:22px;
+  /* Generous room around the sentence: isolation is the cheapest way to make
+     something the focal point, and the text now has the most of it. */
+  align-items:center; justify-content:center; padding:22px 34px 20px;
+}
+/* Smaller and a shade quieter than its true colours: a dark saturated
+   thumbnail sitting level with the sentence was taking the first fixation. */
+.pv2-project-levelup__fact-media {
+  width:68px; height:68px; overflow:hidden;
+  border:1px solid #d9d5c7; border-radius:5px;
+  opacity:.88; filter:saturate(.82);
+}
+.pv2-project-levelup__fact-media img { display:block; width:100%; height:100%; object-fit:cover; }
+.pv2-project-levelup__body:not(:has(.pv2-project-levelup__fact-media)) { grid-template-columns:minmax(0,1fr); }
+
+/* This sentence is the whole reason the window exists, so it wins on every
+   axis hierarchy offers: the largest type in the window, the darkest ink, the
+   widest block, and the most space around it. The measure is held near 34ch
+   because a long line is harder to read, not more important. */
+.pv2-project-levelup__fact-text {
+  margin:0; max-width:34ch;
+  color:#24231e;
+  font:600 clamp(1.25rem,1.9vw,1.5rem)/1.45 'Baloo 2',Nunito,'Segoe UI',system-ui,sans-serif;
+  letter-spacing:-.005em;
+  text-wrap:pretty;
+}
+
+/* Both pop in on open rather than simply being there. */
+.pv2-project-levelup__fact-media,
+.pv2-project-levelup__fact-text {
+  animation:pv2RewardPopIn 420ms var(--pv2-reward-pop) both;
+}
+.pv2-project-levelup__fact-media { animation-delay:90ms; }
+.pv2-project-levelup__fact-text { animation-delay:200ms; }
+@keyframes pv2RewardPopIn {
+  0% { opacity:0; transform:scale(.86); }
+  60% { opacity:1; transform:scale(1.03); }
+  100% { opacity:1; transform:scale(1); }
+}
+
+/* The chest is held back until the fact has had time to land, then pops in.
+   Enter and Space already work, so the hold never traps a repeat player. */
+.pv2-project-levelup__action {
+  display:flex; justify-content:center;
+  /* The slot is reserved at full height from the start, so the chest arriving
+     at four seconds never reflows the window under the reader. */
+  padding:4px 26px 18px; min-height:60px;
+}
+.pv2-project-levelup__action .pv2-project-levelup__open {
+  opacity:0; transform:scale(.4); pointer-events:none;
+}
+.pv2-project-levelup__panel.is-action-ready .pv2-project-levelup__open {
+  pointer-events:auto;
+  animation:
+    pv2RewardPopIn 440ms var(--pv2-reward-pop) both,
+    pv2RewardChestBob 2.6s ease-in-out 600ms infinite;
+}
+/* A slow bob once it has landed, so the way forward keeps asking quietly. */
+@keyframes pv2RewardChestBob {
+  0%,100% { translate:0 0; }
+  50% { translate:0 -4px; }
+}
+.pv2-project-levelup__open:hover { animation-play-state:running,paused; }
+.pv2-project-levelup__open {
+  flex:none;
+  display:grid; place-items:center;
+  width:72px; height:56px; padding:0;
+  border:2px solid var(--pv2-reward-border); border-radius:3px;
+  background:#ffd34f; color:var(--pv2-reward-ink);
+  box-shadow:3px 3px 0 rgba(36,36,36,.22);
+  cursor:pointer;
+  transition:background-color 120ms ease,box-shadow 120ms ease,transform 120ms var(--pv2-reward-ease);
+}
+
+/* The closed frame of the same four-frame sheet the reward sequence animates,
+   so the button shows the object it is about to open. Hover advances it one
+   frame — the lid starts to lift under the cursor. Focus does not: the button
+   takes focus the moment the dialog opens, and a chest that is already ajar
+   at rest stops reading as an unopened reward. The ring shows focus. */
+.pv2-reward-chest-icon {
+  display:block; width:42px; height:39px;
+  background-image:url('/images/levelup/chest-states.png');
+  background-size:400% 144.8%;
+  background-position:0% 62%;
+  background-repeat:no-repeat;
+  image-rendering:pixelated;
+  transition:transform 120ms var(--pv2-reward-ease);
+}
+.pv2-project-levelup__open:hover .pv2-reward-chest-icon {
+  background-position:33.333333% 62%;
+  transform:translateY(-1px) scale(1.04);
+}
+.pv2-project-levelup__open:hover { background:#ffdf7a; box-shadow:4px 5px 0 rgba(36,36,36,.24); transform:translateY(-1px); }
+.pv2-project-levelup__open:active:not(:disabled) { transform:translateY(2px); box-shadow:1px 1px 0 rgba(36,36,36,.22); }
+/* Charcoal, not the gold accent: a gold ring on a gold button is barely a
+   ring, and this button is focused the moment the dialog opens. */
+.pv2-project-levelup__open:focus-visible { outline:3px solid var(--pv2-reward-border); outline-offset:3px; }
+.pv2-project-levelup__open:disabled { cursor:default; }
+
+.pv2-project-levelup__status { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+
+/* ---------- Chest ---------- */
+.pv2-reward-chest {
+  position:relative; display:block; width:188px; height:174px;
+  flex:none; isolation:isolate; transition:transform 160ms ease;
+}
+.pv2-reward-chest__sprite {
+  position:absolute; inset:0;
+  background-image:url('/images/levelup/chest-states.png');
+  background-size:400% 144.8%;
+  background-position:0% 62%;
+  background-repeat:no-repeat;
+  image-rendering:pixelated;
+  z-index:2;
+}
+.pv2-reward-chest.is-unlocked .pv2-reward-chest__sprite { background-position:33.333333% 62%; }
+.pv2-reward-chest.is-lid-opening .pv2-reward-chest__sprite { background-position:66.666667% 62%; }
+.pv2-reward-chest.is-lid-open .pv2-reward-chest__sprite { background-position:100% 62%; }
+.pv2-reward-chest__light {
+  position:absolute; left:14%; right:14%; bottom:50%; height:65%;
+  background:#fff1ac; opacity:0; transform:scaleY(.1); transform-origin:center bottom;
+  clip-path:polygon(0 0,100% 0,65% 100%,35% 100%);
+  filter:blur(8px); z-index:1;
+}
+.pv2-reward-chest.is-lid-open .pv2-reward-chest__light { animation:pv2ChestLight 1s ease-out both; }
+.pv2-reward-chest__particles { position:absolute; left:50%; top:45%; z-index:3; pointer-events:none; }
+.pv2-reward-chest__particles i {
+  position:absolute; width:5px; height:5px; background:#ffd24c;
+  animation:pv2ChestParticle 900ms cubic-bezier(.16,.8,.4,1) var(--delay) both;
+}
+.pv2-reward-chest__particles i:nth-child(3n) { background:#fff; width:3px; height:3px; }
+.pv2-reward-chest__particles i:nth-child(4n+2) { background:#f86eae; }
+.pv2-reward-chest__particles i:nth-child(4n+3) { background:#854df3; }
+.pv2-reward-chest__particles i:nth-child(4n) { background:#40cfff; }
+.pv2-reward-chest.is-spewing .pv2-reward-chest__particles i {
+  width:8px; height:8px; box-shadow:0 0 8px rgba(255,210,76,.7);
+  animation-duration:1800ms; animation-iteration-count:infinite;
+}
+.pv2-reward-chest.is-spewing .pv2-reward-chest__light { height:160%; animation:pv2RewardGlow 2400ms ease-in-out infinite alternate; }
+@keyframes pv2ChestLight { 0%{opacity:0;transform:scaleY(.1)} 25%{opacity:.95;transform:scaleY(1.2)} 100%{opacity:.12;transform:scaleY(.7)} }
+@keyframes pv2ChestParticle { 0%{opacity:0;transform:translate(0,0) scale(.2)} 15%{opacity:1} 100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(120deg) scale(.5)} }
+@keyframes pv2RewardGlow { from { opacity:.12; transform:scaleY(.9); } to { opacity:.3; transform:scaleY(1.1); } }
+
+.pv2-reward-stage-chest {
+  position:fixed; left:50%; bottom:24px; z-index:1;
+  transform:translateX(-50%) scale(.2); opacity:0;
+  pointer-events:none;
+}
+.is-chest-formed .pv2-reward-stage-chest,
+.pv2-project-levelup-overlay.is-choices .pv2-reward-stage-chest {
+  opacity:1; transform:translateX(-50%) scale(1);
+  transition:opacity 120ms ease,transform 200ms var(--pv2-reward-ease);
+}
+
+/* An animation the player has already seen is a delay, so it is always
+   skippable — by this control, by a click anywhere, or by Enter/Space/Escape. */
+.pv2-reward-skip {
+  position:fixed; right:20px; bottom:20px; z-index:5;
+  padding:8px 14px;
+  border:2px solid var(--pv2-reward-border); border-radius:3px;
+  background:var(--pv2-reward-paper); color:var(--pv2-reward-ink);
+  box-shadow:2px 2px 0 rgba(36,36,36,.18);
+  font:750 .76rem/1 system-ui,sans-serif; letter-spacing:.08em; text-transform:uppercase;
+  cursor:pointer;
+}
+.pv2-reward-skip:hover,
+.pv2-reward-skip:focus-visible { background:#fff6d9; border-color:var(--pv2-reward-accent); outline:none; }
+
+/* ---------- Choices screen ---------- */
+.pv2-project-levelup__floating-choices {
+  position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:min(820px,calc(100vw - 32px));
+  padding:12px; z-index:2;
+  text-align:center; color:var(--pv2-reward-ink);
+}
+
+.pv2-project-levelup__game-context {
+  display:grid; grid-template-columns:80px minmax(0,1fr); gap:18px;
+  align-items:center; margin:0 0 14px; padding:16px 18px;
+  text-align:left;
+  animation:pv2RewardPopIn 400ms var(--pv2-reward-pop) both;
+}
+.pv2-project-levelup__game-context.has-no-image { grid-template-columns:1fr; }
+.pv2-project-levelup__game-image {
+  width:80px; height:80px; overflow:hidden;
+  border:1px solid var(--pv2-reward-rule); border-radius:3px;
+}
+.pv2-project-levelup__game-image img { display:block; width:100%; height:100%; object-fit:cover; }
+.pv2-project-levelup__game-title { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.pv2-project-levelup__floating-choices .pv2-project-levelup__game-context h2 {
+  margin:0;
+  font:800 1.25rem/1.2 system-ui,sans-serif; letter-spacing:-.025em;
+}
+.pv2-project-levelup__game-level { padding:5px 9px; font-size:.72rem; }
+.pv2-project-levelup__game-fact {
+  margin:8px 0 0;
+  color:var(--pv2-reward-muted); font:500 .875rem/1.45 system-ui,sans-serif;
+}
+
+.pv2-project-levelup__choices {
+  display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px;
+  align-items:stretch;
+}
+
+/* One card rule. The tier supplies two colours; nothing else changes. */
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice {
+  --pv2-rarity:var(--pv2-rarity-common);
+  --pv2-rarity-wash:var(--pv2-rarity-common-wash);
+  position:relative; display:flex; flex-direction:column; align-items:center;
+  gap:10px; min-height:0;
+  padding:38px 14px 14px;
+  border-color:var(--pv2-rarity);
+  box-shadow:4px 4px 0 color-mix(in srgb,var(--pv2-rarity) 26%,transparent);
+  text-align:center; cursor:pointer;
+  transition:background-color 130ms ease,border-color 130ms ease,box-shadow 130ms ease,transform 130ms var(--pv2-reward-ease),opacity 180ms ease;
+}
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice[data-rarity='uncommon'] {
+  --pv2-rarity:var(--pv2-rarity-uncommon);
+  --pv2-rarity-wash:var(--pv2-rarity-uncommon-wash);
+}
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice[data-rarity='rare'] {
+  --pv2-rarity:var(--pv2-rarity-rare);
+  --pv2-rarity-wash:var(--pv2-rarity-rare-wash);
+}
+
+/* Rarity is the card's banner, not a line of fine print inside it. */
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice::before {
+  content:""; position:absolute; left:0; right:0; top:0; height:26px;
+  border-bottom:2px solid var(--pv2-rarity);
+  background:var(--pv2-rarity-wash);
+  pointer-events:none;
+}
+.pv2-project-levelup__rarity {
+  position:absolute; left:10px; top:0; height:26px; z-index:1;
+  display:flex; align-items:center;
+  color:var(--pv2-rarity);
+  font:850 .62rem/1 system-ui,sans-serif; letter-spacing:.12em;
+}
+/* A rare card earns a little more light than a common one. */
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice[data-rarity='rare'] {
+  box-shadow:4px 4px 0 color-mix(in srgb,var(--pv2-rarity) 26%,transparent),
+             0 0 0 4px color-mix(in srgb,var(--pv2-rarity) 12%,transparent);
+  animation:pv2RewardRareBreathe 2.8s ease-in-out 900ms infinite;
+}
+/* Only the rare tier gets an idle, and only just enough to catch the eye. */
+@keyframes pv2RewardRareBreathe {
+  0%,100% { box-shadow:4px 4px 0 color-mix(in srgb,var(--pv2-rarity) 26%,transparent),
+                       0 0 0 4px color-mix(in srgb,var(--pv2-rarity) 12%,transparent); }
+  50% { box-shadow:4px 4px 0 color-mix(in srgb,var(--pv2-rarity) 30%,transparent),
+                   0 0 0 9px color-mix(in srgb,var(--pv2-rarity) 16%,transparent); }
+}
+
+/* The number that picks this card, where the eye already is. */
+.pv2-project-levelup__choice-key {
+  position:absolute; right:8px; top:3px; z-index:1;
+  display:none; place-items:center;
+  width:20px; height:20px;
+  border:1px solid var(--pv2-rarity); border-radius:2px;
+  background:var(--pv2-reward-paper); color:var(--pv2-rarity);
+  font:800 .66rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (hover:hover) and (pointer:fine) {
+  .pv2-project-levelup__choice-key { display:grid; }
+}
+
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice-icon,
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.has-art-icon .pv2-project-levelup__choice-icon {
+  display:grid; place-items:center;
+  width:60px; height:60px; padding:5px; margin-top:2px;
+  border:1px solid color-mix(in srgb,var(--pv2-mechanic-color,#777) 26%,transparent);
+  border-radius:3px;
+  background:var(--pv2-mechanic-soft,#f1eee4);
+  color:var(--pv2-mechanic-color,var(--pv2-reward-ink));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
+  transition:transform 160ms var(--pv2-reward-ease);
+  overflow:hidden;
+}
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice-icon svg {
+  width:34px; height:34px; stroke-width:1.9;
+}
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice:hover .pv2-project-levelup__choice-icon,
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice:focus-visible .pv2-project-levelup__choice-icon {
+  transform:scale(1.1) rotate(-3deg);
+}
+
+.pv2-project-levelup__choice-copy {
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  width:100%; min-width:0; flex:1 1 auto;
+}
+.pv2-project-levelup__choice-copy strong {
+  font:750 1.05rem/1.25 system-ui,sans-serif; letter-spacing:-.015em;
+}
+.pv2-project-levelup__choice-effect {
+  color:var(--pv2-reward-muted); font:500 .875rem/1.4 system-ui,sans-serif;
+}
+
+/* How many copies you already hold. "+15% drift speed" is not a decision
+   until you know whether this is your first copy or your last. */
+.pv2-project-levelup__choice-meta {
+  display:flex; flex-direction:column; align-items:center; gap:7px;
+  width:100%; margin-top:auto; padding-top:9px;
+  border-top:1px solid var(--pv2-reward-rule);
+}
+.pv2-project-levelup__rank {
+  color:var(--pv2-reward-muted);
+  font:700 .68rem/1 system-ui,sans-serif; letter-spacing:.05em; text-transform:uppercase;
+}
+.pv2-project-levelup__stacks { display:flex; align-items:center; gap:5px; }
+.pv2-project-levelup__stacks i {
+  width:8px; height:8px; border-radius:50%;
+  border:1px solid color-mix(in srgb,var(--pv2-rarity) 55%,transparent);
+  background:transparent;
+}
+.pv2-project-levelup__stacks i.is-owned { background:var(--pv2-rarity); border-color:var(--pv2-rarity); }
+.pv2-project-levelup__stacks i.is-next { border-style:dashed; border-color:var(--pv2-rarity); }
+
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice:hover,
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice:focus-visible {
+  transform:translateY(-3px);
+  background:var(--pv2-rarity-wash);
+  box-shadow:6px 7px 0 color-mix(in srgb,var(--pv2-rarity) 34%,transparent);
+  outline:2px solid var(--pv2-rarity); outline-offset:3px;
+}
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice:active:not(:disabled) {
+  transform:translateY(1px);
+  box-shadow:2px 2px 0 color-mix(in srgb,var(--pv2-rarity) 30%,transparent);
+}
+
+/* Cards travel out of the chest for 320ms. They stay focusable and keyboard
+   selectable throughout; only the pointer waits, because a card in flight is
+   not yet where it looks. */
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.is-dealing { pointer-events:none; }
+
+.pv2-project-levelup__choice-arrow {
+  position:absolute; right:8px; top:3px; z-index:2;
+  display:none; place-items:center;
+  width:20px; height:20px;
+  border-radius:2px;
+  background:var(--pv2-rarity); color:#fff;
+  font:800 .76rem/1 system-ui,sans-serif;
+}
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.is-selected {
+  background:var(--pv2-rarity-wash);
+  border-color:var(--pv2-rarity);
+  box-shadow:4px 4px 0 color-mix(in srgb,var(--pv2-rarity) 40%,transparent),
+             0 0 0 4px color-mix(in srgb,var(--pv2-rarity) 20%,transparent);
+  animation:pv2ChoiceConfirm 380ms var(--pv2-reward-pop) both;
+}
+/* A ring in the tier's colour leaves the chosen card at the moment of commit. */
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.is-selected::after {
+  content:""; position:absolute; inset:-2px; z-index:2;
+  border:3px solid var(--pv2-rarity); border-radius:4px;
+  pointer-events:none;
+  animation:pv2ChoiceRing 560ms cubic-bezier(.2,.7,.3,1) both;
+}
+@keyframes pv2ChoiceRing {
+  0% { opacity:.9; transform:scale(1); }
+  100% { opacity:0; transform:scale(1.14); }
+}
+/* The cards not taken step back rather than simply dimming. */
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.is-rejected {
+  transition:opacity 260ms ease,transform 320ms var(--pv2-reward-ease),filter 260ms ease;
+  filter:saturate(.35);
+}
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.is-selected .pv2-project-levelup__choice-arrow { display:grid; }
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.is-selected .pv2-project-levelup__choice-key { display:none; }
+@keyframes pv2ChoiceConfirm { 0%{transform:translateY(-3px) scale(1)} 42%{transform:translateY(-3px) scale(1.04)} 100%{transform:translateY(-3px) scale(1.015)} }
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.is-rejected { opacity:.2; transform:scale(.94) translateY(8px); }
+.pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice:disabled { cursor:default; }
+.pv2-project-levelup-overlay.is-confirming .pv2-reward-skip { display:none; }
+
+/* ---------- Narrow and short viewports ---------- */
+@media (max-width:760px) {
+  .pv2-project-levelup__panel { width:calc(100vw - 20px); padding:4px; }
+  .pv2-reward-accent { background-size:100% 4px,100% 4px,4px 100%,4px 100%; }
+  .pv2-project-levelup__reward-title { margin-top:12px; padding:4px 12px 6px; font-size:1.18rem; }
+  .pv2-project-levelup__body { grid-template-columns:52px minmax(0,1fr); gap:14px; padding:16px 18px 14px; }
+  .pv2-project-levelup__fact-media { width:52px; height:52px; }
+  .pv2-project-levelup__fact-text { font-size:1.125rem; line-height:1.4; }
+  .pv2-project-levelup__action { padding:4px 16px 16px; min-height:68px; }
+  .pv2-reward-chest { width:140px; height:130px; }
+
+  .pv2-project-levelup__floating-choices { width:calc(100vw - 20px); padding:8px; }
+  .pv2-project-levelup__game-context { grid-template-columns:48px minmax(0,1fr); gap:12px; padding:12px; margin-bottom:12px; }
+  .pv2-project-levelup__game-image { width:48px; height:48px; align-self:start; }
+  .pv2-project-levelup__game-title { gap:8px; flex-wrap:wrap; }
+  .pv2-project-levelup__floating-choices .pv2-project-levelup__game-context h2 { font-size:1.05rem; }
+  .pv2-project-levelup__game-fact { font-size:.8125rem; }
+
+  /* Three cards side by side stop being readable well before this width, so
+     they become a stack of rows and the icon moves beside the copy. */
+  .pv2-project-levelup__choices { grid-template-columns:1fr; gap:10px; }
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice {
+    flex-direction:row; align-items:center; gap:12px;
+    padding:12px 44px 12px 12px;
+    text-align:left;
+  }
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice::before {
+    right:auto; width:8px; height:auto; bottom:0;
+    border-bottom:0; border-right:2px solid var(--pv2-rarity);
+  }
+  .pv2-project-levelup__rarity {
+    position:static; height:auto;
+    font-size:.58rem; letter-spacing:.1em;
+  }
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice-icon,
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.has-art-icon .pv2-project-levelup__choice-icon {
+    width:46px; height:46px; margin:0 0 0 6px; flex:none;
+  }
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice-icon svg { width:24px; height:24px; }
+  .pv2-project-levelup__choice-copy { align-items:flex-start; gap:4px; margin-top:0; }
+  .pv2-project-levelup__choice-copy strong { font-size:.95rem; }
+  .pv2-project-levelup__choice-effect { font-size:.8rem; }
+  .pv2-project-levelup__choice-meta {
+    flex-direction:row; align-items:center; justify-content:flex-start; gap:10px;
+    margin-top:2px; padding-top:7px;
+  }
+  .pv2-project-levelup__choice-arrow { right:12px; top:50%; transform:translateY(-50%); }
+  .pv2-reward-stage-chest { bottom:14px; }
+  .pv2-reward-skip { right:14px; bottom:14px; padding:7px 12px; }
+}
+
+@media (max-height:720px) {
+  .pv2-project-levelup__floating-choices { top:12px; transform:translateX(-50%); }
+  .pv2-project-levelup__game-context { padding:10px 12px; margin-bottom:10px; }
+  .pv2-project-levelup__game-fact { margin-top:4px; font-size:.8125rem; line-height:1.3; }
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice { padding-top:34px; gap:7px; }
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice-icon,
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.has-art-icon .pv2-project-levelup__choice-icon { width:42px; height:42px; }
+  .pv2-reward-stage-chest { bottom:10px; }
+  .pv2-reward-stage-chest .pv2-reward-chest { width:104px; height:96px; }
+}
+@media (max-height:720px) and (max-width:760px) {
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice { padding-top:12px; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .pv2-project-levelup-overlay,
+  .pv2-project-levelup__panel,
+  .pv2-project-levelup-overlay.is-chest-opening .pv2-project-levelup__panel,
+  .pv2-reward-stage-chest,
+  .pv2-reward-chest,
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice,
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice-icon { transition:none; }
+  .pv2-project-levelup__panel { opacity:1; transform:none; }
+  .pv2-reward-chest.is-spewing .pv2-reward-chest__light,
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.is-selected { animation:none; }
+  .pv2-reward-chest__particles { display:none; }
+  .pv2-reward-chest.is-lid-open .pv2-reward-chest__light { animation:none; opacity:.12; transform:none; }
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice:hover,
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice:focus-visible { transform:none; }
+  .pv2-project-levelup__open,
+  .pv2-reward-chest-icon { transition:none; }
+  /* No pops, no stamp, no idles. Everything is simply present. */
+  .pv2-project-levelup__fact-media,
+  .pv2-project-levelup__fact-text,
+  .pv2-project-levelup__reward-title,
+  .pv2-project-levelup__game-context,
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice[data-rarity='rare'],
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.is-selected::after,
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.is-rejected,
+  .pv2-project-levelup__panel.is-action-ready .pv2-project-levelup__open { animation:none; }
+  .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.is-selected::after { display:none; }
+  .pv2-project-levelup__panel.is-action-ready .pv2-project-levelup__open { opacity:1; transform:none; }
+  .pv2-project-levelup__open:hover,
+  .pv2-project-levelup__open:active:not(:disabled) { transform:none; }
+  .pv2-project-levelup__open:hover .pv2-reward-chest-icon { transform:none; }
 }

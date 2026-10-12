@@ -1,5 +1,6 @@
 ---
 import RelationalPortfolio from '../components/RelationalPortfolio.jsx';
+import PortfolioPolish from '../components/PortfolioPolish.astro';
 import '../styles/portfolio-v2.css';
 import '../styles/portfolio-chrome.css';
 import '../styles/portfolio-v2-overrides.css';
@@ -17,9 +18,25 @@ import '../styles/portfolio-battle.css';
       name="description"
       content="Interactive work by Jacob Meyerkopf: games, disability experiences, learning systems, unfinished experiments, and UX work."
     />
+    <link rel="preload" as="image" href="/images/levelup/chest-states.png" />
     <title>Jacob Meyerkopf — Interactive Work</title>
   </head>
   <body class="pv2-body">
+    <script is:inline>
+      // The nav and the credit drawer are held back until the spheres have
+      // landed, but RelationalPortfolio can only set that class once it has
+      // mounted — by which time the bar has already painted and then
+      // disappeared. Set it here, before the first paint, and let React take
+      // it off at the end of the sequence.
+      (() => {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const root = document.documentElement;
+        root.classList.add('pv2-intro-hold');
+        // If the portfolio never mounts, the chrome must still come back.
+        window.setTimeout(() => root.classList.remove('pv2-intro-hold'), 6000);
+      })();
+    </script>
+    <PortfolioPolish />
     <a class="pv2-skip" href="#portfolio-v2">Skip to work</a>
     <div class="pv2-boot-loader" aria-label="Loading portfolio" role="status">
       <div class="pv2-loader-dots" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -56,7 +73,7 @@ import '../styles/portfolio-battle.css';
         window.setTimeout(finish, 1500);
       })();
     </script>
-    <script src="/scripts/portfolio-physics-v3.js?v=55" defer></script>
+    <script src="/scripts/portfolio-physics-v3.js?v=64" defer></script>
     <script src="/scripts/portfolio-battle.js?v=1" defer></script>
     <script src="/scripts/ux-direct-link.js?v=1" defer></script>
     <script src="/scripts/letter-river-preview.js?v=7" defer></script>
