@@ -68,7 +68,7 @@
                                     // with the floor and swallowed every launch speed).
   const FRICTION_GAIN = 0.0010;     // heat gained per (speed − threshold) per ms
   const FRICTION_RELIEF = 0.00045;  // heat shed per ms while below threshold
-  const FRICTION_DAMP_BASE = 0.9865; // extra per-ms damping, exponent-scaled by heat
+  const FRICTION_DAMP_BASE = 0.984; // extra per-ms damping, exponent-scaled by heat
   const FRICTION_REARM = 0.35;      // heat must fall below this before it can burn again
   const FRICTION_BURN_BASE = 6;     // base points for a full-meter burn (× upgrades)
   const FLICK_COOL = 0.05;           // heat a player flick sheds (wakes a settled block)
@@ -654,6 +654,11 @@
       if (projectLevelUpOverlay === overlay) positionProjectLevelUpDialog(overlay);
     };
     overlay._pv2Reposition = reposition;
+    if (typeof event.keyboardNavigation !== 'boolean') {
+      event.keyboardNavigation = Boolean(event.returnFocus?.matches?.(':focus-visible'));
+    }
+    overlay.addEventListener('keydown', () => { event.keyboardNavigation = true; }, true);
+    overlay.addEventListener('pointerdown', () => { event.keyboardNavigation = false; }, true);
     window.addEventListener('resize', reposition);
     window.visualViewport?.addEventListener('resize', reposition);
     window.visualViewport?.addEventListener('scroll', reposition);
@@ -735,6 +740,7 @@
     // asked the reader to recognise a 68px image before the sentence made
     // sense.
     overlay.innerHTML = '<section class="pv2-project-levelup__panel" tabindex="-1">'
+      + '<div class="pv2-project-levelup__fact-window">'
       + '<h2 id="pv2-project-fact-title" class="pv2-project-levelup__reward-title">'
       + '<span aria-hidden="true">LEVEL UP!</span>'
       + '<span class="pv2-reward-sr">Level up. ' + reveal.title + ', level ' + event.level + '.</span></h2>'
@@ -743,10 +749,8 @@
       + '<div class="pv2-project-levelup__fact-copy">'
       + '<h3 class="pv2-project-levelup__fact-project">' + reveal.title + '</h3>'
       + '<p id="pv2-project-fact-text" class="pv2-project-levelup__fact-text">' + reveal.text + '</p>'
-      + '</div></div>'
+      + '</div></div></div>'
       + '<div class="pv2-project-levelup__action">'
-      + '<span class="pv2-project-levelup__anticipation" aria-hidden="true">'
-      + '<i></i>'.repeat(12) + '</span>'
       + '<button type="button" class="pv2-project-levelup__open" aria-label="Open the reward">'
       + '<span class="pv2-reward-chest-icon" aria-hidden="true"></span>'
       + '<span class="pv2-project-levelup__open-label">Continue</span></button></div>'
@@ -757,6 +761,7 @@
     if (factArtwork) media.appendChild(projectArtworkImage(factArtwork));
     else media.remove();
     const panel = overlay.querySelector('.pv2-project-levelup__panel');
+    panel.style.setProperty('--pv2-fact-wait', PROJECT_FACT_ACTION_DELAY + 'ms');
     const opener = overlay.querySelector('.pv2-project-levelup__open');
     opener.addEventListener('click', () => openProjectRewardChest(event, overlay, opener));
 
@@ -767,7 +772,6 @@
     const revealAction = () => {
       if (activeProjectLevelUp !== event || projectLevelUpOverlay !== overlay) return;
       panel.classList.add('is-action-ready');
-      panel.querySelector('.pv2-project-levelup__anticipation')?.remove();
       const resting = document.activeElement;
       if (resting === panel || resting === overlay || resting === document.body) {
         opener.focus({ preventScroll: true });
@@ -1066,7 +1070,7 @@
       lastTime = 0;
       const returnFocus = event.returnFocus?.isConnected && event.returnFocus !== document.body
         ? event.returnFocus : event.body?.el?.querySelector('.pv2-project-tile');
-      returnFocus?.focus({ preventScroll: true });
+      if (event.keyboardNavigation) returnFocus?.focus({ preventScroll: true });
       window.setTimeout(openNextProjectLevelUp, reducedMotion() ? 0 : 60);
     }, reducedMotion() ? 0 : 200);
   }

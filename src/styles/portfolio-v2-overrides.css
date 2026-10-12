@@ -3,6 +3,13 @@
   will-change: transform;
 }
 
+/* Pointer-driven rewards must not leave a square focus frame around an orb.
+   Keyboard focus stays visible as a contrasting ring inside its circular rim. */
+.pv2-project-tile:focus { outline:none; }
+.pv2-project-tile:focus-visible .pv2-visual::after {
+  box-shadow:inset 0 0 0 2px #faf8f2,inset 0 0 0 4px #242424;
+}
+
 /* Floating overview previews are actual lens-distorted orbs, not merely circular
    crops. The whole artwork surface is warped first; lighting is added above it. */
 .pv2-project-tile .pv2-visual {
