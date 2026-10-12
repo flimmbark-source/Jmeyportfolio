@@ -2138,26 +2138,36 @@
     } catch {}
   }
 
-  function nearestEdgePoint(event, rect) {
-    const x = clamp(event.clientX, rect.left, rect.right);
-    const y = clamp(event.clientY, rect.top, rect.bottom);
-    const options = [
-      { edge: 'left', d: Math.abs(event.clientX - rect.left) },
-      { edge: 'right', d: Math.abs(rect.right - event.clientX) },
-      { edge: 'top', d: Math.abs(event.clientY - rect.top) },
-      { edge: 'bottom', d: Math.abs(rect.bottom - event.clientY) },
-    ].sort((a, b) => a.d - b.d);
-    const edge = options[0].edge;
-    if (edge === 'left') return { x: rect.left, y, outward: Math.PI };
-    if (edge === 'right') return { x: rect.right, y, outward: 0 };
-    if (edge === 'top') return { x, y: rect.top, outward: -Math.PI / 2 };
-    return { x, y: rect.bottom, outward: Math.PI / 2 };
+  function pointerSphereContact(event, rect, pointerVx = 0, pointerVy = 0) {
+    const rx = rect.width / 2;
+    const ry = rect.height / 2;
+    if (rx <= 0 || ry <= 0) return null;
+    const cx = rect.left + rx;
+    const cy = rect.top + ry;
+    let nx = (event.clientX - cx) / rx;
+    let ny = (event.clientY - cy) / ry;
+    const distance = Math.hypot(nx, ny);
+    if (distance > 1) return null;
+    // At the centre there is no radial direction. Use the incoming side of
+    // the pointer's travel, with a stable left-rim fallback for a stationary hit.
+    if (distance < 1e-6) {
+      nx = -pointerVx / rx;
+      ny = -pointerVy / ry;
+      if (Math.hypot(nx, ny) < 1e-6) nx = -1;
+    }
+    const length = Math.hypot(nx, ny);
+    nx /= length;
+    ny /= length;
+    return {
+      x: cx + nx * rx,
+      y: cy + ny * ry,
+      outward: Math.atan2(ny / ry, nx / rx),
+    };
   }
 
-  function spawnImpactLines(event, rect) {
-    if (window.innerWidth <= MOBILE_BREAKPOINT || !rect) return;
+  function spawnImpactLines(impact) {
+    if (window.innerWidth <= MOBILE_BREAKPOINT || !impact) return;
     const layer = ensureFxLayer();
-    const impact = nearestEdgePoint(event, rect);
     for (let i = 0; i < 8; i += 1) {
       const t = i / 7;
       const angle = impact.outward - Math.PI / 2 + t * Math.PI;
@@ -2173,7 +2183,7 @@
       const dy = Math.sin(angle) * distance;
       try {
         const animation = line.animate([
-          { opacity: 0, transform: `translate(0,-50%) rotate(${angle}rad) scaleX(.2)` },
+          { opacity: 1, transform: `translate(0,-50%) rotate(${angle}rad) scaleX(.2)` },
           { opacity: 1, offset: .08, transform: `translate(${dx * .12}px,calc(${dy * .12}px - 50%)) rotate(${angle}rad) scaleX(1)` },
           { opacity: .9, offset: .78, transform: `translate(${dx * .68}px,calc(${dy * .68}px - 50%)) rotate(${angle}rad) scaleX(.86)` },
           { opacity: 0, transform: `translate(${dx}px,calc(${dy}px - 50%)) rotate(${angle}rad) scaleX(.55)` },
@@ -2794,10 +2804,9 @@
     if (!stage || activeProjectLevelUp || projectContextPaused || document.documentElement.classList.contains('pv2-upgrades-open')) return;
 
     const effects = currentEffects();
-    // Derive each body's viewport box from the simulation state plus one cached
-    // stage rect, instead of calling getBoundingClientRect() per body. Pointer
-    // moves arrive faster than frames, and each of those reads forced a layout
-    // in the middle of the write-heavy animation loop.
+    // Use simulation boxes only to reject distant bodies. Measure the artwork
+    // for nearby candidates so contact follows its actual rendered rim,
+    // including visual scale changes, rather than the slot's invisible corners.
     const stageRect = pointerStageRect();
     for (const body of bodies) {
       const rect = {
@@ -2808,7 +2817,12 @@
         width: body.w,
         height: body.h,
       };
-      const inside = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
+      const pad = Math.max(body.w, body.h) * .15;
+      const nearby = event.clientX >= rect.left - pad && event.clientX <= rect.right + pad
+        && event.clientY >= rect.top - pad && event.clientY <= rect.bottom + pad;
+      const visualRect = nearby ? body.el.querySelector('.pv2-visual')?.getBoundingClientRect() : null;
+      const contact = visualRect ? pointerSphereContact(event, visualRect, pointerVx, pointerVy) : null;
+      const inside = Boolean(contact);
       if (inside && body.contextHoverActive) {
         body.pointerInside = true;
         continue;
@@ -2833,7 +2847,7 @@
         // again. Autopilot flicks (in tick) deliberately don't, letting an
         // idle-driven block keep heating toward a burn.
         body.friction = Math.max(0, body.friction - FLICK_COOL);
-        spawnImpactLines(event, rect);
+        spawnImpactLines(contact);
         activateGame();
       }
       body.pointerInside = inside;
