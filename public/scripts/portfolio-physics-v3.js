@@ -746,7 +746,7 @@
       + '</div></div>'
       + '<div class="pv2-project-levelup__action">'
       + '<span class="pv2-project-levelup__anticipation" aria-hidden="true">'
-      + '<i></i><i></i><i></i><i></i><i></i><i></i></span>'
+      + '<i></i>'.repeat(12) + '</span>'
       + '<button type="button" class="pv2-project-levelup__open" aria-label="Open the reward">'
       + '<span class="pv2-reward-chest-icon" aria-hidden="true"></span>'
       + '<span class="pv2-project-levelup__open-label">Continue</span></button></div>'
