@@ -1933,16 +1933,22 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
 }
 .pv2-project-levelup__anticipation i {
   position:absolute; left:50%; top:50%; width:14px; height:14px;
-  background:#edbb36;
+  background:#8b3fe3;
   clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);
-  animation:pv2ContinueSparkle 1.4s ease-in-out infinite both;
+  animation:pv2ContinueSparkle .7s ease-in-out infinite both;
 }
-.pv2-project-levelup__anticipation i:nth-child(1) { left:22%; top:48%; animation-delay:-.2s; }
-.pv2-project-levelup__anticipation i:nth-child(2) { left:37%; top:24%; width:10px; height:10px; animation-delay:-.9s; }
-.pv2-project-levelup__anticipation i:nth-child(3) { left:48%; top:52%; width:20px; height:20px; animation-delay:-.5s; }
-.pv2-project-levelup__anticipation i:nth-child(4) { left:62%; top:32%; animation-delay:-1.1s; }
-.pv2-project-levelup__anticipation i:nth-child(5) { left:76%; top:58%; width:10px; height:10px; animation-delay:-.7s; }
-.pv2-project-levelup__anticipation i:nth-child(6) { left:57%; top:76%; width:8px; height:8px; animation-delay:-.4s; }
+.pv2-project-levelup__anticipation i:nth-child(1) { left:22%; top:48%; animation-delay:-.1s; }
+.pv2-project-levelup__anticipation i:nth-child(2) { left:37%; top:24%; width:10px; height:10px; animation-delay:-.45s; }
+.pv2-project-levelup__anticipation i:nth-child(3) { left:48%; top:52%; width:20px; height:20px; animation-delay:-.25s; }
+.pv2-project-levelup__anticipation i:nth-child(4) { left:62%; top:32%; animation-delay:-.55s; }
+.pv2-project-levelup__anticipation i:nth-child(5) { left:76%; top:58%; width:10px; height:10px; animation-delay:-.35s; }
+.pv2-project-levelup__anticipation i:nth-child(6) { left:57%; top:76%; width:8px; height:8px; animation-delay:-.2s; }
+.pv2-project-levelup__anticipation i:nth-child(7) { left:13%; top:29%; width:9px; height:9px; animation-delay:-.6s; }
+.pv2-project-levelup__anticipation i:nth-child(8) { left:30%; top:74%; width:12px; height:12px; animation-delay:-.05s; }
+.pv2-project-levelup__anticipation i:nth-child(9) { left:44%; top:82%; width:8px; height:8px; animation-delay:-.4s; }
+.pv2-project-levelup__anticipation i:nth-child(10) { left:56%; top:16%; width:11px; height:11px; animation-delay:-.15s; }
+.pv2-project-levelup__anticipation i:nth-child(11) { left:69%; top:78%; width:13px; height:13px; animation-delay:-.5s; }
+.pv2-project-levelup__anticipation i:nth-child(12) { left:86%; top:36%; width:9px; height:9px; animation-delay:-.3s; }
 @keyframes pv2ContinueSparkle {
   0%,100% { opacity:.15; transform:translate(-50%,-50%) scale(.35); }
   50% { opacity:1; transform:translate(-50%,-50%) scale(1); }

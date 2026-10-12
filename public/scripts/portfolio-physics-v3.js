@@ -68,7 +68,7 @@
                                     // with the floor and swallowed every launch speed).
   const FRICTION_GAIN = 0.0010;     // heat gained per (speed − threshold) per ms
   const FRICTION_RELIEF = 0.00045;  // heat shed per ms while below threshold
-  const FRICTION_DAMP_BASE = 0.988; // extra per-ms damping, exponent-scaled by heat
+  const FRICTION_DAMP_BASE = 0.9865; // extra per-ms damping, exponent-scaled by heat
   const FRICTION_REARM = 0.35;      // heat must fall below this before it can burn again
   const FRICTION_BURN_BASE = 6;     // base points for a full-meter burn (× upgrades)
   const FLICK_COOL = 0.05;           // heat a player flick sheds (wakes a settled block)
@@ -746,7 +746,7 @@
       + '</div></div>'
       + '<div class="pv2-project-levelup__action">'
       + '<span class="pv2-project-levelup__anticipation" aria-hidden="true">'
-      + '<i></i><i></i><i></i><i></i><i></i><i></i></span>'
+      + '<i></i>'.repeat(12) + '</span>'
       + '<button type="button" class="pv2-project-levelup__open" aria-label="Open the reward">'
       + '<span class="pv2-reward-chest-icon" aria-hidden="true"></span>'
       + '<span class="pv2-project-levelup__open-label">Continue</span></button></div>'
