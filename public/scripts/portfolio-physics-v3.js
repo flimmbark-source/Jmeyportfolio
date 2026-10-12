@@ -718,7 +718,10 @@
       if (!buttons.length) { keyEvent.preventDefault(); return; }
       const first = buttons[0];
       const last = buttons[buttons.length - 1];
-      if (keyEvent.shiftKey && document.activeElement === first) {
+      if (!buttons.includes(document.activeElement)) {
+        keyEvent.preventDefault();
+        (keyEvent.shiftKey ? last : first).focus({ preventScroll: true });
+      } else if (keyEvent.shiftKey && document.activeElement === first) {
         keyEvent.preventDefault(); last.focus();
       } else if (!keyEvent.shiftKey && document.activeElement === last) {
         keyEvent.preventDefault(); first.focus();
@@ -951,7 +954,7 @@
       // project, the rule, the instruction and the three choices are one
       // decision and now sit in one frame. The chest tucks into its bottom
       // edge, which is where the cards just came from.
-      '<section class="pv2-project-levelup__floating-choices">'
+      '<section class="pv2-project-levelup__floating-choices" tabindex="-1">'
       + '<header class="pv2-project-levelup__game-context">'
       + '<div class="pv2-project-levelup__game-image" aria-hidden="true"></div>'
       + '<div class="pv2-project-levelup__game-copy">'
@@ -1018,10 +1021,10 @@
       }
       if (keyEvent.key === 'ArrowRight' || keyEvent.key === 'ArrowDown') {
         keyEvent.preventDefault();
-        cards[(Math.max(0, index) + 1) % cards.length]?.focus({ preventScroll: true });
+        cards[(index + 1) % cards.length]?.focus({ preventScroll: true });
       } else if (keyEvent.key === 'ArrowLeft' || keyEvent.key === 'ArrowUp') {
         keyEvent.preventDefault();
-        cards[(Math.max(0, index) - 1 + cards.length) % cards.length]?.focus({ preventScroll: true });
+        cards[index < 0 ? cards.length - 1 : (index - 1 + cards.length) % cards.length]?.focus({ preventScroll: true });
       } else if (keyEvent.key === 'Home') {
         keyEvent.preventDefault();
         cards[0]?.focus({ preventScroll: true });
@@ -1031,7 +1034,8 @@
       }
     });
 
-    mountProjectLevelOverlay(overlay, event, '.pv2-project-levelup__choice');
+    // Keep opening focus on the dialog so no upgrade appears chosen by default.
+    mountProjectLevelOverlay(overlay, event, '.pv2-project-levelup__floating-choices');
     requestAnimationFrame(() => {
       if (projectLevelUpOverlay !== overlay || activeProjectLevelUp !== event || reducedMotion()) return;
       const chest = overlay.querySelector('.pv2-reward-chest');
