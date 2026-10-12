@@ -726,22 +726,25 @@
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-labelledby', 'pv2-project-fact-title');
     overlay.setAttribute('aria-describedby', 'pv2-project-fact-text');
-    // Emblem, then the project's artwork beside the fact, then the chest. The
-    // level and the project name are not drawn — the artwork identifies the
-    // project and the choices screen names it — so they ride the heading for
-    // anyone who cannot see the thumbnail.
+    // The banner straddles the top edge, then the artwork and a rule beside the
+    // project's name and the fact, then a full-width Continue. The project is
+    // named here rather than only on the choices screen: the thumbnail alone
+    // asked the reader to recognise a 68px image before the sentence made
+    // sense.
     overlay.innerHTML = '<section class="pv2-project-levelup__panel" tabindex="-1">'
-      + '<span class="pv2-reward-accent" aria-hidden="true"></span>'
       + '<h2 id="pv2-project-fact-title" class="pv2-project-levelup__reward-title">'
-      + '<span aria-hidden="true">LEVEL</span><span aria-hidden="true">UP!</span>'
+      + '<span aria-hidden="true">LEVEL UP!</span>'
       + '<span class="pv2-reward-sr">Level up. ' + reveal.title + ', level ' + event.level + '.</span></h2>'
       + '<div class="pv2-project-levelup__body">'
       + '<div class="pv2-project-levelup__fact-media" aria-hidden="true"></div>'
+      + '<div class="pv2-project-levelup__fact-copy">'
+      + '<h3 class="pv2-project-levelup__fact-project">' + reveal.title + '</h3>'
       + '<p id="pv2-project-fact-text" class="pv2-project-levelup__fact-text">' + reveal.text + '</p>'
-      + '</div>'
+      + '</div></div>'
       + '<div class="pv2-project-levelup__action">'
       + '<button type="button" class="pv2-project-levelup__open" aria-label="Open the reward">'
-      + '<span class="pv2-reward-chest-icon" aria-hidden="true"></span></button></div>'
+      + '<span class="pv2-reward-chest-icon" aria-hidden="true"></span>'
+      + '<span class="pv2-project-levelup__open-label">Continue</span></button></div>'
       + '<p class="pv2-project-levelup__status" role="status"></p>'
       + '</section>';
     const factArtwork = projectArtworkSrc(event.body);
@@ -880,6 +883,10 @@
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-labelledby', 'pv2-project-levelup-title');
     overlay.innerHTML =
+      // One window, not a header card floating above a row of cards: the
+      // project, the rule, the instruction and the three choices are one
+      // decision and now sit in one frame. The chest tucks into its bottom
+      // edge, which is where the cards just came from.
       '<section class="pv2-project-levelup__floating-choices">'
       + '<header class="pv2-project-levelup__game-context">'
       + '<div class="pv2-project-levelup__game-image" aria-hidden="true"></div>'
@@ -887,9 +894,11 @@
       + '<div class="pv2-project-levelup__game-title"><h2 id="pv2-project-levelup-title">' + reveal.title + '</h2>'
       + '<span class="pv2-project-levelup__game-level">LV. ' + event.level + '</span></div>'
       + '<p class="pv2-project-levelup__game-fact">' + reveal.text + '</p></div></header>'
+      + '<div class="pv2-project-levelup__sep" aria-hidden="true"></div>'
+      + '<p class="pv2-project-levelup__pick">Choose one upgrade</p>'
       + '<div class="pv2-project-levelup__choices"></div>'
-      + '<p class="pv2-project-levelup__status" role="status"></p></section>'
-      + '<div class="pv2-reward-stage-chest">' + projectRewardChest(true) + '</div>';
+      + '<div class="pv2-reward-stage-chest">' + projectRewardChest(true) + '</div>'
+      + '<p class="pv2-project-levelup__status" role="status"></p></section>';
     const artworkSrc = projectArtworkSrc(body);
     if (artworkSrc) {
       overlay.querySelector('.pv2-project-levelup__game-image')
