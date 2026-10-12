@@ -68,7 +68,7 @@
                                     // with the floor and swallowed every launch speed).
   const FRICTION_GAIN = 0.0010;     // heat gained per (speed − threshold) per ms
   const FRICTION_RELIEF = 0.00045;  // heat shed per ms while below threshold
-  const FRICTION_DAMP_BASE = 0.984; // extra per-ms damping, exponent-scaled by heat
+  const FRICTION_DAMP_BASE = 0.95;  // extra per-ms damping, exponent-scaled by heat
   const FRICTION_REARM = 0.35;      // heat must fall below this before it can burn again
   const FRICTION_BURN_BASE = 6;     // base points for a full-meter burn (× upgrades)
   const FLICK_COOL = 0.05;           // heat a player flick sheds (wakes a settled block)
@@ -314,6 +314,55 @@
       return `<img class="pv2-mechanic-art" src="${src}" alt="" draggable="false" decoding="async">`;
     }
     return iconSvg(upgrade.icon, theme);
+  }
+
+  // Compact visual descriptions from the supplied references. Keep `effect`
+  // as the readable accessible description and the existing taxonomy source.
+  const UPGRADE_EFFECT_DISPLAY = {
+    'project-speed': { parts: ['Drift ', { value: '+15%' }] },
+    'project-cap': { parts: ['Max Speed ', { value: '+20%' }] },
+    'project-launch': { parts: ['Flick Force ', { value: '+20%' }] },
+    'project-bounce': { parts: ['Rebound ', { value: '+20%' }, ' / ', { target: 'bumper' }] },
+    'project-walls': { parts: ['Rebound ', { value: '+20%' }, ' / ', { target: 'wall' }] },
+    'project-glide': { parts: ['Drag ', { value: '−15%' }] },
+    'project-keep': { parts: ['Collision Energy ', { value: '+15%' }] },
+    'project-value': { parts: ['+1 Point / ', { target: 'bumper' }, ' hit'] },
+    'project-learner': { parts: [{ value: '+25%' }, ' EXP / ', { target: 'bumper' }, ' hit'] },
+    'project-echo': { parts: ['+1 EXP / 3rd ', { target: 'bumper' }, ' hit'] },
+    'project-chain': { parts: [{ target: 'bumper' }, ' → Launch Nearest'] },
+    'project-second-wind': { parts: ['+1 EXP / next ', { target: 'bumper' }, ' hit'], note: 'After 5s without a bumper hit' },
+    'vel-1': { parts: ['Drift ', { value: '+60%' }] },
+    'vel-accel': { parts: ['Min Speed ', { value: '+80%' }] },
+    'vel-cap': { parts: ['Max Speed ', { value: '+80%' }] },
+    'vel-launch': { parts: ['Flick Force ', { value: '+110%' }] },
+    'vel-momentum': { parts: ['Max Speed ', { value: '+75%' }] },
+    'vel-overdrive': { parts: ['Speed ', { value: '+120%' }, ' · Flick ', { value: '+80%' }] },
+    'bounce-force': { parts: ['Rebound ', { value: '+70%' }, ' / ', { target: 'bumper' }] },
+    'bounce-combo': { parts: ['+2 Points / ', { target: 'bumper' }, ' hit'] },
+    'walls-hard': { parts: ['Rebound ', { value: '+70%' }, ' / ', { target: 'wall' }] },
+    'walls-value': { parts: ['+1 Point / ', { target: 'wall' }, ' hit'] },
+    'fric-glide': { parts: ['Drag ', { value: '−55%' }] },
+  };
+
+  function upgradeEffectTargetIcon(target) {
+    const shape = target === 'bumper'
+      ? '<rect x="3" y="18" width="22" height="4" rx="2" fill="#b9b9b9"/>'
+        + '<circle cx="22" cy="6" r="4" fill="#999"/>'
+        + '<path d="M3 8c5 0 9 4 10 9M8 14l5 3 1-6" fill="none"/>'
+      : '<path d="M2 3h7v5H2zM11 3h7v5h-7zM20 3h6v5h-6zM2 10h7v5H2zM11 10h7v5h-7zM20 10h6v5h-6zM2 17h7v5H2zM11 17h7v5h-7zM20 17h6v5h-6z" fill="#888" stroke="none"/>';
+    return '<svg class="pv2-upgrade-effect__target" data-effect-target="' + target + '" viewBox="0 0 28 24" fill="none" stroke="#666" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + shape + '</svg>';
+  }
+
+  function upgradeEffectMarkup(upgrade) {
+    const display = UPGRADE_EFFECT_DISPLAY[upgrade.id];
+    if (!display) return upgrade.effect;
+    const line = display.parts.map((part) => {
+      if (typeof part === 'string') return part;
+      if (part.target) return upgradeEffectTargetIcon(part.target);
+      return '<strong class="pv2-upgrade-effect__value">' + part.value + '</strong>';
+    }).join('');
+    return '<span class="pv2-upgrade-effect__line">' + line + '</span>'
+      + (display.note ? '<span class="pv2-upgrade-effect__note">' + display.note + '</span>' : '');
   }
 
   function projectXpTarget(level) {
@@ -669,7 +718,10 @@
       if (!buttons.length) { keyEvent.preventDefault(); return; }
       const first = buttons[0];
       const last = buttons[buttons.length - 1];
-      if (keyEvent.shiftKey && document.activeElement === first) {
+      if (!buttons.includes(document.activeElement)) {
+        keyEvent.preventDefault();
+        (keyEvent.shiftKey ? last : first).focus({ preventScroll: true });
+      } else if (keyEvent.shiftKey && document.activeElement === first) {
         keyEvent.preventDefault(); last.focus();
       } else if (!keyEvent.shiftKey && document.activeElement === last) {
         keyEvent.preventDefault(); first.focus();
@@ -879,7 +931,7 @@
       + '<span class="pv2-project-levelup__choice-copy">'
       + '<small class="pv2-project-levelup__rarity">' + upgrade.rarity.toUpperCase() + '</small>'
       + '<strong>' + upgrade.title + '</strong>'
-      + '<span class="pv2-project-levelup__choice-effect">' + upgrade.effect + '</span>'
+      + '<span class="pv2-project-levelup__choice-effect">' + upgradeEffectMarkup(upgrade) + '</span>'
       + '<span class="pv2-project-levelup__choice-meta">' + rank + pips + '</span>'
       + '</span>'
       + '<span class="pv2-project-levelup__choice-arrow" aria-hidden="true">✓</span>';
@@ -902,7 +954,7 @@
       // project, the rule, the instruction and the three choices are one
       // decision and now sit in one frame. The chest tucks into its bottom
       // edge, which is where the cards just came from.
-      '<section class="pv2-project-levelup__floating-choices">'
+      '<section class="pv2-project-levelup__floating-choices" tabindex="-1">'
       + '<header class="pv2-project-levelup__game-context">'
       + '<div class="pv2-project-levelup__game-image" aria-hidden="true"></div>'
       + '<div class="pv2-project-levelup__game-copy">'
@@ -969,10 +1021,10 @@
       }
       if (keyEvent.key === 'ArrowRight' || keyEvent.key === 'ArrowDown') {
         keyEvent.preventDefault();
-        cards[(Math.max(0, index) + 1) % cards.length]?.focus({ preventScroll: true });
+        cards[(index + 1) % cards.length]?.focus({ preventScroll: true });
       } else if (keyEvent.key === 'ArrowLeft' || keyEvent.key === 'ArrowUp') {
         keyEvent.preventDefault();
-        cards[(Math.max(0, index) - 1 + cards.length) % cards.length]?.focus({ preventScroll: true });
+        cards[index < 0 ? cards.length - 1 : (index - 1 + cards.length) % cards.length]?.focus({ preventScroll: true });
       } else if (keyEvent.key === 'Home') {
         keyEvent.preventDefault();
         cards[0]?.focus({ preventScroll: true });
@@ -982,7 +1034,8 @@
       }
     });
 
-    mountProjectLevelOverlay(overlay, event, '.pv2-project-levelup__choice');
+    // Keep opening focus on the dialog so no upgrade appears chosen by default.
+    mountProjectLevelOverlay(overlay, event, '.pv2-project-levelup__floating-choices');
     requestAnimationFrame(() => {
       if (projectLevelUpOverlay !== overlay || activeProjectLevelUp !== event || reducedMotion()) return;
       const chest = overlay.querySelector('.pv2-reward-chest');
@@ -1658,7 +1711,7 @@
       <span class="pv2-upgrade-node__icon" aria-hidden="true">${upgradeIconMarkup(upgrade, mechanicTheme)}</span>
       <span class="pv2-upgrade-node__copy">
         <strong class="pv2-upgrade-node__title">${upgrade.title}</strong>
-        <span class="pv2-upgrade-node__effect">${upgrade.effect}</span>
+        <span class="pv2-upgrade-node__effect">${upgradeEffectMarkup(upgrade)}</span>
       </span>
       <span class="pv2-upgrade-node__cost">${upgrade.cost}</span>
     `;
