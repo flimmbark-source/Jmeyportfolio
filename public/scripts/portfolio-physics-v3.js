@@ -104,45 +104,45 @@
       title: 'Get to the Café',
       reveals: [
         'I built Get to the Café to explore how a game could give someone an embodied experience of a disability that is normally invisible.',
-        'I drew from my own experience and built the game in three days for GMTK Game Jam 2026.',
-        'An invisible disability can change what an ordinary situation asks of someone. The effort involved may never become visible to the people around them.',
-        'I turned those unseen demands into accumulating tasks, using their combined pressure to make that experience felt through play.',
-        'I wanted to question how easily we judge someone’s personality or attitude from their behavior, without knowing what it took for them to get there.',
+        'Get to the Café began with my own experience of disability. In three days for GMTK Game Jam 2026, I turned that experience into a playable experiment in making unseen pressures felt.',
+        'Get to the Café explores the distance between what someone sees you do and what doing it asks of you. Meeting a friend for coffee can involve demands that never become visible to the person across the table.',
+        'In Get to the Café, unseen demands become accumulating tasks. I used their combined pressure to explore how game mechanics could communicate an experience that is difficult to convey through explanation alone.',
+        'With Get to the Café, I wanted to question how easily we interpret someone’s behavior as personality or attitude. What changes when we experience some of the pressures shaping that behavior ourselves?',
       ],
     },
     'letter-river': {
       title: 'Letter River',
       reveals: [
-        'Learning Hebrew frustrated me. I wanted to make something adults could enjoy playing while learning letters and words.',
-        'In Letter River, letters drift across the phone screen. You catch each one and drag it into the box for its sound, turning the connection between sound and symbol into an action.',
-        'I wanted practice to be enjoyable in its own right. Letter River explores how much of that enjoyment can come from a simple interaction.',
+        'Learning Hebrew frustrated me. I started Letter River to explore whether practising letters and words could become something adults enjoyed playing.',
+        'In Letter River, letters drift across the phone screen. You drag each one into the box for its sound, making the relationship between a written letter and its sound something you actively work with.',
+        'I designed Letter River around a simple, active interaction that players could immerse themselves in. The question behind the language-learning game is how the act of practising could become enjoyable in its own right.',
       ],
     },
     'last-reading': {
       title: 'The Last Reading',
       reveals: [
-        'I’ve spent much of my life learning to recognize patterns I couldn’t initially understand. I love games that let understanding emerge as I play.',
-        'Tarot interests me because a reading can feel deeply personal and mystical, revealing something about the person interpreting it.',
-        'The Last Reading turns that fascination into a horror roguelike. You construct five-card tarot readings and score through the patterns they form.',
-        'As you gain upgrades, you can increasingly manipulate the deck. A single draw can reshape an entire reading.',
-        'Beneath the card game, I’m exploring another kind of discovery: how to weave secrets through the mechanics and narrative, giving the player something to read between the lines.',
+        'I’ve spent much of my life learning to recognize patterns I couldn’t initially understand. The Last Reading brings that fascination into a tarot horror game about finding meaning in incomplete information.',
+        'Tarot interests me because a reading can feel deeply personal and mystical, reflecting something of the person interpreting it. In The Last Reading, I’m exploring that relationship between cards, patterns, and the meaning we find in them.',
+        'In The Last Reading, a five-card tarot reading becomes a scoring puzzle. The horror roguelike asks you to construct readings and recognize the patterns through which the cards score.',
+        'The Last Reading lets you increasingly manipulate a tarot deck through upgrades. As your control grows, a single draw can reshape an entire five-card reading.',
+        'I’m developing The Last Reading as a tarot horror roguelike with mystery woven through its mechanics and narrative. I want recognizing patterns to help the player both play the game and uncover its story.',
       ],
     },
     rotogo: {
       title: 'Rotogo',
       reveals: [
-        'Rotogo began as a physical game. Turning it into a digital experience became my first serious attempt to build a game with AI.',
-        'I taught myself React while making it playable. Rules and interactions I could previously only describe became things I could build.',
-        'It became the first game I made that people really enjoyed playing and felt offered them something different.',
-        'Player research taught me to reduce mental load and make decisions quicker and easier. It also helped me understand how research could shape the game and its position in the market.',
+        'Rotogo began as a physical game and became my first serious attempt to build a game with AI. I taught myself React while turning its rules into a playable digital experience.',
+        'Rotogo was the first game I made that people really enjoyed playing and felt offered them something different. That response is an important part of why the project matters to me.',
+        'Player research on Rotogo taught me to reduce mental load and make decisions quicker and easier. Building the game meant learning how to make its rules work for the people playing it.',
+        'Rotogo helped me connect player research with product design and market positioning. The project taught me how research could shape both a compelling game and the way I presented its value.',
       ],
     },
     'gig-duel': {
       title: 'Venue Rivals',
       reveals: [
-        'I started Venue Rivals while sitting in a shelter, looking for something to occupy my mind while hiding from missiles.',
-        'Party House gave me a starting point. Its simple rules, layered complexity, and unhurried decisions were the qualities that drew me in.',
-        'I brought that inspiration to a mobile game where friends can battle competing parties, while practicing how to build with AI.',
+        'I started Venue Rivals while sitting in a shelter, looking for something to occupy my mind. Making a small game gave me something to work on in that setting.',
+        'Party House drew me in with simple rules, layered complexity, and room to take my time. Venue Rivals began as an experiment in bringing those qualities into a mobile game.',
+        'Venue Rivals is a mobile game where friends battle competing parties. I used the project to practice building with AI while making something that could occupy my mind without demanding too much mental effort.',
       ],
     },
   };
@@ -534,6 +534,9 @@
 
   // Long enough to read three lines before the way forward appears.
   const PROJECT_FACT_ACTION_DELAY = 4000;
+  const PROJECT_REWARD_CHOICES_DELAY = 1380;
+  const PROJECT_REWARD_CARD_DURATION = 380;
+  const PROJECT_REWARD_CARD_STAGGER = 45;
 
   let eventFanfare = null;
 
@@ -742,6 +745,8 @@
       + '<p id="pv2-project-fact-text" class="pv2-project-levelup__fact-text">' + reveal.text + '</p>'
       + '</div></div>'
       + '<div class="pv2-project-levelup__action">'
+      + '<span class="pv2-project-levelup__anticipation" aria-hidden="true">'
+      + '<i></i><i></i><i></i><i></i><i></i><i></i></span>'
       + '<button type="button" class="pv2-project-levelup__open" aria-label="Open the reward">'
       + '<span class="pv2-reward-chest-icon" aria-hidden="true"></span>'
       + '<span class="pv2-project-levelup__open-label">Continue</span></button></div>'
@@ -762,6 +767,7 @@
     const revealAction = () => {
       if (activeProjectLevelUp !== event || projectLevelUpOverlay !== overlay) return;
       panel.classList.add('is-action-ready');
+      panel.querySelector('.pv2-project-levelup__anticipation')?.remove();
       const resting = document.activeElement;
       if (resting === panel || resting === overlay || resting === document.body) {
         opener.focus({ preventScroll: true });
@@ -801,12 +807,17 @@
     overlay.focus({ preventScroll: true });
     const chest = overlay.querySelector('.pv2-reward-chest');
 
-    const toChoices = () => {
+    const toChoices = (skipped = false) => {
       if (activeProjectLevelUp !== event || projectLevelUpOverlay !== overlay) return;
       clearProjectRewardTimers(event);
       event.chestOrigin = chest.getBoundingClientRect();
-      eventFanfare?.remove();
-      eventFanfare = null;
+      event.rewardSkipped = skipped;
+      // Let the label remain while the cards emerge. A skip or reduced-motion
+      // transition goes straight to the choice without carrying the fanfare.
+      if (skipped || reducedMotion()) {
+        eventFanfare?.remove();
+        eventFanfare = null;
+      }
       event.phase = 'choices';
       buildProjectLevelUpDialog(event);
     };
@@ -820,14 +831,14 @@
 
     overlay.querySelector('.pv2-reward-skip').addEventListener('click', (clickEvent) => {
       clickEvent.stopPropagation();
-      toChoices();
+      toChoices(true);
     });
-    overlay.addEventListener('pointerdown', () => { if (event.phase === 'fanfare') toChoices(); });
+    overlay.addEventListener('pointerdown', () => { if (event.phase === 'fanfare') toChoices(true); });
     overlay.addEventListener('keydown', (keyEvent) => {
       if (event.phase !== 'fanfare') return;
       if (keyEvent.key !== 'Enter' && keyEvent.key !== ' ' && keyEvent.key !== 'Escape') return;
       keyEvent.preventDefault();
-      toChoices();
+      toChoices(true);
     });
 
     advance(() => departingPanel.remove(), 170);
@@ -842,7 +853,7 @@
       spawnProjectLevelFanfare({ el: chest }, event.level, false);
       eventFanfare = document.body.querySelector('.pv2-project-levelup-fanfare:last-child');
     }, 630);
-    advance(toChoices, 980, 140);
+    advance(toChoices, PROJECT_REWARD_CHOICES_DELAY, 140);
   }
 
   function projectChoiceCardMarkup(upgrade, index, owned) {
@@ -973,10 +984,13 @@
       const chest = overlay.querySelector('.pv2-reward-chest');
       const origin = event.chestOrigin || chest.getBoundingClientRect();
       const chestRect = chest.getBoundingClientRect();
+      const dealDuration = PROJECT_REWARD_CARD_DURATION + Math.max(0, cards.length - 1) * PROJECT_REWARD_CARD_STAGGER;
+      // Hold the chest at its original position and size until the last card
+      // has emerged, then move it into its resting place in the window.
       chest.animate([
-        { transform: 'translate(' + (origin.left - chestRect.left) + 'px,' + (origin.top - chestRect.top) + 'px)' },
-        { transform: 'translate(0,0)' },
-      ], { duration: 340, easing: 'cubic-bezier(.16,1,.3,1)' });
+        { transformOrigin: '0 0', transform: 'translate(' + (origin.left - chestRect.left) + 'px,' + (origin.top - chestRect.top) + 'px) scale(' + (origin.width / chestRect.width) + ',' + (origin.height / chestRect.height) + ')' },
+        { transformOrigin: '0 0', transform: 'translate(0,0) scale(1)' },
+      ], { duration: 340, delay: event.rewardSkipped ? 0 : dealDuration, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
       // Cards deal out of the chest, but the deal is short and only blocks the
       // pointer while a card is still travelling away from where it looks. The
       // player never waits on a disabled button for the privilege of choosing.
@@ -994,10 +1008,12 @@
           { transform: 'translate(' + dx + 'px,' + dy + 'px) rotate(' + (-tilt) + 'deg) scale(.2)', opacity: 0 },
           { transform: 'translate(' + (dx * .28) + 'px,' + (dy * .4) + 'px) rotate(' + (tilt * .5) + 'deg) scale(.72)', opacity: 1, offset: .45 },
           { transform: 'translate(0,0) rotate(0deg) scale(1)', opacity: 1 },
-        ], { duration: 380, delay: index * 45, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
+        ], { duration: PROJECT_REWARD_CARD_DURATION, delay: index * PROJECT_REWARD_CARD_STAGGER, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
       });
       last?.finished.then(() => {
         if (projectLevelUpOverlay !== overlay) return;
+        eventFanfare?.remove();
+        eventFanfare = null;
         cards.forEach((choice) => choice.classList.remove('is-dealing'));
       }).catch(() => {
         cards.forEach((choice) => choice.classList.remove('is-dealing'));
@@ -1031,6 +1047,8 @@
   function finishProjectLevelUp(event) {
     if (activeProjectLevelUp !== event) return;
     clearProjectRewardTimers(event);
+    eventFanfare?.remove();
+    eventFanfare = null;
     projectLevelUpOverlay?.classList.remove('is-open');
     const overlay = projectLevelUpOverlay;
     if (overlay?._pv2Reposition) {
@@ -2120,26 +2138,36 @@
     } catch {}
   }
 
-  function nearestEdgePoint(event, rect) {
-    const x = clamp(event.clientX, rect.left, rect.right);
-    const y = clamp(event.clientY, rect.top, rect.bottom);
-    const options = [
-      { edge: 'left', d: Math.abs(event.clientX - rect.left) },
-      { edge: 'right', d: Math.abs(rect.right - event.clientX) },
-      { edge: 'top', d: Math.abs(event.clientY - rect.top) },
-      { edge: 'bottom', d: Math.abs(rect.bottom - event.clientY) },
-    ].sort((a, b) => a.d - b.d);
-    const edge = options[0].edge;
-    if (edge === 'left') return { x: rect.left, y, outward: Math.PI };
-    if (edge === 'right') return { x: rect.right, y, outward: 0 };
-    if (edge === 'top') return { x, y: rect.top, outward: -Math.PI / 2 };
-    return { x, y: rect.bottom, outward: Math.PI / 2 };
+  function pointerSphereContact(event, rect, pointerVx = 0, pointerVy = 0) {
+    const rx = rect.width / 2;
+    const ry = rect.height / 2;
+    if (rx <= 0 || ry <= 0) return null;
+    const cx = rect.left + rx;
+    const cy = rect.top + ry;
+    let nx = (event.clientX - cx) / rx;
+    let ny = (event.clientY - cy) / ry;
+    const distance = Math.hypot(nx, ny);
+    if (distance > 1) return null;
+    // At the centre there is no radial direction. Use the incoming side of
+    // the pointer's travel, with a stable left-rim fallback for a stationary hit.
+    if (distance < 1e-6) {
+      nx = -pointerVx / rx;
+      ny = -pointerVy / ry;
+      if (Math.hypot(nx, ny) < 1e-6) nx = -1;
+    }
+    const length = Math.hypot(nx, ny);
+    nx /= length;
+    ny /= length;
+    return {
+      x: cx + nx * rx,
+      y: cy + ny * ry,
+      outward: Math.atan2(ny / ry, nx / rx),
+    };
   }
 
-  function spawnImpactLines(event, rect) {
-    if (window.innerWidth <= MOBILE_BREAKPOINT || !rect) return;
+  function spawnImpactLines(impact) {
+    if (window.innerWidth <= MOBILE_BREAKPOINT || !impact) return;
     const layer = ensureFxLayer();
-    const impact = nearestEdgePoint(event, rect);
     for (let i = 0; i < 8; i += 1) {
       const t = i / 7;
       const angle = impact.outward - Math.PI / 2 + t * Math.PI;
@@ -2155,7 +2183,7 @@
       const dy = Math.sin(angle) * distance;
       try {
         const animation = line.animate([
-          { opacity: 0, transform: `translate(0,-50%) rotate(${angle}rad) scaleX(.2)` },
+          { opacity: 1, transform: `translate(0,-50%) rotate(${angle}rad) scaleX(.2)` },
           { opacity: 1, offset: .08, transform: `translate(${dx * .12}px,calc(${dy * .12}px - 50%)) rotate(${angle}rad) scaleX(1)` },
           { opacity: .9, offset: .78, transform: `translate(${dx * .68}px,calc(${dy * .68}px - 50%)) rotate(${angle}rad) scaleX(.86)` },
           { opacity: 0, transform: `translate(${dx}px,calc(${dy}px - 50%)) rotate(${angle}rad) scaleX(.55)` },
@@ -2776,10 +2804,9 @@
     if (!stage || activeProjectLevelUp || projectContextPaused || document.documentElement.classList.contains('pv2-upgrades-open')) return;
 
     const effects = currentEffects();
-    // Derive each body's viewport box from the simulation state plus one cached
-    // stage rect, instead of calling getBoundingClientRect() per body. Pointer
-    // moves arrive faster than frames, and each of those reads forced a layout
-    // in the middle of the write-heavy animation loop.
+    // Use simulation boxes only to reject distant bodies. Measure the artwork
+    // for nearby candidates so contact follows its actual rendered rim,
+    // including visual scale changes, rather than the slot's invisible corners.
     const stageRect = pointerStageRect();
     for (const body of bodies) {
       const rect = {
@@ -2790,7 +2817,12 @@
         width: body.w,
         height: body.h,
       };
-      const inside = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
+      const pad = Math.max(body.w, body.h) * .15;
+      const nearby = event.clientX >= rect.left - pad && event.clientX <= rect.right + pad
+        && event.clientY >= rect.top - pad && event.clientY <= rect.bottom + pad;
+      const visualRect = nearby ? body.el.querySelector('.pv2-visual')?.getBoundingClientRect() : null;
+      const contact = visualRect ? pointerSphereContact(event, visualRect, pointerVx, pointerVy) : null;
+      const inside = Boolean(contact);
       if (inside && body.contextHoverActive) {
         body.pointerInside = true;
         continue;
@@ -2815,7 +2847,7 @@
         // again. Autopilot flicks (in tick) deliberately don't, letting an
         // idle-driven block keep heating toward a burn.
         body.friction = Math.max(0, body.friction - FLICK_COOL);
-        spawnImpactLines(event, rect);
+        spawnImpactLines(contact);
         activateGame();
       }
       body.pointerInside = inside;
