@@ -300,7 +300,7 @@ function ProjectTile({ node, placement, index, onSelect, reducedMotion, register
         whileHover={reducedMotion || !arrived ? undefined : hoverMotion[placement]}
         whileFocus={reducedMotion || !arrived ? undefined : { y: -4, scale: 1.01 }}
         whileTap={reducedMotion ? undefined : { scale: 0.985 }}
-        transition={reducedMotion || !arrived || !playIntro
+        transition={reducedMotion || !arrived
           ? { duration: 0 }
           // Scale, not a y-offset: the simulation owns where the slot sits, and
           // a sphere sliding up into a position that is itself drifting reads
@@ -333,7 +333,7 @@ function GatewayLink({ id, className, eyebrow, title, onClick, reducedMotion, de
         animate={arrived ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
         whileHover={reducedMotion || !arrived ? undefined : { x: className.includes('unfinished') ? -4 : 4, y: -2 }}
         whileTap={reducedMotion ? undefined : { scale: 0.985 }}
-        transition={reducedMotion || !arrived || !playIntro
+        transition={reducedMotion || !arrived
           ? { duration: 0 }
           : { duration: INTRO.chromeFade, ease: INTRO.ease, delay }}
       >
@@ -408,7 +408,7 @@ function Overview({ onSelect, reducedMotion }) {
           className="pv2-overview__statement"
           initial={reducedMotion || !playIntro ? false : { opacity: 0, y: 10 }}
           animate={introPhase >= INTRO_PHASE.statement ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-          transition={reducedMotion || !playIntro
+          transition={reducedMotion
             ? { duration: 0 }
             : { duration: INTRO.statementFade, ease: INTRO.ease }}
         >
