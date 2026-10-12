@@ -30,6 +30,7 @@ import '../styles/portfolio-battle.css';
       // it off at the end of the sequence.
       (() => {
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        try { if (sessionStorage.getItem('pv2-intro-played') === '1') return; } catch {}
         const root = document.documentElement;
         root.classList.add('pv2-intro-hold');
         // If the portfolio never mounts, the chrome must still come back. Well
@@ -50,6 +51,12 @@ import '../styles/portfolio-battle.css';
       (() => {
         const loader = document.querySelector('.pv2-boot-loader');
         if (!loader) return;
+        try {
+          if (sessionStorage.getItem('pv2-intro-played') === '1') {
+            loader.remove();
+            return;
+          }
+        } catch {}
 
         const waitForPortfolio = new Promise((resolve) => {
           const check = () => {
