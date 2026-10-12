@@ -534,6 +534,9 @@
 
   // Long enough to read three lines before the way forward appears.
   const PROJECT_FACT_ACTION_DELAY = 4000;
+  const PROJECT_REWARD_CHOICES_DELAY = 1380;
+  const PROJECT_REWARD_CARD_DURATION = 380;
+  const PROJECT_REWARD_CARD_STAGGER = 45;
 
   let eventFanfare = null;
 
@@ -804,12 +807,17 @@
     overlay.focus({ preventScroll: true });
     const chest = overlay.querySelector('.pv2-reward-chest');
 
-    const toChoices = () => {
+    const toChoices = (skipped = false) => {
       if (activeProjectLevelUp !== event || projectLevelUpOverlay !== overlay) return;
       clearProjectRewardTimers(event);
       event.chestOrigin = chest.getBoundingClientRect();
-      eventFanfare?.remove();
-      eventFanfare = null;
+      event.rewardSkipped = skipped;
+      // Let the label remain while the cards emerge. A skip or reduced-motion
+      // transition goes straight to the choice without carrying the fanfare.
+      if (skipped || reducedMotion()) {
+        eventFanfare?.remove();
+        eventFanfare = null;
+      }
       event.phase = 'choices';
       buildProjectLevelUpDialog(event);
     };
@@ -823,14 +831,14 @@
 
     overlay.querySelector('.pv2-reward-skip').addEventListener('click', (clickEvent) => {
       clickEvent.stopPropagation();
-      toChoices();
+      toChoices(true);
     });
-    overlay.addEventListener('pointerdown', () => { if (event.phase === 'fanfare') toChoices(); });
+    overlay.addEventListener('pointerdown', () => { if (event.phase === 'fanfare') toChoices(true); });
     overlay.addEventListener('keydown', (keyEvent) => {
       if (event.phase !== 'fanfare') return;
       if (keyEvent.key !== 'Enter' && keyEvent.key !== ' ' && keyEvent.key !== 'Escape') return;
       keyEvent.preventDefault();
-      toChoices();
+      toChoices(true);
     });
 
     advance(() => departingPanel.remove(), 170);
@@ -845,7 +853,7 @@
       spawnProjectLevelFanfare({ el: chest }, event.level, false);
       eventFanfare = document.body.querySelector('.pv2-project-levelup-fanfare:last-child');
     }, 630);
-    advance(toChoices, 980, 140);
+    advance(toChoices, PROJECT_REWARD_CHOICES_DELAY, 140);
   }
 
   function projectChoiceCardMarkup(upgrade, index, owned) {
@@ -976,10 +984,13 @@
       const chest = overlay.querySelector('.pv2-reward-chest');
       const origin = event.chestOrigin || chest.getBoundingClientRect();
       const chestRect = chest.getBoundingClientRect();
+      const dealDuration = PROJECT_REWARD_CARD_DURATION + Math.max(0, cards.length - 1) * PROJECT_REWARD_CARD_STAGGER;
+      // Hold the chest at its original position and size until the last card
+      // has emerged, then move it into its resting place in the window.
       chest.animate([
-        { transform: 'translate(' + (origin.left - chestRect.left) + 'px,' + (origin.top - chestRect.top) + 'px)' },
-        { transform: 'translate(0,0)' },
-      ], { duration: 340, easing: 'cubic-bezier(.16,1,.3,1)' });
+        { transformOrigin: '0 0', transform: 'translate(' + (origin.left - chestRect.left) + 'px,' + (origin.top - chestRect.top) + 'px) scale(' + (origin.width / chestRect.width) + ',' + (origin.height / chestRect.height) + ')' },
+        { transformOrigin: '0 0', transform: 'translate(0,0) scale(1)' },
+      ], { duration: 340, delay: event.rewardSkipped ? 0 : dealDuration, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
       // Cards deal out of the chest, but the deal is short and only blocks the
       // pointer while a card is still travelling away from where it looks. The
       // player never waits on a disabled button for the privilege of choosing.
@@ -997,10 +1008,12 @@
           { transform: 'translate(' + dx + 'px,' + dy + 'px) rotate(' + (-tilt) + 'deg) scale(.2)', opacity: 0 },
           { transform: 'translate(' + (dx * .28) + 'px,' + (dy * .4) + 'px) rotate(' + (tilt * .5) + 'deg) scale(.72)', opacity: 1, offset: .45 },
           { transform: 'translate(0,0) rotate(0deg) scale(1)', opacity: 1 },
-        ], { duration: 380, delay: index * 45, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
+        ], { duration: PROJECT_REWARD_CARD_DURATION, delay: index * PROJECT_REWARD_CARD_STAGGER, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
       });
       last?.finished.then(() => {
         if (projectLevelUpOverlay !== overlay) return;
+        eventFanfare?.remove();
+        eventFanfare = null;
         cards.forEach((choice) => choice.classList.remove('is-dealing'));
       }).catch(() => {
         cards.forEach((choice) => choice.classList.remove('is-dealing'));
@@ -1034,6 +1047,8 @@
   function finishProjectLevelUp(event) {
     if (activeProjectLevelUp !== event) return;
     clearProjectRewardTimers(event);
+    eventFanfare?.remove();
+    eventFanfare = null;
     projectLevelUpOverlay?.classList.remove('is-open');
     const overlay = projectLevelUpOverlay;
     if (overlay?._pv2Reposition) {
