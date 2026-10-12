@@ -742,6 +742,8 @@
       + '<p id="pv2-project-fact-text" class="pv2-project-levelup__fact-text">' + reveal.text + '</p>'
       + '</div></div>'
       + '<div class="pv2-project-levelup__action">'
+      + '<span class="pv2-project-levelup__anticipation" aria-hidden="true">'
+      + '<i></i><i></i><i></i><i></i><i></i><i></i></span>'
       + '<button type="button" class="pv2-project-levelup__open" aria-label="Open the reward">'
       + '<span class="pv2-reward-chest-icon" aria-hidden="true"></span>'
       + '<span class="pv2-project-levelup__open-label">Continue</span></button></div>'
@@ -762,6 +764,7 @@
     const revealAction = () => {
       if (activeProjectLevelUp !== event || projectLevelUpOverlay !== overlay) return;
       panel.classList.add('is-action-ready');
+      panel.querySelector('.pv2-project-levelup__anticipation')?.remove();
       const resting = document.activeElement;
       if (resting === panel || resting === overlay || resting === document.body) {
         opener.focus({ preventScroll: true });

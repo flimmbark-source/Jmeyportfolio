@@ -1917,14 +1917,37 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
 /* The chest is held back until the fact has had time to land, then pops in.
    Enter and Space already work, so the hold never traps a repeat player. */
 .pv2-project-levelup__action {
-  display:flex; justify-content:center;
+  display:grid;
   /* The slot is reserved at full height from the start, so the chest arriving
      at four seconds never reflows the window under the reader. */
   padding:10px 54px 0; min-height:92px;
 }
 .pv2-project-levelup__action .pv2-project-levelup__open {
+  grid-area:1 / 1;
   opacity:0; transform:scale(.4); pointer-events:none;
 }
+/* Share the reserved button slot, so the cue stays at the future target at
+   every viewport size without adding layout shifts or another reveal timer. */
+.pv2-project-levelup__anticipation {
+  grid-area:1 / 1; position:relative; pointer-events:none;
+}
+.pv2-project-levelup__anticipation i {
+  position:absolute; left:50%; top:50%; width:14px; height:14px;
+  background:#edbb36;
+  clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);
+  animation:pv2ContinueSparkle 1.4s ease-in-out infinite both;
+}
+.pv2-project-levelup__anticipation i:nth-child(1) { left:22%; top:48%; animation-delay:-.2s; }
+.pv2-project-levelup__anticipation i:nth-child(2) { left:37%; top:24%; width:10px; height:10px; animation-delay:-.9s; }
+.pv2-project-levelup__anticipation i:nth-child(3) { left:48%; top:52%; width:20px; height:20px; animation-delay:-.5s; }
+.pv2-project-levelup__anticipation i:nth-child(4) { left:62%; top:32%; animation-delay:-1.1s; }
+.pv2-project-levelup__anticipation i:nth-child(5) { left:76%; top:58%; width:10px; height:10px; animation-delay:-.7s; }
+.pv2-project-levelup__anticipation i:nth-child(6) { left:57%; top:76%; width:8px; height:8px; animation-delay:-.4s; }
+@keyframes pv2ContinueSparkle {
+  0%,100% { opacity:.15; transform:translate(-50%,-50%) scale(.35); }
+  50% { opacity:1; transform:translate(-50%,-50%) scale(1); }
+}
+.pv2-project-levelup-overlay.is-chest-opening .pv2-project-levelup__anticipation { display:none; }
 .pv2-project-levelup__panel.is-action-ready .pv2-project-levelup__open {
   pointer-events:auto;
   animation:
@@ -2221,6 +2244,8 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
 
 .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice-icon,
 .pv2-project-levelup-overlay.is-choices .pv2-project-levelup__choice.has-art-icon .pv2-project-levelup__choice-icon {
+  /* Hover transforms used to be the only thing lifting this above the banner. */
+  position:relative; z-index:1;
   display:grid; place-items:center;
   width:84px; height:84px; padding:7px; margin-top:4px;
   border:1px solid color-mix(in srgb,var(--pv2-mechanic-color,#777) 24%,transparent);
@@ -2402,6 +2427,7 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
 }
 
 @media (prefers-reduced-motion:reduce) {
+  .pv2-project-levelup__anticipation { display:none; }
   .pv2-project-levelup-overlay,
   .pv2-project-levelup__panel,
   .pv2-project-levelup-overlay.is-chest-opening .pv2-project-levelup__panel,
