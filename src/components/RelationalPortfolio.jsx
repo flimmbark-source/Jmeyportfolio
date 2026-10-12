@@ -20,8 +20,7 @@ const publicProjectIds = ['get-to-the-cafe', 'letter-river', 'last-reading', 'ro
 // of the chrome. Nothing is interactive-but-invisible for long — the spheres
 // are the first thing to land after the sentence that explains them.
 const INTRO = {
-  // Every fade is a second longer than the first pass, and the spheres are a
-  // second and a half further apart. All of it is seconds.
+  // Every fade is a second longer than the first pass. All of it is seconds.
   statementFade: 2.12, // the sentence
   backdropFade: 2.22,  // the painting, a touch behind it
   // How long the sentence has the screen to itself. It tracks the statement's
@@ -29,7 +28,7 @@ const INTRO = {
   // long that fade is — pinned to its old value the first sphere would arrive
   // while the sentence was still only a third of the way in.
   statement: 1.82,
-  sphereGap: 1.76,     // between one sphere landing and the next
+  sphereGap: 0.65,     // between one sphere landing and the next
   sphereFade: 1.9,     // a single sphere
   chromeFade: 1.74,    // the nav, gateways and credit at the end
   ease: [0.22, 1, 0.3, 1],
