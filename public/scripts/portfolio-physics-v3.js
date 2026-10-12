@@ -74,9 +74,13 @@
   const FLICK_COOL = 0.05;           // heat a player flick sheds (wakes a settled block)
   const HEAT_MIN_VISIBLE = 0.04;    // below this the heat halo stays hidden
   const HEAT_TIERS = 5;             // box-shadow color steps (rewritten only on change)
-  const TREE_WIDTH = 1240;
-  const TREE_HEIGHT = 900;
-  const TREE_CENTER = { x: 620, y: 450 };
+  const TREE_WIDTH = 1880;
+  const TREE_HEIGHT = 1380;
+  const TREE_CENTER = { x: 130, y: 410 };
+  const TREE_NODE_WIDTH = 320;
+  const TREE_NODE_HEIGHT = 86;
+  const TREE_ROOT_WIDTH = 128;
+  const TREE_ROOT_HEIGHT = 140;
   const GHOST_COLORS = ['#ff3366', '#7c3cff', '#00b894', '#ff9f1a', '#1597ff', '#e843d5', '#ff5f00'];
   const COMBO_WINDOW = 2200;
   const AUTO_FLICK_INTERVAL = 2600;
@@ -169,6 +173,8 @@
   // Genre labels flavor the incremental tree. The `soon` flag (none set now)
   // still greys a node out and blocks its purchase, kept for any future
   // scaffold-ahead node; every listed node currently affects the block game.
+  // The original x/y fields below are legacy coordinates. Presentation now
+  // uses UPGRADE_TREE_LAYOUT; these fields do not position the rendered tree.
   const UPGRADES = [
     // ── Velocity (upward spine) ────────────────────────────────────────────
     { id: 'vel-1', branch: 'velocity', depth: 1, x: 620, y: 336, title: 'Faster Drift', effect: '+60% drift speed', icon: 'wind', cost: 10, requires: [] },
@@ -211,6 +217,32 @@
   ];
 
   const UPGRADE_BY_ID = new Map(UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
+
+  // Presentation coordinates only. Upgrade definitions, effects, costs and
+  // prerequisites remain the game-data source above. The selected horizontal
+  // design places the four starting branches in lanes and Flux below them.
+  const UPGRADE_TREE_LAYOUT = new Map([
+    ['vel-1', { x: 450, y: 110 }],
+    ['vel-accel', { x: 850, y: 62 }], ['vel-cap', { x: 850, y: 158 }],
+    ['vel-launch', { x: 1250, y: 62 }], ['vel-momentum', { x: 1250, y: 158 }],
+    ['vel-overdrive', { x: 1650, y: 110 }],
+    ['walls-1', { x: 450, y: 310 }],
+    ['walls-hard', { x: 850, y: 262 }], ['walls-value', { x: 850, y: 358 }],
+    ['walls-ricochet', { x: 1250, y: 262 }], ['walls-echo', { x: 1250, y: 358 }],
+    ['bounce-1', { x: 450, y: 510 }],
+    ['bounce-force', { x: 850, y: 462 }], ['bounce-value', { x: 850, y: 558 }],
+    ['bounce-charge', { x: 1250, y: 462 }], ['bounce-combo', { x: 1250, y: 558 }],
+    ['bounce-chain', { x: 1650, y: 510 }],
+    ['fric-1', { x: 450, y: 710 }],
+    ['fric-glide', { x: 850, y: 662 }], ['fric-keep', { x: 850, y: 758 }],
+    ['fric-low', { x: 1250, y: 662 }], ['fric-perpetual', { x: 1250, y: 758 }],
+    ['flux-crit', { x: 1250, y: 930 }],
+    ['flux-battle', { x: 1650, y: 882 }], ['flux-bushido', { x: 1650, y: 978 }],
+    ['flux-mult', { x: 1250, y: 1040 }],
+    ['flux-idle', { x: 1250, y: 1150 }], ['flux-auto', { x: 1650, y: 1150 }],
+    ['flux-gravity', { x: 1250, y: 1260 }],
+  ]);
+
 
   const ICONS = {
     wind: '<path d="M3 9h9a2.4 2.4 0 1 0-2.4-2.4"/><path d="M3 14h13a2.4 2.4 0 1 1-2.4 2.4"/><path d="M3 19h6"/>',
@@ -1705,34 +1737,54 @@
     const mechanicTheme = mechanicThemeForUpgrade(upgrade);
     node.dataset.mechanic = mechanicTheme;
     if (MECHANIC_ART[mechanicTheme]) node.classList.add('has-art-icon');
-    node.style.setProperty('--node-x', `${upgrade.x}px`);
-    node.style.setProperty('--node-y', `${upgrade.y}px`);
+    const position = pointOf(upgrade.id);
+    node.style.setProperty('--node-x', `${position.x}px`);
+    node.style.setProperty('--node-y', `${position.y}px`);
     node.innerHTML = `
       <span class="pv2-upgrade-node__icon" aria-hidden="true">${upgradeIconMarkup(upgrade, mechanicTheme)}</span>
       <span class="pv2-upgrade-node__copy">
         <strong class="pv2-upgrade-node__title">${upgrade.title}</strong>
         <span class="pv2-upgrade-node__effect">${upgradeEffectMarkup(upgrade)}</span>
       </span>
-      <span class="pv2-upgrade-node__cost">${upgrade.cost}</span>
+      <span class="pv2-upgrade-node__cost"><strong>${upgrade.cost}</strong><small>PTS</small></span>
     `;
     node.addEventListener('click', () => buyUpgrade(upgrade.id));
     return node;
   }
 
   function pointOf(id) {
-    const upgrade = UPGRADE_BY_ID.get(id);
-    return upgrade ? { x: upgrade.x, y: upgrade.y } : TREE_CENTER;
+    return UPGRADE_TREE_LAYOUT.get(id) || TREE_CENTER;
   }
 
-  function curvedPath(start, end) {
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
-    if (Math.abs(dx) >= Math.abs(dy)) {
-      const mx = start.x + dx * .5;
-      return `M ${start.x} ${start.y} C ${mx} ${start.y}, ${mx} ${end.y}, ${end.x} ${end.y}`;
+  function treeConnectorPath(parentId, upgrade) {
+    const parent = parentId === 'root' ? TREE_CENTER : pointOf(parentId);
+    const child = pointOf(upgrade.id);
+    const siblings = UPGRADES.filter((candidate) => candidate.branch === upgrade.branch && candidate.requires.includes(parentId));
+    const portOffset = parentId === 'root'
+      ? (['velocity', 'walls', 'bounce', 'friction'].indexOf(upgrade.branch) - 1.5) * 24
+      : siblings.length > 1 ? (siblings.indexOf(upgrade) - (siblings.length - 1) / 2) * 22 : 0;
+    const start = { x: parent.x + (parentId === 'root' ? TREE_ROOT_WIDTH : TREE_NODE_WIDTH) / 2, y: parent.y + portOffset };
+    const end = { x: child.x - TREE_NODE_WIDTH / 2, y: child.y };
+    // Cross-branch paths travel in the gap between columns, so they cannot
+    // pass through the main-lane cards while reaching the Flux lane.
+    if (upgrade.branch === 'flux' && UPGRADE_BY_ID.get(parentId)?.branch !== 'flux') {
+      const crossBranchNodes = UPGRADES.filter((candidate) => candidate.branch === 'flux' && candidate.requires.some((id) => UPGRADE_BY_ID.get(id)?.branch !== 'flux'));
+      const rail = start.x + 20 + crossBranchNodes.indexOf(upgrade) * 10 + upgrade.requires.indexOf(parentId) * 6;
+      const radius = 12;
+      return `M ${start.x} ${start.y} H ${rail - radius} Q ${rail} ${start.y} ${rail} ${start.y + radius} V ${end.y - radius} Q ${rail} ${end.y} ${rail + radius} ${end.y} H ${end.x}`;
     }
-    const my = start.y + dy * .5;
-    return `M ${start.x} ${start.y} C ${start.x} ${my}, ${end.x} ${my}, ${end.x} ${end.y}`;
+    const middle = start.x + (end.x - start.x) * .5;
+    return `M ${start.x} ${start.y} C ${middle} ${start.y}, ${middle} ${end.y}, ${end.x} ${end.y}`;
+  }
+
+  function visibleTreeBounds() {
+    const visible = UPGRADES.filter(upgradeVisible).map((upgrade) => pointOf(upgrade.id));
+    return {
+      left: Math.min(TREE_CENTER.x - TREE_ROOT_WIDTH / 2, ...visible.map((position) => position.x - TREE_NODE_WIDTH / 2)) - 36,
+      right: Math.max(TREE_CENTER.x + TREE_ROOT_WIDTH / 2, ...visible.map((position) => position.x + TREE_NODE_WIDTH / 2)) + 36,
+      top: Math.min(TREE_CENTER.y - TREE_ROOT_HEIGHT / 2, ...visible.map((position) => position.y - TREE_NODE_HEIGHT / 2)) - 36,
+      bottom: Math.max(TREE_CENTER.y + TREE_ROOT_HEIGHT / 2, ...visible.map((position) => position.y + TREE_NODE_HEIGHT / 2)) + 36,
+    };
   }
 
   function refreshUpgradeTree() {
@@ -1740,6 +1792,7 @@
     const pointsDisplay = upgradeOverlay?.querySelector('[data-upgrade-points]');
     if (pointsDisplay) pointsDisplay.textContent = String(points);
 
+    let visibilityChanged = false;
     upgradeTree.querySelectorAll('[data-upgrade-id]').forEach((button) => {
       const upgrade = UPGRADE_BY_ID.get(button.dataset.upgradeId);
       if (!upgrade) return;
@@ -1747,6 +1800,7 @@
       const bought = purchased.has(upgrade.id);
       const unlocked = upgradeUnlocked(upgrade);
       const visible = upgradeVisible(upgrade);
+      if (visible !== !button.classList.contains('is-hidden')) visibilityChanged = true;
       const affordable = !soon && unlocked && !bought && points >= upgrade.cost;
       button.classList.toggle('is-hidden', !visible);
       button.classList.toggle('is-bought', bought);
@@ -1759,7 +1813,17 @@
           ? `${upgrade.title}, purchased`
           : `${upgrade.title}, ${upgrade.effect}, costs ${upgrade.cost} points`);
       const cost = button.querySelector('.pv2-upgrade-node__cost');
-      if (cost) cost.textContent = bought ? '✓' : soon ? 'SOON' : String(upgrade.cost);
+      if (cost) {
+        const state = bought ? 'bought' : soon ? 'soon' : 'price';
+        // Scores refresh during play. Only rewrite cost markup on a state
+        // change, keeping keyboard focus and the illustrated icon intact.
+        if (cost.dataset.state !== state) {
+          cost.dataset.state = state;
+          cost.innerHTML = bought
+            ? '<span class="pv2-upgrade-node__check" aria-hidden="true">✓</span><small>OWNED</small>'
+            : soon ? '<small>SOON</small>' : '<strong>' + upgrade.cost + '</strong><small>PTS</small>';
+        }
+      }
 
       upgradeTree.querySelectorAll(`[data-connector-to="${upgrade.id}"]`).forEach((connector) => {
         const from = connector.getAttribute('data-connector-from');
@@ -1771,6 +1835,10 @@
         connector.classList.toggle('is-bought', bought);
       });
     });
+    if (visibilityChanged && upgradeOverlay.classList.contains('is-open')) {
+      clampTreePan();
+      applyTreeTransform();
+    }
   }
 
   function buildUpgradeTree() {
@@ -1782,7 +1850,6 @@
       <section class="pv2-upgrade-panel" role="dialog" aria-modal="true" aria-label="Kinetic upgrade tree">
         <header class="pv2-upgrade-panel__header">
           <div class="pv2-upgrade-panel__titleblock">
-            <div class="pv2-upgrade-panel__eyebrow">Incremental Tree</div>
             <h2>Kinetic upgrades</h2>
           </div>
           <div class="pv2-upgrade-legend" aria-label="Upgrade branches">
@@ -1799,7 +1866,6 @@
           <div class="pv2-upgrade-tree" style="--tree-width:${TREE_WIDTH}px;--tree-height:${TREE_HEIGHT}px">
             <svg class="pv2-upgrade-lines" viewBox="0 0 ${TREE_WIDTH} ${TREE_HEIGHT}" aria-hidden="true"></svg>
             <div class="pv2-upgrade-root" style="--node-x:${TREE_CENTER.x}px;--node-y:${TREE_CENTER.y}px">
-              <span class="pv2-upgrade-root__ring" aria-hidden="true"></span>
               <span class="pv2-upgrade-root__icon" aria-hidden="true">${iconSvg('core')}</span>
               <strong>Kinetic<br>Basics</strong>
               <span class="pv2-upgrade-root__owned">OWNED</span>
@@ -1815,9 +1881,8 @@
     UPGRADES.forEach((upgrade) => {
       const parents = upgrade.requires.length ? upgrade.requires : ['root'];
       parents.forEach((parentId) => {
-        const start = parentId === 'root' ? TREE_CENTER : pointOf(parentId);
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', curvedPath(start, { x: upgrade.x, y: upgrade.y }));
+        path.setAttribute('d', treeConnectorPath(parentId, upgrade));
         path.setAttribute('data-connector-to', upgrade.id);
         path.setAttribute('data-connector-from', parentId);
         path.setAttribute('data-branch', upgrade.branch);
@@ -1855,11 +1920,16 @@
   function clampTreePan() {
     const vp = treeViewport();
     if (!vp) return;
-    const sw = TREE_WIDTH * treeZoom;
-    const sh = TREE_HEIGHT * treeZoom;
-    const slack = 120 * treeZoom; // let the edges drift a little past the frame
-    treePanX = sw <= vp.w ? (vp.w - sw) / 2 : clamp(treePanX, vp.w - sw - slack, slack);
-    treePanY = sh <= vp.h ? (vp.h - sh) / 2 : clamp(treePanY, vp.h - sh - slack, slack);
+    const bounds = visibleTreeBounds();
+    const width = (bounds.right - bounds.left) * treeZoom;
+    const height = (bounds.bottom - bounds.top) * treeZoom;
+    const slack = 120 * treeZoom;
+    treePanX = width <= vp.w
+      ? vp.w / 2 - (bounds.left + bounds.right) / 2 * treeZoom
+      : clamp(treePanX, vp.w - bounds.right * treeZoom - slack, -bounds.left * treeZoom + slack);
+    treePanY = height <= vp.h
+      ? vp.h / 2 - (bounds.top + bounds.bottom) / 2 * treeZoom
+      : clamp(treePanY, vp.h - bounds.bottom * treeZoom - slack, -bounds.top * treeZoom + slack);
   }
 
   function applyTreeTransform() {
@@ -1875,10 +1945,16 @@
     applyTreeTransform();
   }
 
-  // Resets zoom and centres the view on the root when the tree opens.
+  // Fit the reached part of the horizontal tree on desktop. Mobile keeps
+  // the existing full-size, draggable canvas instead of shrinking its text.
   function centerUpgradeScroll() {
-    treeZoom = window.innerWidth <= MOBILE_BREAKPOINT ? 1 : TREE_DEFAULT_ZOOM;
-    centerTreeOn(TREE_CENTER.x, TREE_CENTER.y);
+    const vp = treeViewport();
+    if (!vp) return;
+    const bounds = visibleTreeBounds();
+    treeZoom = window.innerWidth <= MOBILE_BREAKPOINT ? 1 : clamp(Math.min(
+      TREE_DEFAULT_ZOOM, vp.w / (bounds.right - bounds.left), vp.h / (bounds.bottom - bounds.top)
+    ), TREE_ZOOM_MIN, TREE_ZOOM_MAX);
+    centerTreeOn((bounds.left + bounds.right) / 2, (bounds.top + bounds.bottom) / 2);
   }
 
   function onTreePointerDown(event) {

@@ -1,3 +1,33 @@
+# Horizontal Playground upgrade tree review
+
+final result: blocked
+
+## Confirmed current facts
+
+The user selected displayed option 2, correcting their earlier selection of 3. The selected source is the horizontal branch-lane mockup generated on October 12, 2026. Implementation starts from main commit 363270358ece5486081a20f4d337cc3f90b3b1d4, which includes merged PR #108.
+
+The layout puts the root on the left, four starting branches in horizontal lanes, advanced nodes to the right and Flux nodes below. Warm purchase surfaces, separate PTS prices, tinted owned cards, owned labels and edge-to-edge curved connectors follow the selected direction. Existing illustrated mechanic icons are retained.
+
+All 29 upgrade definitions, prices, prerequisites, effects, compact description mappings and purchase guards remain unchanged. Existing level-up focus, drag, project reward and reveal behavior are preserved. Desktop opening fits reached nodes. Mobile retains its full-size pan/zoom canvas.
+
+## Rejected or stale facts
+
+Option 3 is superseded. The legacy radial x/y fields in upgrade data no longer determine presentation. The level-up report below belongs to a previous pass and is not evidence of current upgrade-tree visual fidelity.
+
+## Validation
+
+Production build, JavaScript syntax and diff whitespace checks pass. Focused checks execute the actual purchase and tree-rendering functions against a lightweight DOM: locked, duplicate and unaffordable purchase guards, exact spending, ownership/PTS markup, progressive reveal, cross-branch prerequisite behavior, all 29 nodes and every dependency edge, layout bounds, node separation, and desktop/mobile pan and zoom. Game data, physics/effects, project upgrades, compact mappings and level-up focus functions are compared directly with the base commit.
+
+## Unresolved visual verification
+
+The Cloud Browser rejected a preview reload under its URL protocol policy. No browser-rendered implementation screenshot or source/implementation visual comparison was obtained for this repository change. Browser font wrapping, asset rendering, responsive feel and visual fidelity remain unverified. Build and DOM checks do not substitute for that comparison.
+
+Before merge, inspect the Netlify deploy preview on desktop and mobile, including purchased/revealed branches and Flux connections.
+
+---
+
+## Historical level-up report
+
 # Level-up presentation review
 
 ## What this pass changed
