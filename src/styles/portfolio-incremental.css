@@ -1890,7 +1890,10 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
    reads as the project talking about itself. It gives up the display size it
    used to carry alone and takes the body role. */
 .pv2-project-levelup__fact-text {
-  margin:0; max-width:34ch;
+  /* The new reveals run to about 180 characters where the old ones stopped
+     near 135, and a 34ch measure turned the longest of them into a narrow
+     column of seven lines beside a 132px thumbnail with space to spare. */
+  margin:0; max-width:44ch;
   color:#55534c;
   font:400 clamp(1.02rem,1.35vw,1.14rem)/1.58 system-ui,sans-serif;
   text-wrap:pretty;
