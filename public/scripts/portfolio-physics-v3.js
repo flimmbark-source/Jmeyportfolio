@@ -68,7 +68,7 @@
                                     // with the floor and swallowed every launch speed).
   const FRICTION_GAIN = 0.0010;     // heat gained per (speed − threshold) per ms
   const FRICTION_RELIEF = 0.00045;  // heat shed per ms while below threshold
-  const FRICTION_DAMP_BASE = 0.984; // extra per-ms damping, exponent-scaled by heat
+  const FRICTION_DAMP_BASE = 0.95;  // extra per-ms damping, exponent-scaled by heat
   const FRICTION_REARM = 0.35;      // heat must fall below this before it can burn again
   const FRICTION_BURN_BASE = 6;     // base points for a full-meter burn (× upgrades)
   const FLICK_COOL = 0.05;           // heat a player flick sheds (wakes a settled block)
