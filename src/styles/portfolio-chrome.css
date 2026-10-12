@@ -1,5 +1,8 @@
 :root {
-  --pv2-nav-height: clamp(64px, 9vh, 88px);
+  /* The bar is wayfinding, not content. It was taking up to 88px off the top
+     of the stage — on a laptop that is a tenth of the playground — so it is
+     now a thin rule of a bar that still reads as chrome rather than a strip. */
+  --pv2-nav-height: clamp(50px, 6.2vh, 60px);
 }
 
 /* Shared portfolio chrome. The glass bar stays visually connected to the
@@ -166,7 +169,7 @@
      and .pv2-site reserves the same value, so an `auto` nav that grew past it
      left the top of the stage (and the UX Work link) hidden behind the bar. */
   :root {
-    --pv2-nav-height: 76px;
+    --pv2-nav-height: 64px;
   }
 
   .pv2-nav {
@@ -177,12 +180,12 @@
     flex-direction: column;
     align-items: stretch;
     justify-content: center;
-    gap: 5px;
-    padding: 8px 16px 7px;
+    gap: 3px;
+    padding: 7px 16px 6px;
   }
 
   .pv2-nav__name {
-    font-size: .82rem;
+    font-size: .78rem;
     line-height: 1;
   }
 
@@ -231,5 +234,41 @@
   .pv2-credit-drawer__trigger,
   .pv2-credit-drawer__reveal {
     transition: none;
+  }
+}
+
+/* --- Arrival -------------------------------------------------------------
+   The playground's first beats are owned by RelationalPortfolio, which holds
+   `pv2-intro-hold` on <html> until the spheres have landed. The nav, the
+   credit drawer and the game's own chrome live outside that tree, so they
+   take the cue from here and come in last — the statement and the work arrive
+   before anything that frames them. */
+.pv2-nav,
+.pv2-credit-drawer {
+  transition: opacity 740ms cubic-bezier(.22, 1, .3, 1);
+}
+
+html.pv2-intro-hold .pv2-nav,
+html.pv2-intro-hold .pv2-credit-drawer,
+html.pv2-intro-hold .pv2-score-counter,
+html.pv2-intro-hold .pv2-motion-toggle {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pv2-nav,
+  .pv2-credit-drawer {
+    transition: none;
+  }
+
+  /* The sequence does not run under reduced motion, but a late class toggle
+     must never be able to leave the chrome hidden. */
+  html.pv2-intro-hold .pv2-nav,
+  html.pv2-intro-hold .pv2-credit-drawer,
+  html.pv2-intro-hold .pv2-score-counter,
+  html.pv2-intro-hold .pv2-motion-toggle {
+    opacity: 1;
+    pointer-events: auto;
   }
 }

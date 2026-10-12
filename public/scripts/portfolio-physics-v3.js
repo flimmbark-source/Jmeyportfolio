@@ -4,9 +4,14 @@
   const BOTTOM_EDGE_PADDING = 0;
   const NAV_CLEARANCE = 10;
   const BODY_GAP = 10;
-  const NORMAL_SPEED = 0.038;
-  const REDUCED_SPEED = 0.012;
-  const MOBILE_START_SPEED = 0.018;
+  // Ambient drift. This is the floor the simulation keeps every sphere above
+  // when nothing is pushing it, so it sets the resting pace of the whole
+  // stage. It was brisk enough that five spheres crossing each other read as
+  // activity rather than as a thing at rest; a slower glide carries the same
+  // sense of a live space with far less to track.
+  const NORMAL_SPEED = 0.029;
+  const REDUCED_SPEED = 0.010;
+  const MOBILE_START_SPEED = 0.014;
   const MOBILE_UNARMED_BUMPER_KICK = 0.0192;
   const POINTER_IMPULSE = 0.18;
   const POINTER_MIN_IMPULSE = 0.11;
@@ -3293,8 +3298,12 @@
       body.vy += (body.homeY - body.y) * HOME_PULL * dt;
       if (effects.gravity || projectFx.gravity) body.vy += (effects.gravity + projectFx.gravity) * dt;
       if (!reducedMotion()) {
-        body.vx += Math.sin(t * .41 + body.phase) * .000014 * dt;
-        body.vy += Math.cos(t * .37 + body.phase * 1.23) * .000014 * dt;
+        // The wander that keeps a drifting sphere off a straight line. Halved
+        // in frequency so a sphere describes one long curve instead of several
+        // short ones over the same distance, which is most of what made the
+        // idle stage feel busy.
+        body.vx += Math.sin(t * .19 + body.phase) * .0000115 * dt;
+        body.vy += Math.cos(t * .17 + body.phase * 1.23) * .0000115 * dt;
       }
       body.vx *= Math.pow(bodyDamping, dt);
       body.vy *= Math.pow(bodyDamping, dt);
@@ -3321,7 +3330,9 @@
       // (at full heat the floor is zero); it returns as the block cools.
       const effFloor = bodySpeedFloor * (1 - body.friction);
       if (speed < effFloor) {
-        const angle = body.phase + t * .16;
+        // The direction the floor pushes a settled sphere, turning slowly so
+        // it eases through long arcs rather than hunting.
+        const angle = body.phase + t * .085;
         body.vx += Math.cos(angle) * (effFloor - speed) * .16;
         body.vy += Math.sin(angle) * (effFloor - speed) * .16;
       }
@@ -3474,6 +3485,11 @@
     setMotionToggleVisible(true);
     refreshBushidoBadge();
     mark('initialized');
+    // The spheres are now at their simulated positions rather than their CSS
+    // anchors. RelationalPortfolio holds them hidden until this fires, so they
+    // fade in where they will actually sit instead of appearing at the anchor
+    // and jumping a frame later.
+    window.dispatchEvent(new CustomEvent('pv2:physics-ready'));
     frame = requestAnimationFrame(tick);
     openNextProjectLevelUp();
   }

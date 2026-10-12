@@ -11,6 +11,85 @@ const MOTION = {
   major: { duration: 0.72, ease: [0.16, 1, 0.3, 1] },
 };
 const publicProjectIds = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotogo', 'gig-duel'];
+
+// --- Arrival ---------------------------------------------------------------
+// The overview used to appear all at once, a fifth of a second after mount,
+// and the spheres then jumped as the simulation moved them off their CSS
+// anchors. It arrives in three beats instead: the statement, then the spheres
+// one after another where the simulation has actually put them, then the rest
+// of the chrome. Nothing is interactive-but-invisible for long — the spheres
+// are the first thing to land after the sentence that explains them.
+const INTRO = {
+  statement: 0.82,   // s — the sentence is alone on screen for this long
+  sphereGap: 0.26,   // s between one sphere landing and the next
+  sphereFade: 0.9,   // s for a single sphere
+  chromeFade: 0.74,  // s for the nav, gateways and credit at the end
+  ease: [0.22, 1, 0.3, 1],
+};
+// A sphere that never gets its simulated position (the script failed, or is
+// still measuring) must not stay invisible, so the arrival runs on a timer too.
+const INTRO_PHYSICS_WAIT = 2600;
+
+// Once per page load. Coming back to the overview from a project is a return,
+// not an arrival, and replaying the sequence there would make the site feel
+// slow rather than calm.
+let introPlayed = false;
+
+const INTRO_PHASE = { hidden: 0, statement: 1, spheres: 2, settled: 3 };
+
+function useIntroPhase(reducedMotion) {
+  const [phase, setPhase] = useState(() =>
+    reducedMotion || introPlayed ? INTRO_PHASE.settled : INTRO_PHASE.hidden);
+
+  useEffect(() => {
+    if (reducedMotion || introPlayed) {
+      setPhase(INTRO_PHASE.settled);
+      return undefined;
+    }
+    introPlayed = true;
+
+    const timers = [];
+    let physicsReady = false;
+    let statementShown = false;
+    let advanced = false;
+
+    const toSpheres = () => {
+      // Both: the simulation has placed them, AND the statement has had the
+      // screen to itself. Whichever is slower sets the pace.
+      if (advanced || !physicsReady || !statementShown) return;
+      advanced = true;
+      setPhase(INTRO_PHASE.spheres);
+      const spheres = publicProjectIds.length;
+      timers.push(window.setTimeout(
+        () => setPhase(INTRO_PHASE.settled),
+        (INTRO.sphereGap * (spheres - 1) + INTRO.sphereFade * 0.55) * 1000,
+      ));
+    };
+
+    const onPhysicsReady = () => { physicsReady = true; toSpheres(); };
+    window.addEventListener('pv2:physics-ready', onPhysicsReady);
+    timers.push(window.setTimeout(onPhysicsReady, INTRO_PHYSICS_WAIT));
+    timers.push(window.setTimeout(() => { statementShown = true; toSpheres(); }, INTRO.statement * 1000));
+
+    const frame = requestAnimationFrame(() => setPhase(INTRO_PHASE.statement));
+
+    return () => {
+      cancelAnimationFrame(frame);
+      timers.forEach(window.clearTimeout);
+      window.removeEventListener('pv2:physics-ready', onPhysicsReady);
+    };
+  }, [reducedMotion]);
+
+  // The nav and the credit drawer live outside this tree, so they take the
+  // phase off the document element and fade themselves in CSS.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle('pv2-intro-hold', phase < INTRO_PHASE.settled);
+    return () => root.classList.remove('pv2-intro-hold');
+  }, [phase]);
+
+  return phase;
+}
 const unfinishedProjectIds = ['phase-g', 'splitpulse'];
 const allGameIds = [...publicProjectIds, ...unfinishedProjectIds];
 
@@ -183,7 +262,7 @@ function ProjectVisual({ node, large = false }) {
   );
 }
 
-function ProjectTile({ node, placement, index, onSelect, reducedMotion, register, position }) {
+function ProjectTile({ node, placement, index, onSelect, reducedMotion, register, position, arrived }) {
   return (
     <div
       ref={(el) => register(node.id, el)}
@@ -198,13 +277,18 @@ function ProjectTile({ node, placement, index, onSelect, reducedMotion, register
         className={`pv2-project-tile pv2-project-tile--${placement}`}
         data-polish="orb"
         onClick={() => onSelect(node.id)}
-        initial={reducedMotion ? false : { opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={reducedMotion ? false : { opacity: 0, scale: 0.965 }}
+        animate={arrived ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.965 }}
         exit={reducedMotion ? undefined : { opacity: 0, scale: 0.92, y: 5 }}
-        whileHover={reducedMotion ? undefined : hoverMotion[placement]}
-        whileFocus={reducedMotion ? undefined : { y: -4, scale: 1.01 }}
+        whileHover={reducedMotion || !arrived ? undefined : hoverMotion[placement]}
+        whileFocus={reducedMotion || !arrived ? undefined : { y: -4, scale: 1.01 }}
         whileTap={reducedMotion ? undefined : { scale: 0.985 }}
-        transition={reducedMotion ? { duration: 0 } : { ...MOTION.interface, delay: 0.04 + index * 0.045 }}
+        transition={reducedMotion || !arrived
+          ? { duration: 0 }
+          // Scale, not a y-offset: the simulation owns where the slot sits, and
+          // a sphere sliding up into a position that is itself drifting reads
+          // as a wobble rather than an arrival.
+          : { duration: INTRO.sphereFade, ease: INTRO.ease, delay: index * INTRO.sphereGap }}
         aria-label={`Open ${node.title}`}
       >
         <ProjectVisual node={node} />
@@ -221,7 +305,7 @@ function ProjectTile({ node, placement, index, onSelect, reducedMotion, register
   );
 }
 
-function GatewayLink({ id, className, eyebrow, title, onClick, reducedMotion, delay = 0, register, position }) {
+function GatewayLink({ id, className, eyebrow, title, onClick, reducedMotion, delay = 0, register, position, arrived }) {
   return (
     <div ref={(el) => register(id, el)} className="pv2-float-slot pv2-float-slot--gateway" style={position || overviewAnchorStyle(id)}>
       <motion.button
@@ -229,11 +313,13 @@ function GatewayLink({ id, className, eyebrow, title, onClick, reducedMotion, de
         type="button"
         onClick={onClick}
         initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
+        animate={arrived ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
         exit={reducedMotion ? undefined : { opacity: 0, scale: 0.96, y: 5 }}
-        whileHover={reducedMotion ? undefined : { x: className.includes('unfinished') ? -4 : 4, y: -2 }}
+        whileHover={reducedMotion || !arrived ? undefined : { x: className.includes('unfinished') ? -4 : 4, y: -2 }}
         whileTap={reducedMotion ? undefined : { scale: 0.985 }}
-        transition={reducedMotion ? { duration: 0 } : { ...MOTION.interface, delay }}
+        transition={reducedMotion || !arrived
+          ? { duration: 0 }
+          : { duration: INTRO.chromeFade, ease: INTRO.ease, delay }}
       >
         <span>{eyebrow}</span>
         <strong>{title}</strong>
@@ -250,6 +336,7 @@ function Overview({ onSelect, reducedMotion }) {
   const itemRefs = useRef({});
   const [positions, setPositions] = useState({});
   const [contextProjectId, setContextProjectId] = useState(null);
+  const introPhase = useIntroPhase(reducedMotion);
   const contextNode = contextProjectId ? portfolioV2NodeMap.get(contextProjectId) : null;
 
   const register = useCallback((id, element) => {
@@ -294,7 +381,7 @@ function Overview({ onSelect, reducedMotion }) {
   return (
     <motion.main
       className="pv2-overview"
-      initial={{ opacity: 0 }}
+      initial={{ opacity: 1 }}
       animate={{ opacity: 1 }}
       exit={reducedMotion ? undefined : { opacity: 1 }}
       transition={reducedMotion ? { duration: 0 } : MOTION.interface}
@@ -304,9 +391,11 @@ function Overview({ onSelect, reducedMotion }) {
           ref={statementRef}
           className="pv2-overview__statement"
           initial={reducedMotion ? false : { opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
+          animate={introPhase >= INTRO_PHASE.statement ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
           exit={reducedMotion ? undefined : { opacity: 0, scale: 0.97, y: 7 }}
-          transition={reducedMotion ? { duration: 0 } : MOTION.interface}
+          transition={reducedMotion
+            ? { duration: 0 }
+            : { duration: INTRO.statement + 0.3, ease: INTRO.ease }}
         >
           <p className="pv2-overline"></p>
           <h1>Interactive Designer <br /> & Creative Thinker</h1>
@@ -323,6 +412,7 @@ function Overview({ onSelect, reducedMotion }) {
             reducedMotion={reducedMotion}
             register={register}
             position={positions[node.id]}
+            arrived={introPhase >= INTRO_PHASE.spheres}
           />
         ))}
 
@@ -333,9 +423,10 @@ function Overview({ onSelect, reducedMotion }) {
           title="UX Work ↗"
           onClick={() => onSelect('ux-work')}
           reducedMotion={reducedMotion}
-          delay={0.15}
+          delay={0}
           register={register}
           position={positions['ux-work']}
+          arrived={introPhase >= INTRO_PHASE.settled}
         />
 
         <GatewayLink
@@ -345,9 +436,10 @@ function Overview({ onSelect, reducedMotion }) {
           title="All Games →"
           onClick={() => onSelect('unfinished')}
           reducedMotion={reducedMotion}
-          delay={0.2}
+          delay={0.1}
           register={register}
           position={positions.unfinished}
+          arrived={introPhase >= INTRO_PHASE.settled}
         />
       </section>
 
@@ -683,7 +775,12 @@ function WorkBackdrop({ reducedMotion, content = false }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: background ? 1 : 0, scale: 1, filter: 'blur(0px)' }}
       exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 1.015, filter: 'blur(7px)' }}
-      transition={reducedMotion ? { duration: 0 } : MOTION.major}
+      // The painting comes up with the statement on the overview, so it takes
+      // the arrival's pace rather than the faster transition used between
+      // views. Leaving and content backdrops keep the quicker curve.
+      transition={reducedMotion
+        ? { duration: 0 }
+        : content ? MOTION.major : { duration: INTRO.statement + 0.4, ease: INTRO.ease }}
     >
       {background && (
         // An <img srcset> rather than a background-image: the backdrop is the
