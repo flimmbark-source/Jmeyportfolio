@@ -20,10 +20,18 @@ const publicProjectIds = ['get-to-the-cafe', 'letter-river', 'last-reading', 'ro
 // of the chrome. Nothing is interactive-but-invisible for long — the spheres
 // are the first thing to land after the sentence that explains them.
 const INTRO = {
-  statement: 0.82,   // s — the sentence is alone on screen for this long
-  sphereGap: 0.26,   // s between one sphere landing and the next
-  sphereFade: 0.9,   // s for a single sphere
-  chromeFade: 0.74,  // s for the nav, gateways and credit at the end
+  // Every fade is a second longer than the first pass, and the spheres are a
+  // second and a half further apart. All of it is seconds.
+  statementFade: 2.12, // the sentence
+  backdropFade: 2.22,  // the painting, a touch behind it
+  // How long the sentence has the screen to itself. It tracks the statement's
+  // own fade (0.3s short of it, as before) so the sentence still leads however
+  // long that fade is — pinned to its old value the first sphere would arrive
+  // while the sentence was still only a third of the way in.
+  statement: 1.82,
+  sphereGap: 1.76,     // between one sphere landing and the next
+  sphereFade: 1.9,     // a single sphere
+  chromeFade: 1.74,    // the nav, gateways and credit at the end
   ease: [0.22, 1, 0.3, 1],
 };
 // A sphere that never gets its simulated position (the script failed, or is
@@ -395,7 +403,7 @@ function Overview({ onSelect, reducedMotion }) {
           exit={reducedMotion ? undefined : { opacity: 0, scale: 0.97, y: 7 }}
           transition={reducedMotion
             ? { duration: 0 }
-            : { duration: INTRO.statement + 0.3, ease: INTRO.ease }}
+            : { duration: INTRO.statementFade, ease: INTRO.ease }}
         >
           <p className="pv2-overline"></p>
           <h1>Interactive Designer <br /> & Creative Thinker</h1>
@@ -780,7 +788,7 @@ function WorkBackdrop({ reducedMotion, content = false }) {
       // views. Leaving and content backdrops keep the quicker curve.
       transition={reducedMotion
         ? { duration: 0 }
-        : content ? MOTION.major : { duration: INTRO.statement + 0.4, ease: INTRO.ease }}
+        : content ? MOTION.major : { duration: INTRO.backdropFade, ease: INTRO.ease }}
     >
       {background && (
         // An <img srcset> rather than a background-image: the backdrop is the

@@ -103,46 +103,46 @@
     'get-to-the-cafe': {
       title: 'Get to the Café',
       reveals: [
-        'I made this game to explore how disability can make an ordinary outing feel very different from what someone else sees.',
-        'Unseen demands affect what we can do, whether we want them to or not.',
-        'I wanted to question how easily we read someone\'s behaviour as personality or attitude when we cannot see what they\'re dealing with.',
-        'I turned those demands into accumulating tasks so the player encounters the pressure through play.',
-        'I built the game in three days for GMTK Game Jam 2026. What you take from it is yours to discover.',
+        'I built Get to the Café to explore how a game could give someone an embodied experience of a disability that is normally invisible.',
+        'I drew from my own experience and built the game in three days for GMTK Game Jam 2026.',
+        'An invisible disability can change what an ordinary situation asks of someone. The effort involved may never become visible to the people around them.',
+        'I turned those unseen demands into accumulating tasks, using their combined pressure to make that experience felt through play.',
+        'I wanted to question how easily we judge someone’s personality or attitude from their behavior, without knowing what it took for them to get there.',
       ],
     },
     'letter-river': {
       title: 'Letter River',
       reveals: [
-        'Learning Hebrew letters and words frustrated me. I wanted an enjoyable way for adults to learn through play.',
-        'Letters float across the phone screen. You drag each one into the box for the sound it makes.',
-        'I chose a simple, active interaction that players could immerse themselves in.',
+        'Learning Hebrew frustrated me. I wanted to make something adults could enjoy playing while learning letters and words.',
+        'In Letter River, letters drift across the phone screen. You catch each one and drag it into the box for its sound, turning the connection between sound and symbol into an action.',
+        'I wanted practice to be enjoyable in its own right. Letter River explores how much of that enjoyment can come from a simple interaction.',
       ],
     },
     'last-reading': {
       title: 'The Last Reading',
       reveals: [
-        'Tarot interests me because it can feel deeply personal and mystical, reflecting something of the person interpreting it.',
-        'I\'ve spent much of my life learning to recognise patterns I couldn\'t initially understand. I love that experience in games.',
-        'The Last Reading explores finding meaning in incomplete information.',
-        'I\'m developing a tarot horror roguelike where recognising patterns helps you play and uncover the story.',
-        'I\'m still exploring how to weave mystery through its mechanics and narrative.',
+        'I’ve spent much of my life learning to recognize patterns I couldn’t initially understand. I love games that let understanding emerge as I play.',
+        'Tarot interests me because a reading can feel deeply personal and mystical, revealing something about the person interpreting it.',
+        'The Last Reading turns that fascination into a horror roguelike. You construct five-card tarot readings and score through the patterns they form.',
+        'As you gain upgrades, you can increasingly manipulate the deck. A single draw can reshape an entire reading.',
+        'Beneath the card game, I’m exploring another kind of discovery: how to weave secrets through the mechanics and narrative, giving the player something to read between the lines.',
       ],
     },
     rotogo: {
       title: 'Rotogo',
       reveals: [
-        'Rotogo was the first game I made that people really enjoyed playing and felt offered them something different.',
-        'It began as a physical game and became my first serious attempt to build a game with AI.',
-        'Player research taught me to reduce mental load and make decisions quick and easy.',
-        'The project helped me understand how research can shape a compelling product and its position in the market.',
+        'Rotogo began as a physical game. Turning it into a digital experience became my first serious attempt to build a game with AI.',
+        'I taught myself React while making it playable. Rules and interactions I could previously only describe became things I could build.',
+        'It became the first game I made that people really enjoyed playing and felt offered them something different.',
+        'Player research taught me to reduce mental load and make decisions quicker and easier. It also helped me understand how research could shape the game and its position in the market.',
       ],
     },
     'gig-duel': {
       title: 'Venue Rivals',
       reveals: [
-        'Party House drew me in with simple rules, layered complexity, and room to take my time.',
-        'I started Venue Rivals as something to occupy my mind and practise building with AI without requiring too much mental effort.',
-        'I brought that inspiration to mobile, where friends can battle competing parties. The mobile game and friend battles are fully playable.',
+        'I started Venue Rivals while sitting in a shelter, looking for something to occupy my mind while hiding from missiles.',
+        'Party House gave me a starting point. Its simple rules, layered complexity, and unhurried decisions were the qualities that drew me in.',
+        'I brought that inspiration to a mobile game where friends can battle competing parties, while practicing how to build with AI.',
       ],
     },
   };
@@ -726,22 +726,25 @@
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-labelledby', 'pv2-project-fact-title');
     overlay.setAttribute('aria-describedby', 'pv2-project-fact-text');
-    // Emblem, then the project's artwork beside the fact, then the chest. The
-    // level and the project name are not drawn — the artwork identifies the
-    // project and the choices screen names it — so they ride the heading for
-    // anyone who cannot see the thumbnail.
+    // The banner straddles the top edge, then the artwork and a rule beside the
+    // project's name and the fact, then a full-width Continue. The project is
+    // named here rather than only on the choices screen: the thumbnail alone
+    // asked the reader to recognise a 68px image before the sentence made
+    // sense.
     overlay.innerHTML = '<section class="pv2-project-levelup__panel" tabindex="-1">'
-      + '<span class="pv2-reward-accent" aria-hidden="true"></span>'
       + '<h2 id="pv2-project-fact-title" class="pv2-project-levelup__reward-title">'
-      + '<span aria-hidden="true">LEVEL</span><span aria-hidden="true">UP!</span>'
+      + '<span aria-hidden="true">LEVEL UP!</span>'
       + '<span class="pv2-reward-sr">Level up. ' + reveal.title + ', level ' + event.level + '.</span></h2>'
       + '<div class="pv2-project-levelup__body">'
       + '<div class="pv2-project-levelup__fact-media" aria-hidden="true"></div>'
+      + '<div class="pv2-project-levelup__fact-copy">'
+      + '<h3 class="pv2-project-levelup__fact-project">' + reveal.title + '</h3>'
       + '<p id="pv2-project-fact-text" class="pv2-project-levelup__fact-text">' + reveal.text + '</p>'
-      + '</div>'
+      + '</div></div>'
       + '<div class="pv2-project-levelup__action">'
       + '<button type="button" class="pv2-project-levelup__open" aria-label="Open the reward">'
-      + '<span class="pv2-reward-chest-icon" aria-hidden="true"></span></button></div>'
+      + '<span class="pv2-reward-chest-icon" aria-hidden="true"></span>'
+      + '<span class="pv2-project-levelup__open-label">Continue</span></button></div>'
       + '<p class="pv2-project-levelup__status" role="status"></p>'
       + '</section>';
     const factArtwork = projectArtworkSrc(event.body);
@@ -880,6 +883,10 @@
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-labelledby', 'pv2-project-levelup-title');
     overlay.innerHTML =
+      // One window, not a header card floating above a row of cards: the
+      // project, the rule, the instruction and the three choices are one
+      // decision and now sit in one frame. The chest tucks into its bottom
+      // edge, which is where the cards just came from.
       '<section class="pv2-project-levelup__floating-choices">'
       + '<header class="pv2-project-levelup__game-context">'
       + '<div class="pv2-project-levelup__game-image" aria-hidden="true"></div>'
@@ -887,9 +894,11 @@
       + '<div class="pv2-project-levelup__game-title"><h2 id="pv2-project-levelup-title">' + reveal.title + '</h2>'
       + '<span class="pv2-project-levelup__game-level">LV. ' + event.level + '</span></div>'
       + '<p class="pv2-project-levelup__game-fact">' + reveal.text + '</p></div></header>'
+      + '<div class="pv2-project-levelup__sep" aria-hidden="true"></div>'
+      + '<p class="pv2-project-levelup__pick">Choose one upgrade</p>'
       + '<div class="pv2-project-levelup__choices"></div>'
-      + '<p class="pv2-project-levelup__status" role="status"></p></section>'
-      + '<div class="pv2-reward-stage-chest">' + projectRewardChest(true) + '</div>';
+      + '<div class="pv2-reward-stage-chest">' + projectRewardChest(true) + '</div>'
+      + '<p class="pv2-project-levelup__status" role="status"></p></section>';
     const artworkSrc = projectArtworkSrc(body);
     if (artworkSrc) {
       overlay.querySelector('.pv2-project-levelup__game-image')

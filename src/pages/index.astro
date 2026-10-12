@@ -32,8 +32,10 @@ import '../styles/portfolio-battle.css';
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         const root = document.documentElement;
         root.classList.add('pv2-intro-hold');
-        // If the portfolio never mounts, the chrome must still come back.
-        window.setTimeout(() => root.classList.remove('pv2-intro-hold'), 6000);
+        // If the portfolio never mounts, the chrome must still come back. Well
+        // clear of the arrival itself, which now runs about 11s end to end —
+        // at the old 6s this fired mid-sequence and showed the bar early.
+        window.setTimeout(() => root.classList.remove('pv2-intro-hold'), 18000);
       })();
     </script>
     <PortfolioPolish />
