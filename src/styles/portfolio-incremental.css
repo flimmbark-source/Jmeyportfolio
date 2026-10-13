@@ -1359,10 +1359,6 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
   font-display:swap;
 }
 
-/* The portfolio headline would otherwise read as a second heading behind the
-   reward window. */
-html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
-
 /* No scrim: the playfield stays at full strength behind the reward, and the
    windows carry their own contrast. Both phases are treated alike, so passing
    from the reveal to the cards does not change the backdrop. */
