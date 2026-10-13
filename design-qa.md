@@ -4,7 +4,7 @@ final result: blocked
 
 ## Confirmed current facts
 
-The latest correction requests centred level-up text, not different artwork cropping. The heading and paragraph now share the window centre using equal artwork/badge side columns. The badge sits outside the copy column. Narrow headers use the same balanced arrangement. Original artwork-fit rules are retained.
+The latest correction requires the level-up copy to remain in its original position beside the artwork. The two-column header and inline level badge are restored. The paragraph now fills the available copy column instead of being limited to 52ch. Desktop title/body sizes are 24px/16px and narrow title/body sizes are 18px/14px at the default root size. Original artwork-fit rules are retained.
 
 Matching point, rebound, drag, collision-energy, drift, maximum-speed and flick-force descriptions use consistent words, units and order. Wall Points and Wall Value both show +1 Point per wall hit. Equivalent bumper upgrades use the same bumper wording. The visible and spoken descriptions use the same display table. Percentages and underlying effects are unchanged.
 
@@ -16,7 +16,7 @@ All 29 upgrade definitions, prices, prerequisites, effects and purchase guards r
 
 ## Rejected or stale facts
 
-The artwork-cropping interpretation was rejected and its uncommitted changes were discarded. Option 3 is superseded. The legacy radial x/y fields in upgrade data no longer determine presentation. The level-up report below belongs to a previous pass and is not evidence of current upgrade-tree visual fidelity.
+Both the artwork-cropping interpretation and the centred, three-column header were rejected. Their changes are discarded. Option 3 is superseded. The legacy radial x/y fields in upgrade data no longer determine presentation. The level-up report below belongs to a previous pass and is not evidence of current upgrade-tree visual fidelity.
 
 ## Validation
 
