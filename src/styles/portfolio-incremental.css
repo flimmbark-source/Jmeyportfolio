@@ -838,9 +838,11 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
 .pv2-heat-halo {
   --pv2-heat: 0;
   --pv2-heat-rgb: 255, 160, 45;
+  --pv2-heat-tier: .1;
   --pv2-flame-opacity: 0;
   --pv2-smoke-opacity: 0;
   --pv2-flame-scale: .55;
+  --pv2-flame-width: .6875;
   --pv2-smoke-scale: .72;
   box-shadow: none !important;
 }
@@ -852,20 +854,23 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
 .pv2-heat-halo.is-cold .pv2-heat-core { display: none; }
 
 .pv2-heat-glow {
+  /* Keep the blurred bloom's gradient/shadow/blur stable within each heat
+     tier. Between tiers only its opacity follows live heat. */
   position: absolute;
   inset: -7%;
   border-radius: 50%;
   background:
     radial-gradient(circle at center,
       transparent 56%,
-      rgba(255, 196, 92, calc(.05 + var(--pv2-heat) * .2)) 70%,
-      rgba(var(--pv2-heat-rgb), calc(.1 + var(--pv2-heat) * .4)) 86%,
-      rgba(214, 70, 16, calc(var(--pv2-heat) * .22)) 96%,
+      rgba(255, 196, 92, calc(.05 + var(--pv2-heat-tier) * .2)) 70%,
+      rgba(var(--pv2-heat-rgb), calc(.1 + var(--pv2-heat-tier) * .4)) 86%,
+      rgba(214, 70, 16, calc(var(--pv2-heat-tier) * .22)) 96%,
       transparent 100%);
   box-shadow:
-    0 0 calc(8px + var(--pv2-heat) * 16px) rgba(var(--pv2-heat-rgb), calc(.12 + var(--pv2-heat) * .34)),
-    0 0 calc(20px + var(--pv2-heat) * 42px) rgba(255, 108, 20, calc(.05 + var(--pv2-heat) * .26));
-  filter: blur(calc(.5px + var(--pv2-heat) * 1.6px));
+    0 0 calc(8px + var(--pv2-heat-tier) * 16px) rgba(var(--pv2-heat-rgb), calc(.12 + var(--pv2-heat-tier) * .34)),
+    0 0 calc(20px + var(--pv2-heat-tier) * 42px) rgba(255, 108, 20, calc(.05 + var(--pv2-heat-tier) * .26));
+  filter: blur(calc(.5px + var(--pv2-heat-tier) * 1.6px));
+  opacity: calc(.7 + var(--pv2-heat) * .3);
 }
 
 /* The rim itself glowing through, hottest right at the edge. */
@@ -896,8 +901,8 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
   position: absolute;
   left: var(--x);
   top: var(--y);
-  width: calc((11% + var(--pv2-heat) * 5%) * var(--wid));
-  height: calc((22% + var(--pv2-heat) * 22%) * var(--len) * var(--pv2-flame-scale));
+  width: calc(16% * var(--wid));
+  height: calc(44% * var(--len));
   /* Uneven curling tip, broad fuel bed, and a hotter lower core. */
   clip-path: polygon(48% 0%, 62% 20%, 58% 34%, 80% 49%,
     94% 72%, 88% 91%, 66% 100%, 30% 100%, 10% 90%,
@@ -909,7 +914,7 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
      small per-lick lean. Rotating each lick out along its own radius is what
      turned the old effect into a sunburst. */
   transform-origin: 50% 100%;
-  transform: translate(-50%, -100%) rotate(var(--lean));
+  transform: translate(-50%, -100%) rotate(var(--lean)) scale(var(--pv2-flame-width), var(--pv2-flame-scale));
   animation: pv2HeatFlame var(--dur) ease-in-out var(--delay) infinite alternate;
   will-change: transform, opacity;
 }
@@ -934,15 +939,15 @@ html.pv2-project-levelup-open .pv2-project-tile { pointer-events:none; }
 
 @keyframes pv2HeatFlame {
   0% {
-    transform: translate(-50%, -100%) rotate(var(--lean)) scale(.86, .72) skewX(-6deg);
+    transform: translate(-50%, -100%) rotate(var(--lean)) scale(calc(.86 * var(--pv2-flame-width)), calc(.72 * var(--pv2-flame-scale))) skewX(-6deg);
     opacity: .82;
   }
   45% {
-    transform: translate(-50%, -100%) rotate(calc(var(--lean) + var(--sway))) scale(1.06, 1.18) skewX(8deg);
+    transform: translate(-50%, -100%) rotate(calc(var(--lean) + var(--sway))) scale(calc(1.06 * var(--pv2-flame-width)), calc(1.18 * var(--pv2-flame-scale))) skewX(8deg);
     opacity: 1;
   }
   100% {
-    transform: translate(-50%, -100%) rotate(calc(var(--lean) - var(--sway) * .6)) scale(.78, .92) skewX(-4deg);
+    transform: translate(-50%, -100%) rotate(calc(var(--lean) - var(--sway) * .6)) scale(calc(.78 * var(--pv2-flame-width)), calc(.92 * var(--pv2-flame-scale))) skewX(-4deg);
     opacity: .9;
   }
 }
