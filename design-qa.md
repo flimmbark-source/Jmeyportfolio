@@ -145,3 +145,41 @@ teardown with requeue when the player leaves mid-cinematic.
   and `playgroundIsVisible()` returns false — level-ups never present on that
   route. `/` is unaffected. Not fixed in this pass.
 - No claim of universal professional or game-design standards compliance.
+
+## Playground performance pass, 2026-10-13
+
+Confirmed current implementation:
+
+- Live sphere slots use one quantized translation update instead of left/top
+  writes per frame. Physics coordinates, drag, collision response, XP thresholds
+  and upgrade effects are unchanged. Resize teardown restores the rendered
+  coordinates before removing simulation ownership.
+- Heat flame dimensions are fixed. Transform scales reproduce the previous
+  heat-dependent width and height. Flame candidate counts drop from 20 to 12
+  on desktop and 10 to 6 on mobile, with the existing underside culling retained.
+  Glow gradients, shadows and blur change only at five heat tier boundaries.
+- Point totals and scoring events remain synchronous. Counter/cue/tree display
+  updates coalesce to one frame, with no scoring refresh of a closed tree.
+  Opening the tree still refreshes current affordability immediately.
+- Score popups share a scheduler and a visual budget of eight on desktop or
+  four on mobile. The oldest popup is removed at the limit. Completion,
+  cancellation, DOM detachment and simulation teardown release popup work.
+- Script cache version is 78. Existing full-width level-up text beside the
+  artwork and consistent upgrade stat wording remain in place.
+
+Validation: `node scripts/test-portfolio-performance.mjs` passes six regression
+tests covering transformed placement, teardown/reinit, pointer bounds, wall
+reflection, all four pause states, heat tiers/cold/reheat, score event ordering,
+burst batching, hidden-tree suppression, popup budgets and lifecycle, and reduced
+motion. Seven portfolio polish tests and the existing 29-upgrade progression,
+pan/zoom, connector and wording checks also pass. An additional before/after
+numerical comparison produced identical five-body positions, velocities, heat
+and points over 120 frames across eight combinations of desktop/mobile,
+reduced/full motion and base/all global upgrades. Astro builds all 15 pages.
+
+Rejected/stale: centered level-up copy and the artwork crop experiment are not
+part of this pass. Sphere freezing as a new mechanic remains shelved.
+
+Unresolved: browser profiling/visual verification is blocked in this session.
+The tests track DOM operations and simulation behavior, not actual layout,
+painting, dropped frames or GPU memory. No FPS or percentage speedup is claimed.

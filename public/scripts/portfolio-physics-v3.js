@@ -1322,6 +1322,11 @@
   let gameActive = false;
   let points = 0;
   let ghostColorIndex = 0;
+  let scoreUiFrame = 0;
+  let scoreUiPulse = false;
+  let ghostFrame = 0;
+  const ghostSteps = new Map();
+  const activePointGhosts = new Map();
   let fxLayer = null;
   let activeSmokeParticles = 0;
   let upgradeOverlay = null;
@@ -2069,21 +2074,33 @@
     } catch {}
   }
 
+  // Game state/events stay synchronous. Multiple hits in one simulation frame
+  // share one DOM update, and a closed tree is refreshed when it next opens.
+  function queueScoreUiRefresh(pulse = false) {
+    scoreUiPulse ||= pulse;
+    if (scoreUiFrame) return;
+    scoreUiFrame = requestAnimationFrame(() => {
+      scoreUiFrame = 0;
+      ensureScoreCounter();
+      scoreValue.textContent = String(points);
+      refreshUpgradeCue();
+      if (upgradeOverlay?.classList.contains('is-open')) refreshUpgradeTree();
+      if (scoreUiPulse && !reducedMotion()) {
+        try {
+          scoreCounter.animate([
+            { transform: 'translateY(0) scale(1)' },
+            { transform: 'translateY(0) scale(1.08)', offset: .42 },
+            { transform: 'translateY(0) scale(1)' },
+          ], { duration: 170, easing: 'cubic-bezier(.2,.9,.25,1)' });
+        } catch {}
+      }
+      scoreUiPulse = false;
+    });
+  }
+
   function updateScore(delta, sourceId, impact) {
     points += delta;
-    ensureScoreCounter();
-    scoreValue.textContent = String(points);
-    refreshUpgradeCue();
-    refreshUpgradeTree();
-    if (!reducedMotion()) {
-      try {
-        scoreCounter.animate([
-          { transform: 'translateY(0) scale(1)' },
-          { transform: 'translateY(0) scale(1.08)', offset: .42 },
-          { transform: 'translateY(0) scale(1)' },
-        ], { duration: 170, easing: 'cubic-bezier(.2,.9,.25,1)' });
-      } catch {}
-    }
+    queueScoreUiRefresh(true);
     window.dispatchEvent(new CustomEvent('pv2:score-state', {
       detail: { points, delta, sourceId, impactX: impact?.x, impactY: impact?.y },
     }));
@@ -2121,10 +2138,7 @@
   function addIdlePoints(n) {
     if (n <= 0) return;
     points += n;
-    ensureScoreCounter();
-    scoreValue.textContent = String(points);
-    refreshUpgradeCue();
-    refreshUpgradeTree();
+    queueScoreUiRefresh();
     window.dispatchEvent(new CustomEvent('pv2:score-state', {
       detail: { points, delta: n, sourceId: 'idle' },
     }));
@@ -2232,6 +2246,7 @@
     const tier = Math.min(HEAT_TIERS - 1, Math.floor(f * HEAT_TIERS));
     if (tier !== body.heatTier) {
       halo.style.setProperty('--pv2-heat-rgb', heatColor((tier + .5) / HEAT_TIERS));
+      halo.style.setProperty('--pv2-heat-tier', String((tier + .5) / HEAT_TIERS));
       body.heatTier = tier;
     }
 
@@ -2241,7 +2256,8 @@
       const flame = Math.round(Math.pow(clamp((f - .02) / .38, 0, 1), .45) * 100) / 100;
       halo.style.setProperty('--pv2-heat', String(heat));
       halo.style.setProperty('--pv2-flame-opacity', String(flame));
-      halo.style.setProperty('--pv2-flame-scale', String(.9 + heat * .65));
+      halo.style.setProperty('--pv2-flame-width', String(.6875 + heat * .3125));
+      halo.style.setProperty('--pv2-flame-scale', String((.5 + heat * .5) * (.9 + heat * .65)));
       body.heatValue = heat;
     }
 
@@ -2356,6 +2372,17 @@
   // Safety cap on the drift/tumble phase (ms) in case angular speed is tiny.
   const GHOST_DRIFT_MAX_MS = 1500;
 
+  // One scheduler for all drifting numbers. Popping numbers use the existing
+  // Web Animations sequence and remain in the visual budget until removed.
+  function advancePointGhosts(now) {
+    ghostFrame = 0;
+    for (const [ghost, step] of ghostSteps) {
+      if (!ghost.isConnected) activePointGhosts.get(ghost)?.();
+      else if (step(now)) ghostSteps.delete(ghost);
+    }
+    if (ghostSteps.size) ghostFrame = requestAnimationFrame(advancePointGhosts);
+  }
+
   // A short burst of straight lines radiating from a point, tinted in the
   // ghost's own color (plus a few white sparks). Used for the "pop".
   function spawnRadiatingLines(cx, cy, color) {
@@ -2392,8 +2419,25 @@
 
   function spawnPointGhost(impact, amount = 1, opts = {}, velocity = null) {
     if (!impact) return;
+    const limit = window.innerWidth <= MOBILE_BREAKPOINT ? 4 : 8;
+    while (activePointGhosts.size >= limit) activePointGhosts.values().next().value();
     const layer = ensureFxLayer();
     const ghost = document.createElement('span');
+    let cleaned = false;
+    let popAnimation = null;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      ghostSteps.delete(ghost);
+      activePointGhosts.delete(ghost);
+      popAnimation?.cancel();
+      ghost.remove();
+      if (!ghostSteps.size && ghostFrame) {
+        cancelAnimationFrame(ghostFrame);
+        ghostFrame = 0;
+      }
+    };
+    activePointGhosts.set(ghost, cleanup);
     const crit = Boolean(opts.crit);
     const comboMult = opts.comboMult || 1;
     const color = crit ? '#ffb300' : GHOST_COLORS[ghostColorIndex % GHOST_COLORS.length];
@@ -2451,9 +2495,11 @@
           { transform: `translate(${tx}, calc(-50% + ${offY - 9}px)) scale(1)`, opacity: 1, offset: .74 },
           { transform: `translate(${tx}, calc(-50% + ${offY - 82}px)) scale(.9)`, opacity: 0 },
         ], { duration: motionReduced ? 700 : 900, easing: 'cubic-bezier(.22,.9,.28,1)', fill: 'forwards' });
-        pop.addEventListener('finish', () => ghost.remove(), { once: true });
+        popAnimation = pop;
+        pop.addEventListener('finish', cleanup, { once: true });
+        pop.addEventListener('cancel', cleanup, { once: true });
       } catch {
-        ghost.remove();
+        cleanup();
       }
     };
 
@@ -2486,14 +2532,15 @@
       if (nearingStop || elapsed >= GHOST_DRIFT_MAX_MS) {
         paint();
         popAndVanish();
-        return;
+        return true;
       }
       paint();
-      requestAnimationFrame(step);
+      return false;
     };
 
     if (typeof requestAnimationFrame === 'function') {
-      requestAnimationFrame(step);
+      ghostSteps.set(ghost, step);
+      if (!ghostFrame) ghostFrame = requestAnimationFrame(advancePointGhosts);
     } else {
       popAndVanish();
     }
@@ -2762,8 +2809,8 @@
     el.style.position = 'absolute';
     el.style.right = 'auto';
     el.style.bottom = 'auto';
-    el.style.left = `${x}px`;
-    el.style.top = `${y}px`;
+    el.style.left = '0px';
+    el.style.top = '0px';
     el.style.transition = 'none';
     const projectId = el.dataset.nodeId || ('project-' + index);
     const projectState = projectStateFor(projectId);
@@ -2788,14 +2835,25 @@
       heatOpacity: 0,
       heatValue: -1,
       smokeNextAt: 0,
-      // Last values written to style.left/top, so tick() can skip no-op writes.
+      // Last rendered coordinates, so tick() can skip no-op transforms.
       lastLeft: NaN,
       lastTop: NaN,
       progressEl: null,
       progressHideTimer: 0,
     };
+    el.classList.add('is-physics-body');
+    renderBodyPosition(body);
     ensureProjectProgressUI(body);
     return body;
+  }
+
+  function renderBodyPosition(body) {
+    const left = Math.round(body.x * 10) / 10;
+    const top = Math.round(body.y * 10) / 10;
+    if (left === body.lastLeft && top === body.lastTop) return;
+    body.el.style.setProperty('--pv2-body-transform', `translate3d(${left}px, ${top}px, 0)`);
+    body.lastLeft = left;
+    body.lastTop = top;
   }
 
   // Heat conforms to the circular project visual. Smoke and flame sprites sit
@@ -2868,7 +2926,7 @@
       };
 
       const mobileHeat = window.innerWidth <= MOBILE_BREAKPOINT;
-      const FLAMES = mobileHeat ? 10 : 20;
+      const FLAMES = mobileHeat ? 6 : 12;
       const flames = Array.from({ length: FLAMES }, (_, i) => flame(i, FLAMES)).join('');
       halo.innerHTML = '<span class="pv2-heat-glow"></span>'
         + '<span class="pv2-heat-core"></span>'
@@ -2896,7 +2954,7 @@
       opacity: halo.style.opacity || '0',
       zIndex: '3',
       transition: 'opacity 120ms linear',
-      willChange: 'opacity, filter, transform',
+      willChange: 'opacity',
       overflow: 'visible',
     });
     return halo;
@@ -3552,20 +3610,7 @@
       }
       body.contacts = nextContacts;
       constrain(body, stageRect, true);
-      // Quantize to a tenth of a pixel and skip the write when nothing moved:
-      // a settled or paused block otherwise re-laid itself out every frame, and
-      // toFixed(2) built two throwaway strings per body per frame for precision
-      // no display can show.
-      const left = Math.round(body.x * 10) / 10;
-      const top = Math.round(body.y * 10) / 10;
-      if (left !== body.lastLeft) {
-        body.el.style.left = `${left}px`;
-        body.lastLeft = left;
-      }
-      if (top !== body.lastTop) {
-        body.el.style.top = `${top}px`;
-        body.lastTop = top;
-      }
+      renderBodyPosition(body);
     }
 
     updateExploreCue(now, stageRect);
@@ -3585,8 +3630,15 @@
     frame = 0;
     for (const body of bodies) {
       if (body.halo) body.halo.style.opacity = '0';
+      // Preserve the visible position before dropping the simulation's CSS
+      // ownership. Resize/re-init can then measure the same on-screen box.
+      body.el.style.left = `${body.lastLeft}px`;
+      body.el.style.top = `${body.lastTop}px`;
+      body.el.classList.remove('is-physics-body');
+      body.el.style.removeProperty('--pv2-body-transform');
       body.el.classList.remove('is-context-hover-active');
     }
+    for (const cleanup of [...activePointGhosts.values()]) cleanup();
     bodies = [];
     invalidateBumpers();
     lastTime = 0;
@@ -3667,10 +3719,7 @@
       body.projectState.shownXp = body.projectState.xp;
       body.projectState.shownLevel = body.projectState.level;
       refreshProjectProgressUI(body, false, true);
-      body.el.style.left = `${body.x}px`;
-      body.el.style.top = `${body.y}px`;
-      body.lastLeft = NaN;
-      body.lastTop = NaN;
+      renderBodyPosition(body);
     }
 
     if (gameActive) setScoreVisible(true);
