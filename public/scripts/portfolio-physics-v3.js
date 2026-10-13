@@ -107,10 +107,10 @@
     'get-to-the-cafe': {
       title: 'Get to the Café',
       reveals: [
-        'I built Get to the Café to explore how a game could give someone an embodied experience of a disability that is normally invisible.',
-        'Get to the Café began with my own experience of disability. In three days for GMTK Game Jam 2026, I turned that experience into a playable experiment in making unseen pressures felt.',
+        'I built Get to the Café to explore how a game could give the experience of having a disability that is normally invisible.',
+        'Get to the Café began with my own experience of disability. In three days for GMTK Game Jam 2026, I turned that experience into a playable experiment.',
         'Get to the Café explores the distance between what someone sees you do and what doing it asks of you. Meeting a friend for coffee can involve demands that never become visible to the person across the table.',
-        'In Get to the Café, unseen demands become accumulating tasks. I used their combined pressure to explore how game mechanics could communicate an experience that is difficult to convey through explanation alone.',
+        'In Get to the Café, I explore how game mechanics can communicate an experience that is difficult to convey through explanation alone.',
         'With Get to the Café, I wanted to question how easily we interpret someone’s behavior as personality or attitude. What changes when we experience some of the pressures shaping that behavior ourselves?',
       ],
     },
@@ -416,7 +416,7 @@
   }
 
   function projectXpTarget(level) {
-    return Math.max(4, Math.round(level * (level + 1) * 2));
+    return Math.max(6, Math.round(level * (level + 1) * 2));
   }
 
   function formatProjectXp(value) {
