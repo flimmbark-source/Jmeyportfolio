@@ -398,7 +398,7 @@
   }
 
   function projectXpTarget(level) {
-    return Math.max(4, Math.round(level * (level + 1) * 2));
+    return Math.max(6, Math.round(level * (level + 1) * 2));
   }
 
   function formatProjectXp(value) {
