@@ -74,9 +74,13 @@
   const FLICK_COOL = 0.05;           // heat a player flick sheds (wakes a settled block)
   const HEAT_MIN_VISIBLE = 0.04;    // below this the heat halo stays hidden
   const HEAT_TIERS = 5;             // box-shadow color steps (rewritten only on change)
-  const TREE_WIDTH = 1240;
-  const TREE_HEIGHT = 900;
-  const TREE_CENTER = { x: 620, y: 450 };
+  const TREE_WIDTH = 1880;
+  const TREE_HEIGHT = 1380;
+  const TREE_CENTER = { x: 130, y: 410 };
+  const TREE_NODE_WIDTH = 320;
+  const TREE_NODE_HEIGHT = 86;
+  const TREE_ROOT_WIDTH = 128;
+  const TREE_ROOT_HEIGHT = 140;
   const GHOST_COLORS = ['#ff3366', '#7c3cff', '#00b894', '#ff9f1a', '#1597ff', '#e843d5', '#ff5f00'];
   const COMBO_WINDOW = 2200;
   const AUTO_FLICK_INTERVAL = 2600;
@@ -169,6 +173,8 @@
   // Genre labels flavor the incremental tree. The `soon` flag (none set now)
   // still greys a node out and blocks its purchase, kept for any future
   // scaffold-ahead node; every listed node currently affects the block game.
+  // The original x/y fields below are legacy coordinates. Presentation now
+  // uses UPGRADE_TREE_LAYOUT; these fields do not position the rendered tree.
   const UPGRADES = [
     // ── Velocity (upward spine) ────────────────────────────────────────────
     { id: 'vel-1', branch: 'velocity', depth: 1, x: 620, y: 336, title: 'Faster Drift', effect: '+60% drift speed', icon: 'wind', cost: 10, requires: [] },
@@ -211,6 +217,32 @@
   ];
 
   const UPGRADE_BY_ID = new Map(UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
+
+  // Presentation coordinates only. Upgrade definitions, effects, costs and
+  // prerequisites remain the game-data source above. The selected horizontal
+  // design places the four starting branches in lanes and Flux below them.
+  const UPGRADE_TREE_LAYOUT = new Map([
+    ['vel-1', { x: 450, y: 110 }],
+    ['vel-accel', { x: 850, y: 62 }], ['vel-cap', { x: 850, y: 158 }],
+    ['vel-launch', { x: 1250, y: 62 }], ['vel-momentum', { x: 1250, y: 158 }],
+    ['vel-overdrive', { x: 1650, y: 110 }],
+    ['walls-1', { x: 450, y: 310 }],
+    ['walls-hard', { x: 850, y: 262 }], ['walls-value', { x: 850, y: 358 }],
+    ['walls-ricochet', { x: 1250, y: 262 }], ['walls-echo', { x: 1250, y: 358 }],
+    ['bounce-1', { x: 450, y: 510 }],
+    ['bounce-force', { x: 850, y: 462 }], ['bounce-value', { x: 850, y: 558 }],
+    ['bounce-charge', { x: 1250, y: 462 }], ['bounce-combo', { x: 1250, y: 558 }],
+    ['bounce-chain', { x: 1650, y: 510 }],
+    ['fric-1', { x: 450, y: 710 }],
+    ['fric-glide', { x: 850, y: 662 }], ['fric-keep', { x: 850, y: 758 }],
+    ['fric-low', { x: 1250, y: 662 }], ['fric-perpetual', { x: 1250, y: 758 }],
+    ['flux-crit', { x: 1250, y: 930 }],
+    ['flux-battle', { x: 1650, y: 882 }], ['flux-bushido', { x: 1650, y: 978 }],
+    ['flux-mult', { x: 1250, y: 1040 }],
+    ['flux-idle', { x: 1250, y: 1150 }], ['flux-auto', { x: 1650, y: 1150 }],
+    ['flux-gravity', { x: 1250, y: 1260 }],
+  ]);
+
 
   const ICONS = {
     wind: '<path d="M3 9h9a2.4 2.4 0 1 0-2.4-2.4"/><path d="M3 14h13a2.4 2.4 0 1 1-2.4 2.4"/><path d="M3 19h6"/>',
@@ -336,11 +368,20 @@
     'vel-cap': { parts: ['Max Speed ', { value: '+80%' }] },
     'vel-launch': { parts: ['Flick Force ', { value: '+110%' }] },
     'vel-momentum': { parts: ['Max Speed ', { value: '+75%' }] },
-    'vel-overdrive': { parts: ['Speed ', { value: '+120%' }, ' · Flick ', { value: '+80%' }] },
+    'vel-overdrive': { parts: ['Speed ', { value: '+120%' }, ' · Flick Force ', { value: '+80%' }] },
+    'bounce-1': { parts: ['+1 Point / ', { target: 'bumper' }, ' hit'] },
+    'bounce-value': { parts: ['+1 Point / ', { target: 'bumper' }, ' hit'] },
+    'bounce-charge': { parts: ['Rebound ', { value: '+85%' }, ' / ', { target: 'bumper' }] },
     'bounce-force': { parts: ['Rebound ', { value: '+70%' }, ' / ', { target: 'bumper' }] },
     'bounce-combo': { parts: ['+2 Points / ', { target: 'bumper' }, ' hit'] },
+    'walls-1': { parts: ['+1 Point / ', { target: 'wall' }, ' hit'] },
+    'walls-ricochet': { parts: ['Rebound ', { value: '+85%' }, ' / ', { target: 'wall' }] },
+    'walls-echo': { parts: ['+2 Points / ', { target: 'wall' }, ' hit'] },
     'walls-hard': { parts: ['Rebound ', { value: '+70%' }, ' / ', { target: 'wall' }] },
     'walls-value': { parts: ['+1 Point / ', { target: 'wall' }, ' hit'] },
+    'fric-1': { parts: ['Drag ', { value: '−40%' }] },
+    'fric-keep': { parts: ['Collision Energy ', { value: '+28%' }] },
+    'fric-low': { parts: ['Drag ', { value: '−65%' }] },
     'fric-glide': { parts: ['Drag ', { value: '−55%' }] },
   };
 
@@ -351,6 +392,15 @@
         + '<path d="M3 8c5 0 9 4 10 9M8 14l5 3 1-6" fill="none"/>'
       : '<path d="M2 3h7v5H2zM11 3h7v5h-7zM20 3h6v5h-6zM2 10h7v5H2zM11 10h7v5h-7zM20 10h6v5h-6zM2 17h7v5H2zM11 17h7v5h-7zM20 17h6v5h-6z" fill="#888" stroke="none"/>';
     return '<svg class="pv2-upgrade-effect__target" data-effect-target="' + target + '" viewBox="0 0 28 24" fill="none" stroke="#666" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + shape + '</svg>';
+  }
+
+  // Use the same vocabulary for both visible descriptions and spoken labels.
+  function upgradeEffectText(upgrade) {
+    const display = UPGRADE_EFFECT_DISPLAY[upgrade.id];
+    if (!display) return upgrade.effect;
+    const line = display.parts.map((part) => typeof part === 'string'
+      ? part : part.target || part.value).join('');
+    return line + (display.note ? '. ' + display.note : '');
   }
 
   function upgradeEffectMarkup(upgrade) {
@@ -999,7 +1049,7 @@
       // The pips duplicate the rank line visually, so assistive tech gets the
       // same sentence the card shows, once, with the maximum the pips imply.
       button.setAttribute('aria-label', 'Option ' + (index + 1) + ': ' + upgrade.title
-        + ', ' + upgrade.rarity + '. ' + upgrade.effect + '. Rank ' + (owned + 1)
+        + ', ' + upgrade.rarity + '. ' + upgradeEffectText(upgrade) + '. Rank ' + (owned + 1)
         + (upgrade.maxStacks > 1 ? ' of ' + upgrade.maxStacks : '') + '.');
       button.addEventListener('click', () => chooseProjectUpgrade(event, upgrade, button));
       list?.appendChild(button);
@@ -1272,6 +1322,11 @@
   let gameActive = false;
   let points = 0;
   let ghostColorIndex = 0;
+  let scoreUiFrame = 0;
+  let scoreUiPulse = false;
+  let ghostFrame = 0;
+  const ghostSteps = new Map();
+  const activePointGhosts = new Map();
   let fxLayer = null;
   let activeSmokeParticles = 0;
   let upgradeOverlay = null;
@@ -1705,34 +1760,54 @@
     const mechanicTheme = mechanicThemeForUpgrade(upgrade);
     node.dataset.mechanic = mechanicTheme;
     if (MECHANIC_ART[mechanicTheme]) node.classList.add('has-art-icon');
-    node.style.setProperty('--node-x', `${upgrade.x}px`);
-    node.style.setProperty('--node-y', `${upgrade.y}px`);
+    const position = pointOf(upgrade.id);
+    node.style.setProperty('--node-x', `${position.x}px`);
+    node.style.setProperty('--node-y', `${position.y}px`);
     node.innerHTML = `
       <span class="pv2-upgrade-node__icon" aria-hidden="true">${upgradeIconMarkup(upgrade, mechanicTheme)}</span>
       <span class="pv2-upgrade-node__copy">
         <strong class="pv2-upgrade-node__title">${upgrade.title}</strong>
         <span class="pv2-upgrade-node__effect">${upgradeEffectMarkup(upgrade)}</span>
       </span>
-      <span class="pv2-upgrade-node__cost">${upgrade.cost}</span>
+      <span class="pv2-upgrade-node__cost"><strong>${upgrade.cost}</strong><small>PTS</small></span>
     `;
     node.addEventListener('click', () => buyUpgrade(upgrade.id));
     return node;
   }
 
   function pointOf(id) {
-    const upgrade = UPGRADE_BY_ID.get(id);
-    return upgrade ? { x: upgrade.x, y: upgrade.y } : TREE_CENTER;
+    return UPGRADE_TREE_LAYOUT.get(id) || TREE_CENTER;
   }
 
-  function curvedPath(start, end) {
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
-    if (Math.abs(dx) >= Math.abs(dy)) {
-      const mx = start.x + dx * .5;
-      return `M ${start.x} ${start.y} C ${mx} ${start.y}, ${mx} ${end.y}, ${end.x} ${end.y}`;
+  function treeConnectorPath(parentId, upgrade) {
+    const parent = parentId === 'root' ? TREE_CENTER : pointOf(parentId);
+    const child = pointOf(upgrade.id);
+    const siblings = UPGRADES.filter((candidate) => candidate.branch === upgrade.branch && candidate.requires.includes(parentId));
+    const portOffset = parentId === 'root'
+      ? (['velocity', 'walls', 'bounce', 'friction'].indexOf(upgrade.branch) - 1.5) * 24
+      : siblings.length > 1 ? (siblings.indexOf(upgrade) - (siblings.length - 1) / 2) * 22 : 0;
+    const start = { x: parent.x + (parentId === 'root' ? TREE_ROOT_WIDTH : TREE_NODE_WIDTH) / 2, y: parent.y + portOffset };
+    const end = { x: child.x - TREE_NODE_WIDTH / 2, y: child.y };
+    // Cross-branch paths travel in the gap between columns, so they cannot
+    // pass through the main-lane cards while reaching the Flux lane.
+    if (upgrade.branch === 'flux' && UPGRADE_BY_ID.get(parentId)?.branch !== 'flux') {
+      const crossBranchNodes = UPGRADES.filter((candidate) => candidate.branch === 'flux' && candidate.requires.some((id) => UPGRADE_BY_ID.get(id)?.branch !== 'flux'));
+      const rail = start.x + 20 + crossBranchNodes.indexOf(upgrade) * 10 + upgrade.requires.indexOf(parentId) * 6;
+      const radius = 12;
+      return `M ${start.x} ${start.y} H ${rail - radius} Q ${rail} ${start.y} ${rail} ${start.y + radius} V ${end.y - radius} Q ${rail} ${end.y} ${rail + radius} ${end.y} H ${end.x}`;
     }
-    const my = start.y + dy * .5;
-    return `M ${start.x} ${start.y} C ${start.x} ${my}, ${end.x} ${my}, ${end.x} ${end.y}`;
+    const middle = start.x + (end.x - start.x) * .5;
+    return `M ${start.x} ${start.y} C ${middle} ${start.y}, ${middle} ${end.y}, ${end.x} ${end.y}`;
+  }
+
+  function visibleTreeBounds() {
+    const visible = UPGRADES.filter(upgradeVisible).map((upgrade) => pointOf(upgrade.id));
+    return {
+      left: Math.min(TREE_CENTER.x - TREE_ROOT_WIDTH / 2, ...visible.map((position) => position.x - TREE_NODE_WIDTH / 2)) - 36,
+      right: Math.max(TREE_CENTER.x + TREE_ROOT_WIDTH / 2, ...visible.map((position) => position.x + TREE_NODE_WIDTH / 2)) + 36,
+      top: Math.min(TREE_CENTER.y - TREE_ROOT_HEIGHT / 2, ...visible.map((position) => position.y - TREE_NODE_HEIGHT / 2)) - 36,
+      bottom: Math.max(TREE_CENTER.y + TREE_ROOT_HEIGHT / 2, ...visible.map((position) => position.y + TREE_NODE_HEIGHT / 2)) + 36,
+    };
   }
 
   function refreshUpgradeTree() {
@@ -1740,6 +1815,7 @@
     const pointsDisplay = upgradeOverlay?.querySelector('[data-upgrade-points]');
     if (pointsDisplay) pointsDisplay.textContent = String(points);
 
+    let visibilityChanged = false;
     upgradeTree.querySelectorAll('[data-upgrade-id]').forEach((button) => {
       const upgrade = UPGRADE_BY_ID.get(button.dataset.upgradeId);
       if (!upgrade) return;
@@ -1747,6 +1823,7 @@
       const bought = purchased.has(upgrade.id);
       const unlocked = upgradeUnlocked(upgrade);
       const visible = upgradeVisible(upgrade);
+      if (visible !== !button.classList.contains('is-hidden')) visibilityChanged = true;
       const affordable = !soon && unlocked && !bought && points >= upgrade.cost;
       button.classList.toggle('is-hidden', !visible);
       button.classList.toggle('is-bought', bought);
@@ -1754,12 +1831,22 @@
       button.classList.toggle('is-affordable', affordable);
       button.disabled = soon || bought || !unlocked || !affordable;
       button.setAttribute('aria-label', soon
-        ? `${upgrade.title}, ${upgrade.effect}, coming soon`
+        ? `${upgrade.title}, ${upgradeEffectText(upgrade)}, coming soon`
         : bought
           ? `${upgrade.title}, purchased`
-          : `${upgrade.title}, ${upgrade.effect}, costs ${upgrade.cost} points`);
+          : `${upgrade.title}, ${upgradeEffectText(upgrade)}, costs ${upgrade.cost} points`);
       const cost = button.querySelector('.pv2-upgrade-node__cost');
-      if (cost) cost.textContent = bought ? '✓' : soon ? 'SOON' : String(upgrade.cost);
+      if (cost) {
+        const state = bought ? 'bought' : soon ? 'soon' : 'price';
+        // Scores refresh during play. Only rewrite cost markup on a state
+        // change, keeping keyboard focus and the illustrated icon intact.
+        if (cost.dataset.state !== state) {
+          cost.dataset.state = state;
+          cost.innerHTML = bought
+            ? '<span class="pv2-upgrade-node__check" aria-hidden="true">✓</span><small>OWNED</small>'
+            : soon ? '<small>SOON</small>' : '<strong>' + upgrade.cost + '</strong><small>PTS</small>';
+        }
+      }
 
       upgradeTree.querySelectorAll(`[data-connector-to="${upgrade.id}"]`).forEach((connector) => {
         const from = connector.getAttribute('data-connector-from');
@@ -1771,6 +1858,10 @@
         connector.classList.toggle('is-bought', bought);
       });
     });
+    if (visibilityChanged && upgradeOverlay.classList.contains('is-open')) {
+      clampTreePan();
+      applyTreeTransform();
+    }
   }
 
   function buildUpgradeTree() {
@@ -1782,7 +1873,6 @@
       <section class="pv2-upgrade-panel" role="dialog" aria-modal="true" aria-label="Kinetic upgrade tree">
         <header class="pv2-upgrade-panel__header">
           <div class="pv2-upgrade-panel__titleblock">
-            <div class="pv2-upgrade-panel__eyebrow">Incremental Tree</div>
             <h2>Kinetic upgrades</h2>
           </div>
           <div class="pv2-upgrade-legend" aria-label="Upgrade branches">
@@ -1799,7 +1889,6 @@
           <div class="pv2-upgrade-tree" style="--tree-width:${TREE_WIDTH}px;--tree-height:${TREE_HEIGHT}px">
             <svg class="pv2-upgrade-lines" viewBox="0 0 ${TREE_WIDTH} ${TREE_HEIGHT}" aria-hidden="true"></svg>
             <div class="pv2-upgrade-root" style="--node-x:${TREE_CENTER.x}px;--node-y:${TREE_CENTER.y}px">
-              <span class="pv2-upgrade-root__ring" aria-hidden="true"></span>
               <span class="pv2-upgrade-root__icon" aria-hidden="true">${iconSvg('core')}</span>
               <strong>Kinetic<br>Basics</strong>
               <span class="pv2-upgrade-root__owned">OWNED</span>
@@ -1815,9 +1904,8 @@
     UPGRADES.forEach((upgrade) => {
       const parents = upgrade.requires.length ? upgrade.requires : ['root'];
       parents.forEach((parentId) => {
-        const start = parentId === 'root' ? TREE_CENTER : pointOf(parentId);
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', curvedPath(start, { x: upgrade.x, y: upgrade.y }));
+        path.setAttribute('d', treeConnectorPath(parentId, upgrade));
         path.setAttribute('data-connector-to', upgrade.id);
         path.setAttribute('data-connector-from', parentId);
         path.setAttribute('data-branch', upgrade.branch);
@@ -1855,11 +1943,16 @@
   function clampTreePan() {
     const vp = treeViewport();
     if (!vp) return;
-    const sw = TREE_WIDTH * treeZoom;
-    const sh = TREE_HEIGHT * treeZoom;
-    const slack = 120 * treeZoom; // let the edges drift a little past the frame
-    treePanX = sw <= vp.w ? (vp.w - sw) / 2 : clamp(treePanX, vp.w - sw - slack, slack);
-    treePanY = sh <= vp.h ? (vp.h - sh) / 2 : clamp(treePanY, vp.h - sh - slack, slack);
+    const bounds = visibleTreeBounds();
+    const width = (bounds.right - bounds.left) * treeZoom;
+    const height = (bounds.bottom - bounds.top) * treeZoom;
+    const slack = 120 * treeZoom;
+    treePanX = width <= vp.w
+      ? vp.w / 2 - (bounds.left + bounds.right) / 2 * treeZoom
+      : clamp(treePanX, vp.w - bounds.right * treeZoom - slack, -bounds.left * treeZoom + slack);
+    treePanY = height <= vp.h
+      ? vp.h / 2 - (bounds.top + bounds.bottom) / 2 * treeZoom
+      : clamp(treePanY, vp.h - bounds.bottom * treeZoom - slack, -bounds.top * treeZoom + slack);
   }
 
   function applyTreeTransform() {
@@ -1875,10 +1968,16 @@
     applyTreeTransform();
   }
 
-  // Resets zoom and centres the view on the root when the tree opens.
+  // Fit the reached part of the horizontal tree on desktop. Mobile keeps
+  // the existing full-size, draggable canvas instead of shrinking its text.
   function centerUpgradeScroll() {
-    treeZoom = window.innerWidth <= MOBILE_BREAKPOINT ? 1 : TREE_DEFAULT_ZOOM;
-    centerTreeOn(TREE_CENTER.x, TREE_CENTER.y);
+    const vp = treeViewport();
+    if (!vp) return;
+    const bounds = visibleTreeBounds();
+    treeZoom = window.innerWidth <= MOBILE_BREAKPOINT ? 1 : clamp(Math.min(
+      TREE_DEFAULT_ZOOM, vp.w / (bounds.right - bounds.left), vp.h / (bounds.bottom - bounds.top)
+    ), TREE_ZOOM_MIN, TREE_ZOOM_MAX);
+    centerTreeOn((bounds.left + bounds.right) / 2, (bounds.top + bounds.bottom) / 2);
   }
 
   function onTreePointerDown(event) {
@@ -1975,21 +2074,33 @@
     } catch {}
   }
 
+  // Game state/events stay synchronous. Multiple hits in one simulation frame
+  // share one DOM update, and a closed tree is refreshed when it next opens.
+  function queueScoreUiRefresh(pulse = false) {
+    scoreUiPulse ||= pulse;
+    if (scoreUiFrame) return;
+    scoreUiFrame = requestAnimationFrame(() => {
+      scoreUiFrame = 0;
+      ensureScoreCounter();
+      scoreValue.textContent = String(points);
+      refreshUpgradeCue();
+      if (upgradeOverlay?.classList.contains('is-open')) refreshUpgradeTree();
+      if (scoreUiPulse && !reducedMotion()) {
+        try {
+          scoreCounter.animate([
+            { transform: 'translateY(0) scale(1)' },
+            { transform: 'translateY(0) scale(1.08)', offset: .42 },
+            { transform: 'translateY(0) scale(1)' },
+          ], { duration: 170, easing: 'cubic-bezier(.2,.9,.25,1)' });
+        } catch {}
+      }
+      scoreUiPulse = false;
+    });
+  }
+
   function updateScore(delta, sourceId, impact) {
     points += delta;
-    ensureScoreCounter();
-    scoreValue.textContent = String(points);
-    refreshUpgradeCue();
-    refreshUpgradeTree();
-    if (!reducedMotion()) {
-      try {
-        scoreCounter.animate([
-          { transform: 'translateY(0) scale(1)' },
-          { transform: 'translateY(0) scale(1.08)', offset: .42 },
-          { transform: 'translateY(0) scale(1)' },
-        ], { duration: 170, easing: 'cubic-bezier(.2,.9,.25,1)' });
-      } catch {}
-    }
+    queueScoreUiRefresh(true);
     window.dispatchEvent(new CustomEvent('pv2:score-state', {
       detail: { points, delta, sourceId, impactX: impact?.x, impactY: impact?.y },
     }));
@@ -2027,10 +2138,7 @@
   function addIdlePoints(n) {
     if (n <= 0) return;
     points += n;
-    ensureScoreCounter();
-    scoreValue.textContent = String(points);
-    refreshUpgradeCue();
-    refreshUpgradeTree();
+    queueScoreUiRefresh();
     window.dispatchEvent(new CustomEvent('pv2:score-state', {
       detail: { points, delta: n, sourceId: 'idle' },
     }));
@@ -2138,6 +2246,7 @@
     const tier = Math.min(HEAT_TIERS - 1, Math.floor(f * HEAT_TIERS));
     if (tier !== body.heatTier) {
       halo.style.setProperty('--pv2-heat-rgb', heatColor((tier + .5) / HEAT_TIERS));
+      halo.style.setProperty('--pv2-heat-tier', String((tier + .5) / HEAT_TIERS));
       body.heatTier = tier;
     }
 
@@ -2147,7 +2256,8 @@
       const flame = Math.round(Math.pow(clamp((f - .02) / .38, 0, 1), .45) * 100) / 100;
       halo.style.setProperty('--pv2-heat', String(heat));
       halo.style.setProperty('--pv2-flame-opacity', String(flame));
-      halo.style.setProperty('--pv2-flame-scale', String(.9 + heat * .65));
+      halo.style.setProperty('--pv2-flame-width', String(.6875 + heat * .3125));
+      halo.style.setProperty('--pv2-flame-scale', String((.5 + heat * .5) * (.9 + heat * .65)));
       body.heatValue = heat;
     }
 
@@ -2262,6 +2372,17 @@
   // Safety cap on the drift/tumble phase (ms) in case angular speed is tiny.
   const GHOST_DRIFT_MAX_MS = 1500;
 
+  // One scheduler for all drifting numbers. Popping numbers use the existing
+  // Web Animations sequence and remain in the visual budget until removed.
+  function advancePointGhosts(now) {
+    ghostFrame = 0;
+    for (const [ghost, step] of ghostSteps) {
+      if (!ghost.isConnected) activePointGhosts.get(ghost)?.();
+      else if (step(now)) ghostSteps.delete(ghost);
+    }
+    if (ghostSteps.size) ghostFrame = requestAnimationFrame(advancePointGhosts);
+  }
+
   // A short burst of straight lines radiating from a point, tinted in the
   // ghost's own color (plus a few white sparks). Used for the "pop".
   function spawnRadiatingLines(cx, cy, color) {
@@ -2298,8 +2419,25 @@
 
   function spawnPointGhost(impact, amount = 1, opts = {}, velocity = null) {
     if (!impact) return;
+    const limit = window.innerWidth <= MOBILE_BREAKPOINT ? 4 : 8;
+    while (activePointGhosts.size >= limit) activePointGhosts.values().next().value();
     const layer = ensureFxLayer();
     const ghost = document.createElement('span');
+    let cleaned = false;
+    let popAnimation = null;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      ghostSteps.delete(ghost);
+      activePointGhosts.delete(ghost);
+      popAnimation?.cancel();
+      ghost.remove();
+      if (!ghostSteps.size && ghostFrame) {
+        cancelAnimationFrame(ghostFrame);
+        ghostFrame = 0;
+      }
+    };
+    activePointGhosts.set(ghost, cleanup);
     const crit = Boolean(opts.crit);
     const comboMult = opts.comboMult || 1;
     const color = crit ? '#ffb300' : GHOST_COLORS[ghostColorIndex % GHOST_COLORS.length];
@@ -2357,9 +2495,11 @@
           { transform: `translate(${tx}, calc(-50% + ${offY - 9}px)) scale(1)`, opacity: 1, offset: .74 },
           { transform: `translate(${tx}, calc(-50% + ${offY - 82}px)) scale(.9)`, opacity: 0 },
         ], { duration: motionReduced ? 700 : 900, easing: 'cubic-bezier(.22,.9,.28,1)', fill: 'forwards' });
-        pop.addEventListener('finish', () => ghost.remove(), { once: true });
+        popAnimation = pop;
+        pop.addEventListener('finish', cleanup, { once: true });
+        pop.addEventListener('cancel', cleanup, { once: true });
       } catch {
-        ghost.remove();
+        cleanup();
       }
     };
 
@@ -2392,14 +2532,15 @@
       if (nearingStop || elapsed >= GHOST_DRIFT_MAX_MS) {
         paint();
         popAndVanish();
-        return;
+        return true;
       }
       paint();
-      requestAnimationFrame(step);
+      return false;
     };
 
     if (typeof requestAnimationFrame === 'function') {
-      requestAnimationFrame(step);
+      ghostSteps.set(ghost, step);
+      if (!ghostFrame) ghostFrame = requestAnimationFrame(advancePointGhosts);
     } else {
       popAndVanish();
     }
@@ -2668,8 +2809,8 @@
     el.style.position = 'absolute';
     el.style.right = 'auto';
     el.style.bottom = 'auto';
-    el.style.left = `${x}px`;
-    el.style.top = `${y}px`;
+    el.style.left = '0px';
+    el.style.top = '0px';
     el.style.transition = 'none';
     const projectId = el.dataset.nodeId || ('project-' + index);
     const projectState = projectStateFor(projectId);
@@ -2694,14 +2835,25 @@
       heatOpacity: 0,
       heatValue: -1,
       smokeNextAt: 0,
-      // Last values written to style.left/top, so tick() can skip no-op writes.
+      // Last rendered coordinates, so tick() can skip no-op transforms.
       lastLeft: NaN,
       lastTop: NaN,
       progressEl: null,
       progressHideTimer: 0,
     };
+    el.classList.add('is-physics-body');
+    renderBodyPosition(body);
     ensureProjectProgressUI(body);
     return body;
+  }
+
+  function renderBodyPosition(body) {
+    const left = Math.round(body.x * 10) / 10;
+    const top = Math.round(body.y * 10) / 10;
+    if (left === body.lastLeft && top === body.lastTop) return;
+    body.el.style.setProperty('--pv2-body-transform', `translate3d(${left}px, ${top}px, 0)`);
+    body.lastLeft = left;
+    body.lastTop = top;
   }
 
   // Heat conforms to the circular project visual. Smoke and flame sprites sit
@@ -2774,7 +2926,7 @@
       };
 
       const mobileHeat = window.innerWidth <= MOBILE_BREAKPOINT;
-      const FLAMES = mobileHeat ? 10 : 20;
+      const FLAMES = mobileHeat ? 6 : 12;
       const flames = Array.from({ length: FLAMES }, (_, i) => flame(i, FLAMES)).join('');
       halo.innerHTML = '<span class="pv2-heat-glow"></span>'
         + '<span class="pv2-heat-core"></span>'
@@ -2802,7 +2954,7 @@
       opacity: halo.style.opacity || '0',
       zIndex: '3',
       transition: 'opacity 120ms linear',
-      willChange: 'opacity, filter, transform',
+      willChange: 'opacity',
       overflow: 'visible',
     });
     return halo;
@@ -3458,20 +3610,7 @@
       }
       body.contacts = nextContacts;
       constrain(body, stageRect, true);
-      // Quantize to a tenth of a pixel and skip the write when nothing moved:
-      // a settled or paused block otherwise re-laid itself out every frame, and
-      // toFixed(2) built two throwaway strings per body per frame for precision
-      // no display can show.
-      const left = Math.round(body.x * 10) / 10;
-      const top = Math.round(body.y * 10) / 10;
-      if (left !== body.lastLeft) {
-        body.el.style.left = `${left}px`;
-        body.lastLeft = left;
-      }
-      if (top !== body.lastTop) {
-        body.el.style.top = `${top}px`;
-        body.lastTop = top;
-      }
+      renderBodyPosition(body);
     }
 
     updateExploreCue(now, stageRect);
@@ -3491,8 +3630,15 @@
     frame = 0;
     for (const body of bodies) {
       if (body.halo) body.halo.style.opacity = '0';
+      // Preserve the visible position before dropping the simulation's CSS
+      // ownership. Resize/re-init can then measure the same on-screen box.
+      body.el.style.left = `${body.lastLeft}px`;
+      body.el.style.top = `${body.lastTop}px`;
+      body.el.classList.remove('is-physics-body');
+      body.el.style.removeProperty('--pv2-body-transform');
       body.el.classList.remove('is-context-hover-active');
     }
+    for (const cleanup of [...activePointGhosts.values()]) cleanup();
     bodies = [];
     invalidateBumpers();
     lastTime = 0;
@@ -3573,10 +3719,7 @@
       body.projectState.shownXp = body.projectState.xp;
       body.projectState.shownLevel = body.projectState.level;
       refreshProjectProgressUI(body, false, true);
-      body.el.style.left = `${body.x}px`;
-      body.el.style.top = `${body.y}px`;
-      body.lastLeft = NaN;
-      body.lastTop = NaN;
+      renderBodyPosition(body);
     }
 
     if (gameActive) setScoreVisible(true);

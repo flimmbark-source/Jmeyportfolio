@@ -16,7 +16,15 @@
   width: fit-content;
   max-width: calc(100% - 36px);
   transition: none;
-  will-change: left, top;
+}
+
+/* Only the simulation owns these slots. React can update its authored layout
+   during resize without overwriting a live body's translated coordinates. */
+html.pv2-physics-live .pv2-float-slot.is-physics-body {
+  left: 0 !important;
+  top: 0 !important;
+  transform: var(--pv2-body-transform) !important;
+  will-change: transform;
 }
 
 .pv2-float-slot--gateway {

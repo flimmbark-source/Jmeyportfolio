@@ -1,3 +1,37 @@
+# Playground upgrade tree and level-up alignment review
+
+final result: blocked
+
+## Confirmed current facts
+
+The latest correction requires the level-up copy to remain in its original position beside the artwork. The two-column header and inline level badge are restored. The paragraph now fills the available copy column instead of being limited to 52ch. Desktop title/body sizes are 24px/16px and narrow title/body sizes are 18px/14px at the default root size. Original artwork-fit rules are retained.
+
+Matching point, rebound, drag, collision-energy, drift, maximum-speed and flick-force descriptions use consistent words, units and order. Wall Points and Wall Value both show +1 Point per wall hit. Equivalent bumper upgrades use the same bumper wording. The visible and spoken descriptions use the same display table. Percentages and underlying effects are unchanged.
+
+The user selected displayed option 2, correcting their earlier selection of 3. The selected source is the horizontal branch-lane mockup generated on October 12, 2026. Implementation starts from main commit 363270358ece5486081a20f4d337cc3f90b3b1d4, which includes merged PR #108.
+
+The layout puts the root on the left, four starting branches in horizontal lanes, advanced nodes to the right and Flux nodes below. Warm purchase surfaces, separate PTS prices, tinted owned cards, owned labels and edge-to-edge curved connectors follow the selected direction. Existing illustrated mechanic icons are retained.
+
+All 29 upgrade definitions, prices, prerequisites, effects and purchase guards remain unchanged. The display mapping now normalizes repeated descriptions across the tree and project rewards. Existing level-up focus, drag, project reward and reveal behavior are preserved. Desktop opening fits reached nodes. Mobile retains its full-size pan/zoom canvas.
+
+## Rejected or stale facts
+
+Both the artwork-cropping interpretation and the centred, three-column header were rejected. Their changes are discarded. Option 3 is superseded. The legacy radial x/y fields in upgrade data no longer determine presentation. The level-up report below belongs to a previous pass and is not evidence of current upgrade-tree visual fidelity.
+
+## Validation
+
+Production build, JavaScript syntax and diff whitespace checks pass. Focused checks execute the actual purchase and tree-rendering functions against a lightweight DOM: locked, duplicate and unaffordable purchase guards, exact spending, ownership/PTS markup, progressive reveal, cross-branch prerequisite behavior, all 29 nodes and every dependency edge, layout bounds, node separation, and desktop/mobile pan and zoom. Game data, physics/effects, project upgrades, numeric values and level-up focus functions are compared directly with the base commit.
+
+## Unresolved visual verification
+
+The Cloud Browser rejected a preview reload under its URL protocol policy. No browser-rendered implementation screenshot or source/implementation visual comparison was obtained for this repository change. Browser font wrapping, asset rendering, responsive feel and visual fidelity remain unverified. Build and DOM checks do not substitute for that comparison.
+
+Before merge, inspect the Netlify deploy preview on desktop and mobile, including purchased/revealed branches and Flux connections.
+
+---
+
+## Historical level-up report
+
 # Level-up presentation review
 
 ## What this pass changed
@@ -111,3 +145,41 @@ teardown with requeue when the player leaves mid-cinematic.
   and `playgroundIsVisible()` returns false — level-ups never present on that
   route. `/` is unaffected. Not fixed in this pass.
 - No claim of universal professional or game-design standards compliance.
+
+## Playground performance pass, 2026-10-13
+
+Confirmed current implementation:
+
+- Live sphere slots use one quantized translation update instead of left/top
+  writes per frame. Physics coordinates, drag, collision response, XP thresholds
+  and upgrade effects are unchanged. Resize teardown restores the rendered
+  coordinates before removing simulation ownership.
+- Heat flame dimensions are fixed. Transform scales reproduce the previous
+  heat-dependent width and height. Flame candidate counts drop from 20 to 12
+  on desktop and 10 to 6 on mobile, with the existing underside culling retained.
+  Glow gradients, shadows and blur change only at five heat tier boundaries.
+- Point totals and scoring events remain synchronous. Counter/cue/tree display
+  updates coalesce to one frame, with no scoring refresh of a closed tree.
+  Opening the tree still refreshes current affordability immediately.
+- Score popups share a scheduler and a visual budget of eight on desktop or
+  four on mobile. The oldest popup is removed at the limit. Completion,
+  cancellation, DOM detachment and simulation teardown release popup work.
+- Script cache version is 78. Existing full-width level-up text beside the
+  artwork and consistent upgrade stat wording remain in place.
+
+Validation: `node scripts/test-portfolio-performance.mjs` passes six regression
+tests covering transformed placement, teardown/reinit, pointer bounds, wall
+reflection, all four pause states, heat tiers/cold/reheat, score event ordering,
+burst batching, hidden-tree suppression, popup budgets and lifecycle, and reduced
+motion. Seven portfolio polish tests and the existing 29-upgrade progression,
+pan/zoom, connector and wording checks also pass. An additional before/after
+numerical comparison produced identical five-body positions, velocities, heat
+and points over 120 frames across eight combinations of desktop/mobile,
+reduced/full motion and base/all global upgrades. Astro builds all 15 pages.
+
+Rejected/stale: centered level-up copy and the artwork crop experiment are not
+part of this pass. Sphere freezing as a new mechanic remains shelved.
+
+Unresolved: browser profiling/visual verification is blocked in this session.
+The tests track DOM operations and simulation behavior, not actual layout,
+painting, dropped frames or GPU memory. No FPS or percentage speedup is claimed.
