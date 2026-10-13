@@ -1757,7 +1757,7 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
 /* No frame of its own any more — it is the top of the window, not a card
    hovering above one. */
 .pv2-project-levelup__game-context {
-  display:grid; grid-template-columns:119px minmax(0,1fr); gap:22px;
+  display:grid; grid-template-columns:119px minmax(0,1fr) 119px; gap:22px;
   align-items:start; margin:0; padding:0;
   text-align:left;
   animation:pv2RewardPopIn 400ms var(--pv2-reward-pop) both;
@@ -1811,22 +1811,24 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
   content:'\2726'; left:100%; margin-left:18px;
   text-shadow:15px -12px 0 #e3c257,6px 12px 0 #f1dc9d,27px 3px 0 #ecd489;
 }
-.pv2-project-levelup__game-context.has-no-image { grid-template-columns:1fr; }
+/* Equal side columns keep the text on the window centre, independent of
+   the artwork on the left and the level badge on the right. */
+.pv2-project-levelup__game-copy { min-width:0; text-align:center; }
+.pv2-project-levelup__game-context.has-no-image .pv2-project-levelup__game-copy { grid-column:2; }
 .pv2-project-levelup__game-image {
   width:119px; height:119px; overflow:hidden;
   border:1.5px solid #cdc7b4; border-radius:10px;
 }
 .pv2-project-levelup__game-image img { display:block; width:100%; height:100%; object-fit:cover; }
-.pv2-project-levelup__game-title { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
+.pv2-project-levelup__game-title { display:flex; align-items:flex-start; justify-content:center; gap:14px; }
 .pv2-project-levelup__floating-choices .pv2-project-levelup__game-context h2 {
   margin:0;
   font:800 1.86rem/1.12 system-ui,sans-serif; letter-spacing:-.032em;
 }
-.pv2-project-levelup__game-level { flex:none; padding:9px 14px; border:1.5px solid #4b483f; border-radius:9px; font-size:.84rem; box-shadow:none; }
+.pv2-project-levelup__game-level { justify-self:end; align-self:start; flex:none; padding:9px 14px; border:1.5px solid #4b483f; border-radius:9px; font-size:.84rem; box-shadow:none; }
 .pv2-project-levelup__game-fact {
-  /* A measure, so the sentence wraps into a block beside the thumbnail
-     instead of running the full width of the window as one thin line. */
-  margin:9px 0 0; max-width:52ch;
+  /* Keep the paragraph on the same centre line as the project title. */
+  margin:9px auto 0; max-width:52ch;
   color:#55534c; font:400 1.02rem/1.5 system-ui,sans-serif;
 }
 
@@ -2018,13 +2020,14 @@ html.pv2-project-levelup-open .pv2-overview__statement { visibility:hidden; }
   .pv2-reward-chest { width:140px; height:130px; }
 
   .pv2-project-levelup__floating-choices { width:calc(100vw - 20px); padding:18px 14px 0; }
-  .pv2-project-levelup__game-context { grid-template-columns:48px minmax(0,1fr); gap:12px; padding:0; margin:0; }
+  .pv2-project-levelup__game-context { grid-template-columns:48px minmax(0,1fr) 48px; gap:12px; padding:0; margin:0; }
   .pv2-project-levelup__game-image { width:48px; height:48px; align-self:start; }
   .pv2-project-levelup__sep { margin-top:14px; }
   /* `auto` on the sides, not 0: the base rule centres this with auto margins
      and a 0 here pushed the heading left and clipped its sparkle. */
   .pv2-project-levelup__pick { margin:14px auto 12px; font-size:1.12rem; }
   .pv2-project-levelup__game-title { gap:8px; flex-wrap:wrap; }
+  .pv2-project-levelup__game-level { padding:6px; font-size:.68rem; }
   .pv2-project-levelup__floating-choices .pv2-project-levelup__game-context h2 { font-size:1.05rem; }
   .pv2-project-levelup__game-fact { font-size:.8125rem; }
 
