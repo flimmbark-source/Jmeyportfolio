@@ -478,7 +478,11 @@ function Overview({ onSelect, reducedMotion }) {
 
 function ProjectContextPanel({ node, anchorEl, onClose, reducedMotion }) {
   const panelRef = useRef(null);
+  const mediaRef = useRef(null);
+  const mediaCloseRef = useRef(null);
+  const wasMediaExpanded = useRef(false);
   const [position, setPosition] = useState(null);
+  const [mediaExpanded, setMediaExpanded] = useState(false);
   const primaryUrl = node.localPlayUrl || node.playUrl || node.route;
   const primaryExternal = Boolean(primaryUrl && /^https?:/i.test(primaryUrl) && !node.localPlayUrl);
 
@@ -498,7 +502,7 @@ function ProjectContextPanel({ node, anchorEl, onClose, reducedMotion }) {
 
   useLayoutEffect(() => {
     const panel = panelRef.current;
-    if (!panel || !anchorEl) return undefined;
+    if (!panel || !anchorEl || mediaExpanded) return undefined;
     let frame = 0;
 
     const place = () => {
@@ -569,15 +573,23 @@ function ProjectContextPanel({ node, anchorEl, onClose, reducedMotion }) {
       window.visualViewport?.removeEventListener('resize', place);
       window.visualViewport?.removeEventListener('scroll', place);
     };
-  }, [anchorEl, node.id]);
+  }, [anchorEl, node.id, mediaExpanded]);
+
+  useEffect(() => {
+    if (mediaExpanded) mediaCloseRef.current?.focus({ preventScroll: true });
+    else if (wasMediaExpanded.current) mediaRef.current?.focus({ preventScroll: true });
+    wasMediaExpanded.current = mediaExpanded;
+  }, [mediaExpanded]);
 
   useEffect(() => {
     const onKeyDown = (event) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key !== 'Escape') return;
+      if (mediaExpanded) setMediaExpanded(false);
+      else onClose();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
+  }, [onClose, mediaExpanded]);
 
   return (
     <motion.div
@@ -587,14 +599,17 @@ function ProjectContextPanel({ node, anchorEl, onClose, reducedMotion }) {
       exit={reducedMotion ? undefined : { opacity: 0 }}
       transition={reducedMotion ? { duration: 0 } : MOTION.fast}
       onPointerDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (event.target === event.currentTarget) {
+          if (mediaExpanded) setMediaExpanded(false);
+          else onClose();
+        }
       }}
     >
       <motion.section
         ref={panelRef}
-        className="pv2-project-context-panel"
+        className={`pv2-project-context-panel${mediaExpanded ? ' is-media-expanded' : ''}`}
         data-side={position?.side || 'right'}
-        style={position ? { left: position.left, top: position.top } : { left: 0, top: 0, visibility: 'hidden' }}
+        style={mediaExpanded ? { left: 0, top: 0 } : position ? { left: position.left, top: position.top } : { left: 0, top: 0, visibility: 'hidden' }}
         role="dialog"
         aria-modal="true"
         aria-labelledby={'context-title-' + node.id}
@@ -602,15 +617,39 @@ function ProjectContextPanel({ node, anchorEl, onClose, reducedMotion }) {
         animate={{ opacity: 1, scale: 1, x: 0 }}
         exit={reducedMotion ? undefined : { opacity: 0, scale: .985, x: position?.side === 'left' ? 8 : -8 }}
         transition={reducedMotion ? { duration: 0 } : MOTION.interface}
+        onPointerDown={(event) => {
+          if (mediaExpanded && event.target === event.currentTarget) setMediaExpanded(false);
+        }}
       >
         <div className="pv2-project-context-panel__header">
           <p className="pv2-overline">{node.kicker || 'Project'}</p>
           <button type="button" className="pv2-project-context-panel__close" onClick={onClose} aria-label={'Close ' + node.title}>×</button>
         </div>
         <h2 id={'context-title-' + node.id}>{node.title}</h2>
-        <div className="pv2-project-context-panel__media">
+        <div
+          ref={mediaRef}
+          className={`pv2-project-context-panel__media pv2-project-context-panel__media--${node.id}`}
+          role="button"
+          tabIndex={0}
+          aria-label={`${mediaExpanded ? 'Shrink' : 'Expand'} ${node.title} preview`}
+          onClick={() => setMediaExpanded((expanded) => !expanded)}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            event.preventDefault();
+            setMediaExpanded((expanded) => !expanded);
+          }}
+        >
           <ProjectVisual node={node} large />
         </div>
+        {mediaExpanded && (
+          <button
+            ref={mediaCloseRef}
+            className="pv2-project-context-panel__media-close"
+            type="button"
+            aria-label={`Shrink ${node.title} preview`}
+            onClick={() => setMediaExpanded(false)}
+          >×</button>
+        )}
         <p className="pv2-project-context-panel__summary">{node.summary}</p>
         {node.purpose && <p className="pv2-project-context-panel__purpose">{node.purpose}</p>}
         <div className="pv2-project-context-panel__actions">
