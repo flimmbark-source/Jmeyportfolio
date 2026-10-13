@@ -1,22 +1,26 @@
-# Horizontal Playground upgrade tree review
+# Playground upgrade tree and level-up alignment review
 
 final result: blocked
 
 ## Confirmed current facts
 
+The latest correction requests centred level-up text, not different artwork cropping. The heading and paragraph now share the window centre using equal artwork/badge side columns. The badge sits outside the copy column. Narrow headers use the same balanced arrangement. Original artwork-fit rules are retained.
+
+Matching point, rebound, drag, collision-energy, drift, maximum-speed and flick-force descriptions use consistent words, units and order. Wall Points and Wall Value both show +1 Point per wall hit. Equivalent bumper upgrades use the same bumper wording. The visible and spoken descriptions use the same display table. Percentages and underlying effects are unchanged.
+
 The user selected displayed option 2, correcting their earlier selection of 3. The selected source is the horizontal branch-lane mockup generated on October 12, 2026. Implementation starts from main commit 363270358ece5486081a20f4d337cc3f90b3b1d4, which includes merged PR #108.
 
 The layout puts the root on the left, four starting branches in horizontal lanes, advanced nodes to the right and Flux nodes below. Warm purchase surfaces, separate PTS prices, tinted owned cards, owned labels and edge-to-edge curved connectors follow the selected direction. Existing illustrated mechanic icons are retained.
 
-All 29 upgrade definitions, prices, prerequisites, effects, compact description mappings and purchase guards remain unchanged. Existing level-up focus, drag, project reward and reveal behavior are preserved. Desktop opening fits reached nodes. Mobile retains its full-size pan/zoom canvas.
+All 29 upgrade definitions, prices, prerequisites, effects and purchase guards remain unchanged. The display mapping now normalizes repeated descriptions across the tree and project rewards. Existing level-up focus, drag, project reward and reveal behavior are preserved. Desktop opening fits reached nodes. Mobile retains its full-size pan/zoom canvas.
 
 ## Rejected or stale facts
 
-Option 3 is superseded. The legacy radial x/y fields in upgrade data no longer determine presentation. The level-up report below belongs to a previous pass and is not evidence of current upgrade-tree visual fidelity.
+The artwork-cropping interpretation was rejected and its uncommitted changes were discarded. Option 3 is superseded. The legacy radial x/y fields in upgrade data no longer determine presentation. The level-up report below belongs to a previous pass and is not evidence of current upgrade-tree visual fidelity.
 
 ## Validation
 
-Production build, JavaScript syntax and diff whitespace checks pass. Focused checks execute the actual purchase and tree-rendering functions against a lightweight DOM: locked, duplicate and unaffordable purchase guards, exact spending, ownership/PTS markup, progressive reveal, cross-branch prerequisite behavior, all 29 nodes and every dependency edge, layout bounds, node separation, and desktop/mobile pan and zoom. Game data, physics/effects, project upgrades, compact mappings and level-up focus functions are compared directly with the base commit.
+Production build, JavaScript syntax and diff whitespace checks pass. Focused checks execute the actual purchase and tree-rendering functions against a lightweight DOM: locked, duplicate and unaffordable purchase guards, exact spending, ownership/PTS markup, progressive reveal, cross-branch prerequisite behavior, all 29 nodes and every dependency edge, layout bounds, node separation, and desktop/mobile pan and zoom. Game data, physics/effects, project upgrades, numeric values and level-up focus functions are compared directly with the base commit.
 
 ## Unresolved visual verification
 

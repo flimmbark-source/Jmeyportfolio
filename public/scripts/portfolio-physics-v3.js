@@ -368,11 +368,20 @@
     'vel-cap': { parts: ['Max Speed ', { value: '+80%' }] },
     'vel-launch': { parts: ['Flick Force ', { value: '+110%' }] },
     'vel-momentum': { parts: ['Max Speed ', { value: '+75%' }] },
-    'vel-overdrive': { parts: ['Speed ', { value: '+120%' }, ' · Flick ', { value: '+80%' }] },
+    'vel-overdrive': { parts: ['Speed ', { value: '+120%' }, ' · Flick Force ', { value: '+80%' }] },
+    'bounce-1': { parts: ['+1 Point / ', { target: 'bumper' }, ' hit'] },
+    'bounce-value': { parts: ['+1 Point / ', { target: 'bumper' }, ' hit'] },
+    'bounce-charge': { parts: ['Rebound ', { value: '+85%' }, ' / ', { target: 'bumper' }] },
     'bounce-force': { parts: ['Rebound ', { value: '+70%' }, ' / ', { target: 'bumper' }] },
     'bounce-combo': { parts: ['+2 Points / ', { target: 'bumper' }, ' hit'] },
+    'walls-1': { parts: ['+1 Point / ', { target: 'wall' }, ' hit'] },
+    'walls-ricochet': { parts: ['Rebound ', { value: '+85%' }, ' / ', { target: 'wall' }] },
+    'walls-echo': { parts: ['+2 Points / ', { target: 'wall' }, ' hit'] },
     'walls-hard': { parts: ['Rebound ', { value: '+70%' }, ' / ', { target: 'wall' }] },
     'walls-value': { parts: ['+1 Point / ', { target: 'wall' }, ' hit'] },
+    'fric-1': { parts: ['Drag ', { value: '−40%' }] },
+    'fric-keep': { parts: ['Collision Energy ', { value: '+28%' }] },
+    'fric-low': { parts: ['Drag ', { value: '−65%' }] },
     'fric-glide': { parts: ['Drag ', { value: '−55%' }] },
   };
 
@@ -383,6 +392,15 @@
         + '<path d="M3 8c5 0 9 4 10 9M8 14l5 3 1-6" fill="none"/>'
       : '<path d="M2 3h7v5H2zM11 3h7v5h-7zM20 3h6v5h-6zM2 10h7v5H2zM11 10h7v5h-7zM20 10h6v5h-6zM2 17h7v5H2zM11 17h7v5h-7zM20 17h6v5h-6z" fill="#888" stroke="none"/>';
     return '<svg class="pv2-upgrade-effect__target" data-effect-target="' + target + '" viewBox="0 0 28 24" fill="none" stroke="#666" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + shape + '</svg>';
+  }
+
+  // Use the same vocabulary for both visible descriptions and spoken labels.
+  function upgradeEffectText(upgrade) {
+    const display = UPGRADE_EFFECT_DISPLAY[upgrade.id];
+    if (!display) return upgrade.effect;
+    const line = display.parts.map((part) => typeof part === 'string'
+      ? part : part.target || part.value).join('');
+    return line + (display.note ? '. ' + display.note : '');
   }
 
   function upgradeEffectMarkup(upgrade) {
@@ -990,9 +1008,9 @@
       + '<header class="pv2-project-levelup__game-context">'
       + '<div class="pv2-project-levelup__game-image" aria-hidden="true"></div>'
       + '<div class="pv2-project-levelup__game-copy">'
-      + '<div class="pv2-project-levelup__game-title"><h2 id="pv2-project-levelup-title">' + reveal.title + '</h2>'
-      + '<span class="pv2-project-levelup__game-level">LV. ' + event.level + '</span></div>'
-      + '<p class="pv2-project-levelup__game-fact">' + reveal.text + '</p></div></header>'
+      + '<div class="pv2-project-levelup__game-title"><h2 id="pv2-project-levelup-title">' + reveal.title + '</h2></div>'
+      + '<p class="pv2-project-levelup__game-fact">' + reveal.text + '</p></div>'
+      + '<span class="pv2-project-levelup__game-level">LV. ' + event.level + '</span></header>'
       + '<div class="pv2-project-levelup__sep" aria-hidden="true"></div>'
       + '<p class="pv2-project-levelup__pick">Choose one upgrade</p>'
       + '<div class="pv2-project-levelup__choices"></div>'
@@ -1031,7 +1049,7 @@
       // The pips duplicate the rank line visually, so assistive tech gets the
       // same sentence the card shows, once, with the maximum the pips imply.
       button.setAttribute('aria-label', 'Option ' + (index + 1) + ': ' + upgrade.title
-        + ', ' + upgrade.rarity + '. ' + upgrade.effect + '. Rank ' + (owned + 1)
+        + ', ' + upgrade.rarity + '. ' + upgradeEffectText(upgrade) + '. Rank ' + (owned + 1)
         + (upgrade.maxStacks > 1 ? ' of ' + upgrade.maxStacks : '') + '.');
       button.addEventListener('click', () => chooseProjectUpgrade(event, upgrade, button));
       list?.appendChild(button);
@@ -1808,10 +1826,10 @@
       button.classList.toggle('is-affordable', affordable);
       button.disabled = soon || bought || !unlocked || !affordable;
       button.setAttribute('aria-label', soon
-        ? `${upgrade.title}, ${upgrade.effect}, coming soon`
+        ? `${upgrade.title}, ${upgradeEffectText(upgrade)}, coming soon`
         : bought
           ? `${upgrade.title}, purchased`
-          : `${upgrade.title}, ${upgrade.effect}, costs ${upgrade.cost} points`);
+          : `${upgrade.title}, ${upgradeEffectText(upgrade)}, costs ${upgrade.cost} points`);
       const cost = button.querySelector('.pv2-upgrade-node__cost');
       if (cost) {
         const state = bought ? 'bought' : soon ? 'soon' : 'price';
