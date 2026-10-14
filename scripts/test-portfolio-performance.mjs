@@ -95,6 +95,7 @@ function fixture(width = 1280, reduce = false) {
     setMotionToggleVisible = () => {};
     globalThis.api = {
       makeBody, renderBodyPosition, ensureHeatHalo, updateHeatVisual,
+      pulseBumper, spawnRadiatingLines,
       tick, teardown, pointerNearBody, spawnPointGhost,
       queueScoreUiRefresh, updateScore, addIdlePoints,
       configureSimulation: (element, items) => { stage = element; bodies = items; lastTime = 0; },
@@ -252,4 +253,24 @@ test('reduced motion suppresses the score pulse and teardown cancels popup work'
   f.teardown();
   assert.equal(f.api.ghosts.size, 0); assert.equal(f.api.steps.size, 0);
   assert.equal(f.frames.size, 0);
+});
+
+test('rapid hits retain scoring while limiting simultaneous visual bursts', () => {
+  for (const [width, burstLimit, rays] of [[1280, 2, 6], [390, 1, 4]]) {
+    const f = fixture(width);
+    const bumper = new f.Element(); bumper.isConnected = true;
+    const counter = new f.Element();
+    f.configureScore(counter, {}, new f.Element(), () => {}, () => {});
+    for (let i = 0; i < 12; i += 1) {
+      f.updateScore(1, 'bumper');
+      f.pulseBumper(bumper);
+      f.spawnRadiatingLines(20 + i, 30, '#ff3366');
+    }
+    assert.equal(f.api.points, 12);
+    assert.equal(f.events.length, 12);
+    assert.equal(bumper.animations.length, 1);
+    const fxLayer = f.body.children[0];
+    assert.equal(fxLayer.children.length, burstLimit);
+    assert.ok(fxLayer.children.every(burst => burst.children.length === rays));
+  }
 });
