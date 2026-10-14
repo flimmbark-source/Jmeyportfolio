@@ -19,6 +19,22 @@ import '../styles/portfolio-battle.css';
       content="Interactive work by Jacob Meyerkopf: games, disability experiences, learning systems, unfinished experiments, and UX work."
     />
     <link rel="preload" as="image" href="/images/levelup/chest-states.png" />
+    <!-- The level-up cards and the upgrade tree both paint these 12 icons the
+         instant they open. They are ~2KB each; fetching them with the document
+         rather than when the first card is built is what keeps them from
+         arriving a beat after the card they belong to. -->
+    <link rel="preload" as="image" href="/icons/mechanics/speed.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/icons/mechanics/speed-floor.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/icons/mechanics/velocity-cap.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/icons/mechanics/launch.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/icons/mechanics/bounce.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/icons/mechanics/impact.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/icons/mechanics/stack.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/icons/mechanics/friction.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/icons/mechanics/zero-drag.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/icons/mechanics/collision.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/icons/mechanics/value.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/icons/mechanics/multiplier.webp" type="image/webp" />
     <title>Jacob Meyerkopf — Interactive Work</title>
   </head>
   <body class="pv2-body">
@@ -82,7 +98,7 @@ import '../styles/portfolio-battle.css';
         window.setTimeout(finish, 1500);
       })();
     </script>
-    <script src="/scripts/portfolio-physics-v3.js?v=81" defer></script>
+    <script src="/scripts/portfolio-physics-v3.js?v=82" defer></script>
     <script src="/scripts/portfolio-battle.js?v=1" defer></script>
     <script src="/scripts/ux-direct-link.js?v=1" defer></script>
     <script src="/scripts/letter-river-preview.js?v=8" defer></script>
