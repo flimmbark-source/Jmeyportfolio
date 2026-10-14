@@ -1089,6 +1089,12 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
   background: rgba(36,36,36,.06);
   cursor: zoom-in;
   text-align: left;
+  box-shadow: 0 2px 7px rgba(36,36,36,.08);
+  transition: transform 180ms cubic-bezier(.2,.8,.2,1), box-shadow 180ms ease;
+}
+.pv2-project-context-panel:not(.is-media-expanded) .pv2-project-context-panel__media:is(:hover, :focus-visible) {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(36,36,36,.18);
 }
 .pv2-project-context-panel__media:focus-visible {
   outline: 3px solid var(--pv2-text,#242424);
@@ -1139,6 +1145,8 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
   border-radius: 12px;
   background: #201f1e;
   cursor: zoom-out;
+  transform: none;
+  box-shadow: none;
 }
 .pv2-project-context-panel.is-media-expanded .pv2-project-context-panel__media--get-to-the-cafe {
   --pv2-context-media-ratio: 40 / 31;
@@ -1177,6 +1185,9 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
 .pv2-project-context-panel__media-close:focus-visible {
   outline: 3px solid white;
   outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pv2-project-context-panel__media { transition: none; }
 }
 .pv2-project-context-panel__summary {
   margin: 13px 0 0;
