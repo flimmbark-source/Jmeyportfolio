@@ -96,7 +96,7 @@ function fixture(width = 1280, reduce = false) {
     globalThis.api = {
       makeBody, renderBodyPosition, ensureHeatHalo, updateHeatVisual,
       pulseBumper, spawnRadiatingLines,
-      tick, teardown, pointerNearBody, spawnPointGhost,
+      tick, teardown, resolveBumper, pointerNearBody, spawnPointGhost,
       queueScoreUiRefresh, updateScore, addIdlePoints,
       configureSimulation: (element, items) => { stage = element; bodies = items; lastTime = 0; },
       pause: (kind, on) => {
@@ -273,4 +273,23 @@ test('rapid hits retain scoring while limiting simultaneous visual bursts', () =
     assert.equal(fxLayer.children.length, burstLimit);
     assert.ok(fxLayer.children.every(burst => burst.children.length === rays));
   }
+});
+
+test('bumper ricochets vary direction on entry and keep moving away', () => {
+  const f = fixture();
+  const { body } = simulation(f);
+  body.x = 100; body.y = 100; body.w = 100; body.h = 100;
+  body.vx = .12; body.vy = 0;
+  assert.equal(f.resolveBumper(body, { x: 180, y: 60, w: 100, h: 180 }, true), true);
+  assert.ok(body.vx < 0, 'right-side bumper sends the sphere left');
+  assert.ok(Math.abs(body.vy) <= .75 * Math.abs(body.vx) / .85);
+  const tangent = body.vy;
+  body.x = 100;
+  f.resolveBumper(body, { x: 180, y: 60, w: 100, h: 180 }, false);
+  assert.equal(body.vy, tangent, 'sustained overlap does not add another sideways kick');
+
+  body.x = 100; body.y = 100; body.vx = 0; body.vy = .12;
+  f.resolveBumper(body, { x: 50, y: 180, w: 200, h: 100 }, true);
+  assert.ok(body.vy < 0, 'lower bumper sends the sphere up');
+  assert.ok(Math.abs(body.vx) <= .75 * Math.abs(body.vy) / .85);
 });
