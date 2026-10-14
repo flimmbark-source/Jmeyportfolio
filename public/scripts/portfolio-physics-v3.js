@@ -1,8 +1,8 @@
 (() => {
   const MOBILE_BREAKPOINT = 720;
-  const EDGE_PADDING = 16;
+  const EDGE_PADDING = 0;
   const BOTTOM_EDGE_PADDING = 0;
-  const NAV_CLEARANCE = 10;
+  const NAV_CLEARANCE = 0;
   const BODY_GAP = 10;
   // Ambient drift. This is the floor the simulation keeps every sphere above
   // when nothing is pushing it, so it sets the resting pace of the whole
@@ -2578,15 +2578,29 @@
     return Math.max(EDGE_PADDING, navBottom - stageRect.top + NAV_CLEARANCE);
   }
 
+  // The slot also contains a caption below the orb. Keep its measured artwork
+  // offsets so all four screen walls meet the visible rim, not the slot box.
+  function wallLimits(body, stageRect) {
+    const minX = EDGE_PADDING - body.visualLeft;
+    const minY = stageTopLimit(stageRect) - body.visualTop;
+    return {
+      minX, minY,
+      maxX: Math.max(minX, stageRect.width - EDGE_PADDING - body.visualRight),
+      maxY: Math.max(minY, stageRect.height - BOTTOM_EDGE_PADDING - body.visualBottom),
+    };
+  }
+
   // stageRect is already the stage's viewport rect, so there is nothing to
   // re-measure here — the extra getBoundingClientRect was another forced layout
   // on every scoring wall bounce.
   function wallImpact(body, side, stageRect) {
     const rect = stageRect;
-    if (side === 'left') return { x: rect.left + EDGE_PADDING, y: rect.top + body.y + body.h / 2 };
-    if (side === 'right') return { x: rect.left + stageRect.width - EDGE_PADDING, y: rect.top + body.y + body.h / 2 };
-    if (side === 'top') return { x: rect.left + body.x + body.w / 2, y: rect.top + stageTopLimit(stageRect) };
-    return { x: rect.left + body.x + body.w / 2, y: rect.top + stageRect.height - BOTTOM_EDGE_PADDING };
+    const cx = rect.left + body.x + (body.visualLeft + body.visualRight) / 2;
+    const cy = rect.top + body.y + (body.visualTop + body.visualBottom) / 2;
+    if (side === 'left') return { x: rect.left + EDGE_PADDING, y: cy };
+    if (side === 'right') return { x: rect.left + stageRect.width - EDGE_PADDING, y: cy };
+    if (side === 'top') return { x: cx, y: rect.top + stageTopLimit(stageRect) };
+    return { x: cx, y: rect.top + stageRect.height - BOTTOM_EDGE_PADDING };
   }
 
   function scoreWallBounce(body, side, stageRect) {
@@ -2602,11 +2616,9 @@
   function constrain(body, stageRect, allowScore = true) {
     const effects = currentEffects();
     const projectFx = projectEffects(body);
-    const minY = stageTopLimit(stageRect);
-    const maxX = Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING);
-    const maxY = Math.max(minY, stageRect.height - body.h - BOTTOM_EDGE_PADDING);
+    const { minX, minY, maxX, maxY } = wallLimits(body, stageRect);
     let hit = null;
-    if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx) * effects.wallKickMult * projectFx.wallKickMult; hit = 'left'; }
+    if (body.x < minX) { body.x = minX; body.vx = Math.abs(body.vx) * effects.wallKickMult * projectFx.wallKickMult; hit = 'left'; }
     if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx) * effects.wallKickMult * projectFx.wallKickMult; hit = 'right'; }
     if (body.y < minY) { body.y = minY; body.vy = Math.abs(body.vy) * effects.wallKickMult * projectFx.wallKickMult; hit = 'top'; }
     if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy) * effects.wallKickMult * projectFx.wallKickMult; hit = 'bottom'; }
@@ -2822,9 +2834,14 @@
     // physics-only anchor here made freshly mounted tiles appear to launch from
     // a shared origin before settling into the composition.
     const rect = el.getBoundingClientRect();
-    const minY = stageTopLimit(stageRect);
-    const x = clamp(rect.left - stageRect.left, EDGE_PADDING, stageRect.width - rect.width - EDGE_PADDING);
-    const y = clamp(rect.top - stageRect.top, minY, stageRect.height - rect.height - BOTTOM_EDGE_PADDING);
+    const visualRect = el.querySelector('.pv2-visual')?.getBoundingClientRect() || rect;
+    const visualLeft = visualRect.left - rect.left;
+    const visualTop = visualRect.top - rect.top;
+    const visualRight = visualRect.right - rect.left;
+    const visualBottom = visualRect.bottom - rect.top;
+    const limits = wallLimits({ visualLeft, visualTop, visualRight, visualBottom }, stageRect);
+    const x = clamp(rect.left - stageRect.left, limits.minX, limits.maxX);
+    const y = clamp(rect.top - stageRect.top, limits.minY, limits.maxY);
     el.style.transform = '';
     el.style.removeProperty('--pv2-scroll-drift-y');
     const angle = .55 + index * 1.19;
@@ -2841,6 +2858,7 @@
     const projectState = projectStateFor(projectId);
     const body = {
       el, x, y, w: rect.width, h: rect.height,
+      visualLeft, visualTop, visualRight, visualBottom,
       projectId, projectState,
       homeX: x, homeY: y,
       vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
@@ -3531,16 +3549,16 @@
       const bodyDamping = Math.pow(damping, projectFx.dragExponent);
       const contextHoverActive = updateContextHover(body, now, stageRect);
       if (contextHoverActive && !reducedMotion()) {
-        const minY = stageTopLimit(stageRect);
+        const { minX, minY, maxX, maxY } = wallLimits(body, stageRect);
         const targetX = clamp(
           pointer.x - stageRect.left - body.w / 2,
-          EDGE_PADDING,
-          Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING)
+          minX,
+          maxX
         );
         const targetY = clamp(
           pointer.y - stageRect.top - body.h / 2,
           minY,
-          Math.max(minY, stageRect.height - body.h - BOTTOM_EDGE_PADDING)
+          maxY
         );
         const desiredVx = (targetX - body.x) * CONTEXT_HOVER_FOLLOW_SPEED;
         const desiredVy = (targetY - body.y) * CONTEXT_HOVER_FOLLOW_SPEED;
@@ -3676,9 +3694,7 @@
   // Position-only push that guarantees a freshly spawned block sits clear of
   // every text block (bumper), preferring whichever axis has room.
   function ejectFromBumpers(body, stageRect, bumpers) {
-    const minY = stageTopLimit(stageRect);
-    const maxX = Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING);
-    const maxY = Math.max(minY, stageRect.height - body.h - BOTTOM_EDGE_PADDING);
+    const { minX, minY, maxX, maxY } = wallLimits(body, stageRect);
     for (let iter = 0; iter < 30; iter += 1) {
       let moved = false;
       for (const bumper of bumpers) {
@@ -3689,13 +3705,13 @@
         const overlapX = (body.w + bumper.w) / 2 + BODY_GAP - Math.abs(dx);
         const overlapY = (body.h + bumper.h) / 2 + BODY_GAP - Math.abs(dy);
         // Take the shorter escape, but never one the walls can't fit.
-        const canX = overlapX <= (dx >= 0 ? maxX - body.x : body.x - EDGE_PADDING) + 0.5;
+        const canX = overlapX <= (dx >= 0 ? maxX - body.x : body.x - minX) + 0.5;
         const preferX = overlapX < overlapY ? canX : false;
         if (preferX) body.x += (dx >= 0 ? 1 : -1) * overlapX;
         else body.y += (dy >= 0 ? 1 : -1) * overlapY;
         moved = true;
       }
-      body.x = clamp(body.x, EDGE_PADDING, maxX);
+      body.x = clamp(body.x, minX, maxX);
       body.y = clamp(body.y, minY, maxY);
       if (!moved) break;
     }

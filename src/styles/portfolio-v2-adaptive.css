@@ -247,6 +247,7 @@ html.pv2-physics-live .pv2-float-slot.is-physics-body {
    portfolio-physics-v3.js ignores URL-bar-sized height changes regardless, so
    a bar that does move can no longer tear down and respawn the simulation. */
 html.pv2-physics-live .pv2-site {
+  padding-inline: 0;
   padding-bottom: 0;
 }
 
