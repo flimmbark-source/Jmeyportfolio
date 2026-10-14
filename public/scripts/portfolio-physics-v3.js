@@ -3789,8 +3789,18 @@
     // Bumper geometry is identical in every stage (they are the same layout),
     // so it is measured once and only each cell's screen projection differs.
     const bumpersByCell = cells.map((cell) => bumperRects(frames[cell.index], cell));
-    for (const body of bodies) {
+    // Iterate the set this frame was measured for, not the live array. A scored
+    // hit below reaches registerMitosisHit -> beginDivision, which appends the
+    // daughter's bodies to `bodies` while this loop is still running; walking
+    // into one of them here would index past `frames` and `bumpersByCell`,
+    // which were snapshotted before the division existed. That threw out of
+    // tick() and stopped the simulation on the first division a player ever
+    // triggered. The daughters are already drawn in place by cloneBodiesInto
+    // and start simulating on the next frame, where they have a frame of their
+    // own; the guard covers any other way a body can outlive its cell.
+    for (const body of bodies.slice()) {
       const bodyFrame = frames[body.cell.index];
+      if (!bodyFrame) continue;
       const nextContacts = new Set();
       for (const bumper of bumpersByCell[body.cell.index]) {
         if (!overlaps(bodyRect(body), bumper, 0)) continue;
