@@ -95,6 +95,13 @@
 
     video.addEventListener('canplay', markReady, { once: true });
     video.addEventListener('loadeddata', markReady, { once: true });
+    video.addEventListener('loadedmetadata', () => {
+      if (video.videoWidth && video.videoHeight) {
+        const contextMedia = visual.closest('.pv2-project-context-panel__media');
+        contextMedia?.style.setProperty('--pv2-context-media-ratio', `${video.videoWidth} / ${video.videoHeight}`);
+        contextMedia?.style.setProperty('--pv2-context-media-factor', String(video.videoWidth / video.videoHeight));
+      }
+    });
     video.addEventListener('error', fail);
 
     visual.prepend(video);
