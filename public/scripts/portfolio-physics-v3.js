@@ -2292,15 +2292,20 @@
     } catch {}
   }
 
+  const lastBumperPulse = new WeakMap();
+
   function pulseBumper(el) {
     if (!el?.isConnected) return;
+    const now = performance.now();
+    if (now - (lastBumperPulse.get(el) ?? -Infinity) < 320) return;
+    lastBumperPulse.set(el, now);
     try {
       el.animate([
-        { scale: '1', filter: 'brightness(1)' },
-        { scale: '1.14', filter: 'brightness(.9)', offset: .22 },
-        { scale: '.96', filter: 'brightness(1.04)', offset: .52 },
-        { scale: '1.025', filter: 'brightness(.98)', offset: .76 },
-        { scale: '1', filter: 'brightness(1)' },
+        { scale: '1' },
+        { scale: '1.14', offset: .22 },
+        { scale: '.96', offset: .52 },
+        { scale: '1.025', offset: .76 },
+        { scale: '1' },
       ], { duration: reducedMotion() ? 220 : 500, easing: 'cubic-bezier(.16,.88,.24,1)' });
     } catch {}
   }
@@ -2385,14 +2390,20 @@
 
   // A short burst of straight lines radiating from a point, tinted in the
   // ghost's own color (plus a few white sparks). Used for the "pop".
+  let activeRadiatingBursts = 0;
+
   function spawnRadiatingLines(cx, cy, color) {
+    if (reducedMotion()) return;
+    const mobile = window.innerWidth <= MOBILE_BREAKPOINT;
+    if (activeRadiatingBursts >= (mobile ? 1 : 2)) return;
+    activeRadiatingBursts += 1;
     const layer = ensureFxLayer();
     const burst = document.createElement('div');
     Object.assign(burst.style, {
       position: 'fixed', left: `${cx}px`, top: `${cy}px`, width: '0', height: '0',
       zIndex: '1', pointerEvents: 'none',
     });
-    const count = 9;
+    const count = mobile ? 4 : 6;
     for (let i = 0; i < count; i++) {
       const angle = (360 / count) * i + (Math.random() * 12 - 6);
       const len = 15 + Math.random() * 11;
@@ -2414,7 +2425,10 @@
       } catch {}
     }
     layer.appendChild(burst);
-    window.setTimeout(() => burst.remove(), 640);
+    window.setTimeout(() => {
+      burst.remove();
+      activeRadiatingBursts -= 1;
+    }, 640);
   }
 
   function spawnPointGhost(impact, amount = 1, opts = {}, velocity = null) {
@@ -2484,8 +2498,9 @@
     // Phase 2/3: the number stops, pops up with a burst of lines, holds for a
     // beat, then vanishes upwards.
     const popAndVanish = () => {
-      const rect = ghost.getBoundingClientRect();
-      spawnRadiatingLines(rect.left + rect.width / 2, rect.top + rect.height / 2, color);
+      // The ghost is centered on the impact point. Its tracked translation is
+      // already the burst origin, so reading layout here only stalls the frame.
+      spawnRadiatingLines(impact.x + offX, impact.y + offY, color);
       const tx = `calc(-50% + ${offX}px)`;
       try {
         const pop = ghost.animate([
@@ -2771,23 +2786,33 @@
     }
 
     const softFloor = window.innerWidth <= MOBILE_BREAKPOINT ? MOBILE_UNARMED_BUMPER_KICK : NORMAL_SPEED * 1.8;
-    // A scored strike = a fixed launch. Otherwise reflect a fraction of the
-    // incoming speed (never below the gentle floor) so the block bounces off the
-    // bumper and eases away instead of gliding over it or stopping dead.
+    // Vary the outgoing angle at the first contact. Off-centre hits deflect
+    // toward that side and a bounded wobble keeps repeated routes from locking
+    // into the same wall/bumper loop. Sustained overlap gets no new random kick.
     if (horizontal) {
       const sign = dx >= 0 ? 1 : -1;
       body.x += Math.max(0, overlapX) * sign;
-      body.vx = (poweredHit
+      const kick = (poweredHit
         ? BUMPER_KICK * effects.bumperKickMult * projectFx.bumperKickMult
-        : Math.max(softFloor, Math.abs(body.vx) * SOFT_BUMPER_RESTITUTION)) * sign;
-      if (poweredHit) body.vy *= 1.12;
+        : Math.max(softFloor, Math.abs(body.vx) * SOFT_BUMPER_RESTITUTION));
+      body.vx = kick * (entering ? .85 + Math.random() * .3 : 1) * sign;
+      if (entering) {
+        const offset = clamp(dy / Math.max(1, (body.h + bumper.h) / 2), -1, 1);
+        const scatter = clamp(offset * .4 + (Math.random() - .5) * (poweredHit ? .9 : .5), -.7, .7);
+        body.vy = clamp(body.vy * .5 + kick * scatter, -kick * .75, kick * .75);
+      }
     } else {
       const sign = dy >= 0 ? 1 : -1;
       body.y += Math.max(0, overlapY) * sign;
-      body.vy = (poweredHit
+      const kick = (poweredHit
         ? BUMPER_KICK * effects.bumperKickMult * projectFx.bumperKickMult
-        : Math.max(softFloor, Math.abs(body.vy) * SOFT_BUMPER_RESTITUTION)) * sign;
-      if (poweredHit) body.vx *= 1.12;
+        : Math.max(softFloor, Math.abs(body.vy) * SOFT_BUMPER_RESTITUTION));
+      body.vy = kick * (entering ? .85 + Math.random() * .3 : 1) * sign;
+      if (entering) {
+        const offset = clamp(dx / Math.max(1, (body.w + bumper.w) / 2), -1, 1);
+        const scatter = clamp(offset * .4 + (Math.random() - .5) * (poweredHit ? .9 : .5), -.7, .7);
+        body.vx = clamp(body.vx * .5 + kick * scatter, -kick * .75, kick * .75);
+      }
     }
     return true;
   }
