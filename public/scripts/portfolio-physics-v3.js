@@ -4013,6 +4013,7 @@
     for (const cell of cells) {
       if (!cell.isPrimary) continue;
       cell.root.style.removeProperty('transform');
+      cell.root.style.removeProperty('--pv2-mitosis-rim');
       cell.root.classList.remove('is-mitosis-cell', 'is-dividing');
     }
     cellLayer?.remove();
@@ -4026,6 +4027,14 @@
   function layoutCells(now) {
     document.documentElement.classList.toggle('pv2-mitosis-divided', cells.length > 1);
     const shakeAmp = reducedMotion() ? 0 : mitosisShake * mitosisShake * MITOSIS_SHAKE_AMPLITUDE;
+    // How strongly to draw each cell's rim. At rest the stage fills the screen
+    // and its walls are the screen's edges, so it needs no rim and gets none;
+    // as it pulls back, the walls move inboard to somewhere with nothing to
+    // mark them, and the rim fades in to say where the ball will bounce.
+    const rim = cells.length > 1
+      ? 1
+      : clamp((1 - mitosisZoom) / (1 - MITOSIS_ZOOM_FLOOR), 0, 1);
+    const rimValue = (Math.round(rim * 50) / 50).toFixed(2);
     for (const cell of cells) {
       const slot = cell.anim || cellSlot(cell.index, cellCount);
       const s = slot.scale * mitosisZoom;
@@ -4039,6 +4048,10 @@
         dy += Math.cos(t * 41 + cell.shakePhase * 1.7) * shakeAmp * 0.72;
       }
       cell.applied = { dx, dy, s, sx, sy };
+      if (rimValue !== cell.lastRim) {
+        cell.root.style.setProperty('--pv2-mitosis-rim', rimValue);
+        cell.lastRim = rimValue;
+      }
       const transform = `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0) scale(${sx.toFixed(4)}, ${sy.toFixed(4)})`;
       if (transform !== cell.lastTransform) {
         cell.root.style.transform = transform;
