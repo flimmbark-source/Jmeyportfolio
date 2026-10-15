@@ -18,6 +18,28 @@
   transition: none;
 }
 
+/* The simulation writes `--pv2-body-transform` on every live sphere every
+   single frame. Left unregistered, a custom property INHERITS, so each of those
+   writes invalidated style for that sphere's whole subtree — the tile, the
+   artwork, the caption, the progress arc and the ~13-node heat halo. Twenty
+   spheres across four divided stages came to ~720 of the document's ~840
+   elements, so the browser re-resolved style for essentially the whole page
+   every frame: 3.96s of style recalc in a 6s sample, against 0.07s of script.
+   Nothing below the slot reads the property — the rule below, on the slot
+   itself, is its only consumer — so declaring it non-inheriting scopes each
+   write to the one element that actually changed. Measured at four stages:
+   style recalc 3.96s -> 0.16s, long tasks 1933ms -> 83ms.
+
+   `syntax: "*"` keeps the value an unparsed token stream, exactly as it is
+   today, and is also the one syntax for which `initial-value` may be omitted.
+   Before the first write the var() is guaranteed-invalid and `transform`
+   computes to `none`, the same as it did unregistered. Engines without
+   @property support ignore this block and behave as before. */
+@property --pv2-body-transform {
+  syntax: "*";
+  inherits: false;
+}
+
 /* Only the simulation owns these slots. React can update its authored layout
    during resize without overwriting a live body's translated coordinates. */
 html.pv2-physics-live .pv2-float-slot.is-physics-body {
@@ -247,6 +269,7 @@ html.pv2-physics-live .pv2-float-slot.is-physics-body {
    portfolio-physics-v3.js ignores URL-bar-sized height changes regardless, so
    a bar that does move can no longer tear down and respawn the simulation. */
 html.pv2-physics-live .pv2-site {
+  padding-inline: 0;
   padding-bottom: 0;
 }
 

@@ -42,6 +42,7 @@ function fixture(width = 1280, reduce = false) {
     matches() { return false; }
     querySelector(selector) {
       if (selector.includes('pv2-heat-halo')) return this.children.find(child => child.className === 'pv2-heat-halo') || null;
+      if (selector === '.pv2-visual' && this.visualRect) return { getBoundingClientRect: () => this.visualRect };
       return null;
     }
     getBoundingClientRect() {
@@ -161,10 +162,10 @@ test('sphere placement, pointer bounds and resize teardown preserve screen coord
 
 test('live simulation reflects at walls using transforms and freezes in every pause state', () => {
   const f = fixture(); const { body, el } = simulation(f);
-  body.x = 783; body.vx = .5; body.vy = 0;
+  body.x = 799; body.vx = .5; body.vy = 0;
   el.writes.length = 0;
   f.tick(16.667); f.frames.clear();
-  assert.ok(body.x <= 784 && body.vx < 0, 'right wall must reflect the sphere');
+  assert.ok(body.x <= 800 && body.vx < 0, 'right wall must reflect the sphere');
   assert.equal(el.writes.filter(([key]) => key === 'left' || key === 'top').length, 0);
   for (const kind of ['motion', 'battle', 'context', 'levelup']) {
     const x = body.x, y = body.y;
@@ -172,6 +173,32 @@ test('live simulation reflects at walls using transforms and freezes in every pa
     assert.equal(body.x, x); assert.equal(body.y, y);
     f.pause(kind, false);
   }
+});
+
+test('wall contact uses the visible sphere, including below-caption clearance', () => {
+  const f = fixture();
+  const stage = new f.Element(); stage.rect = { left: 0, top: 0, width: 900, height: 650 };
+  const el = new f.Element(); el.isConnected = true;
+  el.rect = { left: 140, top: 120, width: 100, height: 142 };
+  el.visualRect = { left: 140, top: 120, right: 240, bottom: 220, width: 100, height: 100 };
+  const body = f.makeBody(el, 0, stage.getBoundingClientRect());
+  f.configureSimulation(stage, [body]);
+  body.x = 899; body.y = 548; body.vx = .5; body.vy = .5;
+  f.tick(16.667); f.frames.clear();
+  assert.equal(body.x, 800, 'sphere right rim meets the right edge');
+  assert.equal(body.y, 550, 'sphere bottom rim meets the bottom edge despite the caption');
+  assert.ok(body.vx < 0 && body.vy < 0);
+
+  const offsetEl = new f.Element(); offsetEl.isConnected = true;
+  offsetEl.rect = { left: 140, top: 120, width: 116, height: 150 };
+  offsetEl.visualRect = { left: 148, top: 130, right: 248, bottom: 230, width: 100, height: 100 };
+  const offsetBody = f.makeBody(offsetEl, 1, stage.getBoundingClientRect());
+  f.configureSimulation(stage, [offsetBody]);
+  offsetBody.x = -9; offsetBody.y = -11; offsetBody.vx = -.5; offsetBody.vy = -.5;
+  f.tick(33.334); f.frames.clear();
+  assert.equal(offsetBody.x, -8, 'sphere left rim meets the left edge');
+  assert.equal(offsetBody.y, -10, 'sphere top rim meets the top edge');
+  assert.ok(offsetBody.vx > 0 && offsetBody.vy > 0);
 });
 
 test('heat sprites are bounded, tier painting is stable and cold spheres reheat', () => {

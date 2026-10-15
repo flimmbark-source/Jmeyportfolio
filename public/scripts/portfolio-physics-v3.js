@@ -1,8 +1,8 @@
 (() => {
   const MOBILE_BREAKPOINT = 720;
-  const EDGE_PADDING = 16;
+  const EDGE_PADDING = 0;
   const BOTTOM_EDGE_PADDING = 0;
-  const NAV_CLEARANCE = 10;
+  const NAV_CLEARANCE = 0;
   const BODY_GAP = 10;
   // Ambient drift. This is the floor the simulation keeps every sphere above
   // when nothing is pushing it, so it sets the resting pace of the whole
@@ -74,9 +74,9 @@
   const FLICK_COOL = 0.05;           // heat a player flick sheds (wakes a settled block)
   const HEAT_MIN_VISIBLE = 0.04;    // below this the heat halo stays hidden
   const HEAT_TIERS = 5;             // box-shadow color steps (rewritten only on change)
-  const TREE_WIDTH = 1880;
-  const TREE_HEIGHT = 1380;
-  const TREE_CENTER = { x: 130, y: 410 };
+  const TREE_WIDTH = 2320;
+  const TREE_HEIGHT = 1520;
+  const TREE_CENTER = { x: 130, y: 600 };
   const TREE_NODE_WIDTH = 320;
   const TREE_NODE_HEIGHT = 86;
   const TREE_ROOT_WIDTH = 128;
@@ -95,6 +95,28 @@
   // (damping raised to this power) and a lower drift floor let them settle.
   const MOBILE_DRAG_EXP = 2.6;
   const MOBILE_FLOOR_SCALE = 0.28;
+  // --- Mitosis -------------------------------------------------------------
+  // Behind the Mitosis upgrade the playground stops being a fixed box. Every
+  // scored bumper hit pulls the view back 1%; once it can pull back no further
+  // the stage shudders instead, and because the shudder decays continuously it
+  // only builds when the hits land close together. Hold it at full intensity
+  // and the stage divides — elongate, neck, separate — into two playgrounds
+  // running side by side. The daughters are the same five projects: progress
+  // is stored per project id rather than per DOM node, so a bumper hit in
+  // either stage feeds one shared level, and every tree upgrade is global.
+  const MITOSIS_ZOOM_STEP = 0.01;
+  const MITOSIS_ZOOM_FLOOR = 0.62;
+  const MITOSIS_ZOOM_RESPONSE = 240;    // ms time constant for the eased pull-back
+  // Tuned together so the shudder is a rate test, not a counter: landing hits
+  // about a third of a second apart (a block working a bumper under power)
+  // reaches 1 in roughly six, while hits a second and a half apart settle at
+  // about half and never divide however many of them there are.
+  const MITOSIS_SHAKE_PER_HIT = 0.26;
+  const MITOSIS_SHAKE_TAU = 2200;       // ms to fall to 1/e — the "quick hits" window
+  const MITOSIS_SHAKE_AMPLITUDE = 12;   // px of travel at full intensity
+  const MITOSIS_DIVIDE_MS = 1600;
+  const MITOSIS_CELL_INSET = 0.985;     // keeps a seam between neighbouring stages
+  const MITOSIS_REST_MS = 900;          // quiet beat after a division before it rebuilds
   const TREE_ZOOM_MIN = 0.45;
   const TREE_ZOOM_MAX = 1.9;
   const TREE_DEFAULT_ZOOM = 1.18;
@@ -176,44 +198,53 @@
   // The original x/y fields below are legacy coordinates. Presentation now
   // uses UPGRADE_TREE_LAYOUT; these fields do not position the rendered tree.
   const UPGRADES = [
-    // ── Velocity (upward spine) ────────────────────────────────────────────
-    { id: 'vel-1', branch: 'velocity', depth: 1, x: 620, y: 336, title: 'Faster Drift', effect: '+60% drift speed', icon: 'wind', cost: 10, requires: [] },
-    { id: 'vel-accel', branch: 'velocity', depth: 2, x: 498, y: 236, title: 'Acceleration', effect: '+80% speed floor', icon: 'chevrons-up', cost: 24, requires: ['vel-1'] },
-    { id: 'vel-cap', branch: 'velocity', depth: 2, x: 742, y: 236, title: 'Top Speed', effect: '+80% velocity cap', icon: 'gauge', cost: 28, requires: ['vel-1'] },
-    { id: 'vel-launch', branch: 'velocity', depth: 3, x: 476, y: 132, title: 'Quick Launch', effect: '+110% flick impulse', icon: 'rocket', cost: 62, requires: ['vel-accel'] },
-    { id: 'vel-momentum', branch: 'velocity', depth: 3, x: 742, y: 132, title: 'Momentum', effect: '+75% velocity cap', icon: 'trending', cost: 66, requires: ['vel-cap'] },
-    { id: 'vel-overdrive', branch: 'velocity', depth: 4, x: 609, y: 44, title: 'Overdrive', effect: '+120% speed · +80% flick', icon: 'flame', cost: 180, requires: ['vel-launch', 'vel-momentum'] },
+    // ── Walls ──────────────────────────────────────────────────────────────
+    { id: 'walls-1', branch: 'walls', depth: 1, title: 'Wall Points', effect: '+1 / wall', icon: 'brick', cost: 30, requires: [] },
+    { id: 'walls-hard', branch: 'walls', depth: 2, title: 'Hard Walls', effect: '+70% wall kick', icon: 'shield', cost: 30, requires: ['walls-1'] },
+    { id: 'walls-value', branch: 'walls', depth: 2, title: 'Wall Value', effect: '+1 / wall', icon: 'coin', cost: 32, requires: ['walls-1'] },
+    { id: 'walls-ricochet', branch: 'walls', depth: 3, title: 'Ricochet', effect: '+85% wall kick', icon: 'zigzag', cost: 70, requires: ['walls-hard'] },
+    { id: 'walls-echo', branch: 'walls', depth: 3, title: 'Echo Walls', effect: '+2 / wall', icon: 'echo', cost: 74, requires: ['walls-value'] },
 
-    // ── Bounce (rightward spine) ───────────────────────────────────────────
-    { id: 'bounce-1', branch: 'bounce', depth: 1, x: 748, y: 450, title: 'Better Bounces', effect: '+1 / bumper', icon: 'bounce', cost: 8, requires: [] },
-    { id: 'bounce-force', branch: 'bounce', depth: 2, x: 884, y: 360, title: 'Bumper Force', effect: '+70% rebound', icon: 'burst', cost: 20, requires: ['bounce-1'] },
-    { id: 'bounce-value', branch: 'bounce', depth: 2, x: 884, y: 540, title: 'Bounce Value', effect: '+1 / bumper', icon: 'coin', cost: 24, requires: ['bounce-1'] },
-    { id: 'bounce-charge', branch: 'bounce', depth: 3, x: 1052, y: 360, title: 'Kinetic Charge', effect: '+85% rebound', icon: 'bolt', cost: 58, requires: ['bounce-force'] },
-    { id: 'bounce-combo', branch: 'bounce', depth: 3, x: 1052, y: 540, title: 'Combo Bounce', effect: '+2 / bumper', icon: 'layers', cost: 60, requires: ['bounce-value'] },
-    { id: 'bounce-chain', branch: 'bounce', depth: 4, x: 1150, y: 450, title: 'Combo Chain', effect: 'Hits stack up to ×3', icon: 'link', cost: 190, requires: ['bounce-charge', 'bounce-combo'] },
+    // ── Bounce ─────────────────────────────────────────────────────────────
+    { id: 'bounce-1', branch: 'bounce', depth: 1, title: 'Better Bounces', effect: '+1 / bumper', icon: 'bounce', cost: 8, requires: [] },
+    { id: 'bounce-force', branch: 'bounce', depth: 2, title: 'Bumper Force', effect: '+70% rebound', icon: 'burst', cost: 20, requires: ['bounce-1'] },
+    { id: 'bounce-value', branch: 'bounce', depth: 2, title: 'Bounce Value', effect: '+1 / bumper', icon: 'coin', cost: 24, requires: ['bounce-1'] },
+    { id: 'bounce-charge', branch: 'bounce', depth: 3, title: 'Kinetic Charge', effect: '+85% rebound', icon: 'bolt', cost: 58, requires: ['bounce-force'] },
+    { id: 'bounce-combo', branch: 'bounce', depth: 3, title: 'Combo Bounce', effect: '+2 / bumper', icon: 'layers', cost: 60, requires: ['bounce-value'] },
+    { id: 'bounce-chain', branch: 'bounce', depth: 4, title: 'Combo Chain', effect: 'Hits stack up to ×3', icon: 'link', cost: 190, requires: ['bounce-charge', 'bounce-combo'] },
 
-    // ── Walls (leftward spine) ─────────────────────────────────────────────
-    { id: 'walls-1', branch: 'walls', depth: 1, x: 492, y: 450, title: 'Wall Points', effect: '+1 / wall', icon: 'brick', cost: 30, requires: [] },
-    { id: 'walls-hard', branch: 'walls', depth: 2, x: 356, y: 360, title: 'Hard Walls', effect: '+70% wall kick', icon: 'shield', cost: 30, requires: ['walls-1'] },
-    { id: 'walls-value', branch: 'walls', depth: 2, x: 356, y: 540, title: 'Wall Value', effect: '+1 / wall', icon: 'coin', cost: 32, requires: ['walls-1'] },
-    { id: 'walls-ricochet', branch: 'walls', depth: 3, x: 188, y: 360, title: 'Ricochet', effect: '+85% wall kick', icon: 'zigzag', cost: 70, requires: ['walls-hard'] },
-    { id: 'walls-echo', branch: 'walls', depth: 3, x: 188, y: 540, title: 'Echo Walls', effect: '+2 / wall', icon: 'echo', cost: 74, requires: ['walls-value'] },
+    // ── Friction, and the Velocity spine that now grows out of it ──────────
+    // Drift speed is what friction is spent against, so Faster Drift reads as
+    // the next thing you want once drag stops eating your launches — not as a
+    // fifth thing hanging off the root with nothing above it.
+    { id: 'fric-1', branch: 'friction', depth: 1, title: 'Less Friction', effect: '−40% drag', icon: 'droplet', cost: 12, requires: [] },
+    { id: 'fric-glide', branch: 'friction', depth: 2, title: 'Glide', effect: '−55% drag', icon: 'feather', cost: 26, requires: ['fric-1'] },
+    { id: 'fric-keep', branch: 'friction', depth: 2, title: 'Collision Keep', effect: '+28% collision energy', icon: 'refresh', cost: 30, requires: ['fric-1'] },
+    { id: 'fric-low', branch: 'friction', depth: 3, title: 'Low Drag', effect: '−65% drag', icon: 'snow', cost: 68, requires: ['fric-glide'] },
+    { id: 'fric-perpetual', branch: 'friction', depth: 3, title: 'Perpetual Motion', effect: 'Near-zero drag', icon: 'infinity', cost: 150, requires: ['fric-keep'] },
 
-    // ── Friction (downward spine) ──────────────────────────────────────────
-    { id: 'fric-1', branch: 'friction', depth: 1, x: 620, y: 564, title: 'Less Friction', effect: '−40% drag', icon: 'droplet', cost: 12, requires: [] },
-    { id: 'fric-glide', branch: 'friction', depth: 2, x: 498, y: 664, title: 'Glide', effect: '−55% drag', icon: 'feather', cost: 26, requires: ['fric-1'] },
-    { id: 'fric-keep', branch: 'friction', depth: 2, x: 742, y: 664, title: 'Collision Keep', effect: '+28% collision energy', icon: 'refresh', cost: 30, requires: ['fric-1'] },
-    { id: 'fric-low', branch: 'friction', depth: 3, x: 476, y: 768, title: 'Low Drag', effect: '−65% drag', icon: 'snow', cost: 68, requires: ['fric-glide'] },
-    { id: 'fric-perpetual', branch: 'friction', depth: 3, x: 742, y: 768, title: 'Perpetual Motion', effect: 'Near-zero drag', icon: 'infinity', cost: 150, requires: ['fric-keep'] },
+    { id: 'vel-1', branch: 'velocity', depth: 2, title: 'Faster Drift', effect: '+60% drift speed', icon: 'wind', cost: 10, requires: ['fric-1'] },
+    { id: 'vel-accel', branch: 'velocity', depth: 3, title: 'Acceleration', effect: '+80% speed floor', icon: 'chevrons-up', cost: 24, requires: ['vel-1'] },
+    { id: 'vel-cap', branch: 'velocity', depth: 3, title: 'Top Speed', effect: '+80% velocity cap', icon: 'gauge', cost: 28, requires: ['vel-1'] },
+    { id: 'vel-launch', branch: 'velocity', depth: 4, title: 'Quick Launch', effect: '+110% flick impulse', icon: 'rocket', cost: 62, requires: ['vel-accel'] },
+    { id: 'vel-momentum', branch: 'velocity', depth: 4, title: 'Momentum', effect: '+75% velocity cap', icon: 'trending', cost: 66, requires: ['vel-cap'] },
+    { id: 'vel-overdrive', branch: 'velocity', depth: 5, title: 'Overdrive', effect: '+120% speed · +80% flick', icon: 'flame', cost: 180, requires: ['vel-launch', 'vel-momentum'] },
 
-    // ── Flux (genre-bending cross-branch tech) ─────────────────────────────
-    { id: 'flux-crit', branch: 'flux', depth: 3, x: 300, y: 168, title: 'Critical Hit', effect: '15% crit · ×5 points', icon: 'target', cost: 150, requires: ['vel-accel', 'walls-hard'] },
-    { id: 'flux-battle', branch: 'flux', depth: 4, x: 150, y: 58, title: 'Critical Combo', effect: '30% crit · chains ×4', icon: 'swords', cost: 320, requires: ['flux-crit'] },
-    { id: 'flux-bushido', branch: 'flux', depth: 4, x: 120, y: 300, title: 'Bushido', effect: 'Dbl-click → slice time', icon: 'katana', cost: 280, requires: ['flux-crit'] },
-    { id: 'flux-mult', branch: 'flux', depth: 3, x: 940, y: 168, title: 'Compound Interest', effect: 'Idle · ×2 points', icon: 'multiply', cost: 120, requires: ['vel-cap', 'bounce-force'] },
-    { id: 'flux-idle', branch: 'flux', depth: 3, x: 940, y: 732, title: 'Idle Engine', effect: 'Idle · +2 / sec', icon: 'clock', cost: 110, requires: ['bounce-value', 'fric-keep'] },
-    { id: 'flux-auto', branch: 'flux', depth: 4, x: 1064, y: 828, title: 'Autopilot', effect: 'Auto · flicks a block', icon: 'cpu', cost: 220, requires: ['flux-idle'] },
-    { id: 'flux-gravity', branch: 'flux', depth: 3, x: 300, y: 732, title: 'Gravity Well', effect: 'Physics · fall + bounce', icon: 'gravity', cost: 90, requires: ['walls-value', 'fric-glide'] },
+    // ── Modes (the fourth root branch) ─────────────────────────────────────
+    // Every upgrade that changes how the playground *behaves* rather than how
+    // fast it moves now lives on one path behind one gateway, so none of them
+    // needs a connector reaching across the tree to a prerequisite in someone
+    // else's lane. `flux-` ids are kept: they are what saved progress stores.
+    { id: 'flux-core', branch: 'flux', depth: 1, title: 'Unstable Core', effect: 'Unlocks modes · ×1.25 pts', icon: 'core', cost: 45, requires: [], theme: 'multiplier' },
+    { id: 'flux-crit', branch: 'flux', depth: 2, title: 'Critical Hit', effect: '15% crit · ×5 points', icon: 'target', cost: 150, requires: ['flux-core'] },
+    { id: 'flux-battle', branch: 'flux', depth: 3, title: 'Critical Combo', effect: '30% crit · chains ×4', icon: 'swords', cost: 320, requires: ['flux-crit'] },
+    { id: 'flux-bushido', branch: 'flux', depth: 3, title: 'Bushido', effect: 'Dbl-click → slice time', icon: 'katana', cost: 280, requires: ['flux-crit'] },
+    { id: 'flux-gravity', branch: 'flux', depth: 2, title: 'Gravity Well', effect: 'Physics · fall + bounce', icon: 'gravity', cost: 90, requires: ['flux-core'] },
+    { id: 'flux-idle', branch: 'flux', depth: 2, title: 'Idle Engine', effect: 'Idle · +2 / sec', icon: 'clock', cost: 110, requires: ['flux-core'] },
+    { id: 'flux-auto', branch: 'flux', depth: 3, title: 'Autopilot', effect: 'Auto · flicks a block', icon: 'cpu', cost: 220, requires: ['flux-idle'] },
+    { id: 'flux-mult', branch: 'flux', depth: 4, title: 'Compound Interest', effect: 'Idle · ×2 points', icon: 'multiply', cost: 120, requires: ['flux-auto'] },
+    { id: 'flux-mitosis', branch: 'flux', depth: 2, title: 'Mitosis', effect: 'Hits zoom out · stage divides', icon: 'mitosis', cost: 140, requires: ['flux-core'], theme: 'stack' },
+    { id: 'flux-swarm', branch: 'flux', depth: 3, title: 'Proliferation', effect: 'Divides again · up to 4 stages', icon: 'proliferate', cost: 360, requires: ['flux-mitosis'], theme: 'stack' },
   ];
 
   const UPGRADE_BY_ID = new Map(UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
@@ -221,26 +252,37 @@
   // Presentation coordinates only. Upgrade definitions, effects, costs and
   // prerequisites remain the game-data source above. The selected horizontal
   // design places the four starting branches in lanes and Flux below them.
+  // Presentation coordinates only. Upgrade definitions, effects, costs and
+  // prerequisites remain the game-data source above. One lane per branch, one
+  // column per depth: every connector is then a short curve between adjacent
+  // columns inside one lane, which is what removes the long diagonal runs the
+  // cross-branch Flux prerequisites used to need.
   const UPGRADE_TREE_LAYOUT = new Map([
-    ['vel-1', { x: 450, y: 110 }],
-    ['vel-accel', { x: 850, y: 62 }], ['vel-cap', { x: 850, y: 158 }],
-    ['vel-launch', { x: 1250, y: 62 }], ['vel-momentum', { x: 1250, y: 158 }],
-    ['vel-overdrive', { x: 1650, y: 110 }],
-    ['walls-1', { x: 450, y: 310 }],
-    ['walls-hard', { x: 850, y: 262 }], ['walls-value', { x: 850, y: 358 }],
-    ['walls-ricochet', { x: 1250, y: 262 }], ['walls-echo', { x: 1250, y: 358 }],
-    ['bounce-1', { x: 450, y: 510 }],
-    ['bounce-force', { x: 850, y: 462 }], ['bounce-value', { x: 850, y: 558 }],
-    ['bounce-charge', { x: 1250, y: 462 }], ['bounce-combo', { x: 1250, y: 558 }],
-    ['bounce-chain', { x: 1650, y: 510 }],
-    ['fric-1', { x: 450, y: 710 }],
-    ['fric-glide', { x: 850, y: 662 }], ['fric-keep', { x: 850, y: 758 }],
-    ['fric-low', { x: 1250, y: 662 }], ['fric-perpetual', { x: 1250, y: 758 }],
-    ['flux-crit', { x: 1250, y: 930 }],
-    ['flux-battle', { x: 1650, y: 882 }], ['flux-bushido', { x: 1650, y: 978 }],
-    ['flux-mult', { x: 1250, y: 1040 }],
-    ['flux-idle', { x: 1250, y: 1150 }], ['flux-auto', { x: 1650, y: 1150 }],
-    ['flux-gravity', { x: 1250, y: 1260 }],
+    // Walls
+    ['walls-1', { x: 450, y: 150 }],
+    ['walls-hard', { x: 850, y: 102 }], ['walls-value', { x: 850, y: 198 }],
+    ['walls-ricochet', { x: 1250, y: 102 }], ['walls-echo', { x: 1250, y: 198 }],
+    // Bounce
+    ['bounce-1', { x: 450, y: 390 }],
+    ['bounce-force', { x: 850, y: 342 }], ['bounce-value', { x: 850, y: 438 }],
+    ['bounce-charge', { x: 1250, y: 342 }], ['bounce-combo', { x: 1250, y: 438 }],
+    ['bounce-chain', { x: 1650, y: 390 }],
+    // Friction, with the Velocity spine as its lower sub-lane
+    ['fric-1', { x: 450, y: 680 }],
+    ['fric-glide', { x: 850, y: 584 }], ['fric-keep', { x: 850, y: 680 }],
+    ['fric-low', { x: 1250, y: 584 }], ['fric-perpetual', { x: 1250, y: 680 }],
+    ['vel-1', { x: 850, y: 848 }],
+    ['vel-accel', { x: 1250, y: 800 }], ['vel-cap', { x: 1250, y: 896 }],
+    ['vel-launch', { x: 1650, y: 800 }], ['vel-momentum', { x: 1650, y: 896 }],
+    ['vel-overdrive', { x: 2050, y: 848 }],
+    // Modes
+    ['flux-core', { x: 450, y: 1180 }],
+    ['flux-crit', { x: 850, y: 1060 }],
+    ['flux-battle', { x: 1250, y: 1012 }], ['flux-bushido', { x: 1250, y: 1108 }],
+    ['flux-gravity', { x: 850, y: 1170 }],
+    ['flux-idle', { x: 850, y: 1280 }],
+    ['flux-auto', { x: 1250, y: 1280 }], ['flux-mult', { x: 1650, y: 1280 }],
+    ['flux-mitosis', { x: 850, y: 1390 }], ['flux-swarm', { x: 1250, y: 1390 }],
   ]);
 
 
@@ -274,9 +316,15 @@
     cpu: '<rect x="7" y="7" width="10" height="10" rx="2"/><path d="M10 7V4M14 7V4M10 20v-3M14 20v-3M7 10H4M7 14H4M20 10h-3M20 14h-3"/>',
     gravity: '<path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/>',
     core: '<circle cx="12" cy="12" r="3.4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.4 5.4l2.1 2.1M16.5 16.5l2.1 2.1M18.6 5.4l-2.1 2.1M7.5 16.5l-2.1 2.1"/>',
+    // Two cells mid-pinch, with the spindle between them.
+    mitosis: '<circle cx="8" cy="12" r="5"/><circle cx="16" cy="12" r="5"/><path d="M12 8.6v6.8"/>',
+    proliferate: '<circle cx="7" cy="7" r="3.4"/><circle cx="17" cy="7" r="3.4"/><circle cx="7" cy="17" r="3.4"/><circle cx="17" cy="17" r="3.4"/>',
   };
 
   function mechanicThemeForUpgrade(upgrade) {
+    // A node can name its own art when the keyword taxonomy below would read
+    // the wrong noun out of its text ("Bumpers zoom out" is not a bumper buff).
+    if (upgrade?.theme) return upgrade.theme;
     const text = ((upgrade?.title || '') + ' ' + (upgrade?.effect || '')).toLowerCase();
 
     // Order matters: value/multiplier and energy phrases contain words like
@@ -340,10 +388,16 @@
     return `<svg class="pv2-mechanic-icon pv2-mechanic-icon--${theme}" data-mechanic="${theme}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
   }
 
+  // `decoding="sync"`, not async: these are ~2KB files that the preload in the
+  // document head has already fetched and `projectRewardAssets` has already
+  // decoded, so there is nothing to wait for — and async decoding was spending
+  // a frame or more per card anyway, which is what made the icons arrive after
+  // the card they sit on. `loading="eager"` keeps the same promise for the
+  // upgrade tree, whose nodes are built off-screen inside a scroller.
   function upgradeIconMarkup(upgrade, theme = mechanicThemeForUpgrade(upgrade)) {
     const src = MECHANIC_ART[theme];
     if (src) {
-      return `<img class="pv2-mechanic-art" src="${src}" alt="" draggable="false" decoding="async">`;
+      return `<img class="pv2-mechanic-art" src="${src}" alt="" draggable="false" decoding="sync" loading="eager" fetchpriority="high">`;
     }
     return iconSvg(upgrade.icon, theme);
   }
@@ -675,7 +729,9 @@
   }
 
   function liveProjectBody(projectId) {
-    return bodies.find((body) => body.projectId === projectId && body.el?.isConnected) || null;
+    return bodies.find((body) => body.projectId === projectId && body.el?.isConnected && body.cell?.isPrimary)
+      || bodies.find((body) => body.projectId === projectId && body.el?.isConnected)
+      || null;
   }
 
   function queueProjectLevelUp(body, level) {
@@ -1209,7 +1265,10 @@
   }
 
   function mentorLowestProject(body) {
-    const others = bodies.filter((candidate) => candidate !== body && candidate.projectState);
+    // One entry per project, taken from the stage that earned the level, so a
+    // divided playground cannot award the same mentor XP once per copy.
+    const others = bodies.filter((candidate) => candidate.cell === body.cell
+      && candidate.projectId !== body.projectId && candidate.projectState);
     if (!others.length) return;
     others.sort((a, b) => a.projectState.level - b.projectState.level || a.projectState.xp - b.projectState.xp);
     signalProjectTarget(body, others[0], 'mentor');
@@ -1231,6 +1290,11 @@
       if (projectEffects(body).mentor && source !== 'mentor') mentorLowestProject(body);
     }
     refreshProjectProgressUI(body, source === 'bumper');
+    // The same project runs in every live stage and shares one level, so the
+    // other copies' arcs are refreshed alongside the one that was hit.
+    for (const twin of bodies) {
+      if (twin !== body && twin.projectId === body.projectId) refreshProjectProgressUI(twin, false);
+    }
     // Two ways the yellow is allowed to catch up: the white read-out ran off
     // the end of the bar (a level-up), or the bumping stopped for half a second.
     if (leveled) flashProjectXpFull(body);
@@ -1295,7 +1359,9 @@
     const sx = sourceBody.x + sourceBody.w / 2;
     const sy = sourceBody.y + sourceBody.h / 2;
     for (const candidate of bodies) {
-      if (candidate === sourceBody) continue;
+      // Chain Reaction reaches across its own playground, not into the one
+      // next door: the two stages share progress, never momentum.
+      if (candidate === sourceBody || candidate.cell !== sourceBody.cell) continue;
       const dx = candidate.x + candidate.w / 2 - sx;
       const dy = candidate.y + candidate.h / 2 - sy;
       const d = Math.hypot(dx, dy);
@@ -1315,6 +1381,19 @@
   let frame = 0;
   let stage = null;
   let bodies = [];
+  // One entry per live playground. cells[0] is the real, React-owned stage;
+  // the rest are inert clones of it in a fixed layer, driven entirely by this
+  // simulation. `field` is the stage's untransformed viewport box, which every
+  // cell is laid out against.
+  let cells = [];
+  let cellLayer = null;
+  let cellCount = 1;
+  let field = null;
+  let mitosisZoom = 1;
+  let mitosisZoomTarget = 1;
+  let mitosisShake = 0;
+  let mitosisDivide = null;
+  let mitosisRestUntil = 0;
   let lastTime = 0;
   let mutationTimer = 0;
   let scoreCounter = null;
@@ -1475,6 +1554,7 @@
     // Flux branch (genre-bending). The "RPG" crit nodes apply to the block game
     // itself: any scored hit (bumper, wall, friction burn) can crit, and Critical
     // Combo makes back-to-back crits escalate.
+    if (hasUpgrade('flux-core')) pointMult *= 1.25;
     if (hasUpgrade('flux-mult')) pointMult *= 2;
     if (hasUpgrade('flux-crit')) { critChance = 0.15; critMult = 5; }
     if (hasUpgrade('flux-battle')) { critChance = 0.3; critMult = Math.max(critMult, 5); critCombo = true; critComboStep = 0.6; critComboMax = 4; }
@@ -1654,8 +1734,11 @@
   function showExploreCue(now) {
     // Never point at the same sphere twice running — part of the invitation is
     // that it keeps gesturing at different pieces of work.
-    const candidates = bodies.filter((body) => body.el?.isConnected && body !== exploreCueBody);
-    const pool = candidates.length ? candidates : bodies.filter((body) => body.el?.isConnected);
+    // Daughter stages are physics, not doors: an invitation to click must point
+    // at a sphere in the real one.
+    const clickable = bodies.filter((body) => body.el?.isConnected && body.cell?.isPrimary);
+    const candidates = clickable.filter((body) => body !== exploreCueBody);
+    const pool = candidates.length ? candidates : clickable;
     if (!pool.length) return false;
 
     const cue = ensureExploreCue();
@@ -1681,9 +1764,9 @@
   function positionExploreCue(stageRect) {
     const body = exploreCueBody;
     if (!body || !exploreCue) return;
-    const centerX = stageRect.left + body.x + body.w / 2;
-    const centerY = stageRect.top + body.y + body.h / 2;
-    const reach = body.w / 2 + EXPLORE_CUE_GAP;
+    const scale = stageRect.scale || 1;
+    const { x: centerX, y: centerY } = toViewport(stageRect, body.x + body.w / 2, body.y + body.h / 2);
+    const reach = (body.w / 2) * scale + EXPLORE_CUE_GAP;
 
     // Prefer the left of the sphere (matching the Points sticker), and flip
     // only when that would run off the screen. The 10px of hysteresis stops it
@@ -1714,14 +1797,14 @@
 
   // Called once per frame from tick(), after the bodies have been written, so
   // it reuses that frame's stageRect and performs no layout reads of its own.
-  function updateExploreCue(now, stageRect) {
+  function updateExploreCue(now) {
     if (exploreCueBody) {
       if (now >= exploreCueHideAt || exploreCueBlocked() || !exploreCueBody.el?.isConnected) {
         hideExploreCue();
         scheduleNextExploreCue(now);
         return;
       }
-      positionExploreCue(stageRect);
+      positionExploreCue(cellFrame(exploreCueBody.cell));
       return;
     }
 
@@ -1737,7 +1820,7 @@
       exploreCueNextAt = now + 4000;
       return;
     }
-    if (showExploreCue(now)) positionExploreCue(stageRect);
+    if (showExploreCue(now)) positionExploreCue(cellFrame(exploreCueBody.cell));
     else exploreCueNextAt = now + 4000;
   }
 
@@ -1782,20 +1865,18 @@
   function treeConnectorPath(parentId, upgrade) {
     const parent = parentId === 'root' ? TREE_CENTER : pointOf(parentId);
     const child = pointOf(upgrade.id);
-    const siblings = UPGRADES.filter((candidate) => candidate.branch === upgrade.branch && candidate.requires.includes(parentId));
+    // Every child of this parent, whatever branch it belongs to: Faster Drift
+    // leaves Less Friction alongside Glide and Collision Keep, so it needs a
+    // port of its own in that fan rather than one that lands on Glide's.
+    const siblings = UPGRADES.filter((candidate) => candidate.requires.includes(parentId));
     const portOffset = parentId === 'root'
-      ? (['velocity', 'walls', 'bounce', 'friction'].indexOf(upgrade.branch) - 1.5) * 24
+      ? (['walls', 'bounce', 'friction', 'flux'].indexOf(upgrade.branch) - 1.5) * 24
       : siblings.length > 1 ? (siblings.indexOf(upgrade) - (siblings.length - 1) / 2) * 22 : 0;
     const start = { x: parent.x + (parentId === 'root' ? TREE_ROOT_WIDTH : TREE_NODE_WIDTH) / 2, y: parent.y + portOffset };
     const end = { x: child.x - TREE_NODE_WIDTH / 2, y: child.y };
-    // Cross-branch paths travel in the gap between columns, so they cannot
-    // pass through the main-lane cards while reaching the Flux lane.
-    if (upgrade.branch === 'flux' && UPGRADE_BY_ID.get(parentId)?.branch !== 'flux') {
-      const crossBranchNodes = UPGRADES.filter((candidate) => candidate.branch === 'flux' && candidate.requires.some((id) => UPGRADE_BY_ID.get(id)?.branch !== 'flux'));
-      const rail = start.x + 20 + crossBranchNodes.indexOf(upgrade) * 10 + upgrade.requires.indexOf(parentId) * 6;
-      const radius = 12;
-      return `M ${start.x} ${start.y} H ${rail - radius} Q ${rail} ${start.y} ${rail} ${start.y + radius} V ${end.y - radius} Q ${rail} ${end.y} ${rail + radius} ${end.y} H ${end.x}`;
-    }
+    // No node reaches outside its own column pair any more, so every link is
+    // the same short S-curve. The old orthogonal "rail" that carried Flux's
+    // cross-branch prerequisites down the page has nothing left to carry.
     const middle = start.x + (end.x - start.x) * .5;
     return `M ${start.x} ${start.y} C ${middle} ${start.y}, ${middle} ${end.y}, ${end.x} ${end.y}`;
   }
@@ -1876,11 +1957,11 @@
             <h2>Kinetic upgrades</h2>
           </div>
           <div class="pv2-upgrade-legend" aria-label="Upgrade branches">
-            <span class="pv2-upgrade-legend__item pv2-upgrade-legend__item--velocity">Velocity</span>
-            <span class="pv2-upgrade-legend__item pv2-upgrade-legend__item--bounce">Bounce</span>
             <span class="pv2-upgrade-legend__item pv2-upgrade-legend__item--walls">Walls</span>
+            <span class="pv2-upgrade-legend__item pv2-upgrade-legend__item--bounce">Bounce</span>
             <span class="pv2-upgrade-legend__item pv2-upgrade-legend__item--friction">Friction</span>
-            <span class="pv2-upgrade-legend__item pv2-upgrade-legend__item--flux">Flux</span>
+            <span class="pv2-upgrade-legend__item pv2-upgrade-legend__item--velocity">Velocity</span>
+            <span class="pv2-upgrade-legend__item pv2-upgrade-legend__item--flux">Modes</span>
           </div>
           <div class="pv2-upgrade-panel__currency"><span data-upgrade-points>${points}</span><small>PTS</small></div>
           <button class="pv2-upgrade-close" type="button" aria-label="Close upgrades">×</button>
@@ -2181,9 +2262,14 @@
 
     const puff = document.createElement('span');
     puff.className = 'pv2-detached-smoke';
-    const diameter = (mobile ? 11 : 15) + heat * (mobile ? 8 : 14);
-    const startX = stageRect.left + body.x + body.w * (.34 + Math.random() * .32);
-    const startY = stageRect.top + body.y + body.w * (.08 + Math.random() * .10);
+    const diameter = ((mobile ? 11 : 15) + heat * (mobile ? 8 : 14)) * (stageRect.scale || 1);
+    const start = toViewport(
+      stageRect,
+      body.x + body.w * (.34 + Math.random() * .32),
+      body.y + body.w * (.08 + Math.random() * .10),
+    );
+    const startX = start.x;
+    const startY = start.y;
     const drift = (Math.random() - .5) * (mobile ? 42 : 72);
     const rise = (mobile ? 52 : 78) + Math.random() * (mobile ? 34 : 58) + heat * 26;
     const spin = (Math.random() - .5) * 90;
@@ -2274,10 +2360,7 @@
   // (so point mult / combo / crit all apply) and flash the halo.
   function frictionBurn(body, stageRect) {
     const effects = currentEffects();
-    const impact = {
-      x: stageRect.left + body.x + body.w / 2,
-      y: stageRect.top + body.y + body.h / 2,
-    };
+    const impact = toViewport(stageRect, body.x + body.w / 2, body.y + body.h / 2);
     award(FRICTION_BURN_BASE * effects.frictionBurnMult, 'friction', impact, { vx: body.vx, vy: body.vy });
     window.dispatchEvent(new CustomEvent('pv2:friction-burn', { detail: { x: impact.x, y: impact.y } }));
     if (reducedMotion()) return;
@@ -2575,18 +2658,37 @@
       navBottom = nav ? nav.getBoundingClientRect().bottom : -Infinity;
     }
     if (navBottom === -Infinity) return EDGE_PADDING;
-    return Math.max(EDGE_PADDING, navBottom - stageRect.top + NAV_CLEARANCE);
+    // The nav's bottom is a screen measurement; the limit it produces is a
+    // simulation one, so it is divided back out of the cell's scale.
+    return Math.max(EDGE_PADDING, (navBottom - stageRect.top) / (stageRect.scale || 1) + NAV_CLEARANCE);
+  }
+
+  // The slot also contains a caption below the orb. Keep its measured artwork
+  // offsets so all four screen walls meet the visible rim, not the slot box.
+  function wallLimits(body, stageRect) {
+    const minX = EDGE_PADDING - body.visualLeft;
+    const minY = stageTopLimit(stageRect) - body.visualTop;
+    return {
+      minX, minY,
+      maxX: Math.max(minX, stageRect.width - EDGE_PADDING - body.visualRight),
+      maxY: Math.max(minY, stageRect.height - BOTTOM_EDGE_PADDING - body.visualBottom),
+    };
   }
 
   // stageRect is already the stage's viewport rect, so there is nothing to
   // re-measure here — the extra getBoundingClientRect was another forced layout
   // on every scoring wall bounce.
   function wallImpact(body, side, stageRect) {
-    const rect = stageRect;
-    if (side === 'left') return { x: rect.left + EDGE_PADDING, y: rect.top + body.y + body.h / 2 };
-    if (side === 'right') return { x: rect.left + stageRect.width - EDGE_PADDING, y: rect.top + body.y + body.h / 2 };
-    if (side === 'top') return { x: rect.left + body.x + body.w / 2, y: rect.top + stageTopLimit(stageRect) };
-    return { x: rect.left + body.x + body.w / 2, y: rect.top + stageRect.height - BOTTOM_EDGE_PADDING };
+    const { x: cx, y: cy } = toViewport(
+      stageRect,
+      body.x + (body.visualLeft + body.visualRight) / 2,
+      body.y + (body.visualTop + body.visualBottom) / 2,
+    );
+    const edge = (localX, localY) => toViewport(stageRect, localX, localY);
+    if (side === 'left') return { x: edge(EDGE_PADDING, 0).x, y: cy };
+    if (side === 'right') return { x: edge(stageRect.width - EDGE_PADDING, 0).x, y: cy };
+    if (side === 'top') return { x: cx, y: edge(0, stageTopLimit(stageRect)).y };
+    return { x: cx, y: edge(0, stageRect.height - BOTTOM_EDGE_PADDING).y };
   }
 
   function scoreWallBounce(body, side, stageRect) {
@@ -2602,11 +2704,9 @@
   function constrain(body, stageRect, allowScore = true) {
     const effects = currentEffects();
     const projectFx = projectEffects(body);
-    const minY = stageTopLimit(stageRect);
-    const maxX = Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING);
-    const maxY = Math.max(minY, stageRect.height - body.h - BOTTOM_EDGE_PADDING);
+    const { minX, minY, maxX, maxY } = wallLimits(body, stageRect);
     let hit = null;
-    if (body.x < EDGE_PADDING) { body.x = EDGE_PADDING; body.vx = Math.abs(body.vx) * effects.wallKickMult * projectFx.wallKickMult; hit = 'left'; }
+    if (body.x < minX) { body.x = minX; body.vx = Math.abs(body.vx) * effects.wallKickMult * projectFx.wallKickMult; hit = 'left'; }
     if (body.x > maxX) { body.x = maxX; body.vx = -Math.abs(body.vx) * effects.wallKickMult * projectFx.wallKickMult; hit = 'right'; }
     if (body.y < minY) { body.y = minY; body.vy = Math.abs(body.vy) * effects.wallKickMult * projectFx.wallKickMult; hit = 'top'; }
     if (body.y > maxY) { body.y = maxY; body.vy = -Math.abs(body.vy) * effects.wallKickMult * projectFx.wallKickMult; hit = 'bottom'; }
@@ -2618,6 +2718,7 @@
   }
 
   function resolveBodyPair(a, b) {
+    if (a.cell !== b.cell) return false;
     if (!overlaps(bodyRect(a), bodyRect(b), BODY_GAP)) return false;
     const effects = currentEffects();
     const aProject = projectEffects(a);
@@ -2682,10 +2783,10 @@
     }
   }
 
-  function unionTextBounds(selectors) {
+  function unionTextBounds(selectors, root = document) {
     let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
     for (const sel of selectors) {
-      const el = document.querySelector(sel);
+      const el = root.querySelector(sel);
       if (!el) continue;
       const r = textBounds(el);
       left = Math.min(left, r.left);
@@ -2701,53 +2802,77 @@
   // querySelector + Range.getClientRects (forced layout) — so it runs only when
   // the cache is cold (init/resize/reflow), not every frame. Local coords are
   // scroll-stable because the bumpers scroll with the stage.
+  // Local coordinates are the SIMULATION's, so a measurement taken while the
+  // stage is scaled down has that scale divided back out. Geometry is therefore
+  // the same for every cell, which is why it is measured once and shared.
   function measureBumperGeom(stageRect) {
+    const scale = stageRect.scale || 1;
     // The statement collides against its heading + paragraph text, not the full
     // padded block (its eyebrow line and the empty corners are excluded).
+    // Scoped to the real stage: the daughter stages carry the same markup, and
+    // a bare document query would be free to measure one of those instead.
     const candidates = [
-      ['statement', document.querySelector('.pv2-overview__statement'), ['.pv2-overview__statement h1', '.pv2-overview__statement > p:last-child']],
-      ['ux-work', document.querySelector('.pv2-gateway-link--ux'), null],
-      ['all-games', document.querySelector('.pv2-gateway-link--unfinished'), null],
+      ['statement', stage.querySelector('.pv2-overview__statement'), ['.pv2-overview__statement h1', '.pv2-overview__statement > p:last-child']],
+      ['ux-work', stage.querySelector('.pv2-gateway-link--ux'), null],
+      ['all-games', stage.querySelector('.pv2-gateway-link--unfinished'), null],
     ];
     return candidates
       .filter(([, el]) => el?.isConnected)
       .map(([id, el, textSels]) => {
-        const rect = (textSels && unionTextBounds(textSels)) || el.getBoundingClientRect();
-        return { id, el, x: rect.left - stageRect.left, y: rect.top - stageRect.top, w: rect.width, h: rect.height };
+        const rect = (textSels && unionTextBounds(textSels, stage)) || el.getBoundingClientRect();
+        return {
+          id,
+          x: (rect.left - stageRect.left) / scale,
+          y: (rect.top - stageRect.top) / scale,
+          w: rect.width / scale,
+          h: rect.height / scale,
+        };
       });
   }
 
   function invalidateBumpers() { bumperGeom = null; navBottom = null; }
 
-  function bumperRects(stageRect) {
+  // `cell` supplies the element to pulse: a strike inside a daughter stage must
+  // flash that daughter's own heading, not the real page's.
+  function bumperRects(stageRect, cell) {
     if (!bumperGeom) bumperGeom = measureBumperGeom(stageRect);
     // Rebuild each caller's absolute `viewport` from cached local coords + the
     // current stageRect (cheap arithmetic, no layout), so scrolling stays exact.
+    const scale = stageRect.scale || 1;
     return bumperGeom.map((g) => {
-      const left = stageRect.left + g.x;
-      const top = stageRect.top + g.y;
-      return { ...g, viewport: { left, top, right: left + g.w, bottom: top + g.h, width: g.w, height: g.h } };
+      const left = stageRect.left + g.x * scale;
+      const top = stageRect.top + g.y * scale;
+      const w = g.w * scale;
+      const h = g.h * scale;
+      return {
+        ...g,
+        el: cell?.bumperEls?.[g.id] || null,
+        viewport: { left, top, right: left + w, bottom: top + h, width: w, height: h },
+      };
     });
   }
 
-  function impactPoint(body, bumper, horizontal) {
+  // The bumper's local box is in simulation units and its `viewport` box in
+  // screen ones, so the offset along the contact edge is converted on the way
+  // across rather than added raw.
+  function impactPoint(body, bumper, horizontal, scale = 1) {
     const bodyCenterX = body.x + body.w / 2;
     const bodyCenterY = body.y + body.h / 2;
     if (horizontal) {
       const hitRight = bodyCenterX >= bumper.x + bumper.w / 2;
       return {
         x: hitRight ? bumper.viewport.right : bumper.viewport.left,
-        y: clamp(bumper.viewport.top + (bodyCenterY - bumper.y), bumper.viewport.top, bumper.viewport.bottom),
+        y: clamp(bumper.viewport.top + (bodyCenterY - bumper.y) * scale, bumper.viewport.top, bumper.viewport.bottom),
       };
     }
     const hitBottom = bodyCenterY >= bumper.y + bumper.h / 2;
     return {
-      x: clamp(bumper.viewport.left + (bodyCenterX - bumper.x), bumper.viewport.left, bumper.viewport.right),
+      x: clamp(bumper.viewport.left + (bodyCenterX - bumper.x) * scale, bumper.viewport.left, bumper.viewport.right),
       y: hitBottom ? bumper.viewport.bottom : bumper.viewport.top,
     };
   }
 
-  function resolveBumper(body, bumper, entering) {
+  function resolveBumper(body, bumper, entering, scale = 1) {
     if (!overlaps(bodyRect(body), bumper, 0)) return false;
     const effects = currentEffects();
     const projectFx = projectEffects(body);
@@ -2767,7 +2892,7 @@
     const poweredHit = entering && isArmed && gameActive;
 
     if (poweredHit) {
-      const impact = impactPoint(body, bumper, horizontal);
+      const impact = impactPoint(body, bumper, horizontal, scale);
       // Velocity is read before the bumper kick below flips it, so this is the
       // block's incoming travel direction — the way it was heading on impact.
       award(effects.bumperValue + projectFx.bumperPointBonus, bumper.id, impact, { vx: body.vx, vy: body.vy });
@@ -2783,6 +2908,9 @@
       // Battle mode (portfolio-battle.js) listens for these to detect a
       // Critical Combo (5 bumper hits within 1s) and trigger a battle.
       window.dispatchEvent(new CustomEvent('pv2:bumper-hit', { detail: { id: bumper.id, x: impact.x, y: impact.y } }));
+      // The whole Mitosis sequence — pull back, shudder, divide — is driven by
+      // scored hits and nothing else.
+      registerMitosisHit(now);
     }
 
     const softFloor = window.innerWidth <= MOBILE_BREAKPOINT ? MOBILE_UNARMED_BUMPER_KICK : NORMAL_SPEED * 1.8;
@@ -2822,9 +2950,14 @@
     // physics-only anchor here made freshly mounted tiles appear to launch from
     // a shared origin before settling into the composition.
     const rect = el.getBoundingClientRect();
-    const minY = stageTopLimit(stageRect);
-    const x = clamp(rect.left - stageRect.left, EDGE_PADDING, stageRect.width - rect.width - EDGE_PADDING);
-    const y = clamp(rect.top - stageRect.top, minY, stageRect.height - rect.height - BOTTOM_EDGE_PADDING);
+    const visualRect = el.querySelector('.pv2-visual')?.getBoundingClientRect() || rect;
+    const visualLeft = visualRect.left - rect.left;
+    const visualTop = visualRect.top - rect.top;
+    const visualRight = visualRect.right - rect.left;
+    const visualBottom = visualRect.bottom - rect.top;
+    const limits = wallLimits({ visualLeft, visualTop, visualRight, visualBottom }, stageRect);
+    const x = clamp(rect.left - stageRect.left, limits.minX, limits.maxX);
+    const y = clamp(rect.top - stageRect.top, limits.minY, limits.maxY);
     el.style.transform = '';
     el.style.removeProperty('--pv2-scroll-drift-y');
     const angle = .55 + index * 1.19;
@@ -2841,6 +2974,7 @@
     const projectState = projectStateFor(projectId);
     const body = {
       el, x, y, w: rect.width, h: rect.height,
+      visualLeft, visualTop, visualRight, visualBottom,
       projectId, projectState,
       homeX: x, homeY: y,
       vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
@@ -2987,22 +3121,24 @@
 
   // The stage only moves on scroll or resize, so one measurement per frame is
   // plenty — pointermove can fire several times between frames.
-  let pointerStageRectCache = null;
   let pointerStageRectAt = -1;
 
-  function pointerStageRect() {
+  // tick() already measures the field every frame; between frames this keeps
+  // the cached one rather than forcing a second layout per pointermove.
+  function pointerStageRect(cell) {
     const now = performance.now();
-    if (!pointerStageRectCache || now - pointerStageRectAt > 16) {
-      pointerStageRectCache = stage.getBoundingClientRect();
+    if (!field || now - pointerStageRectAt > 16) {
+      measureField();
       pointerStageRectAt = now;
     }
-    return pointerStageRectCache;
+    return cellFrame(cell || cells[0]);
   }
 
   function pointerNearBody(body, stageRect, pad = 0) {
     if (pointer.x <= -9000 || pointer.y <= -9000) return false;
-    const x = pointer.x - stageRect.left;
-    const y = pointer.y - stageRect.top;
+    const scale = stageRect.scale || 1;
+    const x = (pointer.x - stageRect.left) / scale;
+    const y = (pointer.y - stageRect.top) / scale;
     return x >= body.x - pad
       && x <= body.x + body.w + pad
       && y >= body.y - pad
@@ -3041,17 +3177,20 @@
     // Use simulation boxes only to reject distant bodies. Measure the artwork
     // for nearby candidates so contact follows its actual rendered rim,
     // including visual scale changes, rather than the slot's invisible corners.
-    const stageRect = pointerStageRect();
+    pointerStageRect();
     for (const body of bodies) {
+      const frame = cellFrame(body.cell);
+      const scale = frame.scale || 1;
+      const origin = toViewport(frame, body.x, body.y);
       const rect = {
-        left: stageRect.left + body.x,
-        top: stageRect.top + body.y,
-        right: stageRect.left + body.x + body.w,
-        bottom: stageRect.top + body.y + body.h,
-        width: body.w,
-        height: body.h,
+        left: origin.x,
+        top: origin.y,
+        right: origin.x + body.w * scale,
+        bottom: origin.y + body.h * scale,
+        width: body.w * scale,
+        height: body.h * scale,
       };
-      const pad = Math.max(body.w, body.h) * .15;
+      const pad = Math.max(rect.width, rect.height) * .15;
       const nearby = event.clientX >= rect.left - pad && event.clientX <= rect.right + pad
         && event.clientY >= rect.top - pad && event.clientY <= rect.bottom + pad;
       const visualRect = nearby ? body.el.querySelector('.pv2-visual')?.getBoundingClientRect() : null;
@@ -3070,8 +3209,13 @@
           dy = rect.top + rect.height / 2 - event.clientY;
           length = Math.hypot(dx, dy) || 1;
         }
-        const pointerSpeed = Math.hypot(pointerVx, pointerVy);
-        const impulse = clamp(POINTER_MIN_IMPULSE + pointerSpeed * .24, POINTER_MIN_IMPULSE, POINTER_IMPULSE) * effects.pointerImpulseMult * projectEffects(body).pointerImpulseMult;
+        // Both the pointer's speed and the impulse are screen measurements
+        // being spent in simulation units, so a flick across a half-size stage
+        // moves its sphere as far across that stage as the same flick would
+        // across a full-size one.
+        const pointerSpeed = Math.hypot(pointerVx, pointerVy) / scale;
+        const impulse = clamp(POINTER_MIN_IMPULSE + pointerSpeed * .24, POINTER_MIN_IMPULSE, POINTER_IMPULSE)
+          * effects.pointerImpulseMult * projectEffects(body).pointerImpulseMult / scale;
         body.vx += (dx / length) * impulse;
         body.vy += (dy / length) * impulse;
         body.lastPointerHit = now;
@@ -3234,13 +3378,16 @@
     if (bushido || !stage || !gameActive || !bodies.length) return;
     refreshBushidoBadge();
     startBushidoCooldown(performance.now());
-    const stageRect = stage.getBoundingClientRect();
+    // The slice overlay is a child of the real stage, so Bushido is that
+    // stage's ability: only the spheres actually in it are sliceable.
+    const stageRect = cellFrame(cells[0]);
+    const sliceable = bodies.filter((body) => body.cell?.isPrimary);
     const overlay = document.createElement('div');
     overlay.className = 'pv2-bushido-black';
     overlay.setAttribute('aria-hidden', 'true');
     stage.appendChild(overlay);
 
-    const boxes = bodies.map((body) => {
+    const boxes = sliceable.map((body) => {
       const el = document.createElement('div');
       el.className = 'pv2-bushido-box';
       el.style.left = `${body.x}px`;
@@ -3282,9 +3429,9 @@
   // from where it entered to where it exited defines the slice line.
   function bushidoPointerMove(event) {
     if (!bushido || bushido.phase !== 'slice') return;
-    const r = stage.getBoundingClientRect();
-    const px = event.clientX - r.left;
-    const py = event.clientY - r.top;
+    const r = bushido.stageRect;
+    const px = (event.clientX - r.left) / (r.scale || 1);
+    const py = (event.clientY - r.top) / (r.scale || 1);
     for (const box of bushido.boxes) {
       const inside = px >= box.x && px <= box.x + box.w && py >= box.y && py <= box.y + box.h;
       if (inside && !box.inside) {
@@ -3359,7 +3506,7 @@
     }
     if (bushido.phase !== 'shatter') return;
     const { width: W, height: H } = bushido.stageRect;
-    const bumpers = bumperRects(bushido.stageRect);
+    const bumpers = bumperRects(bushido.stageRect, cells[0]);
     const pieces = bushido.pieces;
     let maxSpeed = 0;
     for (const p of pieces) {
@@ -3470,7 +3617,9 @@
     // is a clean one the browser can serve from its cached layout.
     if (motionStopped) {
       lastTime = now;
-      updateExploreCue(now, stage.getBoundingClientRect());
+      measureField();
+      layoutCells(now);
+      updateExploreCue(now);
       frame = requestAnimationFrame(tick);
       return;
     }
@@ -3487,7 +3636,18 @@
 
     const dt = clamp(lastTime ? now - lastTime : 16.667, 8, 32);
     lastTime = now;
-    const stageRect = stage.getBoundingClientRect();
+    measureField();
+    // The pull-back eases toward its target rather than stepping, so a burst of
+    // hits reads as one continuous move out; the shudder decays continuously,
+    // which is what makes only closely-spaced hits add up to a division.
+    updateDivision(now);
+    if (!mitosisDivide) {
+      mitosisZoom += (mitosisZoomTarget - mitosisZoom) * (1 - Math.exp(-dt / MITOSIS_ZOOM_RESPONSE));
+      mitosisShake *= Math.exp(-dt / MITOSIS_SHAKE_TAU);
+      if (mitosisShake < 0.004) mitosisShake = 0;
+    }
+    layoutCells(now);
+    const frames = cells.map(cellFrame);
     const effects = currentEffects();
     const mobile = window.innerWidth <= MOBILE_BREAKPOINT;
     const damping = mobile ? Math.pow(effects.damping, MOBILE_DRAG_EXP) : effects.damping;
@@ -3524,6 +3684,7 @@
     }
 
     for (const body of bodies) {
+      const stageRect = frames[body.cell.index];
       const projectFx = projectEffects(body);
       const bodySpeedFloor = speedFloor * projectFx.speedMult;
       const bodyMaxSpeed = maxSpeed * projectFx.maxSpeedMult;
@@ -3531,16 +3692,17 @@
       const bodyDamping = Math.pow(damping, projectFx.dragExponent);
       const contextHoverActive = updateContextHover(body, now, stageRect);
       if (contextHoverActive && !reducedMotion()) {
-        const minY = stageTopLimit(stageRect);
+        const { minX, minY, maxX, maxY } = wallLimits(body, stageRect);
+        const hoverScale = stageRect.scale || 1;
         const targetX = clamp(
-          pointer.x - stageRect.left - body.w / 2,
-          EDGE_PADDING,
-          Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING)
+          (pointer.x - stageRect.left) / hoverScale - body.w / 2,
+          minX,
+          maxX
         );
         const targetY = clamp(
-          pointer.y - stageRect.top - body.h / 2,
+          (pointer.y - stageRect.top) / hoverScale - body.h / 2,
           minY,
-          Math.max(minY, stageRect.height - body.h - BOTTOM_EDGE_PADDING)
+          maxY
         );
         const desiredVx = (targetX - body.x) * CONTEXT_HOVER_FOLLOW_SPEED;
         const desiredVy = (targetY - body.y) * CONTEXT_HOVER_FOLLOW_SPEED;
@@ -3624,21 +3786,34 @@
       }
     }
 
-    const bumpers = bumperRects(stageRect);
-    for (const body of bodies) {
+    // Bumper geometry is identical in every stage (they are the same layout),
+    // so it is measured once and only each cell's screen projection differs.
+    const bumpersByCell = cells.map((cell) => bumperRects(frames[cell.index], cell));
+    // Iterate the set this frame was measured for, not the live array. A scored
+    // hit below reaches registerMitosisHit -> beginDivision, which appends the
+    // daughter's bodies to `bodies` while this loop is still running; walking
+    // into one of them here would index past `frames` and `bumpersByCell`,
+    // which were snapshotted before the division existed. That threw out of
+    // tick() and stopped the simulation on the first division a player ever
+    // triggered. The daughters are already drawn in place by cloneBodiesInto
+    // and start simulating on the next frame, where they have a frame of their
+    // own; the guard covers any other way a body can outlive its cell.
+    for (const body of bodies.slice()) {
+      const bodyFrame = frames[body.cell.index];
+      if (!bodyFrame) continue;
       const nextContacts = new Set();
-      for (const bumper of bumpers) {
+      for (const bumper of bumpersByCell[body.cell.index]) {
         if (!overlaps(bodyRect(body), bumper, 0)) continue;
         const entering = !body.contacts.has(bumper.id);
         nextContacts.add(bumper.id);
-        resolveBumper(body, bumper, entering);
+        resolveBumper(body, bumper, entering, bodyFrame.scale);
       }
       body.contacts = nextContacts;
-      constrain(body, stageRect, true);
+      constrain(body, bodyFrame, true);
       renderBodyPosition(body);
     }
 
-    updateExploreCue(now, stageRect);
+    updateExploreCue(now);
 
     mark(reducedMotion() ? 'running-reduced' : gameActive ? 'running-game' : 'running');
     frame = requestAnimationFrame(tick);
@@ -3665,6 +3840,14 @@
     }
     for (const cleanup of [...activePointGhosts.values()]) cleanup();
     bodies = [];
+    // `cellCount` deliberately survives: a resize or a re-mount must not undo a
+    // division the player earned. init() rebuilds the same number of stages.
+    destroyCells();
+    field = null;
+    mitosisDivide = null;
+    mitosisShake = 0;
+    mitosisZoom = 1;
+    mitosisZoomTarget = 1;
     invalidateBumpers();
     lastTime = 0;
     autoFlickTimer = 0;
@@ -3676,9 +3859,7 @@
   // Position-only push that guarantees a freshly spawned block sits clear of
   // every text block (bumper), preferring whichever axis has room.
   function ejectFromBumpers(body, stageRect, bumpers) {
-    const minY = stageTopLimit(stageRect);
-    const maxX = Math.max(EDGE_PADDING, stageRect.width - body.w - EDGE_PADDING);
-    const maxY = Math.max(minY, stageRect.height - body.h - BOTTOM_EDGE_PADDING);
+    const { minX, minY, maxX, maxY } = wallLimits(body, stageRect);
     for (let iter = 0; iter < 30; iter += 1) {
       let moved = false;
       for (const bumper of bumpers) {
@@ -3689,16 +3870,366 @@
         const overlapX = (body.w + bumper.w) / 2 + BODY_GAP - Math.abs(dx);
         const overlapY = (body.h + bumper.h) / 2 + BODY_GAP - Math.abs(dy);
         // Take the shorter escape, but never one the walls can't fit.
-        const canX = overlapX <= (dx >= 0 ? maxX - body.x : body.x - EDGE_PADDING) + 0.5;
+        const canX = overlapX <= (dx >= 0 ? maxX - body.x : body.x - minX) + 0.5;
         const preferX = overlapX < overlapY ? canX : false;
         if (preferX) body.x += (dx >= 0 ? 1 : -1) * overlapX;
         else body.y += (dy >= 0 ? 1 : -1) * overlapY;
         moved = true;
       }
-      body.x = clamp(body.x, EDGE_PADDING, maxX);
+      body.x = clamp(body.x, minX, maxX);
       body.y = clamp(body.y, minY, maxY);
       if (!moved) break;
     }
+  }
+
+  // --- Mitosis: cells, their frames, and the division ----------------------
+
+  function mitosisMaxCells() {
+    if (!hasUpgrade('flux-mitosis')) return 1;
+    // A quarter of a phone screen is about 90px of playground, which is not a
+    // playground. Proliferation still buys the second division on a desktop.
+    if (window.innerWidth <= MOBILE_BREAKPOINT) return 2;
+    return hasUpgrade('flux-swarm') ? 4 : 2;
+  }
+
+  // Where cell `index` of `count` sits, as an offset from the field's centre,
+  // plus the scale that fits a whole stage into that share of the field. Two
+  // cells divide the field left/right; four divide it into quarters. The scale
+  // is the smaller of the two ratios so a daughter keeps the stage's shape
+  // rather than being squashed into its slot.
+  function cellSlot(index, count) {
+    if (count <= 1) return { x: 0, y: 0, scale: 1 };
+    // Two cells divide along whichever axis the field is longer on, so a tall
+    // phone stacks its stages rather than squeezing two portrait playgrounds
+    // into half a screen width each.
+    const stacked = count === 2 && field.height > field.width;
+    const cols = count > 2 ? 2 : stacked ? 1 : 2;
+    const rows = count > 2 ? 2 : stacked ? 2 : 1;
+    const scale = Math.min(1 / cols, 1 / rows) * MITOSIS_CELL_INSET;
+    return {
+      x: ((index % cols) - (cols - 1) / 2) * (field.width / cols),
+      y: (Math.floor(index / cols) - (rows - 1) / 2) * (field.height / rows),
+      scale,
+    };
+  }
+
+  // The field is the stage's box with this simulation's own transform taken
+  // back off it, so one getBoundingClientRect per frame keeps every cell
+  // correct through page scroll, resize and the division animation alike.
+  function measureField() {
+    const r = stage.getBoundingClientRect();
+    // sx/sy, not s: during a division the written scale is non-uniform (the
+    // neck), and inverting with the uniform one would make the field itself
+    // wobble — and with it every wall and bumper in every stage.
+    const applied = cells[0]?.applied || { dx: 0, dy: 0, s: 1, sx: 1, sy: 1 };
+    const width = r.width / applied.sx;
+    const height = r.height / applied.sy;
+    field = {
+      left: r.left - applied.dx - (1 - applied.sx) * width / 2,
+      top: r.top - applied.dy - (1 - applied.sy) * height / 2,
+      width,
+      height,
+    };
+    return field;
+  }
+
+  // A cell's frame in the two spaces the simulation needs at once: left/top are
+  // where its content box actually lands on screen, so sparks, smoke and the
+  // explore cue hit the right pixels; width/height stay the stage's
+  // untransformed size, which is the space every body coordinate lives in.
+  function cellFrame(cell) {
+    const s = cell.applied.s;
+    return {
+      left: field.left + cell.applied.dx + (1 - s) * field.width / 2,
+      top: field.top + cell.applied.dy + (1 - s) * field.height / 2,
+      width: field.width,
+      height: field.height,
+      scale: s,
+    };
+  }
+
+  function toViewport(frame, localX, localY) {
+    return { x: frame.left + localX * frame.scale, y: frame.top + localY * frame.scale };
+  }
+
+  function ensureCellLayer() {
+    if (cellLayer?.isConnected) return cellLayer;
+    cellLayer = document.createElement('div');
+    cellLayer.className = 'pv2-mitosis-layer';
+    cellLayer.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(cellLayer);
+    return cellLayer;
+  }
+
+  // A daughter stage is a copy of the real one with everything that makes it a
+  // document stripped out: no ids to duplicate, no links to tab into, no live
+  // media to decode a second time. What is left is the layout — which is what
+  // the simulation needs, since the bumpers sit in exactly the same places.
+  function cloneStage() {
+    const clone = stage.cloneNode(true);
+    clone.classList.remove('pv2-overview__stage');
+    clone.classList.add('pv2-mitosis-stage');
+    clone.removeAttribute('id');
+    clone.removeAttribute('aria-label');
+    clone.setAttribute('aria-hidden', 'true');
+    clone.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
+    clone.querySelectorAll('a[href]').forEach((el) => {
+      el.removeAttribute('href');
+      el.setAttribute('role', 'presentation');
+    });
+    clone.querySelectorAll('[tabindex]').forEach((el) => el.setAttribute('tabindex', '-1'));
+    // A clone is a snapshot, and the thing it is a snapshot of has animations
+    // running: the project tiles carry an inline opacity written frame by frame
+    // by the entrance motion, so whichever tiles were mid-fade when the stage
+    // divided copied an opacity of 0 and the daughter came out missing most of
+    // its spheres. Dropping the inline presentation properties leaves each
+    // element at its CSS resting state, which is the state a daughter wants;
+    // the simulation writes back the few it owns straight afterwards.
+    for (const el of clone.querySelectorAll('[style]')) {
+      for (const prop of ['opacity', 'visibility', 'filter', 'transform', 'animation', 'transition']) {
+        el.style.removeProperty(prop);
+      }
+    }
+    // These are rebuilt per body by the simulation; a copied one would be a
+    // second, stale progress arc sitting under the real one.
+    clone.querySelectorAll('.pv2-heat-halo, .pv2-project-progress, .pv2-explore-cue').forEach((el) => el.remove());
+    ensureCellLayer().appendChild(clone);
+    return clone;
+  }
+
+  function makeCell(index) {
+    const root = index === 0 ? stage : cloneStage();
+    if (index === 0) root.classList.add('is-mitosis-cell');
+    const cell = {
+      index,
+      root,
+      isPrimary: index === 0,
+      applied: { dx: 0, dy: 0, s: 1, sx: 1, sy: 1 },
+      shakePhase: Math.random() * Math.PI * 2,
+      bumperEls: null,
+      anim: null,
+    };
+    // Resolved once per cell: a hit inside a daughter must pulse that
+    // daughter's own heading, not the real page's.
+    cell.bumperEls = {
+      statement: root.querySelector('.pv2-overview__statement'),
+      'ux-work': root.querySelector('.pv2-gateway-link--ux'),
+      'all-games': root.querySelector('.pv2-gateway-link--unfinished'),
+    };
+    return cell;
+  }
+
+  function destroyCells() {
+    for (const cell of cells) {
+      if (!cell.isPrimary) continue;
+      cell.root.style.removeProperty('transform');
+      cell.root.style.removeProperty('--pv2-mitosis-rim');
+      cell.root.classList.remove('is-mitosis-cell', 'is-dividing');
+    }
+    cellLayer?.remove();
+    cellLayer = null;
+    cells = [];
+    document.documentElement.classList.remove('pv2-mitosis-divided');
+  }
+
+  // Write each cell's transform for this frame, and remember what was written
+  // so measureField() can take it back off again next frame.
+  function layoutCells(now) {
+    document.documentElement.classList.toggle('pv2-mitosis-divided', cells.length > 1);
+    const shakeAmp = reducedMotion() ? 0 : mitosisShake * mitosisShake * MITOSIS_SHAKE_AMPLITUDE;
+    // How strongly to draw each cell's rim. At rest the stage fills the screen
+    // and its walls are the screen's edges, so it needs no rim and gets none;
+    // as it pulls back, the walls move inboard to somewhere with nothing to
+    // mark them, and the rim fades in to say where the ball will bounce.
+    const rim = cells.length > 1
+      ? 1
+      : clamp((1 - mitosisZoom) / (1 - MITOSIS_ZOOM_FLOOR), 0, 1);
+    const rimValue = (Math.round(rim * 50) / 50).toFixed(2);
+    for (const cell of cells) {
+      const slot = cell.anim || cellSlot(cell.index, cellCount);
+      const s = slot.scale * mitosisZoom;
+      let dx = slot.x;
+      let dy = slot.y;
+      let sx = s * (slot.sx || 1);
+      let sy = s * (slot.sy || 1);
+      if (shakeAmp > 0.01) {
+        const t = now / 1000;
+        dx += Math.sin(t * 47 + cell.shakePhase) * shakeAmp;
+        dy += Math.cos(t * 41 + cell.shakePhase * 1.7) * shakeAmp * 0.72;
+      }
+      cell.applied = { dx, dy, s, sx, sy };
+      if (rimValue !== cell.lastRim) {
+        cell.root.style.setProperty('--pv2-mitosis-rim', rimValue);
+        cell.lastRim = rimValue;
+      }
+      const transform = `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0) scale(${sx.toFixed(4)}, ${sy.toFixed(4)})`;
+      if (transform !== cell.lastTransform) {
+        cell.root.style.transform = transform;
+        cell.lastTransform = transform;
+      }
+      if (!cell.isPrimary) {
+        const box = `${field.left.toFixed(1)}|${field.top.toFixed(1)}|${field.width.toFixed(1)}|${field.height.toFixed(1)}`;
+        if (box !== cell.lastBox) {
+          Object.assign(cell.root.style, {
+            left: `${field.left}px`,
+            top: `${field.top}px`,
+            width: `${field.width}px`,
+            height: `${field.height}px`,
+          });
+          cell.lastBox = box;
+        }
+      }
+    }
+  }
+
+  // A powered bumper hit is the only thing that drives any of this.
+  function registerMitosisHit(now) {
+    if (!hasUpgrade('flux-mitosis') || mitosisDivide || now < mitosisRestUntil) return;
+    // Once there is nothing left to divide into, the view stops pulling back
+    // too: a permanently shrunken stage with no payoff left would be a loss.
+    if (cellCount >= mitosisMaxCells()) return;
+    if (mitosisZoomTarget > MITOSIS_ZOOM_FLOOR + 1e-6) {
+      mitosisZoomTarget = Math.max(MITOSIS_ZOOM_FLOOR, mitosisZoomTarget - MITOSIS_ZOOM_STEP);
+      return;
+    }
+    mitosisShake = Math.min(1, mitosisShake + MITOSIS_SHAKE_PER_HIT);
+    if (mitosisShake >= 1) beginDivision(now);
+  }
+
+  function beginDivision(now) {
+    const toCount = Math.min(mitosisMaxCells(), cellCount * 2);
+    if (toCount <= cellCount) return;
+    const fromCount = cellCount;
+    const parents = cells.map((cell) => cellSlot(cell.index, fromCount));
+    // Every existing cell divides at once, so the arrangement stays a grid:
+    // one stage becomes two, two become four. Each daughter starts life as an
+    // exact copy of its parent — same positions, same velocities, same heat.
+    for (let index = fromCount; index < toCount; index += 1) {
+      const parentIndex = index - fromCount;
+      const cell = makeCell(index);
+      cell.applied = {
+        dx: parents[parentIndex].x,
+        dy: parents[parentIndex].y,
+        s: parents[parentIndex].scale * mitosisZoom,
+        sx: 1,
+        sy: 1,
+      };
+      cells.push(cell);
+      cloneBodiesInto(cell, cells[parentIndex]);
+    }
+    cellCount = toCount;
+    mitosisDivide = {
+      start: now,
+      from: [...parents, ...parents],
+      to: cells.map((cell) => cellSlot(cell.index, toCount)),
+      zoomFrom: mitosisZoom,
+    };
+    // The pull-back is spent: the room it made is what the daughters moved into.
+    mitosisZoom = 1;
+    mitosisZoomTarget = 1;
+    mitosisShake = 0;
+    for (const cell of cells) cell.root.classList.add('is-dividing');
+    // The daughters exist but have never been laid out. Pose them at t=0 (on
+    // top of their parent) and write that out now, so the frame that creates
+    // them cannot paint them unstyled at the field's origin.
+    updateDivision(now);
+    layoutCells(now);
+    spawnDivisionFlash();
+    window.dispatchEvent(new CustomEvent('pv2:mitosis', { detail: { cells: toCount } }));
+  }
+
+  function updateDivision(now) {
+    if (!mitosisDivide) return;
+    const t = clamp((now - mitosisDivide.start) / MITOSIS_DIVIDE_MS, 0, 1);
+    const ease = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    for (const cell of cells) {
+      const from = mitosisDivide.from[cell.index];
+      const to = mitosisDivide.to[cell.index];
+      // The neck: the membrane squeezes along the axis the daughters are
+      // travelling and swells across it, hardest at the half-way point. That
+      // pinch — not the translation — is what reads as a cell dividing.
+      const waist = Math.sin(Math.PI * Math.min(1, t / .82));
+      const horizontal = Math.abs(to.x - from.x) >= Math.abs(to.y - from.y);
+      cell.anim = {
+        x: from.x + (to.x - from.x) * ease,
+        y: from.y + (to.y - from.y) * ease,
+        // mitosisZoom is pinned at 1 for the whole division (the pull-back was
+        // spent starting it), so the zoom it was at is carried here instead.
+        scale: (from.scale + (to.scale - from.scale) * ease)
+          * (mitosisDivide.zoomFrom + (1 - mitosisDivide.zoomFrom) * ease),
+        sx: horizontal ? 1 - .17 * waist : 1 + .11 * waist,
+        sy: horizontal ? 1 + .11 * waist : 1 - .17 * waist,
+      };
+    }
+    if (t < 1) return;
+    for (const cell of cells) {
+      cell.anim = null;
+      cell.root.classList.remove('is-dividing');
+    }
+    mitosisDivide = null;
+    mitosisRestUntil = now + MITOSIS_REST_MS;
+  }
+
+  function spawnDivisionFlash() {
+    if (reducedMotion()) return;
+    const flash = document.createElement('div');
+    flash.className = 'pv2-mitosis-flash';
+    flash.setAttribute('aria-hidden', 'true');
+    Object.assign(flash.style, {
+      left: `${field.left}px`,
+      top: `${field.top}px`,
+      width: `${field.width}px`,
+      height: `${field.height}px`,
+    });
+    ensureFxLayer().appendChild(flash);
+    window.setTimeout(() => flash.remove(), MITOSIS_DIVIDE_MS);
+  }
+
+  // Build the daughter's bodies from the parent's. Geometry is copied rather
+  // than measured: at this instant the clone has not been laid out or
+  // transformed yet, and the sizes are identical to the parent's anyway. The
+  // two playgrounds are therefore genuinely the same game at the same instant,
+  // not two fresh starts — and they share project state by id, which is what
+  // makes one XP bar and one level serve all of them.
+  function cloneBodiesInto(cell, parentCell) {
+    const slots = [...cell.root.querySelectorAll('.pv2-float-slot')]
+      .filter((el) => el.querySelector('.pv2-project-tile'));
+    const parents = bodies.filter((body) => body.cell === parentCell);
+    slots.forEach((el, index) => {
+      const source = parents[index];
+      if (!source) return;
+      el.style.position = 'absolute';
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
+      el.style.left = '0px';
+      el.style.top = '0px';
+      el.style.transform = '';
+      el.style.transition = 'none';
+      el.style.removeProperty('--pv2-scroll-drift-y');
+      const body = {
+        ...source,
+        el,
+        cell,
+        // A mirrored nudge: perfect copies would trace identical paths for a
+        // long time, which reads as a rendering fault rather than two games.
+        vx: -source.vx,
+        phase: source.phase + Math.PI,
+        contacts: new Set(source.contacts),
+        halo: null,
+        heatTier: -1,
+        heatOpacity: 0,
+        heatValue: -1,
+        lastLeft: NaN,
+        lastTop: NaN,
+        progressEl: null,
+        progressHideTimer: 0,
+      };
+      el.classList.add('is-physics-body');
+      renderBodyPosition(body);
+      ensureProjectProgressUI(body);
+      refreshProjectProgressUI(body, false, true);
+      bodies.push(body);
+    });
   }
 
   function init() {
@@ -3717,13 +4248,23 @@
     // the stage reports its play-area height rather than the static grid height.
     document.documentElement.classList.add('pv2-physics-live');
 
-    const stageRect = stage.getBoundingClientRect();
-    bodies = elements.map((el, index) => makeBody(el, index, stageRect));
+    // Measure with no transform of ours on the stage: everything below is in
+    // the simulation's own, unscaled coordinates.
+    stage.style.removeProperty('transform');
+    cells = [makeCell(0)];
+    cellCount = clamp(cellCount, 1, mitosisMaxCells());
+    measureField();
+    const stageRect = cellFrame(cells[0]);
+    bodies = elements.map((el, index) => {
+      const body = makeBody(el, index, stageRect);
+      body.cell = cells[0];
+      return body;
+    });
     for (let pass = 0; pass < 20; pass += 1) {
       for (let i = 0; i < bodies.length; i += 1) {
         for (let j = i + 1; j < bodies.length; j += 1) resolveBodyPair(bodies[i], bodies[j]);
       }
-      const bumpers = bumperRects(stageRect);
+      const bumpers = bumperRects(stageRect, cells[0]);
       for (const body of bodies) {
         for (const bumper of bumpers) resolveBumper(body, bumper, false);
         constrain(body, stageRect, false);
@@ -3731,8 +4272,23 @@
     }
 
     // Final guarantee: no block starts overlapping a text block.
-    const spawnBumpers = bumperRects(stageRect);
+    const spawnBumpers = bumperRects(stageRect, cells[0]);
     for (const body of bodies) ejectFromBumpers(body, stageRect, spawnBumpers);
+
+    // A division the player already earned survives a resize or a re-mount:
+    // rebuild the daughters from the settled primary, with no animation.
+    const restoreTo = cellCount;
+    cellCount = 1;
+    while (cellCount < restoreTo) {
+      const parents = [...cells];
+      for (let i = 0; i < parents.length && cells.length < restoreTo; i += 1) {
+        const cell = makeCell(cells.length);
+        cells.push(cell);
+        cloneBodiesInto(cell, parents[i]);
+      }
+      cellCount = cells.length;
+    }
+    layoutCells(performance.now());
 
     for (const body of bodies) {
       body.homeX = body.x;
