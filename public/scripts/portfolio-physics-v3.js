@@ -22,7 +22,7 @@
   const POINTER_COOLDOWN = 85;
   // Context hover: after a short dwell, gently settle the hovered sphere onto
   // the pointer so the player can inspect it in place.
-  const CONTEXT_HOVER_DELAY = 600;
+  const CONTEXT_HOVER_DELAY = 300;
   const CONTEXT_HOVER_FOLLOW_SPEED = 0.0018;
   const CONTEXT_HOVER_RESPONSE_MS = 110;
   const CONTEXT_HOVER_RELEASE_PAD = 28;
