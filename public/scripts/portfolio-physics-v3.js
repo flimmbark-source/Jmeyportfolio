@@ -75,8 +75,8 @@
   const HEAT_MIN_VISIBLE = 0.04;    // below this the heat halo stays hidden
   const HEAT_TIERS = 5;             // box-shadow color steps (rewritten only on change)
   const TREE_WIDTH = 2320;
-  const TREE_HEIGHT = 1520;
-  const TREE_CENTER = { x: 130, y: 600 };
+  const TREE_HEIGHT = 1320;
+  const TREE_CENTER = { x: 130, y: 456 };
   const TREE_NODE_WIDTH = 320;
   const TREE_NODE_HEIGHT = 86;
   const TREE_ROOT_WIDTH = 128;
@@ -120,6 +120,17 @@
   const TREE_ZOOM_MIN = 0.45;
   const TREE_ZOOM_MAX = 1.9;
   const TREE_DEFAULT_ZOOM = 1.18;
+  // The floor the OPENING view is allowed to shrink to. Fitting every revealed
+  // node is only worth doing while the nodes stay readable: this tree is four
+  // branches deep and, on a short window, fitting it whole drove the cards to
+  // the 0.45 manual floor — 144px wide, the text unreadable. Below this the
+  // view keeps the cards legible and lets the player drag to the rest instead.
+  // Set so a short window (a laptop with the browser chrome taking half of it)
+  // still fits the whole opening fan rather than clipping the top and bottom
+  // branch off it; taller windows fit at well above this and never reach it.
+  // TREE_ZOOM_MIN stays where it is, so zooming out by hand still reaches the
+  // whole tree; this only governs what the panel picks for you on open.
+  const TREE_FIT_MIN = 0.62;
 
 
   // --- Per-project progression --------------------------------------------
@@ -239,12 +250,16 @@
     { id: 'flux-crit', branch: 'flux', depth: 2, title: 'Critical Hit', effect: '15% crit · ×5 points', icon: 'target', cost: 150, requires: ['flux-core'] },
     { id: 'flux-battle', branch: 'flux', depth: 3, title: 'Critical Combo', effect: '30% crit · chains ×4', icon: 'swords', cost: 320, requires: ['flux-crit'] },
     { id: 'flux-bushido', branch: 'flux', depth: 3, title: 'Bushido', effect: 'Dbl-click → slice time', icon: 'katana', cost: 280, requires: ['flux-crit'] },
+    // Gravity Well is the gateway to the world-altering modes: once the stage
+    // has its own physics, it can go on to run itself or to divide. Keeping
+    // every branch two wide at depth 2 is what lets the four branch heads sit
+    // close enough together to read as one fan when the panel opens.
     { id: 'flux-gravity', branch: 'flux', depth: 2, title: 'Gravity Well', effect: 'Physics · fall + bounce', icon: 'gravity', cost: 90, requires: ['flux-core'] },
-    { id: 'flux-idle', branch: 'flux', depth: 2, title: 'Idle Engine', effect: 'Idle · +2 / sec', icon: 'clock', cost: 110, requires: ['flux-core'] },
-    { id: 'flux-auto', branch: 'flux', depth: 3, title: 'Autopilot', effect: 'Auto · flicks a block', icon: 'cpu', cost: 220, requires: ['flux-idle'] },
-    { id: 'flux-mult', branch: 'flux', depth: 4, title: 'Compound Interest', effect: 'Idle · ×2 points', icon: 'multiply', cost: 120, requires: ['flux-auto'] },
-    { id: 'flux-mitosis', branch: 'flux', depth: 2, title: 'Mitosis', effect: 'Hits zoom out · stage divides', icon: 'mitosis', cost: 140, requires: ['flux-core'], theme: 'stack' },
-    { id: 'flux-swarm', branch: 'flux', depth: 3, title: 'Proliferation', effect: 'Divides again · up to 4 stages', icon: 'proliferate', cost: 360, requires: ['flux-mitosis'], theme: 'stack' },
+    { id: 'flux-mitosis', branch: 'flux', depth: 3, title: 'Mitosis', effect: 'Hits zoom out · stage divides', icon: 'mitosis', cost: 140, requires: ['flux-gravity'], theme: 'stack' },
+    { id: 'flux-swarm', branch: 'flux', depth: 4, title: 'Proliferation', effect: 'Divides again · up to 4 stages', icon: 'proliferate', cost: 360, requires: ['flux-mitosis'], theme: 'stack' },
+    { id: 'flux-idle', branch: 'flux', depth: 3, title: 'Idle Engine', effect: 'Idle · +2 / sec', icon: 'clock', cost: 110, requires: ['flux-gravity'] },
+    { id: 'flux-auto', branch: 'flux', depth: 4, title: 'Autopilot', effect: 'Auto · flicks a block', icon: 'cpu', cost: 220, requires: ['flux-idle'] },
+    { id: 'flux-mult', branch: 'flux', depth: 5, title: 'Compound Interest', effect: 'Idle · ×2 points', icon: 'multiply', cost: 120, requires: ['flux-auto'] },
   ];
 
   const UPGRADE_BY_ID = new Map(UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
@@ -257,32 +272,54 @@
   // column per depth: every connector is then a short curve between adjacent
   // columns inside one lane, which is what removes the long diagonal runs the
   // cross-branch Flux prerequisites used to need.
+  // Presentation coordinates only. One lane per branch, one column per depth,
+  // every connector a short curve between adjacent columns inside one lane.
+  //
+  // The rows are pitched off the DEEPEST column (x1250 carries twelve nodes,
+  // more than any other), because that column is what sets the tree's height;
+  // each parent then sits at the midpoint of its own children. Keeping every
+  // lane packed against its neighbour is what stops the opening view — root
+  // plus the four branch heads, the only thing fog-of-war reveals at first —
+  // from being so tall that fitting it shrinks the cards to illegibility.
+  // Presentation coordinates only. One lane per branch, one column per depth.
+  //
+  // What the panel shows when it opens is the root and the four branch heads —
+  // fog-of-war hides the rest — so those five nodes are what the opening zoom
+  // has to fit, and their vertical span is what decides how big the cards can
+  // be. Each head therefore sits as close to its neighbour as its own pair of
+  // children allows: a two-row fan at depth 2 needs 96px, so the heads pack at
+  // 192px and the whole opening view is 830px rather than 1188px tall.
+  //
+  // Deeper columns are allowed to run longer than their parents' column and so
+  // a few depth-3 nodes hang below the node they grow from. That only shows
+  // once a branch has been bought into, by which point the view has been
+  // panned anyway — and it is the price of the heads staying close together.
   const UPGRADE_TREE_LAYOUT = new Map([
     // Walls
-    ['walls-1', { x: 450, y: 150 }],
-    ['walls-hard', { x: 850, y: 102 }], ['walls-value', { x: 850, y: 198 }],
-    ['walls-ricochet', { x: 1250, y: 102 }], ['walls-echo', { x: 1250, y: 198 }],
+    ['walls-1', { x: 450, y: 168 }],
+    ['walls-hard', { x: 850, y: 120 }], ['walls-value', { x: 850, y: 216 }],
+    ['walls-ricochet', { x: 1250, y: 120 }], ['walls-echo', { x: 1250, y: 216 }],
     // Bounce
-    ['bounce-1', { x: 450, y: 390 }],
-    ['bounce-force', { x: 850, y: 342 }], ['bounce-value', { x: 850, y: 438 }],
-    ['bounce-charge', { x: 1250, y: 342 }], ['bounce-combo', { x: 1250, y: 438 }],
-    ['bounce-chain', { x: 1650, y: 390 }],
+    ['bounce-1', { x: 450, y: 360 }],
+    ['bounce-force', { x: 850, y: 312 }], ['bounce-value', { x: 850, y: 408 }],
+    ['bounce-charge', { x: 1250, y: 312 }], ['bounce-combo', { x: 1250, y: 408 }],
+    ['bounce-chain', { x: 1650, y: 360 }],
     // Friction, with the Velocity spine as its lower sub-lane
-    ['fric-1', { x: 450, y: 680 }],
-    ['fric-glide', { x: 850, y: 584 }], ['fric-keep', { x: 850, y: 680 }],
-    ['fric-low', { x: 1250, y: 584 }], ['fric-perpetual', { x: 1250, y: 680 }],
-    ['vel-1', { x: 850, y: 848 }],
-    ['vel-accel', { x: 1250, y: 800 }], ['vel-cap', { x: 1250, y: 896 }],
-    ['vel-launch', { x: 1650, y: 800 }], ['vel-momentum', { x: 1650, y: 896 }],
-    ['vel-overdrive', { x: 2050, y: 848 }],
+    ['fric-1', { x: 450, y: 552 }],
+    ['fric-glide', { x: 850, y: 504 }], ['fric-keep', { x: 850, y: 600 }],
+    ['fric-low', { x: 1250, y: 504 }], ['fric-perpetual', { x: 1250, y: 600 }],
+    ['vel-1', { x: 850, y: 714 }],
+    ['vel-accel', { x: 1250, y: 696 }], ['vel-cap', { x: 1250, y: 792 }],
+    ['vel-launch', { x: 1650, y: 696 }], ['vel-momentum', { x: 1650, y: 792 }],
+    ['vel-overdrive', { x: 2050, y: 744 }],
     // Modes
-    ['flux-core', { x: 450, y: 1180 }],
-    ['flux-crit', { x: 850, y: 1060 }],
-    ['flux-battle', { x: 1250, y: 1012 }], ['flux-bushido', { x: 1250, y: 1108 }],
-    ['flux-gravity', { x: 850, y: 1170 }],
-    ['flux-idle', { x: 850, y: 1280 }],
-    ['flux-auto', { x: 1250, y: 1280 }], ['flux-mult', { x: 1650, y: 1280 }],
-    ['flux-mitosis', { x: 850, y: 1390 }], ['flux-swarm', { x: 1250, y: 1390 }],
+    ['flux-core', { x: 450, y: 744 }],
+    ['flux-crit', { x: 850, y: 810 }],
+    ['flux-battle', { x: 1250, y: 888 }], ['flux-bushido', { x: 1250, y: 984 }],
+    ['flux-gravity', { x: 850, y: 906 }],
+    ['flux-mitosis', { x: 1250, y: 1080 }], ['flux-swarm', { x: 1650, y: 1080 }],
+    ['flux-idle', { x: 1250, y: 1176 }],
+    ['flux-auto', { x: 1650, y: 1176 }], ['flux-mult', { x: 2050, y: 1176 }],
   ]);
 
 
@@ -2057,7 +2094,7 @@
     const bounds = visibleTreeBounds();
     treeZoom = window.innerWidth <= MOBILE_BREAKPOINT ? 1 : clamp(Math.min(
       TREE_DEFAULT_ZOOM, vp.w / (bounds.right - bounds.left), vp.h / (bounds.bottom - bounds.top)
-    ), TREE_ZOOM_MIN, TREE_ZOOM_MAX);
+    ), TREE_FIT_MIN, TREE_ZOOM_MAX);
     centerTreeOn((bounds.left + bounds.right) / 2, (bounds.top + bounds.bottom) / 2);
   }
 
