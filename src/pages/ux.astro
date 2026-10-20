@@ -1,368 +1,78 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
-
-const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
-const featuredProjects = projects.filter((project) => project.data.image);
-const testimonialEntry = (await getCollection('testimonials'))[0];
-const testimonial = testimonialEntry?.data;
-
-const flagshipCopy = {
-  idl: {
-    title: 'Rebuilding a 1,000-store rollout workflow',
-    oneLiner: 'Cut store drawing time from 8 hours to 37 minutes and saved ~7.4k hours across a retail rollout.',
-    tags: ['Workflow design', 'Automation', 'Ops tools']
-  },
-  'letter-river': {
-    title: 'Letter River Learning App',
-    oneLiner: 'Built a full-stack language-learning platform with spaced repetition and PWA architecture for accessible, offline-first learning.',
-    tags: ['Educational Design', 'AI-Powered Development', 'Accessibility']
-  }
-};
-
-const flagshipProjects = featuredProjects.filter(({ data }) => data.slug && flagshipCopy[data.slug]);
-const supportingProjects = featuredProjects.filter(({ data }) => !data.slug || !flagshipCopy[data.slug]);
-
-const toolbox = [
-  'Journey mapping',
-  'Rapid prototyping',
-  'AI workflows',
-  'Usability testing',
-  'Design systems',
-  'Service blueprints'
+const projects = await getCollection('projects');
+const selectedSlugs = ['letter-river', 'idl', 'ai-archiving'];
+const selected = selectedSlugs.map((slug) => projects.find((project) => project.data.slug === slug));
+const supporting = projects.filter((project) => !selectedSlugs.includes(project.data.slug)).sort((a, b) => a.data.order - b.data.order);
+const labels = { 'letter-river': 'Independent prototype', idl: 'Professional design engineering', 'ai-archiving': 'Independent concept / prototype' };
+const experience = [
+  { dates: '2022–2026 · Volunteer', company: 'Tech Fleet Community DAO', role: 'UX Researcher', detail: 'Designed and conducted interviews, surveys, and A/B tests. Co-designed app engagement features and presented recommendations to the client, who incorporated elements into its live product.' },
+  { dates: '2023–2026', company: 'Active Learning Adventures', role: 'Design Lead', detail: 'Used primary research, learning literature, rapid prototypes, playtesting, and stakeholder feedback to explore and revise learning-experience concepts.' },
+  { dates: 'May 2015–May 2017', company: 'IDL Worldwide', role: 'Design Engineer', detail: 'Worked with the team to reduce store-drawing turnaround from eight hours to two hours, then personally reduced it to 37 minutes. Digitized 500+ AT&T locations in SolidWorks for Apple fixture installations.' },
+  { dates: '2018', company: 'SIG SAUER', role: 'Design Engineer', detail: 'Automated the migration of inventory and ticket data from large spreadsheets into Oracle.' }
 ];
-
-const principles = [
-  {
-    title: 'Start with real people',
-    description: 'I design with real constraints, not just personas in a slide.',
-    bullets: [
-      'Talk to users early, even if it is scrappy',
-      'Let quotes and clips shape requirements',
-      'Write problems in plain language first'
-    ]
-  },
-  {
-    title: 'Ship small, learn fast',
-    description: 'I help teams move from big bets to safe, testable slices.',
-    bullets: [
-      'Frame work as 1–2 week experiments',
-      'Prototype workflows before full build',
-      'Measure behavior, not opinions'
-    ]
-  },
-  {
-    title: 'Make complexity legible',
-    description: 'I turn messy systems into simple, shareable maps.',
-    bullets: [
-      'Show the whole flow on one page',
-      'Highlight risk, not every detail',
-      'Use visuals that non-designers can read'
-    ]
-  }
-];
-
-const processSteps = [
-  {
-    step: '01',
-    title: 'Listen',
-    description: 'Quick interviews and artifact reviews to understand how work really happens today.'
-  },
-  {
-    step: '02',
-    title: 'Map',
-    description: 'Visualize the flow, pain points, and opportunities on a single shared canvas.'
-  },
-  {
-    step: '03',
-    title: 'Prototype',
-    description: 'Test key moments with clickable flows and lightweight experiments.'
-  },
-  {
-    step: '04',
-    title: 'Ship & learn',
-    description: 'Launch the smallest valuable slice, then adjust based on real usage.'
-  }
-];
+const navLinks = [{ href: '#projects', label: 'Selected work' }, { href: '#experience', label: 'Experience' }, { href: '#contact', label: 'Contact' }];
 ---
-<BaseLayout
-  title="Jacob Meyerkopf | Product Designer Portfolio"
-  description="Product designer blending research, service design, and experimentation to ship measurable outcomes."
-  mainClass="mx-auto max-w-6xl px-6 pb-24 pt-16"
->
-  <section
-    id="about-me"
-    class="mb-28 grid gap-12 scroll-mt-24 lg:grid-cols-[1.1fr_0.9fr] lg:items-center"
-    data-animate-on-scroll
-    data-animate-initial
-  >
+<BaseLayout title="Jacob Meyerkopf | Product Design & UX Research" description="UX research, independent interface prototypes, and professional design-engineering work by Jacob Meyerkopf." mainClass="mx-auto max-w-6xl px-5 pb-20 pt-12 sm:px-6 sm:pt-16" navLinks={navLinks}>
+  <section id="about-me" class="grid gap-8 lg:grid-cols-[1.35fr_0.65fr] lg:items-end">
     <div>
-      <h1 class="mt-6 text-4xl font-black leading-tight sm:text-5xl md:text-6xl">I’m a designer who sees where people struggle.</h1>
-      <p class="mt-4 max-w-2xl text-lg text-slate-700 dark:text-slate-200">
-        I’m Jacob, a product designer &amp; researcher. I uncovered my disabilities later in life, and that experience has enabled me notice hidden problems and move through them with others.
-      </p>
-    </div>
-    <aside
-      class="space-y-6 rounded-3xl border border-slate-200/70 bg-white/80 p-8 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70"
-      data-animate-on-scroll
-      data-animate-delay="0.15s"
-    >
-      <h2 class="text-sm font-semibold uppercase tracking-[0.35em] text-brand-600">Recent recognition</h2>
-      <p class="text-base text-slate-700 dark:text-slate-200">
-        "Jacob reframed a stalled project with assumption-mapping workshops and weekly tests. We hit every milestone with confidence." — <strong>Senior Scout, NextStep Basketball</strong>
-      </p>
-      <div class="flex flex-wrap gap-3">
-        <span class="pill">DesignOps</span>
-        <span class="pill">Inclusive Research</span>
-        <span class="pill">Design Systems</span>
+      <p class="eyebrow">Product design &amp; UX research</p>
+      <h1 class="mt-4 max-w-3xl text-4xl font-bold leading-tight tracking-tight text-slate-950 dark:text-white sm:text-5xl">Making complex work easier to navigate.</h1>
+      <p class="mt-6 max-w-2xl text-lg leading-relaxed text-slate-700 dark:text-slate-200">I'm Jacob Meyerkopf. I bring UX research, prototyping, and a design-engineering background to problems where people need a clearer next step.</p>
+      <div class="mt-7 flex flex-wrap gap-3">
+        <a class="ux-button ux-button-primary" href="#projects">Explore selected work</a>
+        <a class="ux-button" href="/resume/Jacob_Meyerkopf_Product_UX_Resume.pdf" download>Download resume (PDF)</a>
       </div>
+    </div>
+    <aside class="ux-panel">
+      <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Background</h2>
+      <p class="mt-3 leading-relaxed text-slate-700 dark:text-slate-200">Client application research at Tech Fleet, learning-experience prototyping at Active Learning Adventures, and workflow improvement at IDL Worldwide.</p>
+      <p class="mt-4 text-sm text-slate-600 dark:text-slate-300">Tel Aviv-Yafo, Israel · Native English · Authorized to work in Israel</p>
     </aside>
   </section>
-
-  <section id="projects" class="mb-28 scroll-mt-24" data-animate-on-scroll>
-    <div class="space-y-16">
-      <div class="grid gap-8 lg:grid-cols-2">
-        {flagshipProjects.map((project, index) => {
-          const data = project.data;
-          const copy = data.slug ? flagshipCopy[data.slug] : undefined;
-          return (
-            <article
-              data-polish="panel"
-              class="relative overflow-hidden rounded-3xl border-2 border-brand-500/30 bg-white/90 p-8 shadow-xl transition hover:-translate-y-1 hover:shadow-2xl dark:border-brand-400/30 dark:bg-slate-900/80"
-              data-animate-on-scroll
-              data-animate-delay={`${index * 80}ms`}
-            >
-              <div class={`grid gap-6 ${data.image ? 'md:grid-cols-[1.05fr_0.95fr]' : ''}`}>
-                <div class="space-y-4">
-                  <h3 class="text-2xl font-semibold text-slate-900 dark:text-white">{copy?.title || data.title}</h3>
-                  <p class="text-base text-slate-700 dark:text-slate-200">{copy?.oneLiner || data.summary}</p>
-                  {copy?.tags && (
-                    <div class="flex flex-wrap gap-2">
-                      {copy.tags.map((tag) => (
-                        <span class="pill">{tag}</span>
-                      ))}
-                    </div>
-                  )}
-                  {data.links && (
-                    <div class="flex flex-wrap gap-3">
-                      {data.links.map((link) => (
-                        <a
-                          href={link.href}
-                          target={link.external ? '_blank' : undefined}
-                          rel={link.external ? 'noopener noreferrer' : undefined}
-                          class={
-                            link.variant === 'primary'
-                              ? 'inline-flex items-center font-semibold text-brand-600 transition hover:text-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950'
-                              : 'inline-flex items-center font-semibold text-slate-700 transition hover:text-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-200 dark:focus-visible:ring-offset-slate-950'
-                          }
-                        >
-                          {link.label}<span aria-hidden="true" class="ml-2">→</span>
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                {data.image && (
-                  <figure class="overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100/70 p-3 dark:border-slate-800/60 dark:bg-slate-900/60">
-                    <img src={data.image.src} alt={data.image.alt} class="w-full rounded-xl object-cover" loading="lazy" />
-                  </figure>
-                )}
-              </div>
-            </article>
-          );
-        })}
-      </div>
-
-      {supportingProjects.length > 0 && (
-        <div class="space-y-6">
-          <div class="grid gap-6 md:grid-cols-2">
-            {supportingProjects.map((project, index) => {
-              const data = project.data;
-              return (
-                <article
-                  data-polish="panel"
-                  class="rounded-2xl border border-slate-200/80 bg-white/70 p-6 shadow-md transition hover:-translate-y-1 hover:shadow-lg dark:border-slate-800/60 dark:bg-slate-900/70"
-                  data-animate-on-scroll
-                  data-animate-delay={`${index * 60}ms`}
-                >
-                  <div class="space-y-4">
-                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                      <div class="space-y-2 sm:max-w-[65%]">
-                        <p class="text-xs font-semibold uppercase tracking-[0.25em] text-brand-600">{data.tagline}</p>
-                        <h4 class="text-xl font-semibold text-slate-900 dark:text-white">{data.title}</h4>
-                        <p class="text-sm text-slate-700 dark:text-slate-200">{data.summary}</p>
-                      </div>
-                      {data.image && (
-                        <figure class="overflow-hidden rounded-xl border border-slate-200/70 bg-slate-100/70 p-2 dark:border-slate-800/60 dark:bg-slate-900/60 sm:h-full sm:min-w-[140px]">
-                          <img src={data.image.src} alt={data.image.alt} class="h-28 w-full rounded-lg object-cover" loading="lazy" />
-                        </figure>
-                      )}
-                    </div>
-                    {data.links && (
-                      <div class="flex flex-wrap gap-3">
-                        {data.links.map((link) => (
-                          <a
-                            href={link.href}
-                            target={link.external ? '_blank' : undefined}
-                            rel={link.external ? 'noopener noreferrer' : undefined}
-                            class="inline-flex items-center font-semibold text-slate-800 transition hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-100 dark:focus-visible:ring-offset-slate-950"
-                          >
-                            {link.label}<span aria-hidden="true" class="ml-2">→</span>
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </article>
-              );
-            })}
+  <section id="projects" class="mt-16 scroll-mt-24">
+    <div class="mb-7 max-w-2xl">
+      <h2 class="text-3xl font-bold text-slate-950 dark:text-white">Selected work</h2>
+      <p class="mt-3 leading-relaxed text-slate-700 dark:text-slate-200">A learning interface, a professional CAD workflow, and an AI review concept. Each case study identifies the work's scope and status.</p>
+    </div>
+    <div class="grid gap-6">
+      {selected.map(({ data }) => (
+        <article data-polish="panel" class={`grid gap-6 overflow-hidden rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900/90 sm:p-8 ${data.image ? 'lg:grid-cols-[1.15fr_0.85fr] lg:items-center' : ''}`}>
+          <div>
+            <p class="eyebrow">{labels[data.slug]}</p>
+            <h3 class="mt-3 text-2xl font-bold text-slate-950 dark:text-white">{data.title}</h3>
+            <p class="mt-4 max-w-3xl leading-relaxed text-slate-700 dark:text-slate-200">{data.summary}</p>
+            <ul class="mt-5 space-y-2 text-sm text-slate-600 dark:text-slate-300">{data.highlights.map((highlight) => <li class="flex gap-2"><span aria-hidden="true" class="text-brand-600 dark:text-brand-300">•</span><span>{highlight}</span></li>)}</ul>
+            <div class="mt-6 flex flex-wrap gap-3">{data.links?.map((link) => <a class={`ux-button ${link.variant === 'primary' ? 'ux-button-primary' : ''}`} href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noopener noreferrer' : undefined}>{link.label}<span class="sr-only">: {data.title}{link.external ? ' (opens in a new tab)' : ''}</span></a>)}</div>
           </div>
-        </div>
-      )}
+          {data.image && <figure class="rounded-2xl border border-slate-200 bg-slate-100 p-3 dark:border-slate-700 dark:bg-slate-950"><img src={data.image.src} alt={data.image.alt} class="max-h-96 w-full rounded-xl object-contain" loading="lazy" /></figure>}
+        </article>
+      ))}
     </div>
   </section>
-
-  <section
-    id="methods"
-    class="mb-28 space-y-10 scroll-mt-24"
-    data-animate-on-scroll
-  >
-    <div class="max-w-3xl space-y-4">
-      <p class="text-xs font-semibold uppercase tracking-[0.25em] text-brand-600">Methods</p>
-      <h2 class="text-3xl font-bold sm:text-4xl">Clear tools, simple rules, fast loops</h2>
-      <p class="text-base leading-relaxed text-slate-600 dark:text-slate-300">
-        I work with teams who ship often, juggle constraints, and still care about the details.
-        Together we listen, map the work, test small slices, and ship tools that feel lighter and easier to trust.
-      </p>
-    </div>
-
-    <div class="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
-      <div class="space-y-8">
-        <div>
-          <p class="text-xs font-semibold uppercase tracking-[0.25em] text-brand-600">Principles in practice</p>
-          <ul class="mt-3 space-y-3 text-sm text-slate-700 dark:text-slate-200">
-            {principles.map((principle) => (
-              <li class="flex gap-3">
-                <span class="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" />
-                <div>
-                  <p class="font-semibold text-slate-900 dark:text-white">{principle.title}</p>
-                  <p class="mt-1 text-xs text-slate-600 dark:text-slate-300">{principle.description}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <p class="text-xs font-semibold uppercase tracking-[0.25em] text-brand-600">Process at a glance</p>
-          <ol class="mt-3 flex flex-wrap gap-4 text-xs text-slate-700 dark:text-slate-200">
-            {processSteps.map((step, index) => (
-              <li class="flex items-center gap-2">
-                <span class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-300 text-[0.7rem] font-semibold text-brand-600 dark:border-slate-600">{step.step}</span>
-                <span class="font-medium">{step.title}</span>
-                {index !== processSteps.length - 1 && <span aria-hidden="true" class="text-slate-400">→</span>}
-              </li>
-            ))}
-          </ol>
-        </div>
-      </div>
-
-      <div class="space-y-4 rounded-3xl border border-slate-200/70 bg-gradient-to-br from-brand-50 via-white to-transparent p-6 shadow-lg transition dark:border-slate-800/60 dark:from-brand-900/40 dark:via-slate-900 dark:to-transparent">
-        <div class="flex items-center justify-between gap-2">
-          <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Toolbox</h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400">What I reach for most</p>
-        </div>
-        <div class="flex flex-wrap gap-2 text-xs text-slate-700 dark:text-slate-200">
-          {toolbox.map((item) => <span key={item} class="rounded-full border border-slate-200/80 px-3 py-1 dark:border-slate-700">{item}</span>)}
-        </div>
-      </div>
-    </div>
+  <section id="experience" class="mt-16 scroll-mt-24">
+    <h2 class="text-3xl font-bold text-slate-950 dark:text-white">Professional experience</h2>
+    <div class="mt-7 grid gap-5 md:grid-cols-2">{experience.map((item) => <article class="ux-panel"><p class="text-sm text-brand-700 dark:text-brand-300">{item.dates}</p><h3 class="mt-2 text-xl font-bold">{item.company}</h3><p class="mt-1 font-semibold">{item.role}</p><p class="mt-3 leading-relaxed text-slate-700 dark:text-slate-200">{item.detail}</p></article>)}</div>
   </section>
-
-  {testimonial && (
-    <section class="mb-28 scroll-mt-24" data-animate-on-scroll>
-      <div class="grid gap-10 rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-lg transition dark:border-slate-800/60 dark:bg-slate-900/70 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        <div class="space-y-4">
-          <p class="text-xs font-semibold uppercase tracking-[0.25em] text-brand-600">Collaboration</p>
-          <h2 class="text-3xl font-bold sm:text-4xl">Working together</h2>
-          <blockquote class="text-base leading-relaxed text-slate-700 dark:text-slate-200">“{testimonial.quote}”</blockquote>
-          <p class="text-xs text-slate-700 dark:text-slate-300">— {testimonial.source}</p>
-        </div>
-        <div class="space-y-3 rounded-3xl border border-slate-200/80 bg-gradient-to-br from-brand-50 via-white to-transparent p-5 text-xs text-slate-700 dark:border-slate-800/60 dark:from-brand-900/30 dark:via-slate-900 dark:text-slate-300">
-          <h3 class="text-sm font-semibold">What people notice</h3>
-          <ul class="mt-2 space-y-2">
-            {testimonial.highlights.map((highlight) => (
-              <li class="flex items-start gap-2">
-                <span class="mt-1 inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" />
-                <span>{highlight}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </section>
-  )}
-
-  <section
-    id="contact"
-    class="rounded-3xl border border-brand-500/20 bg-gradient-to-r from-brand-700/70 via-brand-500/60 to-brand-300/60 p-[1px] shadow-xl scroll-mt-24"
-    data-animate-on-scroll
-  >
-    <div class="rounded-[calc(1.5rem-1px)] bg-white/85 p-10 text-center backdrop-blur-sm dark:bg-slate-950/85">
-      <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">Let's build what's next</p>
-      <h2 class="mt-4 text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">Ready to turn complexity into momentum?</h2>
-      <p class="mt-3 text-base font-medium text-slate-700 dark:text-slate-200">For leaders seeking a partner who can translate ambiguity into confident product moves.</p>
-      <p class="mt-4 text-lg text-slate-700 dark:text-slate-200">
-        I'm exploring opportunities across product design, UX research, and emerging AI-driven roles. Share your challenge and I'll respond within two business days.
-      </p>
-      <div class="mt-8 flex flex-wrap justify-center gap-4">
-        <a href="mailto:jmeyerkopf@gmail.com" class="cta-button cta-button--accent inline-flex items-center rounded-full bg-slate-900 px-6 py-3 font-semibold text-white shadow-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 dark:bg-white dark:text-slate-900 dark:focus-visible:ring-slate-900 dark:focus-visible:ring-offset-slate-50">Let's talk</a>
-        <a href="https://www.linkedin.com/in/jacobmeyerkopf/" target="_blank" rel="noopener noreferrer" class="cta-button cta-button--subtle inline-flex items-center rounded-full border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:text-slate-200 dark:hover:border-brand-400 dark:hover:text-brand-200 dark:focus-visible:ring-offset-slate-950">Connect on LinkedIn</a>
-      </div>
+  <section class="mt-16">
+    <h2 class="text-2xl font-bold text-slate-950 dark:text-white">Further explorations</h2>
+    <div class="mt-6 grid gap-5 md:grid-cols-3">{supporting.map(({ data }) => <article class="ux-panel"><h3 class="text-lg font-bold">{data.title}</h3><p class="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-200">{data.summary}</p><div class="mt-4 flex flex-col items-start gap-3">{data.links?.map((link) => <a class="font-semibold text-brand-700 underline underline-offset-4 dark:text-brand-300" href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noopener noreferrer' : undefined}>{link.label}<span class="sr-only">: {data.title}{link.external ? ' (opens in a new tab)' : ''}</span></a>)}</div></article>)}</div>
+  </section>
+  <section id="contact" class="mt-16 scroll-mt-24 rounded-3xl bg-slate-900 p-7 text-white sm:p-10 dark:border dark:border-slate-700">
+    <h2 class="text-3xl font-bold">Let's talk about the work.</h2>
+    <p class="mt-4 max-w-2xl leading-relaxed text-slate-200">I'm exploring product-design and UX-research opportunities. Contact me to discuss a role or ask about a project.</p>
+    <div class="mt-6 flex flex-wrap gap-x-6 gap-y-4 font-semibold">
+      <a class="underline underline-offset-4" href="mailto:jmeyerkopf@gmail.com">jmeyerkopf@gmail.com</a>
+      <a class="underline underline-offset-4" href="https://www.linkedin.com/in/jacobmeyerkopf/" target="_blank" rel="noopener noreferrer">LinkedIn<span class="sr-only"> (opens in a new tab)</span></a>
+      <a class="underline underline-offset-4" href="/resume/Jacob_Meyerkopf_Product_UX_Resume.pdf" download>Resume (PDF)</a>
+      <a class="underline underline-offset-4" href="/">Creative playground</a>
     </div>
   </section>
 </BaseLayout>
-
-<script is:inline>
-  (() => {
-    const animatedElements = document.querySelectorAll('[data-animate-on-scroll]');
-    if (!animatedElements.length) return;
-
-    const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const shouldReduce = reduceMotionQuery.matches;
-
-    const revealElement = (element) => {
-      element.classList.add('is-visible');
-    };
-
-    animatedElements.forEach((element) => {
-      const delay = element.dataset.animateDelay;
-      if (delay) element.style.transitionDelay = delay;
-    });
-
-    if (shouldReduce || !('IntersectionObserver' in window)) {
-      animatedElements.forEach(revealElement);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            revealElement(entry.target);
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { rootMargin: '0px 0px 20% 0px', threshold: 0 }
-    );
-
-    animatedElements.forEach((element) => {
-      if (element.dataset.animateInitial !== undefined) {
-        requestAnimationFrame(() => revealElement(element));
-      } else {
-        observer.observe(element);
-      }
-    });
-  })();
-</script>
+<style>
+  .eyebrow { @apply text-xs font-semibold uppercase tracking-widest text-brand-700 dark:text-brand-300; }
+  .ux-button { @apply inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-600 dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-800; }
+  .ux-button-primary { @apply border-brand-700 bg-brand-700 text-white hover:bg-brand-800 dark:border-brand-300 dark:bg-brand-300 dark:text-slate-950 dark:hover:bg-brand-200; }
+  .ux-panel { @apply rounded-2xl border border-slate-200 bg-white/85 p-6 text-slate-950 dark:border-slate-700 dark:bg-slate-900/90 dark:text-white; }
+</style>
