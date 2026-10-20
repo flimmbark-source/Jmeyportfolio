@@ -4,7 +4,7 @@ import { getCollection } from 'astro:content';
 const projects = await getCollection('projects');
 const selectedSlugs = ['letter-river', 'idl', 'ai-archiving'];
 const selected = selectedSlugs.map((slug) => projects.find((project) => project.data.slug === slug));
-const supporting = projects.filter((project) => !selectedSlugs.includes(project.data.slug)).sort((a, b) => a.data.order - b.data.order);
+const supporting = projects.filter((project) => project.data.image && !selectedSlugs.includes(project.data.slug)).sort((a, b) => a.data.order - b.data.order);
 const labels = { 'letter-river': 'Independent prototype', idl: 'Professional design engineering', 'ai-archiving': 'Independent concept / prototype' };
 const experience = [
   { dates: '2022–2026 · Volunteer', company: 'Tech Fleet Community DAO', role: 'UX Researcher', detail: 'Designed and conducted interviews, surveys, and A/B tests. Co-designed app engagement features and presented recommendations to the client, who incorporated elements into its live product.' },
