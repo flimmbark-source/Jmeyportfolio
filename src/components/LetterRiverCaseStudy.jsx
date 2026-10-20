@@ -192,10 +192,10 @@ export default function LetterRiverCaseStudy() {
       <div id="overview" className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <section className={`${panel} overflow-hidden bg-gradient-to-br from-[#fbf8ef] via-white to-[#dceee8] dark:from-slate-900 dark:via-slate-950 dark:to-emerald-950/40`}>
           <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[0.9fr_1.1fr] lg:p-10 xl:p-12">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="flex flex-col justify-center">
+            <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="flex flex-col justify-center">
               <p className="mb-4 text-xs font-black uppercase tracking-widest text-emerald-800 dark:text-emerald-300">Case study</p>
               <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-tight text-emerald-950 dark:text-white sm:text-5xl xl:text-6xl">
-                Letter River: making language learning navigable.
+                Letter River
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-700 dark:text-slate-200">
                 I designed and built a Hebrew-learning prototype intended to reduce early cognitive overload by connecting letter recognition, vocabulary practice, and reading. This case study shows the interface and the decisions I want to test with learners.
@@ -210,7 +210,7 @@ export default function LetterRiverCaseStudy() {
               </div>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, scale: 0.985 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.08, duration: 0.55 }} className="grid gap-4 sm:grid-cols-[1fr_180px] sm:items-end">
+            <motion.div initial={false} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.08, duration: 0.55 }} className="grid gap-4 sm:grid-cols-[1fr_180px] sm:items-end">
               <DesktopFrame src={screenshots.desktopHero} alt="Letter River desktop home screen" caption="Responsive desktop prototype" />
               <div className="hidden sm:block">
                 <MobileFrame src={screenshots.home} alt="Letter River mobile home screen" caption="Mobile home" imageClassName="h-[340px] object-cover object-top" />
@@ -332,7 +332,7 @@ export default function LetterRiverCaseStudy() {
             <DecisionRow
               number="3"
               title="Move recognition into reading."
-              principle="Known words become useful inside short, meaningful tasks."
+              principle="Use practiced words inside short, meaningful tasks."
               reduces={["Reading direction", "Meaning", "Motivation"]}
               why="The reading screen is intended to let learners use practiced words in context."
               tradeoff="A short reading task may still be too difficult. Observe where learners need hints or a route back to practice."
