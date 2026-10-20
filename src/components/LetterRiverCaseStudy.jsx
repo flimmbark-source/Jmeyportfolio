@@ -107,7 +107,7 @@ function ReducesTags({ items, className = "" }) {
           {label}
         </span>
       ))}
-      <span className="text-[0.62rem] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Reduces</span>
+      <span className="text-[0.62rem] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Intended to reduce</span>
     </div>
   );
 }
@@ -127,7 +127,7 @@ function CompactShot({ src, alt, label, width = "w-[150px]", height = "h-[300px]
   );
 }
 
-function DecisionRow({ number, title, principle, reduces, why, children }) {
+function DecisionRow({ number, title, principle, reduces, why, tradeoff, children }) {
   return (
     <article className={`${panel} p-5 sm:p-6`}>
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-7">
@@ -140,9 +140,10 @@ function DecisionRow({ number, title, principle, reduces, why, children }) {
           <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{principle}</p>
           <ReducesTags items={reduces} className="justify-end" />
           <p className="mt-3 border-t border-slate-200 pt-3 text-sm leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-400">
-            <strong className="font-black text-slate-950 dark:text-white">Why it mattered: </strong>
+            <strong className="font-black text-slate-950 dark:text-white">Design intent: </strong>
             {why}
           </p>
+          <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400"><strong className="font-black text-slate-950 dark:text-white">Tradeoff to test: </strong>{tradeoff}</p>
         </div>
       </div>
     </article>
@@ -188,16 +189,16 @@ export default function LetterRiverCaseStudy() {
     <div className="min-h-screen bg-[#f6f2e8] text-slate-950 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
       <motion.div style={{ width: progressBarWidth }} className="fixed left-0 top-0 z-50 h-1 bg-gradient-to-r from-emerald-700 via-teal-500 to-amber-400" />
 
-      <main id="overview" className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      <div id="overview" className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <section className={`${panel} overflow-hidden bg-gradient-to-br from-[#fbf8ef] via-white to-[#dceee8] dark:from-slate-900 dark:via-slate-950 dark:to-emerald-950/40`}>
           <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[0.9fr_1.1fr] lg:p-10 xl:p-12">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="flex flex-col justify-center">
+            <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="flex flex-col justify-center">
               <p className="mb-4 text-xs font-black uppercase tracking-widest text-emerald-800 dark:text-emerald-300">Case study</p>
               <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-tight text-emerald-950 dark:text-white sm:text-5xl xl:text-6xl">
-                Letter River: making language learning navigable.
+                Letter River
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-700 dark:text-slate-200">
-                I designed and built a guided Hebrew learning system that reduces early cognitive overload by moving learners from letters, to vocabulary, to meaningful reading through connected practice loops.
+                I designed and built a Hebrew-learning prototype intended to reduce early cognitive overload by connecting letter recognition, vocabulary practice, and reading. This case study shows the interface and the decisions I want to test with learners.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a href="https://letterriver.netlify.app" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-emerald-800 px-5 py-3 text-sm font-black text-white shadow-lg shadow-emerald-900/20 transition hover:bg-emerald-900">
@@ -209,7 +210,7 @@ export default function LetterRiverCaseStudy() {
               </div>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, scale: 0.985 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.08, duration: 0.55 }} className="grid gap-4 sm:grid-cols-[1fr_180px] sm:items-end">
+            <motion.div initial={false} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.08, duration: 0.55 }} className="grid gap-4 sm:grid-cols-[1fr_180px] sm:items-end">
               <DesktopFrame src={screenshots.desktopHero} alt="Letter River desktop home screen" caption="Responsive desktop prototype" />
               <div className="hidden sm:block">
                 <MobileFrame src={screenshots.home} alt="Letter River mobile home screen" caption="Mobile home" imageClassName="h-[340px] object-cover object-top" />
@@ -220,10 +221,10 @@ export default function LetterRiverCaseStudy() {
 
         <section className="mt-5 grid gap-4 md:grid-cols-4">
           {[
-            ["My role", "UX / Product Design", "Full-stack prototyping"],
+            ["My role", "UX / Product Design", "AI-assisted prototyping"],
             ["Status", "In progress", "Live coded prototype"],
-            ["Stack", "React + TypeScript", "Tailwind + Firebase"],
-            ["Focus", "Cognitive load", "Engagement & retention"],
+            ["Tools", "React", "AI-assisted implementation"],
+            ["Focus", "Guided practice", "Learning outcomes unmeasured"],
           ].map(([label, title, detail]) => (
             <article key={label} className={`${panel} p-5`}>
               <p className="text-xs font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-300">{label}</p>
@@ -237,8 +238,8 @@ export default function LetterRiverCaseStudy() {
           <div className="grid gap-8 lg:grid-cols-[0.38fr_1fr] lg:items-start">
             <div>
               <SectionEyebrow number="01">The UX problem</SectionEyebrow>
-              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">Beginners face stacked cognitive load.</h2>
-              <p className="mt-4 text-slate-700 dark:text-slate-300">New learners are not just memorizing words. They are juggling unfamiliar symbols, sounds, direction, transliteration, meaning, recall, and motivation at once.</p>
+              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">Designing for beginners learning an unfamiliar script.</h2>
+              <p className="mt-4 text-slate-700 dark:text-slate-300">The design starts from a practical challenge: someone learning Hebrew may need to manage unfamiliar symbols, sounds, reading direction, vocabulary, and recall in the same session.</p>
               <p className="mt-4 text-sm font-semibold leading-relaxed text-emerald-800 dark:text-emerald-300">The design question: which of these can the system carry, so the learner doesn’t have to?</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -257,9 +258,9 @@ export default function LetterRiverCaseStudy() {
           <div className="grid gap-8 lg:grid-cols-[0.32fr_1fr]">
             <div>
               <SectionEyebrow number="02">From lessons to a learning system</SectionEyebrow>
-              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">A connected loop that builds skill and confidence.</h2>
-              <p className="mt-4 text-slate-700 dark:text-slate-300">Each screen supports the next one. Words are introduced, practiced in different ways, and then used in context.</p>
-              <EvidenceNote>Review is not a separate destination. It brings words back into the loop at the right moment.</EvidenceNote>
+              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">A proposed path from recognition to reading.</h2>
+              <p className="mt-4 text-slate-700 dark:text-slate-300">The screens show a connected practice journey: introduce words, practice them in different ways, then use them in context.</p>
+              <EvidenceNote>The screens below document the design. The live prototype is in progress. Completion of the full journey and learning effectiveness still need validation.</EvidenceNote>
             </div>
             <div>
               <div className="mb-5 flex flex-wrap items-center gap-x-2 gap-y-2 rounded-2xl bg-emerald-50 px-4 py-3 text-xs font-black uppercase tracking-widest text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
@@ -282,7 +283,7 @@ export default function LetterRiverCaseStudy() {
               </div>
               <div className="mt-5 flex items-center justify-center gap-2 rounded-2xl border border-dashed border-emerald-300 bg-emerald-50/60 px-4 py-3 text-xs font-black uppercase tracking-widest text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300">
                 <Repeat size={15} />
-                Review loops words back to the right step — the system never dead-ends.
+                Design goal: bring review back into the practice journey.
               </div>
             </div>
           </div>
@@ -291,16 +292,17 @@ export default function LetterRiverCaseStudy() {
         <section id="journey" className={`${sectionPad} mt-5 scroll-mt-24 ${panel}`}>
           <SectionEyebrow number="03">Three design decisions</SectionEyebrow>
           <p className="mb-6 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-            Each decision takes one of the cognitive-load factors above and moves it from the learner onto the system.
+            Each decision responds to part of the learning challenge. The tradeoffs below identify what I would test before treating the intended benefit as an outcome.
           </p>
           <div className="flex flex-col gap-4">
 
             <DecisionRow
               number="1"
               title="Guide the next action."
-              principle="Beginners need clarity, not more choices."
+              principle="Make the recommended next step prominent."
               reduces={["Motivation", "Decision overload"]}
-              why="The learner always has one recommended action; review and reading stay available but visually subordinate."
+              why="The screen gives one action priority while leaving review and reading available. This is intended to make starting a session easier."
+              tradeoff="Guidance can make alternatives harder to discover. Test whether learners can find review when that is their goal."
             >
               <CompactShot src={screenshots.vocabJourney} alt="Vocabulary Journey screen with current pack card" />
             </DecisionRow>
@@ -308,9 +310,10 @@ export default function LetterRiverCaseStudy() {
             <DecisionRow
               number="2"
               title="Reuse words across practice patterns."
-              principle="Repetition works better when the task changes — so it reads as a sequence."
+              principle="Use the same vocabulary across different practice tasks."
               reduces={["Recall", "Meaning"]}
-              why="The same vocabulary returns as recognition, recall, and script practice without feeling like the same drill."
+              why="Recognition, recall, and script screens reuse the vocabulary in a sequence instead of introducing unrelated content at each step."
+              tradeoff="Multiple practice modes add new rules to learn. Test whether the transitions are understandable and whether learners need more instruction."
             >
               <div className="flex items-center justify-center gap-1.5">
                 {[
@@ -329,9 +332,10 @@ export default function LetterRiverCaseStudy() {
             <DecisionRow
               number="3"
               title="Move recognition into reading."
-              principle="Known words become useful inside short, meaningful tasks."
+              principle="Use practiced words inside short, meaningful tasks."
               reduces={["Reading direction", "Meaning", "Motivation"]}
-              why="Reading becomes a continuation of practice, not a separate jump in difficulty."
+              why="The reading screen is intended to let learners use practiced words in context."
+              tradeoff="A short reading task may still be too difficult. Observe where learners need hints or a route back to practice."
             >
               <CompactShot src={screenshots.read} alt="Read in context screenshot" />
             </DecisionRow>
@@ -342,11 +346,11 @@ export default function LetterRiverCaseStudy() {
         <section id="architecture" className={`${panel} ${sectionPad} mt-5 scroll-mt-24`}>
           <div className="grid gap-10 lg:grid-cols-[0.35fr_1fr] lg:items-start">
             <div>
-              <SectionEyebrow number="04">I designed it and shipped it</SectionEyebrow>
-              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">Not a mockup — a working app I built end to end.</h2>
-              <p className="mt-4 text-sm leading-relaxed text-slate-700 dark:text-slate-300">Every design decision above is live in code: real state, real navigation, deployed and usable. Designing and building it myself meant the UX and the architecture stayed honest with each other.</p>
+              <SectionEyebrow number="04">Prototype scope</SectionEyebrow>
+              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">A coded prototype for exploring the experience.</h2>
+              <p className="mt-4 text-sm leading-relaxed text-slate-700 dark:text-slate-300">I use a browser prototype alongside the interface screens to explore the learning flow. Its language setup and home interface are available in the live app. The screenshots document a broader practice journey that still needs a complete walkthrough and learner testing.</p>
               <ul className="mt-5 space-y-2 text-sm text-slate-700 dark:text-slate-300">
-                {["React + TypeScript", "Tailwind", "Firebase", "Deployed on Netlify", "GitHub workflow"].map((item) => (
+                {["React prototype", "AI-assisted implementation", "Deployed on Netlify", "GitHub workflow"].map((item) => (
                   <li key={item} className="flex items-center gap-2"><CheckCircle2 size={17} className="text-emerald-700 dark:text-emerald-300" /> {item}</li>
                 ))}
               </ul>
@@ -356,7 +360,7 @@ export default function LetterRiverCaseStudy() {
               <FlowCard icon={<BookOpen size={21} />} title="Content packs" detail="Reusable lesson data and pack goals." />
               <FlowCard icon={<MousePointer2 size={21} />} title="Practice engine" detail="Bridge Builder, review, script, and reading loops." />
               <FlowCard icon={<Code2 size={21} />} title="Progress state" detail="Seen words, session progress, and review readiness." />
-              <FlowCard icon={<Route size={21} />} title="Review logic" detail="Words return at the right moment." />
+              <FlowCard icon={<Route size={21} />} title="Review logic" detail="Proposed return path to practice." />
               <FlowCard icon={<Eye size={21} />} title="Reading context" detail="Known words become useful in short tasks." />
             </div>
           </div>
@@ -366,8 +370,8 @@ export default function LetterRiverCaseStudy() {
           <div className="grid gap-8 lg:grid-cols-[0.35fr_1fr] lg:items-start">
             <div>
               <SectionEyebrow number="05">Beyond the core loop</SectionEyebrow>
-              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">The system also handles setup and letter-level practice.</h2>
-              <p className="mt-4 text-slate-700 dark:text-slate-300">Settings separates the app language from the language being learned, so the interface never adds to the load. Letter River mode drills letter shapes before words enter the loop.</p>
+              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">Language setup and letter-level practice.</h2>
+              <p className="mt-4 text-slate-700 dark:text-slate-300">The settings design separates the app language from the language being learned. Letter River mode explores matching letter shapes to sounds before word-level practice.</p>
             </div>
             <div className="grid place-items-center gap-5 sm:grid-cols-2">
               <MobileFrame src={screenshots.settings} alt="Settings screen showing language preferences" caption="Language architecture" imageClassName="h-[420px] object-contain" />
@@ -380,13 +384,13 @@ export default function LetterRiverCaseStudy() {
           <div className="grid gap-8 lg:grid-cols-[0.35fr_1fr]">
             <div>
               <SectionEyebrow number="06">What I’d validate next</SectionEyebrow>
-              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">This is a prototype. The next step is learning from real users.</h2>
-              <EvidenceNote>What building it taught me: the hardest part of a learning product isn’t the content — it’s removing decisions so the learner can keep moving.</EvidenceNote>
+              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">The next step is testing with learners.</h2>
+              <EvidenceNote>Current status: independent prototype. Reduced cognitive load, retention, and learning gains are design goals, not measured results.</EvidenceNote>
             </div>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {[
                 ["Find friction", "Observe where learners hesitate during onboarding and first-session practice."],
-                ["Compare approaches", "Test guided Bridge Builder sections against open practice for retention."],
+                ["Compare approaches", "Compare guided and open practice, observing confusion, choices, and task completion before making retention claims."],
                 ["Improve accessibility", "Validate readability, touch targets, text size, and RTL clarity."],
                 ["Measure learning", "Track completion, review accuracy, and long-term recall."],
               ].map(([title, detail]) => (
@@ -401,7 +405,7 @@ export default function LetterRiverCaseStudy() {
             “The goal is not more features. It is the right learning experience, validated and improved.”
           </blockquote>
         </section>
-      </main>
+      </div>
     </div>
   );
 }

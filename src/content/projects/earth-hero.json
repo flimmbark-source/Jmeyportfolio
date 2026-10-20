@@ -2,13 +2,12 @@
   "order": 1,
   "slug": "earth-hero",
   "title": "Earth Hero Habit Builder",
-  "tagline": "Sustainability · Web App",
-  "summary": "Designed a climate action companion that transformed overwhelming eco-goals into playful, trackable habits. Gamified progress loops raised daily habit completion by 30% in pilot tests.",
+  "tagline": "Sustainability · Interface exploration",
+  "summary": "An interface exploration for selecting climate actions and tracking habits. The linked Figma prototype shows the proposed experience.",
   "highlights": [
-    "Mixed-method research & segmentation",
-    "Gamified onboarding experiments",
-    "Motion system for feedback moments",
-    "Figma prototype + usability analytics"
+    "Action selection",
+    "Progress feedback",
+    "Figma prototype"
   ],
   "image": {
     "src": "/images/earth-hero.png",

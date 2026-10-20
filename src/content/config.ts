@@ -29,13 +29,4 @@ const projects = defineCollection({
   })
 });
 
-const testimonials = defineCollection({
-  type: 'data',
-  schema: z.object({
-    quote: z.string(),
-    source: z.string(),
-    highlights: z.array(z.string())
-  })
-});
-
-export const collections = { projects, testimonials };
+export const collections = { projects };

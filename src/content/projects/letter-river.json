@@ -1,18 +1,17 @@
 {
   "order": 7,
   "slug": "letter-river",
-  "title": "Letter River Learning App",
-  "tagline": "Educational Design · AI-Powered Development",
-  "summary": "Built a comprehensive language-learning platform with spaced repetition, multi-language support, and accessibility features to develop full-stack web development skills and production-ready Progressive Web App architecture.",
+  "title": "Letter River: a guided Hebrew-learning prototype",
+  "tagline": "Independent prototype · Learning experience",
+  "summary": "An independent Hebrew-learning prototype exploring a guided path from letter recognition to vocabulary and reading. The case study shows the screens, connected practice flow, and the decisions behind them.",
   "highlights": [
-    "Implemented SM-2 spaced repetition algorithm for optimal learning",
-    "Designed adaptive game mechanics with multiple difficulty modes",
-    "Built Progressive Web App with offline-first architecture",
-    "Created accessibility features for inclusive learning experience"
+    "Letter-to-sound matching and guided practice",
+    "Desktop and mobile interface examples",
+    "Design goals and next validation steps"
   ],
   "image": {
-    "src": "/images/letter-river.png",
-    "alt": "Letter River app showcasing the interactive Hebrew alphabet learning game"
+    "src": "/images/Desktop_Hero_Screen.png",
+    "alt": "Letter River desktop prototype home screen"
   },
   "links": [
     {
