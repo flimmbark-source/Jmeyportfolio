@@ -4,6 +4,7 @@
     if (!target) return;
     event.preventDefault();
     event.stopPropagation();
-    window.location.href = '/ux';
+    // A page can point the UX bumper elsewhere: <html data-ux-href="…">.
+    window.location.href = document.documentElement.dataset.uxHref || '/ux';
   }, true);
 })();

@@ -928,7 +928,7 @@ function WorkBackdropCredit({ reducedMotion }) {
 // `navLinks`: [{ label, href }] to replace the playground's nav. The threshold
 // homepage passes the same list to its own frame, so nothing moves when the
 // one fades into the other. `homeHref`: where the name links.
-export default function RelationalPortfolio({ threshold = false, statement = null, navLinks = null, homeHref = '/' }) {
+export default function RelationalPortfolio({ threshold = false, statement = null, navLinks = null, homeHref = '/', uxHref = '/ux' }) {
   const reducedMotion = useReducedMotion();
   const [selectedId, setSelectedId] = useState(null);
   const [released, setReleased] = useState(!threshold);
@@ -1029,6 +1029,7 @@ export default function RelationalPortfolio({ threshold = false, statement = nul
             reducedMotion={reducedMotion}
             links={navLinks}
             homeHref={homeHref}
+            uxHref={uxHref}
             onPeek={setPeek}
             onPlay={() => setReleased(true)}
           />

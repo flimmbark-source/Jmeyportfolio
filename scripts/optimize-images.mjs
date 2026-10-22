@@ -51,6 +51,8 @@ const artwork = [
   'idl-case-study.png',
   'ai-archiver.png',
   'agora21.png',
+  // The UX screen's lead case-study image, shown in a half-width card.
+  'Desktop_Hero_Screen.png',
 ];
 
 /**

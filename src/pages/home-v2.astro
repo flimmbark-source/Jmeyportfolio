@@ -16,6 +16,8 @@ import '../styles/portfolio-threshold.css';
 
 // Where Home goes. When this page becomes the homepage, set this to '/'.
 const HOME = '/home-v2';
+// Where the UX door and the playground's UX bumper go.
+const UX = '/ux-v2';
 
 const statement = {
   headline: 'Product design & UX Researcher',
@@ -32,7 +34,7 @@ const navLinks = [
 ];
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" data-ux-href={UX}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -91,6 +93,7 @@ const navLinks = [
         client:load
         threshold
         homeHref={HOME}
+        uxHref={UX}
         statement={statement}
         navLinks={navLinks}
       />
@@ -126,7 +129,7 @@ const navLinks = [
     </script>
     <script src="/scripts/portfolio-physics-v3.js?v=83" defer></script>
     <script src="/scripts/portfolio-battle.js?v=1" defer></script>
-    <script src="/scripts/ux-direct-link.js?v=1" defer></script>
+    <script src="/scripts/ux-direct-link.js?v=2" defer></script>
     <script src="/scripts/letter-river-preview.js?v=8" defer></script>
   </body>
 </html>

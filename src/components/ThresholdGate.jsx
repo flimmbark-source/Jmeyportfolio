@@ -25,7 +25,6 @@ const UX_GLIMPSE = [
   { src: '/images/earth-hero.png', label: 'Earth Hero' },
 ];
 
-const UX_HREF = '/ux';
 
 // The doors fade in once the statement has had the screen to itself
 // (RelationalPortfolio INTRO.statement is 1.82s).
@@ -34,7 +33,8 @@ const DOOR_FADE = 1.1;
 const LEAVE_FADE = 0.5;
 const EASE = [0.22, 1, 0.36, 1];
 
-export default function ThresholdGate({ reducedMotion, onPlay, onPeek = () => {}, links = [], homeHref = '/' }) {
+export default function ThresholdGate({ reducedMotion, onPlay, onPeek = () => {}, links = [], homeHref = '/', uxHref = '/ux' }) {
+  const UX_HREF = uxHref;
   const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function ThresholdGate({ reducedMotion, onPlay, onPeek = () => {}
     link.href = UX_HREF;
     document.head.appendChild(link);
     return () => link.remove();
-  }, []);
+  }, [UX_HREF]);
 
   useEffect(() => {
     // The playground's nav and spheres are on the page but hidden (or only

@@ -386,10 +386,22 @@ button { font: inherit; }
 }
 
 .pv2-gateway-link span {
-  color: var(--pv2-muted);
+  /* Darker than --pv2-muted and a little heavier: these sit straight on the
+     painting, with no scrim behind them. */
+  color: #4a4743;
   font-size: clamp(.66rem, .72vw, .72rem);
+  font-weight: 650;
   text-transform: uppercase;
   letter-spacing: .1em;
+}
+
+/* The same soft light halo the threshold labels carry, so both lines read
+   over any of the paintings. */
+.pv2-gateway-link span,
+.pv2-gateway-link strong {
+  text-shadow:
+    0 0 14px rgba(247, 246, 242, 0.95),
+    0 0 28px rgba(247, 246, 242, 0.8);
 }
 
 .pv2-gateway-link strong {
