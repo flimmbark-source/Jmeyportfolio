@@ -2,7 +2,12 @@
    Three columns the visitor never sees as columns. The middle one is the
    statement's own width (.pv2-overview__statement: min(650px, 50vw)) and is
    not an element: the gate lets the pointer through there. The outer two are
-   doors. Hover or keyboard focus lights the column and shades its outer edge.
+   doors. Hover or keyboard focus lights the column, shades its outer edge and
+   reveals what is behind it.
+
+   Each door: .pv2-threshold__hit (a button the size of the column — clicking
+   anywhere in the column goes through) under .pv2-threshold__content (the
+   label and the revealed list; only the list's links take the pointer).
 
    Tune the feel here:
    --pv2-door-ux / --pv2-door-play  RGB of each side's edge shading
@@ -10,51 +15,108 @@
    --pv2-door-wash                  how much the column lights up */
 
 .pv2-threshold {
-  --pv2-door-ux: 58, 92, 178;
+  --pv2-door-ux: 34, 46, 72;
   --pv2-door-play: 196, 236, 64;
-  --pv2-door-edge: 0.42;
-  --pv2-door-wash: 0.4;
+  --pv2-door-edge: 0.36;
+  --pv2-door-wash: 0.42;
   --pv2-door-w: calc((100vw - min(650px, 50vw)) / 2);
+  --pv2-door-pad: clamp(24px, 3.4vw, 64px);
   position: fixed;
   inset: 0;
   z-index: 60;
   pointer-events: none;
 }
 
+/* --- The frame: name, resume, contact ------------------------------------
+   Same height, padding and type as .pv2-nav, so when Play releases the
+   playground's nav it fades in around the name without anything moving. */
+.pv2-threshold__frame {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 3;
+  height: var(--pv2-nav-height, clamp(50px, 6.2vh, 60px));
+  padding: 0 clamp(18px, 3.8vw, 68px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.pv2-threshold__frame a {
+  pointer-events: auto;
+  text-decoration: none;
+  color: var(--pv2-text);
+}
+
+.pv2-threshold__name {
+  font-size: clamp(.86rem, .95vw, .94rem);
+  font-weight: 640;
+  letter-spacing: -0.01em;
+}
+
+.pv2-threshold__quick {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.8vw, 42px);
+}
+
+.pv2-threshold__quick a {
+  position: relative;
+  padding: 8px 0;
+  color: #4f4c47;
+  font-size: clamp(.82rem, .92vw, .88rem);
+  transition: color var(--pv2-fast) ease;
+}
+
+.pv2-threshold__quick a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: 4px;
+  height: 1px;
+  background: currentColor;
+  transition: right var(--pv2-medium) var(--pv2-ease);
+}
+
+.pv2-threshold__quick a:hover { color: var(--pv2-text); }
+.pv2-threshold__quick a:hover::after { right: 0; }
+
+.pv2-threshold__frame a,
+.pv2-threshold__content {
+  text-shadow:
+    0 0 14px rgba(247, 246, 242, 0.95),
+    0 0 28px rgba(247, 246, 242, 0.8);
+}
+
+/* --- The doors ------------------------------------------------------------ */
 .pv2-threshold__door {
   position: absolute;
   top: 0;
   bottom: 0;
   width: var(--pv2-door-w);
-  margin: 0;
-  /* The statement sits a little above centre (top: 46%); so do the labels. */
-  padding: 0 clamp(24px, 3.4vw, 64px) 8vh;
-  border: 0;
-  background: transparent;
-  color: var(--pv2-text);
-  font: inherit;
-  display: flex;
-  align-items: center;
   overflow: hidden;
   isolation: isolate;
-  cursor: pointer;
   pointer-events: auto;
+}
+
+.pv2-threshold__door--ux { left: 0; }
+.pv2-threshold__door--play { right: 0; }
+
+.pv2-threshold__hit {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 
-.pv2-threshold__door--ux {
-  left: 0;
-  justify-content: flex-start;
-  text-align: left;
-}
-
-.pv2-threshold__door--play {
-  right: 0;
-  justify-content: flex-end;
-  text-align: right;
-}
-
-/* The column lights up: a wash over the painting, the whole column high. */
+/* The column lights up: a wash over the painting, feathered toward the middle
+   so it falls off instead of ending in a line through the painting. */
 .pv2-threshold__door::before {
   content: "";
   position: absolute;
@@ -63,8 +125,6 @@
   background: rgba(255, 255, 255, var(--pv2-door-wash));
   opacity: 0;
   transition: opacity 520ms var(--pv2-ease);
-  /* Feathered toward the middle, so the light falls off instead of ending in
-     a hard line through the painting. */
   -webkit-mask-image: var(--pv2-door-feather);
   mask-image: var(--pv2-door-feather);
 }
@@ -93,8 +153,8 @@
   left: 0;
   background: linear-gradient(
     to right,
-    rgba(var(--pv2-door-ux), calc(var(--pv2-door-edge) * 1.25)) 0%,
-    rgba(var(--pv2-door-ux), calc(var(--pv2-door-edge) * 0.4)) 38%,
+    rgba(var(--pv2-door-ux), calc(var(--pv2-door-edge) * 1.1)) 0%,
+    rgba(var(--pv2-door-ux), calc(var(--pv2-door-edge) * 0.35)) 38%,
     rgba(var(--pv2-door-ux), 0) 100%
   );
 }
@@ -103,28 +163,42 @@
   right: 0;
   background: linear-gradient(
     to left,
-    rgba(var(--pv2-door-play), calc(var(--pv2-door-edge) * 1.35)) 0%,
-    rgba(var(--pv2-door-play), calc(var(--pv2-door-edge) * 0.45)) 38%,
+    rgba(var(--pv2-door-play), calc(var(--pv2-door-edge) * 1.5)) 0%,
+    rgba(var(--pv2-door-play), calc(var(--pv2-door-edge) * 0.5)) 38%,
     rgba(var(--pv2-door-play), 0) 100%
   );
 }
 
-.pv2-threshold__label {
+/* --- The label and what it reveals ---------------------------------------
+   The label sits level with the statement (top: 46%). The list opens below it
+   without moving it. */
+.pv2-threshold__content {
+  position: absolute;
+  /* Anchored from the top, not centred, so both titles sit on the same line
+     whatever opens below them (UX carries a count line, Play does not). */
+  top: calc(46% - 3.1rem);
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  opacity: 0.86;
-  /* The statement reads over the painting because of the scrim behind it;
-     the side labels sit outside that scrim, so they carry their own halo. */
-  text-shadow:
-    0 0 14px rgba(247, 246, 242, 0.95),
-    0 0 28px rgba(247, 246, 242, 0.8);
-  transition:
-    opacity 420ms var(--pv2-ease),
-    transform 520ms var(--pv2-ease);
+  width: min(300px, calc(100% - 2 * var(--pv2-door-pad)));
+  pointer-events: none;
 }
 
-.pv2-threshold__eyebrow {
+.pv2-threshold__door--ux .pv2-threshold__content {
+  left: var(--pv2-door-pad);
+  align-items: flex-start;
+  text-align: left;
+}
+
+.pv2-threshold__door--play .pv2-threshold__content {
+  right: var(--pv2-door-pad);
+  align-items: flex-end;
+  text-align: right;
+}
+
+.pv2-threshold__eyebrow,
+.pv2-threshold__count {
   color: #5f5b55;
   font-size: 0.74rem;
   font-weight: 600;
@@ -132,38 +206,211 @@
   text-transform: uppercase;
 }
 
+.pv2-threshold__count {
+  letter-spacing: 0.06em;
+  text-transform: none;
+  font-weight: 500;
+  font-size: 0.82rem;
+}
+
 .pv2-threshold__title {
+  color: var(--pv2-text);
   font-size: clamp(1.15rem, 1.55vw, 1.6rem);
   font-weight: 510;
   letter-spacing: -0.02em;
   line-height: 1.1;
+  opacity: 0.9;
+  transition:
+    opacity 420ms var(--pv2-ease),
+    transform 520ms var(--pv2-ease);
 }
 
+/* UX leans a little heavier at rest: full-strength title and its count. The
+   Play door stays lighter until it is chosen. */
+.pv2-threshold__door--ux .pv2-threshold__title { opacity: 1; }
+.pv2-threshold__door--play .pv2-threshold__title { opacity: 0.78; }
+
+.pv2-threshold__list {
+  position: absolute;
+  top: 100%;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+  width: 100%;
+}
+
+.pv2-threshold__door--ux .pv2-threshold__list { left: 0; }
+.pv2-threshold__door--play .pv2-threshold__list { right: 0; }
+
+/* Each preview arrives a beat after the one before it. */
+.pv2-threshold__list li {
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 380ms var(--pv2-ease) calc(var(--i, 0) * 45ms),
+    transform 520ms var(--pv2-ease) calc(var(--i, 0) * 45ms);
+}
+
+.pv2-threshold__list a {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--pv2-text);
+  text-decoration: none;
+  pointer-events: none;
+}
+
+.pv2-threshold__list strong {
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.pv2-threshold__list img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 700ms var(--pv2-ease);
+}
+
+.pv2-threshold__list a:hover img,
+.pv2-threshold__list a:focus-visible img {
+  transform: scale(1.04);
+}
+
+.pv2-threshold__list a:hover strong,
+.pv2-threshold__list a:focus-visible strong {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* UX: the lead case study large, the next two side by side beneath it. */
+.pv2-threshold__cases {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 14px;
+}
+
+.pv2-threshold__cases li.is-lead {
+  grid-column: 1 / -1;
+}
+
+.pv2-threshold__thumb {
+  display: block;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--pv2-soft);
+  border: 1px solid rgba(36, 36, 36, 0.1);
+  box-shadow: 0 10px 28px -14px rgba(36, 30, 20, 0.45);
+}
+
+.pv2-threshold__cases li.is-lead .pv2-threshold__thumb {
+  aspect-ratio: 2 / 1;
+}
+
+/* Screens read from the top: crop from there, not the middle. */
+.pv2-threshold__cases img {
+  object-position: top center;
+}
+
+.pv2-threshold__cases li.is-lead strong {
+  font-size: 0.98rem;
+}
+
+.pv2-threshold__detail {
+  margin-top: -3px;
+  color: #3d3a36;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+/* Play: the playground's own spheres, small, in a loose cluster. */
+.pv2-threshold__games {
+  /* Wrapping from the right, so a short last row hugs the screen edge the
+     way the door's label does. */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 18px 16px;
+}
+
+.pv2-threshold__games li {
+  width: calc((100% - 32px) / 3);
+}
+
+.pv2-threshold__games a {
+  align-items: center;
+  text-align: center;
+}
+
+.pv2-threshold__orb {
+  display: block;
+  width: min(100%, 84px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--pv2-soft);
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 12px 26px -12px rgba(36, 30, 20, 0.55);
+}
+
+.pv2-threshold__games strong {
+  font-size: 0.8rem;
+}
+
+/* Short screens: the lead's one-liner gives up its line first. */
+@media (max-height: 760px) {
+  .pv2-threshold__detail { display: none; }
+  .pv2-threshold__cases li.is-lead .pv2-threshold__thumb { aspect-ratio: 5 / 2; }
+}
+
+/* --- Hover and keyboard focus open a door ------------------------------- */
 .pv2-threshold__door:hover::before,
 .pv2-threshold__door:hover::after,
-.pv2-threshold__door:focus-visible::before,
-.pv2-threshold__door:focus-visible::after {
+.pv2-threshold__door:focus-within::before,
+.pv2-threshold__door:focus-within::after {
   opacity: 1;
 }
 
-.pv2-threshold__door:hover .pv2-threshold__label,
-.pv2-threshold__door:focus-visible .pv2-threshold__label {
+.pv2-threshold__door:hover .pv2-threshold__title,
+.pv2-threshold__door:focus-within .pv2-threshold__title {
   opacity: 1;
 }
 
-.pv2-threshold__door--ux:hover .pv2-threshold__label,
-.pv2-threshold__door--ux:focus-visible .pv2-threshold__label {
+.pv2-threshold__door--ux:hover .pv2-threshold__title,
+.pv2-threshold__door--ux:focus-within .pv2-threshold__title {
   transform: translateX(-6px);
 }
 
-.pv2-threshold__door--play:hover .pv2-threshold__label,
-.pv2-threshold__door--play:focus-visible .pv2-threshold__label {
+.pv2-threshold__door--play:hover .pv2-threshold__title,
+.pv2-threshold__door--play:focus-within .pv2-threshold__title {
   transform: translateX(6px);
 }
 
-.pv2-threshold__door:focus-visible {
+.pv2-threshold__door:hover .pv2-threshold__list li,
+.pv2-threshold__door:focus-within .pv2-threshold__list li {
+  opacity: 1;
+  transform: none;
+}
+
+.pv2-threshold__door:hover .pv2-threshold__list a,
+.pv2-threshold__door:focus-within .pv2-threshold__list a {
+  pointer-events: auto;
+}
+
+.pv2-threshold__hit:focus-visible,
+.pv2-threshold__list a:focus-visible,
+.pv2-threshold__frame a:focus-visible {
   outline: 2px solid var(--pv2-text);
   outline-offset: -8px;
+}
+
+.pv2-threshold__list a:focus-visible,
+.pv2-threshold__frame a:focus-visible {
+  outline-offset: 2px;
 }
 
 /* The image credit belongs to the playground; while the threshold is up it
@@ -182,20 +429,18 @@
   pointer-events: auto;
 }
 
-/* No hover on touch, and no room for side columns on a phone: the two doors
-   become two buttons under the statement. */
+/* --- Touch and narrow screens --------------------------------------------
+   No hover, and no room for side columns: the two doors become two buttons
+   under the statement. The revealed lists stay on the far side of each door. */
 @media (max-width: 720px), (hover: none) {
   .pv2-threshold__door {
     top: auto;
     bottom: max(20px, env(safe-area-inset-bottom));
     width: calc(50% - 24px);
     height: 56px;
-    padding: 0 16px;
     border: 1px solid var(--pv2-line);
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.78);
-    justify-content: center;
-    text-align: center;
   }
 
   .pv2-threshold__door--ux { left: 16px; }
@@ -203,24 +448,34 @@
 
   .pv2-threshold__door::before,
   .pv2-threshold__door::after,
-  .pv2-threshold__eyebrow {
+  .pv2-threshold__eyebrow,
+  .pv2-threshold__count,
+  .pv2-threshold__list {
     display: none;
   }
 
-  .pv2-threshold__label {
-    opacity: 1;
-    transform: none !important;
+  .pv2-threshold__door--ux .pv2-threshold__content,
+  .pv2-threshold__door--play .pv2-threshold__content {
+    inset: 0;
+    width: auto;
+    transform: none;
+    align-items: center;
+    justify-content: center;
   }
 
   .pv2-threshold__title {
     font-size: 1rem;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .pv2-threshold__door::before,
   .pv2-threshold__door::after,
-  .pv2-threshold__label {
+  .pv2-threshold__title,
+  .pv2-threshold__list li,
+  .pv2-threshold__list img {
     transition: none;
   }
 }

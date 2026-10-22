@@ -368,7 +368,7 @@ function GatewayLink({ id, className, eyebrow, title, onClick, reducedMotion, de
   );
 }
 
-function Overview({ onSelect, reducedMotion, gate = null }) {
+function Overview({ onSelect, reducedMotion, gate = null, overline = '' }) {
   const projects = publicProjectIds.map((id) => portfolioV2NodeMap.get(id)).filter(Boolean);
   const placements = ['top', 'left', 'right', 'bottom-left', 'bottom-right'];
   const stageRef = useRef(null);
@@ -437,7 +437,10 @@ function Overview({ onSelect, reducedMotion, gate = null }) {
             ? { duration: 0 }
             : { duration: INTRO.statementFade, ease: INTRO.ease }}
         >
-          <p className="pv2-overline"></p>
+          <p className="pv2-overline">{overline}</p>
+          {/* On the threshold homepage this is the only sentence on screen
+              before the visitor picks UX or Play. It should speak to both
+              doors; it currently leads with the interactive/games side. */}
           <h1>Interactive Designer <br /> & Creative Thinker</h1>
           <p>I create games, interactive art, thought experiments, and UX work, in order to explore how interaction fosters growth, connection, and positive change.</p>
         </motion.div>
@@ -905,7 +908,7 @@ function WorkBackdropCredit({ reducedMotion }) {
 
 // `threshold`: the homepage opens on the statement alone, with UX to the left
 // and Play to the right. Play continues the arrival; UX leaves for /ux.
-export default function RelationalPortfolio({ threshold = false }) {
+export default function RelationalPortfolio({ threshold = false, overline = '' }) {
   const reducedMotion = useReducedMotion();
   const [selectedId, setSelectedId] = useState(null);
   const [released, setReleased] = useState(!threshold);
@@ -984,6 +987,7 @@ export default function RelationalPortfolio({ threshold = false }) {
           onSelect={select}
           reducedMotion={reducedMotion}
           gate={threshold ? { released } : null}
+          overline={overline}
         />
       )}
       <AnimatePresence>
@@ -991,7 +995,9 @@ export default function RelationalPortfolio({ threshold = false }) {
           <ThresholdGate
             key="threshold"
             reducedMotion={reducedMotion}
+            games={publicProjectIds.map((id) => portfolioV2NodeMap.get(id)).filter(Boolean)}
             onPlay={() => setReleased(true)}
+            onOpenGame={(id) => { setReleased(true); select(id); }}
           />
         )}
       </AnimatePresence>
