@@ -3,32 +3,27 @@ import { useEffect, useState } from 'react';
 
 // The threshold homepage. The screen is three columns the visitor never sees
 // as columns: the statement in the middle (neutral, nothing happens there),
-// UX to the left and Play to the right. Hovering or focusing a side lights its
-// column, shades its outer edge and reveals what is behind it, each item a
-// direct link. Clicking the column itself: Play continues the playground's
-// arrival in place; UX fades the page out and goes to /ux.
+// UX to the left and Play to the right. Each door has one job — choosing a
+// world — so each is a single click target. Hovering or focusing a door
+// lights its column, shades its outer edge and shows a glimpse of where it
+// leads; it does not offer a menu of projects.
+//
+//   UX   → a fan of real interface screens from the work on /ux, sliding in
+//          from the left edge. Clicking fades the page out and goes to /ux.
+//   Play → the playground's own spheres, ghosted in where they float
+//          (RelationalPortfolio, via onPeek). Clicking continues the arrival
+//          in place, carrying them from ghost to solid.
 //
 // Look and feel: portfolio-threshold.css. The middle column is not an element:
-// the gate lets the pointer through there, so the statement underneath is
-// exactly what it is on the playground.
+// the gate lets the pointer through there.
 
-// The case studies the UX door reveals, in order. The first is the lead and
-// gets the large image. Titles and labels are the ones /ux uses for its
-// Selected work. When the Earth Hero case study has a page, it goes first.
-const UX_CASE_STUDIES = [
-  { title: 'Letter River', detail: 'A guided Hebrew-learning prototype', href: '/letter-river', image: '/images/derived/letterriverscreen-768.webp' },
-  { title: 'IDL', detail: 'Improving a SolidWorks workflow', href: '/idl', image: '/images/derived/idl-case-study-768.webp' },
-  { title: 'AI Archiving Assistant', detail: 'Reviewing AI-suggested tags', href: '/ai-archiving', image: '/images/derived/ai-archiver-768.webp' },
+// Real interface screens only — screenshots and design files from the work
+// on /ux — never illustrations. Back to front: left, right, front.
+const UX_GLIMPSE = [
+  { src: '/images/Home_Screen.png', label: 'Letter River' },
+  { src: '/images/Bridge_Builder.png', label: 'Letter River' },
+  { src: '/images/earth-hero.png', label: 'Earth Hero' },
 ];
-
-// The same artwork the playground's spheres use (portfolio-v2-overrides.css).
-const GAME_ART = {
-  'get-to-the-cafe': '/images/derived/oiz8uf-768.webp',
-  'letter-river': '/images/derived/letterriverscreen-768.webp',
-  'last-reading': '/images/derived/Thelastreadingscreen-768.webp',
-  rotogo: '/images/derived/rotogoscreen-768.webp',
-  'gig-duel': '/images/derived/VenueRivalsscreen-768.webp',
-};
 
 const UX_HREF = '/ux';
 const RESUME_HREF = '/resume/Jacob_Meyerkopf_Product_UX_Resume.pdf';
@@ -40,8 +35,8 @@ const DOOR_FADE = 1.1;
 const LEAVE_FADE = 0.5;
 const EASE = [0.22, 1, 0.36, 1];
 
-export default function ThresholdGate({ reducedMotion, games = [], onPlay, onOpenGame }) {
-  const [leavingTo, setLeavingTo] = useState(null);
+export default function ThresholdGate({ reducedMotion, onPlay, onPeek = () => {} }) {
+  const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
     // UX is a full page load; fetch it while the visitor is deciding.
@@ -53,29 +48,30 @@ export default function ThresholdGate({ reducedMotion, games = [], onPlay, onOpe
   }, []);
 
   useEffect(() => {
-    // The playground's nav and spheres are on the page but invisible while the
-    // threshold is up. Keep them out of the tab order so keyboard focus goes
-    // name → Resume → Contact → UX → Play, and give them back on the way out.
-    const hidden = [...document.querySelectorAll('.pv2-nav, .pv2-overview__stage, .pv2-credit-drawer')];
+    // The playground's nav and spheres are on the page but hidden (or only
+    // ghosted) while the threshold is up. Keep them out of the tab order, and
+    // tell the physics script not to let the pointer move them, so keyboard
+    // focus goes name → Resume → Contact → UX → Play.
+    const root = document.documentElement;
+    const hidden = [...document.querySelectorAll('.pv2-nav, .pv2-overview__stage, .pv2-credit-drawer, .pv2-score-counter, .pv2-motion-toggle')];
     hidden.forEach((el) => el.setAttribute('inert', ''));
-    return () => hidden.forEach((el) => el.removeAttribute('inert'));
+    root.classList.add('pv2-threshold-open');
+    return () => {
+      hidden.forEach((el) => el.removeAttribute('inert'));
+      root.classList.remove('pv2-threshold-open');
+    };
   }, []);
 
-  // Leaving for a separate page fades the site's ground colour up first.
-  const leaveFor = (href) => (event) => {
-    if (event && (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1)) return;
-    if (event) event.preventDefault();
+  const goUX = () => {
     if (reducedMotion) {
-      window.location.assign(href);
+      window.location.assign(UX_HREF);
       return;
     }
-    setLeavingTo(href);
+    setLeaving(true);
   };
 
-  const openGame = (id) => (event) => {
-    if (event && (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1)) return;
-    if (event) event.preventDefault();
-    onOpenGame(id);
+  const play = () => {
+    onPlay();
   };
 
   return (
@@ -100,66 +96,54 @@ export default function ThresholdGate({ reducedMotion, games = [], onPlay, onOpe
         <button
           type="button"
           className="pv2-threshold__hit"
-          aria-label="UX work: professional case studies"
-          onClick={leaveFor(UX_HREF)}
+          aria-label="UX work: professional portfolio"
+          onClick={goUX}
         />
-        <div className="pv2-threshold__content">
+        <div className="pv2-threshold__glimpse" aria-hidden="true">
+          {UX_GLIMPSE.map((screen, index) => (
+            <span key={screen.src} className="pv2-threshold__screen" style={{ '--i': index }}>
+              <img src={screen.src} alt="" decoding="async" />
+            </span>
+          ))}
+        </div>
+        <div className="pv2-threshold__content" aria-hidden="true">
           <span className="pv2-threshold__eyebrow">Professional work</span>
           <span className="pv2-threshold__title">
-            <span aria-hidden="true">←</span> UX Work
+            <span>←</span> UX Work
           </span>
-          <span className="pv2-threshold__count">{UX_CASE_STUDIES.length} case studies</span>
-          <ul className="pv2-threshold__list pv2-threshold__cases" aria-label="Case studies">
-            {UX_CASE_STUDIES.map((study, index) => (
-              <li key={study.href} className={index === 0 ? 'is-lead' : undefined} style={{ '--i': index }}>
-                <a href={study.href} onClick={leaveFor(study.href)}>
-                  <span className="pv2-threshold__thumb">
-                    <img src={study.image} alt="" decoding="async" />
-                  </span>
-                  <strong>{study.title}</strong>
-                  {index === 0 && <span className="pv2-threshold__detail">{study.detail}</span>}
-                </a>
-              </li>
-            ))}
-          </ul>
+          <span className="pv2-threshold__sub">Selected work</span>
         </div>
       </div>
 
-      <div className="pv2-threshold__door pv2-threshold__door--play">
+      <div
+        className="pv2-threshold__door pv2-threshold__door--play"
+        onMouseEnter={() => onPeek(true)}
+        onMouseLeave={() => onPeek(false)}
+        onFocus={() => onPeek(true)}
+        onBlur={() => onPeek(false)}
+      >
         <button
           type="button"
           className="pv2-threshold__hit"
           aria-label="Play: games and interactive work"
-          onClick={onPlay}
+          onClick={play}
         />
-        <div className="pv2-threshold__content">
+        <div className="pv2-threshold__content" aria-hidden="true">
           <span className="pv2-threshold__eyebrow">Playground</span>
           <span className="pv2-threshold__title">
-            Play <span aria-hidden="true">→</span>
+            Play <span>→</span>
           </span>
-          <ul className="pv2-threshold__list pv2-threshold__games" aria-label="Games">
-            {games.map((game, index) => (
-              <li key={game.id} style={{ '--i': index }}>
-                <a href={`?project=${game.id}`} onClick={openGame(game.id)}>
-                  <span className="pv2-threshold__orb">
-                    {GAME_ART[game.id] && <img src={GAME_ART[game.id]} alt="" decoding="async" />}
-                  </span>
-                  <strong>{game.title}</strong>
-                </a>
-              </li>
-            ))}
-          </ul>
         </div>
       </div>
 
-      {leavingTo && (
+      {leaving && (
         <motion.div
           className="pv2-threshold__veil"
           aria-hidden="true"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: LEAVE_FADE, ease: EASE }}
-          onAnimationComplete={() => window.location.assign(leavingTo)}
+          onAnimationComplete={() => window.location.assign(UX_HREF)}
         />
       )}
     </motion.div>

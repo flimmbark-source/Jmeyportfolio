@@ -304,7 +304,7 @@ function ProjectVisual({ node, large = false }) {
   );
 }
 
-function ProjectTile({ node, placement, index, onSelect, reducedMotion, register, position, arrived, playIntro }) {
+function ProjectTile({ node, placement, index, onSelect, reducedMotion, register, position, arrived, playIntro, ghost = false }) {
   return (
     <div
       ref={(el) => register(node.id, el)}
@@ -320,12 +320,19 @@ function ProjectTile({ node, placement, index, onSelect, reducedMotion, register
         data-polish="orb"
         onClick={() => onSelect(node.id)}
         initial={reducedMotion || !playIntro ? false : { opacity: 0, scale: 0.965 }}
-        animate={arrived ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.965 }}
+        // `ghost`: on the threshold homepage, hovering Play shows the spheres
+        // faintly before they arrive — the playground seen through the door.
+        // Arrival then carries them from here to solid, with no dip.
+        animate={arrived
+          ? { opacity: 1, scale: 1 }
+          : ghost ? { opacity: 0.3, scale: 0.985 } : { opacity: 0, scale: 0.965 }}
         whileHover={reducedMotion || !arrived ? undefined : hoverMotion[placement]}
         whileFocus={reducedMotion || !arrived ? undefined : { y: -4, scale: 1.01 }}
         whileTap={reducedMotion ? undefined : { scale: 0.985 }}
-        transition={reducedMotion || !arrived
+        transition={reducedMotion
           ? { duration: 0 }
+          : !arrived
+          ? { duration: 0.6, ease: INTRO.ease }
           // Scale, not a y-offset: the simulation owns where the slot sits, and
           // a sphere sliding up into a position that is itself drifting reads
           // as a wobble rather than an arrival.
@@ -368,7 +375,7 @@ function GatewayLink({ id, className, eyebrow, title, onClick, reducedMotion, de
   );
 }
 
-function Overview({ onSelect, reducedMotion, gate = null, overline = '' }) {
+function Overview({ onSelect, reducedMotion, gate = null, overline = '', peek = false }) {
   const projects = publicProjectIds.map((id) => portfolioV2NodeMap.get(id)).filter(Boolean);
   const placements = ['top', 'left', 'right', 'bottom-left', 'bottom-right'];
   const stageRef = useRef(null);
@@ -456,6 +463,7 @@ function Overview({ onSelect, reducedMotion, gate = null, overline = '' }) {
             register={register}
             position={positions[node.id]}
             arrived={introPhase >= INTRO_PHASE.spheres}
+            ghost={peek}
             playIntro={playIntro}
           />
         ))}
@@ -912,6 +920,7 @@ export default function RelationalPortfolio({ threshold = false, overline = '' }
   const reducedMotion = useReducedMotion();
   const [selectedId, setSelectedId] = useState(null);
   const [released, setReleased] = useState(!threshold);
+  const [peek, setPeek] = useState(false);
 
   useEffect(() => {
     // portfolio-physics-v3.js repositions these same .pv2-float-slot elements
@@ -988,6 +997,7 @@ export default function RelationalPortfolio({ threshold = false, overline = '' }
           reducedMotion={reducedMotion}
           gate={threshold ? { released } : null}
           overline={overline}
+          peek={threshold && peek}
         />
       )}
       <AnimatePresence>
@@ -995,9 +1005,8 @@ export default function RelationalPortfolio({ threshold = false, overline = '' }
           <ThresholdGate
             key="threshold"
             reducedMotion={reducedMotion}
-            games={publicProjectIds.map((id) => portfolioV2NodeMap.get(id)).filter(Boolean)}
+            onPeek={setPeek}
             onPlay={() => setReleased(true)}
-            onOpenGame={(id) => { setReleased(true); select(id); }}
           />
         )}
       </AnimatePresence>

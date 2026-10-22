@@ -198,7 +198,7 @@
 }
 
 .pv2-threshold__eyebrow,
-.pv2-threshold__count {
+.pv2-threshold__sub {
   color: #5f5b55;
   font-size: 0.74rem;
   font-weight: 600;
@@ -206,7 +206,7 @@
   text-transform: uppercase;
 }
 
-.pv2-threshold__count {
+.pv2-threshold__sub {
   letter-spacing: 0.06em;
   text-transform: none;
   font-weight: 500;
@@ -230,141 +230,84 @@
 .pv2-threshold__door--ux .pv2-threshold__title { opacity: 1; }
 .pv2-threshold__door--play .pv2-threshold__title { opacity: 0.78; }
 
-.pv2-threshold__list {
+/* --- UX glimpse: real screens fanned in from the left edge --------------
+   Three phone-shaped screens, the front one centred. At rest they wait off
+   to the left; the door slides them in and fans them. Decorative only. */
+.pv2-threshold__glimpse {
   position: absolute;
-  top: 100%;
-  margin: 22px 0 0;
-  padding: 0;
-  list-style: none;
-  width: 100%;
-}
-
-.pv2-threshold__door--ux .pv2-threshold__list { left: 0; }
-.pv2-threshold__door--play .pv2-threshold__list { right: 0; }
-
-/* Each preview arrives a beat after the one before it. */
-.pv2-threshold__list li {
-  opacity: 0;
-  transform: translateY(8px);
-  transition:
-    opacity 380ms var(--pv2-ease) calc(var(--i, 0) * 45ms),
-    transform 520ms var(--pv2-ease) calc(var(--i, 0) * 45ms);
-}
-
-.pv2-threshold__list a {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  color: var(--pv2-text);
-  text-decoration: none;
+  z-index: 0;
+  left: var(--pv2-door-pad);
+  top: calc(46% + 3.2rem);
+  width: min(300px, calc(100% - 2 * var(--pv2-door-pad)));
+  height: min(36vh, 300px);
   pointer-events: none;
 }
 
-.pv2-threshold__list strong {
-  font-size: 0.86rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
+.pv2-threshold__screen {
+  position: absolute;
+  bottom: 0;
+  height: 86%;
+  aspect-ratio: 349 / 724;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(36, 36, 36, 0.14);
+  background: #fff;
+  box-shadow:
+    0 18px 36px -18px rgba(36, 30, 20, 0.55),
+    0 2px 6px rgba(36, 30, 20, 0.12);
+  transform-origin: 50% 100%;
+  opacity: 0;
+  transform: translateX(-56px) rotate(0deg);
+  transition:
+    opacity 420ms var(--pv2-ease) calc(var(--i, 0) * 60ms),
+    transform 640ms var(--pv2-ease) calc(var(--i, 0) * 60ms);
 }
 
-.pv2-threshold__list img {
+.pv2-threshold__screen img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 700ms var(--pv2-ease);
-}
-
-.pv2-threshold__list a:hover img,
-.pv2-threshold__list a:focus-visible img {
-  transform: scale(1.04);
-}
-
-.pv2-threshold__list a:hover strong,
-.pv2-threshold__list a:focus-visible strong {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-/* UX: the lead case study large, the next two side by side beneath it. */
-.pv2-threshold__cases {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px 14px;
-}
-
-.pv2-threshold__cases li.is-lead {
-  grid-column: 1 / -1;
-}
-
-.pv2-threshold__thumb {
-  display: block;
-  aspect-ratio: 3 / 2;
-  overflow: hidden;
-  border-radius: 10px;
-  background: var(--pv2-soft);
-  border: 1px solid rgba(36, 36, 36, 0.1);
-  box-shadow: 0 10px 28px -14px rgba(36, 30, 20, 0.45);
-}
-
-.pv2-threshold__cases li.is-lead .pv2-threshold__thumb {
-  aspect-ratio: 2 / 1;
-}
-
-/* Screens read from the top: crop from there, not the middle. */
-.pv2-threshold__cases img {
   object-position: top center;
 }
 
-.pv2-threshold__cases li.is-lead strong {
-  font-size: 0.98rem;
+/* Inset so the tilted back screens stay inside the margin. */
+.pv2-threshold__screen:nth-child(1) { left: 9%; }
+.pv2-threshold__screen:nth-child(2) { right: 9%; }
+.pv2-threshold__screen:nth-child(3) {
+  left: 50%;
+  height: 100%;
+  z-index: 1;
 }
 
-.pv2-threshold__detail {
-  margin-top: -3px;
-  color: #3d3a36;
-  font-size: 0.84rem;
-  line-height: 1.35;
+.pv2-threshold__door:hover .pv2-threshold__screen,
+.pv2-threshold__door:focus-within .pv2-threshold__screen {
+  opacity: 1;
 }
 
-/* Play: the playground's own spheres, small, in a loose cluster. */
-.pv2-threshold__games {
-  /* Wrapping from the right, so a short last row hugs the screen edge the
-     way the door's label does. */
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 18px 16px;
+.pv2-threshold__door:hover .pv2-threshold__screen:nth-child(1),
+.pv2-threshold__door:focus-within .pv2-threshold__screen:nth-child(1) {
+  transform: translateX(0) rotate(-8deg);
 }
 
-.pv2-threshold__games li {
-  width: calc((100% - 32px) / 3);
+.pv2-threshold__door:hover .pv2-threshold__screen:nth-child(2),
+.pv2-threshold__door:focus-within .pv2-threshold__screen:nth-child(2) {
+  transform: translateX(0) rotate(7deg);
 }
 
-.pv2-threshold__games a {
-  align-items: center;
-  text-align: center;
+/* The front screen is centred by translate, so its rest state keeps that. */
+.pv2-threshold__screen:nth-child(3) {
+  transform: translateX(calc(-50% - 56px));
 }
 
-.pv2-threshold__orb {
-  display: block;
-  width: min(100%, 84px);
-  aspect-ratio: 1;
-  overflow: hidden;
-  border-radius: 50%;
-  background: var(--pv2-soft);
-  border: 2px solid rgba(255, 255, 255, 0.75);
-  box-shadow: 0 12px 26px -12px rgba(36, 30, 20, 0.55);
+.pv2-threshold__door:hover .pv2-threshold__screen:nth-child(3),
+.pv2-threshold__door:focus-within .pv2-threshold__screen:nth-child(3) {
+  transform: translateX(-50%);
 }
 
-.pv2-threshold__games strong {
-  font-size: 0.8rem;
-}
-
-/* Short screens: the lead's one-liner gives up its line first. */
-@media (max-height: 760px) {
-  .pv2-threshold__detail { display: none; }
-  .pv2-threshold__cases li.is-lead .pv2-threshold__thumb { aspect-ratio: 5 / 2; }
+/* Short screens: the fan gives up height before it crowds the bottom edge. */
+@media (max-height: 720px) {
+  .pv2-threshold__glimpse { height: min(30vh, 220px); }
 }
 
 /* --- Hover and keyboard focus open a door ------------------------------- */
@@ -390,25 +333,12 @@
   transform: translateX(6px);
 }
 
-.pv2-threshold__door:hover .pv2-threshold__list li,
-.pv2-threshold__door:focus-within .pv2-threshold__list li {
-  opacity: 1;
-  transform: none;
-}
-
-.pv2-threshold__door:hover .pv2-threshold__list a,
-.pv2-threshold__door:focus-within .pv2-threshold__list a {
-  pointer-events: auto;
-}
-
 .pv2-threshold__hit:focus-visible,
-.pv2-threshold__list a:focus-visible,
 .pv2-threshold__frame a:focus-visible {
   outline: 2px solid var(--pv2-text);
   outline-offset: -8px;
 }
 
-.pv2-threshold__list a:focus-visible,
 .pv2-threshold__frame a:focus-visible {
   outline-offset: 2px;
 }
@@ -449,8 +379,8 @@
   .pv2-threshold__door::before,
   .pv2-threshold__door::after,
   .pv2-threshold__eyebrow,
-  .pv2-threshold__count,
-  .pv2-threshold__list {
+  .pv2-threshold__sub,
+  .pv2-threshold__glimpse {
     display: none;
   }
 
@@ -474,8 +404,15 @@
   .pv2-threshold__door::before,
   .pv2-threshold__door::after,
   .pv2-threshold__title,
-  .pv2-threshold__list li,
-  .pv2-threshold__list img {
+  .pv2-threshold__screen {
     transition: none;
   }
+}
+
+/* The playground's game controls are created by the physics script, possibly
+   after the threshold mounts, so they are hidden here rather than made inert:
+   `visibility: hidden` also takes them out of the tab order. */
+html.pv2-threshold-open .pv2-score-counter,
+html.pv2-threshold-open .pv2-motion-toggle {
+  visibility: hidden;
 }
