@@ -375,7 +375,7 @@ function GatewayLink({ id, className, eyebrow, title, onClick, reducedMotion, de
   );
 }
 
-function Overview({ onSelect, reducedMotion, gate = null, overline = '', peek = false }) {
+function Overview({ onSelect, reducedMotion, gate = null, statement = null, peek = false }) {
   const projects = publicProjectIds.map((id) => portfolioV2NodeMap.get(id)).filter(Boolean);
   const placements = ['top', 'left', 'right', 'bottom-left', 'bottom-right'];
   const stageRef = useRef(null);
@@ -444,12 +444,20 @@ function Overview({ onSelect, reducedMotion, gate = null, overline = '', peek = 
             ? { duration: 0 }
             : { duration: INTRO.statementFade, ease: INTRO.ease }}
         >
-          <p className="pv2-overline">{overline}</p>
-          {/* On the threshold homepage this is the only sentence on screen
-              before the visitor picks UX or Play. It should speak to both
-              doors; it currently leads with the interactive/games side. */}
-          <h1>Interactive Designer <br /> & Creative Thinker</h1>
-          <p>I create games, interactive art, thought experiments, and UX work, in order to explore how interaction fosters growth, connection, and positive change.</p>
+          <p className="pv2-overline"></p>
+          {/* `statement` lets a page set its own headline and subtext (the
+              threshold homepage does); otherwise the playground's own. */}
+          {statement ? (
+            <>
+              <h1>{statement.headline}</h1>
+              <p>{statement.subtext}</p>
+            </>
+          ) : (
+            <>
+              <h1>Interactive Designer <br /> & Creative Thinker</h1>
+              <p>I create games, interactive art, thought experiments, and UX work, in order to explore how interaction fosters growth, connection, and positive change.</p>
+            </>
+          )}
         </motion.div>
 
         {projects.map((node, index) => (
@@ -916,7 +924,11 @@ function WorkBackdropCredit({ reducedMotion }) {
 
 // `threshold`: the homepage opens on the statement alone, with UX to the left
 // and Play to the right. Play continues the arrival; UX leaves for /ux.
-export default function RelationalPortfolio({ threshold = false, overline = '' }) {
+// `statement`: { headline, subtext } to replace the playground's own.
+// `navLinks`: [{ label, href }] to replace the playground's nav. The threshold
+// homepage passes the same list to its own frame, so nothing moves when the
+// one fades into the other. `homeHref`: where the name links.
+export default function RelationalPortfolio({ threshold = false, statement = null, navLinks = null, homeHref = '/' }) {
   const reducedMotion = useReducedMotion();
   const [selectedId, setSelectedId] = useState(null);
   const [released, setReleased] = useState(!threshold);
@@ -966,7 +978,16 @@ export default function RelationalPortfolio({ threshold = false, overline = '' }
     <>
       <div className="pv2-site">
       <header className="pv2-nav">
-        <a href="/" className="pv2-nav__name">Jacob Meyerkopf</a>
+        <a href={homeHref} className="pv2-nav__name">Jacob Meyerkopf</a>
+        {navLinks ? (
+          <nav aria-label="Portfolio navigation">
+            {navLinks.map((link) => (
+              <a key={link.href} data-polish="magnet" href={link.href}>
+                <span className="pv2-polish-label">{link.label}</span>
+              </a>
+            ))}
+          </nav>
+        ) : (
         <nav aria-label="Portfolio navigation">
           <button data-polish="magnet" type="button" aria-current={!selected ? 'page' : undefined} onClick={() => { setSelectedId(null); writeProjectToUrl(null); }}><span className="pv2-polish-label">Playground</span></button>
           <button data-polish="magnet" type="button" aria-current={selected && selected.id !== 'ux-work' ? 'page' : undefined} onClick={() => select('unfinished')}><span className="pv2-polish-label">Work</span></button>
@@ -974,6 +995,7 @@ export default function RelationalPortfolio({ threshold = false, overline = '' }
           <a data-polish="magnet" href="/ux"><span className="pv2-polish-label">UX</span></a>
           <a data-polish="magnet" href="/contact"><span className="pv2-polish-label">Contact</span></a>
         </nav>
+        )}
       </header>
 
       {(!selected || selected?.id === 'unfinished') && (
@@ -996,7 +1018,7 @@ export default function RelationalPortfolio({ threshold = false, overline = '' }
           onSelect={select}
           reducedMotion={reducedMotion}
           gate={threshold ? { released } : null}
-          overline={overline}
+          statement={statement}
           peek={threshold && peek}
         />
       )}
@@ -1005,6 +1027,8 @@ export default function RelationalPortfolio({ threshold = false, overline = '' }
           <ThresholdGate
             key="threshold"
             reducedMotion={reducedMotion}
+            links={navLinks}
+            homeHref={homeHref}
             onPeek={setPeek}
             onPlay={() => setReleased(true)}
           />

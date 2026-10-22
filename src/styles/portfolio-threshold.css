@@ -21,6 +21,12 @@
   --pv2-door-wash: 0.42;
   --pv2-door-w: calc((100vw - min(650px, 50vw)) / 2);
   --pv2-door-pad: clamp(24px, 3.4vw, 64px);
+  /* Each door's label and its preview form one block, centred on the screen.
+     Both labels start at the same height, so they stay level. */
+  --pv2-label-h: 4.6rem;
+  --pv2-stack-gap: 1.4rem;
+  --pv2-glimpse-h: min(36vh, 300px);
+  --pv2-stack-top: calc(50% - (var(--pv2-label-h) + var(--pv2-stack-gap) + var(--pv2-glimpse-h)) / 2);
   position: fixed;
   inset: 0;
   z-index: 60;
@@ -169,14 +175,12 @@
   );
 }
 
-/* --- The label and what it reveals ---------------------------------------
-   The label sits level with the statement (top: 46%). The list opens below it
-   without moving it. */
+/* --- The label ------------------------------------------------------------ */
 .pv2-threshold__content {
   position: absolute;
-  /* Anchored from the top, not centred, so both titles sit on the same line
-     whatever opens below them (UX carries a count line, Play does not). */
-  top: calc(46% - 3.1rem);
+  /* Anchored from the top of the centred block, so both titles sit on the
+     same line whatever opens below them. */
+  top: var(--pv2-stack-top);
   z-index: 2;
   display: flex;
   flex-direction: column;
@@ -237,9 +241,9 @@
   position: absolute;
   z-index: 0;
   left: var(--pv2-door-pad);
-  top: calc(46% + 3.2rem);
+  top: calc(var(--pv2-stack-top) + var(--pv2-label-h) + var(--pv2-stack-gap));
   width: min(300px, calc(100% - 2 * var(--pv2-door-pad)));
-  height: min(36vh, 300px);
+  height: var(--pv2-glimpse-h);
   pointer-events: none;
 }
 
@@ -307,7 +311,7 @@
 
 /* Short screens: the fan gives up height before it crowds the bottom edge. */
 @media (max-height: 720px) {
-  .pv2-threshold__glimpse { height: min(30vh, 220px); }
+  .pv2-threshold { --pv2-glimpse-h: min(30vh, 220px); }
 }
 
 /* --- Hover and keyboard focus open a door ------------------------------- */
@@ -415,4 +419,35 @@
 html.pv2-threshold-open .pv2-score-counter,
 html.pv2-threshold-open .pv2-motion-toggle {
   visibility: hidden;
+}
+
+/* Phones: the same stacked bar as the playground's nav (portfolio-chrome.css),
+   name above, links spread across, so four links fit at 320px. */
+@media (max-width: 720px) {
+  .pv2-threshold__frame {
+    height: 64px;
+    padding: 7px 16px 6px;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 3px;
+  }
+
+  .pv2-threshold__name {
+    font-size: .78rem;
+    line-height: 1;
+  }
+
+  .pv2-threshold__quick {
+    width: 100%;
+    justify-content: space-between;
+    gap: 4px;
+  }
+
+  .pv2-threshold__quick a {
+    padding: 5px 0;
+    font-size: clamp(.68rem, 3.05vw, .8rem);
+    line-height: 1;
+    white-space: nowrap;
+  }
 }

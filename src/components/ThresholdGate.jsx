@@ -26,7 +26,6 @@ const UX_GLIMPSE = [
 ];
 
 const UX_HREF = '/ux';
-const RESUME_HREF = '/resume/Jacob_Meyerkopf_Product_UX_Resume.pdf';
 
 // The doors fade in once the statement has had the screen to itself
 // (RelationalPortfolio INTRO.statement is 1.82s).
@@ -35,7 +34,7 @@ const DOOR_FADE = 1.1;
 const LEAVE_FADE = 0.5;
 const EASE = [0.22, 1, 0.36, 1];
 
-export default function ThresholdGate({ reducedMotion, onPlay, onPeek = () => {} }) {
+export default function ThresholdGate({ reducedMotion, onPlay, onPeek = () => {}, links = [], homeHref = '/' }) {
   const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
@@ -82,13 +81,21 @@ export default function ThresholdGate({ reducedMotion, onPlay, onPeek = () => {}
       exit={{ opacity: 0, transition: { duration: reducedMotion ? 0 : 0.6, ease: EASE } }}
       transition={reducedMotion ? { duration: 0 } : { duration: DOOR_FADE, delay: DOOR_DELAY, ease: EASE }}
     >
-      {/* The minimum frame: who this is, the resume, a way to get in touch.
-          Sits exactly where the playground's nav will fade in. */}
+      {/* The same links as the playground's nav, in the same places, so when
+          Play releases that nav it fades in around them without anything
+          moving. */}
       <header className="pv2-threshold__frame">
-        <a href="/" className="pv2-threshold__name">Jacob Meyerkopf</a>
-        <nav aria-label="Quick links" className="pv2-threshold__quick">
-          <a href={RESUME_HREF}>Resume</a>
-          <a href="/contact">Contact</a>
+        <a href={homeHref} className="pv2-threshold__name">Jacob Meyerkopf</a>
+        <nav aria-label="Site navigation" className="pv2-threshold__quick">
+          {links.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              aria-current={link.href === homeHref ? 'page' : undefined}
+            >
+              {link.label}
+            </a>
+          ))}
         </nav>
       </header>
 

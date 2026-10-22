@@ -13,6 +13,23 @@ import '../styles/portfolio-threshold.css';
 // Preview of the threshold homepage: the playground, held at its statement
 // until the visitor picks UX (left) or Play (right). The live homepage is
 // src/pages/index.astro and is unchanged.
+
+// Where Home goes. When this page becomes the homepage, set this to '/'.
+const HOME = '/home-v2';
+
+const statement = {
+  headline: 'Product design & UX Researcher',
+  subtext: 'My main drive is to create meaning from games and interactive art, through the use of thought experiments and UX Work.',
+};
+
+// One nav for the threshold and the playground. Work and UX are reached from
+// inside the playground through its two bumpers (All Games, UX Work).
+const navLinks = [
+  { label: 'Home', href: HOME },
+  { label: 'Research', href: '/research' },
+  { label: 'Resume', href: '/resume/Jacob_Meyerkopf_Product_UX_Resume.pdf' },
+  { label: 'Contact', href: '/contact' },
+];
 ---
 <!doctype html>
 <html lang="en">
@@ -70,7 +87,13 @@ import '../styles/portfolio-threshold.css';
       <div class="pv2-loader-dots" aria-hidden="true"><span></span><span></span><span></span></div>
     </div>
     <div id="portfolio-v2">
-      <RelationalPortfolio client:load threshold overline="Product design & UX research" />
+      <RelationalPortfolio
+        client:load
+        threshold
+        homeHref={HOME}
+        statement={statement}
+        navLinks={navLinks}
+      />
     </div>
     <script is:inline>
       (() => {
