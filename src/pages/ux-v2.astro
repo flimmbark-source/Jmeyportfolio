@@ -10,15 +10,8 @@ import PortfolioPolish from '../components/PortfolioPolish.astro';
 import '../styles/portfolio-v2.css';
 import '../styles/portfolio-chrome.css';
 
-// Same list as the threshold homepage (home-v2.astro).
-const HOME = '/home-v2';
-const RESUME = '/resume/Jacob_Meyerkopf_Product_UX_Resume.pdf';
-const navLinks = [
-  { label: 'Home', href: HOME },
-  { label: 'Research', href: '/research' },
-  { label: 'Resume', href: RESUME },
-  { label: 'Contact', href: '/contact' },
-];
+// Shared with the homepage, playground and case studies.
+import { HOME, RESUME, navLinks } from '../data/siteNav';
 
 const projects = await getCollection('projects');
 const bySlug = (slug) => projects.find((project) => project.data.slug === slug)?.data;

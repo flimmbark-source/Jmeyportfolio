@@ -1,9 +1,8 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import PortfolioShell from '../layouts/PortfolioShell.astro';
 import LetterRiverCaseStudy from '../components/LetterRiverCaseStudy.jsx';
 
-const navLinks = [
-  { href: '/ux', label: 'UX work' },
+const sections = [
   { href: '#challenge', label: 'Challenge' },
   { href: '#process', label: 'Process' },
   { href: '#journey', label: 'Journey' },
@@ -12,6 +11,6 @@ const navLinks = [
   { href: '#outcome', label: 'Validation' },
 ];
 ---
-<BaseLayout title="Letter River Case Study | Jacob Meyerkopf" mainClass="p-0" navLinks={navLinks}>
+<PortfolioShell title="Letter River Case Study | Jacob Meyerkopf" sections={sections}>
   <LetterRiverCaseStudy client:load />
-</BaseLayout>
+</PortfolioShell>

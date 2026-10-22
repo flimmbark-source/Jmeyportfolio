@@ -1,5 +1,5 @@
 ---
-import BaseLayout from './BaseLayout.astro';
+import PortfolioShell from './PortfolioShell.astro';
 import SectionHeader from '../components/case-study/SectionHeader.astro';
 import MetricsGrid from '../components/case-study/MetricsGrid.astro';
 import StepList from '../components/case-study/StepList.astro';
@@ -51,21 +51,21 @@ const autoNav = sections
     label: caseStudy[section.key]?.navLabel ?? section.label
   }));
 
-const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
-  { href: '/ux', label: 'UX work' },
-  ...autoNav
-];
+// The shell's bar carries the way back to UX Work, so only this page's own
+// sections are listed here.
+const sectionLinks = navLinksProp && navLinksProp.length > 0
+  ? navLinksProp.filter((link) => link.href.startsWith('#'))
+  : autoNav;
 ---
-<BaseLayout
+<PortfolioShell
   title={title}
   description={description}
-  navLinks={navLinks}
-  mainClass="bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-slate-100"
+  sections={sectionLinks}
 >
   <div class="relative mx-auto max-w-5xl px-4 py-16 text-slate-900 transition-colors duration-300 sm:px-6 lg:px-8 dark:text-slate-100">
     <section class="rounded-3xl border border-slate-200/70 bg-slate-100/80 p-4 shadow-xl backdrop-blur-sm sm:p-8 lg:p-12 dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
       <div class="case-study-hero rounded-3xl bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200 p-5 sm:p-8 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-white">
-        <div class="space-y-6 text-center">
+        <div class="space-y-6 text-left">
           {hero.eyebrow && (
             <p class="text-sm font-semibold uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300">
               {hero.eyebrow}
@@ -78,7 +78,7 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
             )}
           </div>
           {tldrItems.length > 0 && (
-            <div class="mx-auto w-full max-w-4xl rounded-2xl border border-slate-200/70 bg-white/80 p-6 text-left shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5 dark:shadow-none">
+            <div class="w-full max-w-4xl rounded-2xl border border-slate-200/70 bg-white/80 p-6 text-left shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5 dark:shadow-none">
               <div class="flex items-center gap-3">
                 <span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-sky-700 dark:bg-sky-900/60 dark:text-sky-100">
                   TL;DR
@@ -119,7 +119,7 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
             <p class="text-base leading-relaxed text-slate-800 dark:text-slate-200">{hero.summary}</p>
           )}
           {(hero.meta || hero.actions) && (
-            <div class="mt-8 flex w-full flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <div class="mt-8 flex w-full flex-col items-start gap-6 lg:flex-row lg:items-start lg:justify-between">
               {hero.meta && hero.meta.length > 0 && (
                 <dl class="grid w-full max-w-3xl gap-4 text-left text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-3 dark:text-slate-200">
                   {hero.meta.map((item) => (
@@ -134,7 +134,7 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
                 </dl>
               )}
               {hero.actions && hero.actions.length > 0 && (
-                <div class="flex flex-wrap justify-center gap-3">
+                <div class="flex flex-wrap justify-start gap-3">
                   {hero.actions.map((action) => (
                     <a
                       class={`cta-button inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-semibold transition hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100 dark:hover:bg-white/10 dark:focus-visible:ring-offset-slate-900 ${
@@ -303,4 +303,4 @@ const navLinks = navLinksProp && navLinksProp.length > 0 ? navLinksProp : [
       )}
     </section>
   </div>
-</BaseLayout>
+</PortfolioShell>

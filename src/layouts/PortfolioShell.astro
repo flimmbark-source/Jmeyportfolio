@@ -1,0 +1,94 @@
+---
+// The portfolio's shell for long-form pages (case studies): the same painting
+// backdrop, type and nav as the homepage, playground and UX screen, plus a
+// slim bar under the nav with the way back to UX Work, this page's sections
+// and one reading-progress line.
+//
+// Case-study content is written with Tailwind; portfolio-case.css brings its
+// surfaces, text and type into the portfolio's palette. The shell never sets
+// Tailwind's `dark` class, so content renders in its light styles.
+import PortfolioBackdrop from '../components/PortfolioBackdrop.astro';
+import PortfolioPolish from '../components/PortfolioPolish.astro';
+import { HOME, UX, navLinks } from '../data/siteNav';
+import '../styles/tailwind.css';
+import '../styles/portfolio-v2.css';
+import '../styles/portfolio-chrome.css';
+import '../styles/portfolio-case.css';
+
+interface Link {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  title: string;
+  description?: string;
+  sections?: Link[];
+  backHref?: string;
+  backLabel?: string;
+}
+
+const {
+  title,
+  description,
+  sections = [],
+  backHref = UX,
+  backLabel = 'UX Work',
+} = Astro.props as Props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <slot name="head" />
+  </head>
+  <body class="pv2-body">
+    <a class="pv2-case-skip" href="#main">Skip to content</a>
+    <PortfolioPolish />
+    <PortfolioBackdrop />
+    <div class="pv2-site">
+      <header class="pv2-nav">
+        <a href={HOME} class="pv2-nav__name">Jacob Meyerkopf</a>
+        <nav aria-label="Portfolio navigation">
+          {navLinks.map((link) => (
+            <a data-polish="magnet" href={link.href}><span class="pv2-polish-label">{link.label}</span></a>
+          ))}
+        </nav>
+      </header>
+
+      <div class="pv2-case-bar">
+        <a class="pv2-case-bar__back" href={backHref}><span aria-hidden="true">←</span> {backLabel}</a>
+        {sections.length > 0 && (
+          <nav class="pv2-case-bar__sections" aria-label="On this page">
+            {sections.map((section) => <a href={section.href}>{section.label}</a>)}
+          </nav>
+        )}
+        <span class="pv2-case-bar__progress" aria-hidden="true"></span>
+      </div>
+
+      <main id="main" class="pv2-case">
+        <slot />
+      </main>
+    </div>
+
+    <script is:inline>
+      // Reading progress: one line under the bar, for every case study.
+      (() => {
+        const root = document.documentElement;
+        let frame = 0;
+        const update = () => {
+          frame = 0;
+          const max = root.scrollHeight - window.innerHeight;
+          root.style.setProperty('--pv2-read', max > 0 ? String(Math.min(1, window.scrollY / max)) : '0');
+        };
+        const queue = () => { if (!frame) frame = requestAnimationFrame(update); };
+        window.addEventListener('scroll', queue, { passive: true });
+        window.addEventListener('resize', queue);
+        update();
+      })();
+    </script>
+  </body>
+</html>
