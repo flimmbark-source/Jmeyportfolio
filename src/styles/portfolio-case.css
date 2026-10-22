@@ -11,6 +11,14 @@
 
 html { color-scheme: light; }
 
+/* --- Reading pages: solid chrome --------------------------------------
+   Over a painting the translucent nav reads as glass; over scrolling text it
+   reads as clutter, the lines showing through the links. */
+.pv2-body:has(.pv2-case) .pv2-nav,
+.pv2-body:has(.uxw) .pv2-nav {
+  background: #f7f6f2;
+}
+
 /* --- The bar under the nav ---------------------------------------------- */
 .pv2-case-bar {
   position: sticky;
@@ -24,7 +32,7 @@ html { color-scheme: light; }
      back out and re-pads itself to line up with the nav's name. */
   margin-inline: calc(-1 * clamp(18px, 3.8vw, 68px));
   padding: 0 clamp(18px, 3.8vw, 68px);
-  background: rgba(247, 246, 242, 0.82);
+  background: #f3f1eb;
   border-bottom: 1px solid rgba(36, 36, 36, 0.08);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
@@ -249,4 +257,122 @@ html { color-scheme: light; }
     gap: 4px 16px;
     font-size: .8rem;
   }
+}
+
+/* =========================================================================
+   Phones (≤ 720px)
+   One gutter (16px) from the screen edge to a panel, one inset (20px) from a
+   panel's edge to its text. On desktop the case studies nest a page padding,
+   a container padding, a panel padding and an inner card padding; at phone
+   width those stacked into a text column of about 250px. Here the outer
+   layers give their padding up so the reading panel keeps it.
+   ========================================================================= */
+@media (max-width: 720px) {
+  /* The site's own side padding goes; each page's container supplies the
+     16px gutter instead. The bar no longer has padding to step back out of. */
+  .pv2-site:has(.pv2-case) { padding-inline: 0; }
+  .pv2-case-bar { margin-inline: 0; }
+
+  /* The image credit sits over the text at the bottom of every page. */
+  .pv2-body:has(.pv2-case) .pv2-credit-drawer { display: none; }
+
+  /* --- Shared case-study layout (IDL, AI Archiving, Agora 21, Bball) --- */
+  /* Container → panel → hero: keep the panel's inset, drop the rest. */
+  .pv2-case > div.relative.mx-auto.max-w-5xl {
+    padding: 16px 16px 40px;
+  }
+
+  .pv2-case > div.relative.mx-auto.max-w-5xl > section {
+    padding: 24px 20px 32px;
+    border-radius: 22px;
+  }
+
+  .pv2-case .case-study-hero {
+    padding: 0;
+    background: none;
+  }
+
+  /* Section rhythm: 80px between sections is a desktop gap. */
+  .pv2-case section.mt-16 { margin-top: 40px; }
+  .pv2-case section.mt-20 { margin-top: 48px; }
+  .pv2-case article.mt-12 { margin-top: 24px; padding: 20px; }
+
+  /* Long centred paragraphs read poorly in a narrow column. */
+  .pv2-case header.mx-auto.max-w-3xl.text-center { text-align: left; }
+
+  /* --- Type ----------------------------------------------------------- */
+  /* Wide tracking wrapped short labels onto three lines. */
+  .pv2-case .tracking-\[0\.35em\],
+  .pv2-case .tracking-\[0\.25em\],
+  .pv2-case .tracking-\[0\.2em\] { letter-spacing: .12em; }
+
+  .pv2-case .text-lg { font-size: 1.0625rem; line-height: 1.6; }
+  .pv2-case .text-xl { font-size: 1.125rem; line-height: 1.55; }
+  .pv2-case .leading-8 { line-height: 1.6; }
+  .pv2-case .text-4xl { font-size: 2rem; line-height: 1.08; }
+  .pv2-case .text-5xl { font-size: 2.35rem; line-height: 1.05; }
+  .pv2-case .text-3xl { font-size: 1.6rem; line-height: 1.15; }
+
+  /* Step numbers were squeezed into thin pills beside long titles. */
+  .pv2-case li.flex > .h-12.w-12 { flex-shrink: 0; }
+
+  /* Hero meta cards: two across instead of a tall stack. */
+  .pv2-case .case-study-hero dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .pv2-case .case-study-hero dl > div { padding: 12px 14px; }
+
+  /* An odd last card takes the full row instead of sitting alone. */
+  .pv2-case .case-study-hero dl > div:last-child:nth-child(odd) { grid-column: 1 / -1; }
+
+  /* Metric cards: compact. */
+  .pv2-case .text-center.p-6 { padding: 18px; }
+
+  /* --- Letter River ---------------------------------------------------- */
+  .pv2-case #overview.mx-auto.max-w-6xl { padding: 16px 16px 32px; }
+
+  /* Hero buttons: one full-width stack rather than two ragged widths. */
+  .pv2-case #overview .mt-8.flex.flex-wrap.gap-3 > a {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+  .pv2-case .p-6.sm\:p-8 { padding: 22px 20px; }
+
+  /* Its seven "what the learner carries" cards: two across, compact. */
+  .pv2-case .grid.gap-3.sm\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .pv2-case .grid.gap-3.sm\:grid-cols-2 > article { padding: 14px 10px; }
+
+  /* Role / status / tools / focus: two across. */
+  .pv2-case section.mt-5.grid.md\:grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .pv2-case section.mt-5.grid.md\:grid-cols-4 > article { padding: 14px; }
+
+  /* --- Rotogo ---------------------------------------------------------- */
+  .pv2-case header.h-screen {
+    min-height: 0;
+    padding: 40px 20px 32px;
+  }
+
+  /* The scroll arrow collided with the meta line once the hero was short. */
+  .pv2-case header.h-screen .animate-bounce { display: none; }
+
+  .pv2-case main.max-w-7xl {
+    margin: 0 16px 32px;
+    padding-inline: 20px;
+    border-radius: 22px;
+  }
+
+  .pv2-case main.max-w-7xl > section { padding-top: 40px; padding-bottom: 40px; }
+  .pv2-case main.max-w-7xl .text-center.max-w-3xl { text-align: left; }
+  .pv2-case .mb-16 { margin-bottom: 32px; }
+  .pv2-case .mb-12 { margin-bottom: 24px; }
 }

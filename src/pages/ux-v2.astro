@@ -9,6 +9,7 @@ import PortfolioBackdrop from '../components/PortfolioBackdrop.astro';
 import PortfolioPolish from '../components/PortfolioPolish.astro';
 import '../styles/portfolio-v2.css';
 import '../styles/portfolio-chrome.css';
+import '../styles/portfolio-case.css';
 
 // Shared with the homepage, playground and case studies.
 import { HOME, RESUME, navLinks } from '../data/siteNav';
@@ -741,6 +742,39 @@ const experience = [
     .uxw-explore {
       grid-template-columns: minmax(0, 1fr);
     }
+  }
+
+  /* Phones: one 16px gutter to a panel, one 20px inset to its text (the
+     site's own side padding stacked on top of the page's). */
+  @media (max-width: 720px) {
+    .pv2-site:has(.uxw) { padding-inline: 0; }
+    .pv2-body:has(.uxw) .pv2-credit-drawer { display: none; }
+
+    .uxw { padding: 28px 16px 48px; }
+    .uxw-section { margin-top: 56px; }
+    .uxw-heading { margin-bottom: 20px; }
+    .uxw-heading h2 { font-size: 2rem; }
+    .uxw-hero { gap: 24px; }
+    .uxw-hero h1 { font-size: 2.45rem; line-height: 1.02; }
+    .uxw-lead { font-size: 1.02rem; }
+    .uxw .pv2-overline { letter-spacing: .1em; }
+    .uxw-actions { gap: 12px 20px; margin-top: 22px; }
+
+    .uxw-case,
+    .uxw-panel,
+    .uxw-contact { padding: 22px 20px; border-radius: 20px; }
+    .uxw-case { gap: 22px; }
+    .uxw-case h3 { font-size: 1.45rem; }
+    .uxw-case__summary { font-size: .98rem; }
+    .uxw-cases { gap: 14px; }
+    .uxw-bars,
+    .uxw-steps { padding: 16px; }
+
+    .uxw-section#experience .uxw-timeline { padding: 0 20px; }
+    .uxw-timeline li { padding: 18px 0; }
+
+    .uxw-explore { gap: 14px; }
+    .uxw-contact h2 { font-size: 2rem; }
   }
 
   @media (max-width: 560px) {
