@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { portfolioV2NodeMap } from '../data/portfolioV2';
 import { pickWorkBackground, workBackgroundSrcSet } from '../data/workBackgrounds';
+import ThresholdGate from './ThresholdGate.jsx';
 
 const MOTION = {
   ease: [0.22, 1, 0.36, 1],
@@ -52,14 +53,28 @@ function hasPlayedIntro() {
 
 const INTRO_PHASE = { hidden: 0, statement: 1, spheres: 2, settled: 3 };
 
-function useIntroPhase(reducedMotion) {
-  const [phase, setPhase] = useState(() =>
-    reducedMotion || hasPlayedIntro() ? INTRO_PHASE.settled : INTRO_PHASE.hidden);
+// `gated`: the threshold homepage holds the arrival at the statement beat until
+// the visitor chooses Play. It is fixed for the life of the mount — a visitor
+// who already chose Play and comes back to the overview sees it settled.
+// `released`: the visitor has chosen Play; the arrival continues from there.
+function useIntroPhase(reducedMotion, gated = false, released = true) {
+  const [phase, setPhase] = useState(() => {
+    if (gated) return reducedMotion ? INTRO_PHASE.statement : INTRO_PHASE.hidden;
+    return reducedMotion || hasPlayedIntro() ? INTRO_PHASE.settled : INTRO_PHASE.hidden;
+  });
+  const releasedRef = useRef(!gated || released);
+  const advanceRef = useRef(null);
 
   useEffect(() => {
-    if (reducedMotion || hasPlayedIntro()) {
+    if (!gated && (reducedMotion || hasPlayedIntro())) {
       setPhase(INTRO_PHASE.settled);
       return undefined;
+    }
+    if (reducedMotion) {
+      // Gated, without motion: the statement waits, then everything is there.
+      advanceRef.current = () => setPhase(INTRO_PHASE.settled);
+      setPhase(releasedRef.current ? INTRO_PHASE.settled : INTRO_PHASE.statement);
+      return () => { advanceRef.current = null; };
     }
     introPlayed = true;
 
@@ -70,8 +85,9 @@ function useIntroPhase(reducedMotion) {
 
     const toSpheres = () => {
       // Both: the simulation has placed them, AND the statement has had the
-      // screen to itself. Whichever is slower sets the pace.
-      if (advanced || !physicsReady || !statementShown) return;
+      // screen to itself. Whichever is slower sets the pace. On the threshold
+      // homepage the visitor's choice is a third condition.
+      if (advanced || !physicsReady || !statementShown || !releasedRef.current) return;
       advanced = true;
       setPhase(INTRO_PHASE.spheres);
       const spheres = publicProjectIds.length;
@@ -87,13 +103,21 @@ function useIntroPhase(reducedMotion) {
     timers.push(window.setTimeout(() => { statementShown = true; toSpheres(); }, INTRO.statement * 1000));
 
     const frame = requestAnimationFrame(() => setPhase(INTRO_PHASE.statement));
+    advanceRef.current = toSpheres;
 
     return () => {
+      advanceRef.current = null;
       cancelAnimationFrame(frame);
       timers.forEach(window.clearTimeout);
       window.removeEventListener('pv2:physics-ready', onPhysicsReady);
     };
-  }, [reducedMotion]);
+  }, [reducedMotion, gated]);
+
+  useEffect(() => {
+    const isReleased = !gated || released;
+    releasedRef.current = isReleased;
+    if (isReleased) advanceRef.current?.();
+  }, [gated, released]);
 
   // The nav and the credit drawer live outside this tree, so they take the
   // phase off the document element and fade themselves in CSS.
@@ -344,7 +368,7 @@ function GatewayLink({ id, className, eyebrow, title, onClick, reducedMotion, de
   );
 }
 
-function Overview({ onSelect, reducedMotion }) {
+function Overview({ onSelect, reducedMotion, gate = null }) {
   const projects = publicProjectIds.map((id) => portfolioV2NodeMap.get(id)).filter(Boolean);
   const placements = ['top', 'left', 'right', 'bottom-left', 'bottom-right'];
   const stageRef = useRef(null);
@@ -352,8 +376,9 @@ function Overview({ onSelect, reducedMotion }) {
   const itemRefs = useRef({});
   const [positions, setPositions] = useState({});
   const [contextProjectId, setContextProjectId] = useState(null);
-  const [playIntro] = useState(() => !reducedMotion && !hasPlayedIntro());
-  const introPhase = useIntroPhase(reducedMotion);
+  const [gatedAtMount] = useState(() => Boolean(gate) && !gate.released);
+  const [playIntro] = useState(() => !reducedMotion && (gatedAtMount || !hasPlayedIntro()));
+  const introPhase = useIntroPhase(reducedMotion, gatedAtMount, gate ? gate.released : true);
   const contextNode = contextProjectId ? portfolioV2NodeMap.get(contextProjectId) : null;
 
   const register = useCallback((id, element) => {
@@ -803,9 +828,9 @@ function UXGateway({ onBack }) {
   );
 }
 
-function WorkBackdrop({ reducedMotion, content = false }) {
+function WorkBackdrop({ reducedMotion, content = false, forceIntro = false }) {
   const [background, setBackground] = useState(null);
-  const [playIntro] = useState(() => !reducedMotion && !content && !hasPlayedIntro());
+  const [playIntro] = useState(() => !reducedMotion && !content && (forceIntro || !hasPlayedIntro()));
 
   useEffect(() => {
     // The image is a local public asset. Let CSS load it directly rather than
@@ -878,9 +903,12 @@ function WorkBackdropCredit({ reducedMotion }) {
   );
 }
 
-export default function RelationalPortfolio() {
+// `threshold`: the homepage opens on the statement alone, with UX to the left
+// and Play to the right. Play continues the arrival; UX leaves for /ux.
+export default function RelationalPortfolio({ threshold = false }) {
   const reducedMotion = useReducedMotion();
   const [selectedId, setSelectedId] = useState(null);
+  const [released, setReleased] = useState(!threshold);
 
   useEffect(() => {
     // portfolio-physics-v3.js repositions these same .pv2-float-slot elements
@@ -941,6 +969,7 @@ export default function RelationalPortfolio() {
           key="portfolio-backdrop"
           reducedMotion={reducedMotion}
           content={selected?.id === 'unfinished'}
+          forceIntro={threshold}
         />
       )}
       {(!selected || selected?.id === 'unfinished') && (
@@ -949,7 +978,23 @@ export default function RelationalPortfolio() {
           reducedMotion={reducedMotion}
         />
       )}
-      {!selected && <Overview key="overview" onSelect={select} reducedMotion={reducedMotion} />}
+      {!selected && (
+        <Overview
+          key="overview"
+          onSelect={select}
+          reducedMotion={reducedMotion}
+          gate={threshold ? { released } : null}
+        />
+      )}
+      <AnimatePresence>
+        {threshold && !released && !selected && (
+          <ThresholdGate
+            key="threshold"
+            reducedMotion={reducedMotion}
+            onPlay={() => setReleased(true)}
+          />
+        )}
+      </AnimatePresence>
       {selected?.kind === 'project' && <ProjectFocus key={selected.id} node={selected} onBack={back} onSelect={select} reducedMotion={reducedMotion} />}
       {selected?.id === 'unfinished' && <Workshop key="unfinished" onBack={back} onSelect={select} reducedMotion={reducedMotion} />}
       {selected?.id === 'ux-work' && <UXGateway key="ux" onBack={back} />}
