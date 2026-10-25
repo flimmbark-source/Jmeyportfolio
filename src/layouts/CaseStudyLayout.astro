@@ -13,6 +13,7 @@ import MediaSlot from '../components/case-study/MediaSlot.astro';
 import ModuleGrid from '../components/case-study/ModuleGrid.astro';
 import ComparisonBars from '../components/case-study/ComparisonBars.astro';
 import DonutChart from '../components/case-study/DonutChart.astro';
+import { UX, resolveHref } from '../data/siteNav';
 
 const {
   title,
@@ -34,6 +35,15 @@ const sections = [
 ];
 
 const hero = caseStudy?.hero ?? {};
+
+// Content JSON hardcodes '/ux' and '/' in its hero actions, which predate the
+// shared nav. Route them through the constants so the preview routes work and
+// going live stays a one-line change in src/data/siteNav.ts. The shell's bar
+// already carries the way back to Work, so a hero action that only repeats it
+// is dropped rather than rendered twice.
+const heroActions = (hero.actions ?? [])
+  .map((action) => ({ ...action, href: resolveHref(action.href) }))
+  .filter((action) => action.href !== UX);
 const tldrItems = hero?.tldr?.items ?? [];
 const overview = caseStudy?.overview;
 const challenge = caseStudy?.challenge;
@@ -118,7 +128,7 @@ const sectionLinks = navLinksProp && navLinksProp.length > 0
           {hero.summary && (
             <p class="text-base leading-relaxed text-slate-800 dark:text-slate-200">{hero.summary}</p>
           )}
-          {(hero.meta || hero.actions) && (
+          {(hero.meta || heroActions.length > 0) && (
             <div class="mt-8 flex w-full flex-col items-start gap-6 lg:flex-row lg:items-start lg:justify-between">
               {hero.meta && hero.meta.length > 0 && (
                 <dl class="grid w-full max-w-3xl gap-4 text-left text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-3 dark:text-slate-200">
@@ -133,9 +143,9 @@ const sectionLinks = navLinksProp && navLinksProp.length > 0
                   ))}
                 </dl>
               )}
-              {hero.actions && hero.actions.length > 0 && (
+              {heroActions.length > 0 && (
                 <div class="flex flex-wrap justify-start gap-3">
-                  {hero.actions.map((action) => (
+                  {heroActions.map((action) => (
                     <a
                       class={`cta-button inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-semibold transition hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100 dark:hover:bg-white/10 dark:focus-visible:ring-offset-slate-900 ${
                         action.variant === 'primary'

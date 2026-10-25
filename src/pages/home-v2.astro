@@ -1,6 +1,7 @@
 ---
 import RelationalPortfolio from '../components/RelationalPortfolio.jsx';
 import PortfolioPolish from '../components/PortfolioPolish.astro';
+import SiteHead from '../components/SiteHead.astro';
 import '../styles/portfolio-v2.css';
 import '../styles/portfolio-chrome.css';
 import '../styles/portfolio-v2-overrides.css';
@@ -20,19 +21,17 @@ import { HOME, UX, navLinks } from '../data/siteNav';
 
 const statement = {
   headline: 'Interactive Researcher & Product Designer',
-  subtext: 'My main drive is to create meaning from games and interactive art, through the use of thought experiments and UX Work.',
+  subtext: 'I build interactive systems that let people experience how something works from the inside \u2014 overstimulation, learning, complex workflows. Research-led, and I build my own prototypes.',
 };
 
 ---
 <!doctype html>
 <html lang="en" data-ux-href={UX}>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex" />
-    <meta
-      name="description"
-      content="Interactive work by Jacob Meyerkopf: games, disability experiences, learning systems, unfinished experiments, and UX work."
+    <SiteHead
+      title="Jacob Meyerkopf — Interactive Researcher & Product Designer"
+      description="Jacob Meyerkopf builds interactive systems that let people experience how something works from the inside — overstimulation, learning, complex workflows."
+      noindex
     />
     <link rel="preload" as="image" href="/images/levelup/chest-states.png" />
     <!-- The level-up cards and the upgrade tree both paint these 12 icons the
@@ -51,7 +50,6 @@ const statement = {
     <link rel="preload" as="image" href="/icons/mechanics/collision.webp" type="image/webp" />
     <link rel="preload" as="image" href="/icons/mechanics/value.webp" type="image/webp" />
     <link rel="preload" as="image" href="/icons/mechanics/multiplier.webp" type="image/webp" />
-    <title>Jacob Meyerkopf — Interactive Work</title>
   </head>
   <body class="pv2-body">
     <script is:inline>

@@ -1,6 +1,7 @@
 ---
 import '../styles/tailwind.css';
 import PortfolioPolish from '../components/PortfolioPolish.astro';
+import SiteHead from '../components/SiteHead.astro';
 
 interface NavLink {
   href: string;
@@ -26,10 +27,10 @@ const { title, description, mainClass = '', navLinks = defaultNavLinks } = Astro
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    {description && <meta name="description" content={description} />}
+    <SiteHead
+      title={title}
+      description={description ?? 'Product design, UX research and interactive work by Jacob Meyerkopf.'}
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

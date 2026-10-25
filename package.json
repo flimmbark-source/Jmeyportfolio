@@ -10,7 +10,8 @@
     "dev": "astro dev",
     "prebuild": "npm run prepare:gttc && npm run optimize:images",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "make:social": "node scripts/make-social-assets.mjs"
   },
   "keywords": [],
   "author": "",
@@ -30,6 +31,7 @@
     "@esbuild/linux-x64": "^0.25.10"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.545.0",
     "react": "^19.2.0",

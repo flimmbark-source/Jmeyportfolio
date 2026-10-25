@@ -1,34 +1,24 @@
 ---
 import PortfolioBackdrop from '../components/PortfolioBackdrop.astro';
 import PortfolioPolish from '../components/PortfolioPolish.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteHead from '../components/SiteHead.astro';
 import '../styles/portfolio-v2.css';
 import '../styles/portfolio-chrome.css';
 ---
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="Research questions, study status, and participation around Jacob Meyerkopf’s interactive experiments."
+    <SiteHead
+      title="Research — Jacob Meyerkopf"
+      description="Research questions, study status, and participation around Jacob Meyerkopf’s interactive experiments."
     />
-    <title>Experiments & Research — Jacob Meyerkopf</title>
   </head>
   <body class="pv2-body">
     <PortfolioPolish />
     <PortfolioBackdrop />
     <div class="pv2-site">
-      <header class="pv2-nav">
-        <a href="/" class="pv2-nav__name">Jacob Meyerkopf</a>
-        <nav aria-label="Portfolio navigation">
-          <a data-polish="magnet" href="/"><span class="pv2-polish-label">Playground</span></a>
-          <a data-polish="magnet" href="/?project=unfinished"><span class="pv2-polish-label">Work</span></a>
-          <a data-polish="magnet" href="/research" aria-current="page"><span class="pv2-polish-label">Research</span></a>
-          <a data-polish="magnet" href="/ux"><span class="pv2-polish-label">UX</span></a>
-          <a data-polish="magnet" href="/contact"><span class="pv2-polish-label">Contact</span></a>
-        </nav>
-      </header>
+      <SiteNav />
 
       <main class="research">
         <section class="research__hero">

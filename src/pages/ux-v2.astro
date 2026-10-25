@@ -7,12 +7,14 @@
 import { getCollection } from 'astro:content';
 import PortfolioBackdrop from '../components/PortfolioBackdrop.astro';
 import PortfolioPolish from '../components/PortfolioPolish.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteHead from '../components/SiteHead.astro';
 import '../styles/portfolio-v2.css';
 import '../styles/portfolio-chrome.css';
 import '../styles/portfolio-case.css';
 
 // Shared with the homepage, playground and case studies.
-import { HOME, RESUME, navLinks } from '../data/siteNav';
+import { HOME, RESUME } from '../data/siteNav';
 
 const projects = await getCollection('projects');
 const bySlug = (slug) => projects.find((project) => project.data.slug === slug)?.data;
@@ -56,33 +58,23 @@ const experience = [
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex" />
-    <meta
-      name="description"
-      content="UX research, independent interface prototypes, and professional design-engineering work by Jacob Meyerkopf."
+    <SiteHead
+      title="Work — Jacob Meyerkopf, Interactive Researcher & Product Designer"
+      description="UX research, independent interface prototypes, and professional design-engineering work by Jacob Meyerkopf."
+      noindex
     />
-    <title>UX Work — Jacob Meyerkopf</title>
   </head>
   <body class="pv2-body">
     <PortfolioPolish />
     <PortfolioBackdrop />
     <div class="pv2-site">
-      <header class="pv2-nav">
-        <a href={HOME} class="pv2-nav__name">Jacob Meyerkopf</a>
-        <nav aria-label="Portfolio navigation">
-          {navLinks.map((link) => (
-            <a data-polish="magnet" href={link.href}><span class="pv2-polish-label">{link.label}</span></a>
-          ))}
-        </nav>
-      </header>
+      <SiteNav />
 
       <main class="uxw">
         <section class="uxw-hero" aria-labelledby="uxw-title">
           <div class="uxw-hero__main">
             <p class="pv2-overline">Interactive Researcher &amp; Product Designer</p>
-            <h1 id="uxw-title">Making complex work easier to navigate.</h1>
+            <h1 id="uxw-title">Making complex systems make sense from the inside.</h1>
             <p class="uxw-lead">I'm Jacob Meyerkopf. I bring UX research, prototyping, and a design-engineering background to problems where people need a clearer next step.</p>
             <div class="uxw-actions">
               <a class="uxw-button" href="#selected-work">Explore selected work</a>
@@ -230,18 +222,6 @@ const experience = [
 </html>
 
 <style is:global>
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
   .uxw {
     max-width: 1120px;
     margin: 0 auto;

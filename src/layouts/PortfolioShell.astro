@@ -9,7 +9,9 @@
 // Tailwind's `dark` class, so content renders in its light styles.
 import PortfolioBackdrop from '../components/PortfolioBackdrop.astro';
 import PortfolioPolish from '../components/PortfolioPolish.astro';
-import { HOME, UX, navLinks } from '../data/siteNav';
+import SiteNav from '../components/SiteNav.astro';
+import SiteHead from '../components/SiteHead.astro';
+import { UX } from '../data/siteNav';
 import '../styles/tailwind.css';
 import '../styles/portfolio-v2.css';
 import '../styles/portfolio-chrome.css';
@@ -30,19 +32,16 @@ interface Props {
 
 const {
   title,
-  description,
+  description = 'Product design, UX research and interactive work by Jacob Meyerkopf.',
   sections = [],
   backHref = UX,
-  backLabel = 'UX Work',
+  backLabel = 'Work',
 } = Astro.props as Props;
 ---
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    {description && <meta name="description" content={description} />}
+    <SiteHead title={title} description={description} />
     <slot name="head" />
   </head>
   <body class="pv2-body">
@@ -50,14 +49,7 @@ const {
     <PortfolioPolish />
     <PortfolioBackdrop />
     <div class="pv2-site">
-      <header class="pv2-nav">
-        <a href={HOME} class="pv2-nav__name">Jacob Meyerkopf</a>
-        <nav aria-label="Portfolio navigation">
-          {navLinks.map((link) => (
-            <a data-polish="magnet" href={link.href}><span class="pv2-polish-label">{link.label}</span></a>
-          ))}
-        </nav>
-      </header>
+      <SiteNav />
 
       <div class="pv2-case-bar">
         <a class="pv2-case-bar__back" href={backHref}><span aria-hidden="true">←</span> {backLabel}</a>

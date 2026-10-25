@@ -1,0 +1,50 @@
+---
+// The portfolio's one navigation bar. The threshold homepage and the
+// playground render their own copy in React (they fade it in with the
+// arrival), but they take the same list from src/data/siteNav.ts, so the
+// links never move between screens.
+//
+// The large-text control lives here rather than on each page so every screen
+// in the portfolio carries it.
+import { HOME, navLinks } from '../data/siteNav';
+
+const here = Astro.url.pathname.replace(/\/$/, '');
+const isCurrent = (href: string) => href.replace(/\/$/, '') === here;
+---
+<header class="pv2-nav">
+  <a href={HOME} class="pv2-nav__name">Jacob Meyerkopf</a>
+  <nav aria-label="Portfolio navigation">
+    {navLinks.map((link) => (
+      <a
+        data-polish="magnet"
+        href={link.href}
+        aria-current={isCurrent(link.href) ? 'page' : undefined}
+      ><span class="pv2-polish-label">{link.label}</span></a>
+    ))}
+    <button id="text-toggle" type="button" class="pv2-nav__text-toggle" aria-pressed="false">
+      <span aria-hidden="true">A</span>
+      <span class="sr-only">Toggle larger text</span>
+    </button>
+  </nav>
+</header>
+
+<script is:inline>
+  // The stored preference is applied before paint by SiteHead; this only
+  // wires the control and keeps its pressed state in step.
+  (() => {
+    const button = document.getElementById('text-toggle');
+    if (!button) return;
+    const root = document.documentElement;
+    const sync = () => button.setAttribute(
+      'aria-pressed',
+      String(root.getAttribute('data-large-text') === 'true')
+    );
+    button.addEventListener('click', () => {
+      const next = root.getAttribute('data-large-text') !== 'true';
+      root.setAttribute('data-large-text', String(next));
+      try { localStorage.setItem('large-text', String(next)); } catch {}
+      sync();
+    });
+    sync();
+  })();
+</script>

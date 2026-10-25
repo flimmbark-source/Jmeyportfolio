@@ -26,10 +26,14 @@ const UX_GLIMPSE = [
 ];
 
 
-// The doors fade in once the statement has had the screen to itself
-// (RelationalPortfolio INTRO.statement is 1.82s).
-const DOOR_DELAY = 1.6;
-const DOOR_FADE = 1.1;
+// The doors follow the statement rather than waiting it out. The statement's
+// own fade is 2.12s (RelationalPortfolio INTRO.statementFade), so at 0.75s it
+// is about three-quarters in: the sentence still clearly leads, but the
+// visitor can act at ~1.55s instead of ~2.7s. Dropping this much below 0.75
+// puts the doors against a sentence that is only a quarter visible, and they
+// win.
+const DOOR_DELAY = 0.75;
+const DOOR_FADE = 0.8;
 const LEAVE_FADE = 0.5;
 const EASE = [0.22, 1, 0.36, 1];
 

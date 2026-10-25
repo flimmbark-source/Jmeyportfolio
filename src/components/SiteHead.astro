@@ -1,0 +1,54 @@
+---
+// Every page's head: title, description, canonical, social cards, icons, and
+// the accessibility preference applied before first paint.
+//
+// Without the og:/twitter: tags below, a link to this portfolio shared in a
+// message or on LinkedIn renders as a bare URL with no title, description or
+// image — which is how most people meet the site during a job search.
+interface Props {
+  title: string;
+  description: string;
+  /** Social card image, absolute or site-relative. */
+  image?: string;
+  /** Preview routes keep themselves out of search results. */
+  noindex?: boolean;
+}
+
+const { title, description, image = '/og-default.png', noindex = false } = Astro.props as Props;
+
+const site = Astro.site ?? new URL('https://jacobmeyportfolio.netlify.app');
+const canonical = new URL(Astro.url.pathname, site).href.replace(/(.)\/$/, '$1');
+const ogImage = new URL(image, site).href;
+---
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex" />}
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Jacob Meyerkopf" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+<script is:inline>
+  // Applied before paint so larger text never flashes back to the default.
+  try {
+    if (localStorage.getItem('large-text') === 'true') {
+      document.documentElement.setAttribute('data-large-text', 'true');
+    }
+  } catch {}
+</script>

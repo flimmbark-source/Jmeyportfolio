@@ -272,3 +272,49 @@ html.pv2-intro-hold .pv2-motion-toggle {
     pointer-events: auto;
   }
 }
+
+/* Larger text. The rule lives here rather than in tailwind.css so it reaches
+   every screen in the portfolio, not only the case studies that import
+   Tailwind. */
+html[data-large-text="true"] {
+  font-size: 110%;
+}
+
+.pv2-nav nav button.pv2-nav__text-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-width: 30px;
+  min-height: 30px;
+  padding: 0 !important;
+  border: 1px solid rgba(36, 36, 36, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.4);
+  font-weight: 650;
+  line-height: 1;
+}
+
+.pv2-nav nav button.pv2-nav__text-toggle[aria-pressed="true"] {
+  border-color: rgba(36, 36, 36, 0.42);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--pv2-text);
+}
+
+.pv2-nav nav a[aria-current="page"] {
+  color: var(--pv2-text);
+}
+
+/* Available wherever the portfolio chrome is, so pages outside Tailwind can
+   label controls for screen readers. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
