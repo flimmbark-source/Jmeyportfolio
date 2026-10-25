@@ -1,24 +1,285 @@
 {
   "order": 1,
   "slug": "earth-hero",
-  "title": "Earth Hero Habit Builder",
-  "tagline": "Sustainability · Interface exploration",
-  "summary": "An interface exploration for selecting climate actions and tracking habits. The linked Figma prototype shows the proposed experience.",
+  "title": "Earth Hero: designing the gamification layer",
+  "tagline": "Tech Fleet · Client UX research & product design",
+  "summary": "Volunteer client work through Tech Fleet Community DAO for Earth Hero, a climate-action app. With a design partner on a cross-functional team, I designed a gamification layer — quests, Earth Points, team challenges and a growing avatar — and wrote the usability study to find out whether players read it the way it was intended.",
   "highlights": [
-    "Action selection",
-    "Progress feedback",
-    "Figma prototype"
+    "A component library and named colour system built for the layer, not bolted onto it",
+    "A moderated remote usability study written around one question: are people experiencing the gamification the way we meant?",
+    "Recommendations presented to the client, who took elements into the live product"
   ],
   "image": {
-    "src": "/images/earth-hero.png",
-    "alt": "Earth Hero app interface screens"
+    "src": "/images/earth-hero/sketches.webp",
+    "alt": "Hand-drawn paper wireframes from the Earth Hero gamification work"
   },
   "links": [
     {
+      "href": "/earth-hero",
+      "label": "View case study",
+      "variant": "primary"
+    },
+    {
       "href": "https://www.figma.com/proto/LzhPtZ3yducApu5mLb8l8Y/Shuna?node-id=109-9633&starting-point-node-id=109%3A9633&t=QeVp0oCGODIAZ4hp-1",
-      "label": "View prototype",
-      "variant": "primary",
+      "label": "Open the prototype",
+      "variant": "secondary",
       "external": true
     }
-  ]
+  ],
+  "caseStudy": {
+    "hero": {
+      "eyebrow": "Tech Fleet Community DAO · Client work",
+      "title": "Earth Hero: designing the gamification layer",
+      "subtitle": "Turning climate action into something a person would come back to, and then testing whether it read the way we intended.",
+      "summary": "Earth Hero is a climate-action app. Through Tech Fleet Community DAO — a volunteer collective that runs real client engagements — I worked with a design partner on a cross-functional team to design the layer that makes daily action feel like progress: quests, Earth Points, team challenges, and an avatar that grows as you use it.",
+      "meta": [
+        {
+          "label": "Role",
+          "value": "UX Researcher & Product Designer"
+        },
+        {
+          "label": "Through",
+          "value": "Tech Fleet Community DAO (volunteer)"
+        },
+        {
+          "label": "Client",
+          "value": "Earth Hero"
+        },
+        {
+          "label": "Dates",
+          "value": "2022–2026"
+        },
+        {
+          "label": "Team",
+          "value": "Cross-functional, with a design partner"
+        },
+        {
+          "label": "Tool",
+          "value": "Figma"
+        }
+      ]
+    },
+    "overview": {
+      "eyebrow": "The problem",
+      "title": "Climate action is a habit problem before it is an information problem",
+      "description": "People who already care about their footprint still stop logging actions after a week. The app did not need to convince anyone that climate change matters; it needed to make returning tomorrow feel worth it. That is a motivation design problem, and the risk with motivation design is that it is easy to build something that looks engaging and is read by users as noise, or worse, as pressure."
+    },
+    "challenge": {
+      "eyebrow": "Process",
+      "title": "Sketch it on paper before it can hide behind a component",
+      "description": "The work started on paper and whiteboards — flows, screen skeletons, and a wheel mapping the five impact pillars the app organises itself around. Working rough for as long as possible kept the argument about whether the mechanic made sense, rather than about whether the button was the right blue.",
+      "media": {
+        "type": "image",
+        "src": "/images/earth-hero/sketches.webp",
+        "alt": "Two hand-drawn paper wireframes: screen skeletons, a progress bar sketch and annotations in pen",
+        "title": "Paper wireframes from the first pass"
+      }
+    },
+    "solution": {
+      "eyebrow": "The system",
+      "title": "One growing avatar, five pillars, and a vocabulary that holds together",
+      "description": "The layer is built from a small set of pieces that repeat. An avatar moves through five named stages so progress is visible without a number. Five pillar icons tag every action, so a person can see what kind of impact they are having rather than only how much. Colour is organised by element — Earth, Water and Air — each with dark, base and light steps, so a screen can be tinted by meaning instead of decoration.",
+      "steps": [
+        {
+          "title": "Choose a quest",
+          "description": "The entry point: pick something to do rather than read about what you could do."
+        },
+        {
+          "title": "Log a daily action",
+          "description": "The smallest repeatable unit, tagged to one of the five pillars."
+        },
+        {
+          "title": "Earn Earth Points",
+          "description": "Progress shown on a bar tied to the avatar's growth stage, not an abstract score."
+        },
+        {
+          "title": "Join a team",
+          "description": "Individual action rolls up into a team's Weekly Challenge."
+        },
+        {
+          "title": "See where you stand",
+          "description": "A leaderboard and a team progress view close the loop."
+        }
+      ],
+      "modules": [
+        {
+          "title": "Avatar stages",
+          "description": "Seed → Sprouted → Developed roots → Vegetative → Budding. Growth carries the progress, so the screen does not have to lead with a score."
+        },
+        {
+          "title": "Five impact pillars",
+          "description": "Emissions, social, political, biodiversity, and waste and consumption. Every action is tagged to one, which is what lets the app answer \"what kind of difference did I make?\""
+        },
+        {
+          "title": "One component library",
+          "description": "Avatar states, progress-bar variants, pillar icons, community badges, buttons, vouchers and task cards, built once and reused across every screen."
+        }
+      ],
+      "palette": {
+        "caption": "Colour is grouped by element rather than by hue, so a screen can be tinted by what it is about. Values sampled from the source file.",
+        "groups": [
+          {
+            "name": "Earth",
+            "note": "Actions, growth and completion states.",
+            "swatches": [
+              {
+                "name": "Earth darker",
+                "value": "#0D261C"
+              },
+              {
+                "name": "Earth dark",
+                "value": "#1B4B37"
+              },
+              {
+                "name": "Earth base",
+                "value": "#35976F"
+              },
+              {
+                "name": "Earth light",
+                "value": "#B4E4D0"
+              },
+              {
+                "name": "Earth lighter",
+                "value": "#D9F2E8"
+              }
+            ]
+          },
+          {
+            "name": "Water",
+            "note": "The primary interface colour: navigation, quests and progress.",
+            "swatches": [
+              {
+                "name": "Water darker",
+                "value": "#0F1A57"
+              },
+              {
+                "name": "Water dark",
+                "value": "#1F34AD"
+              },
+              {
+                "name": "Water base",
+                "value": "#7D8DE8"
+              },
+              {
+                "name": "Water light",
+                "value": "#D4D9F7"
+              }
+            ]
+          },
+          {
+            "name": "Air",
+            "note": "Warm neutrals, used for surfaces and rest states.",
+            "swatches": [
+              {
+                "name": "Air darker",
+                "value": "#403226"
+              },
+              {
+                "name": "Air dark",
+                "value": "#604B39"
+              },
+              {
+                "name": "Air base",
+                "value": "#B4977F"
+              },
+              {
+                "name": "Air light",
+                "value": "#ECE5DF"
+              }
+            ]
+          },
+          {
+            "name": "Signals",
+            "note": "Reserved for meaning, never for decoration.",
+            "swatches": [
+              {
+                "name": "Energy",
+                "value": "#F8D86A"
+              },
+              {
+                "name": "New",
+                "value": "#FFA3A3"
+              },
+              {
+                "name": "Waste",
+                "value": "#DD4545"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "interaction": {
+      "eyebrow": "The prototype",
+      "title": "A flow you can walk end to end",
+      "description": "The prototype runs the whole arc as connected frames, so the study could put a person inside the sequence rather than ask them to imagine it. These are the screens as they are named in the file.",
+      "modules": [
+        {
+          "title": "1 · Home, start the game",
+          "description": "The entry point, before any quest exists."
+        },
+        {
+          "title": "2 · Choose quest",
+          "description": "Pick something to do rather than read about what you could do."
+        },
+        {
+          "title": "3 · Earth Points explained",
+          "description": "The scoring made legible at the moment it first matters."
+        },
+        {
+          "title": "4 · Home, progress small",
+          "description": "The same home screen, now carrying visible progress."
+        },
+        {
+          "title": "5 · Explain community",
+          "description": "Why teams exist, before asking anyone to join one."
+        },
+        {
+          "title": "6 · Community unlocked",
+          "description": "The feature opens once there is something to bring to it."
+        },
+        {
+          "title": "7 · Edit level difficulty",
+          "description": "The player sets their own pace."
+        },
+        {
+          "title": "8 · New quest chosen",
+          "description": "The loop closes and starts again."
+        },
+        {
+          "title": "9 · Your present",
+          "description": "The reward, held back until the loop has been completed once."
+        }
+      ]
+    },
+    "impact": {
+      "eyebrow": "The study",
+      "title": "Written to find out if it was read the way we meant",
+      "description": "I wrote the usability study around a single question: are users experiencing the gamification elements in the intended way, and what impact do those elements have on them? Participants created a quest, chose a team, learned about Earth Points, logged a daily action, found their place on the Weekly Challenge leaderboard, and viewed their team's progress — with engagement, understanding, satisfaction and ease of use measured alongside. The study ran moderated and remote over Zoom and Google Meet: a short briefing, a series of questions, then a wrap-up.",
+      "media": {
+        "type": "image",
+        "src": "/images/earth-hero/test-plan.webp",
+        "alt": "The written test plan: objectives, the six tasks participants performed, what else was measured, and the moderated-remote methodology",
+        "title": "The test plan, as written"
+      }
+    },
+    "friction": {
+      "eyebrow": "Iteration",
+      "title": "The revision list is the honest record",
+      "description": "The design moved through a long, colour-coded list of changes held as Done and Doing — progress-bar points that had to match the actual distribution of available points, consistency in the bottom navigation across every screen, a notification that fades rather than sits, recurring-action handling, and avatars grouped so a leaderboard could use them. Most of it is unglamorous. It is also where the layer stopped being a concept and became something that behaves consistently."
+    },
+    "conclusion": {
+      "eyebrow": "Where it stands",
+      "title": "What this shows, and what it does not",
+      "description": "Recommendations went to the client, and Earth Hero took elements of the work into its live product. What is shown here is the design system, the prototype, and the study as it was written and run — not the findings, which belong to the client engagement rather than to me. If you want to talk about what the sessions surfaced and how the recommendations were framed, that is a conversation I am glad to have.",
+      "tags": [
+        "UX research",
+        "Usability testing",
+        "Gamification",
+        "Design systems",
+        "Figma",
+        "Client work"
+      ]
+    }
+  }
 }

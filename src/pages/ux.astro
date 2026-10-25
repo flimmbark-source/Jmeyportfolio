@@ -17,12 +17,12 @@ import { HOME, RESUME } from '../data/siteNav';
 const projects = await getCollection('projects');
 const bySlug = (slug) => projects.find((project) => project.data.slug === slug)?.data;
 
-const selectedSlugs = ['letter-river', 'idl', 'ai-archiving'];
+const selectedSlugs = ['earth-hero', 'letter-river', 'idl'];
 const selected = selectedSlugs.map(bySlug).filter(Boolean);
 const labels = {
+  'earth-hero': 'Client work · Tech Fleet',
   'letter-river': 'Independent prototype',
   idl: 'Professional design engineering',
-  'ai-archiving': 'Independent concept / prototype',
 };
 
 // Each piece takes the shape its own evidence wants, rather than all three
@@ -42,41 +42,60 @@ const labels = {
 // a generated screenshot presented as prototype work is the fastest way to
 // lose a reviewer's trust.
 const visuals = {
+  'earth-hero': {
+    layout: 'diagram',
+    steps: {
+      eyebrow: 'The loop',
+      title: 'Quest, action, points, team',
+      steps: [
+        { title: 'Choose a quest' },
+        { title: 'Log a daily action' },
+        { title: 'Earn Earth Points' },
+        { title: 'Join a team' },
+        { title: 'See where you stand' },
+      ],
+    },
+  },
   'letter-river': {
-    layout: 'media',
+    layout: 'split',
     src: '/images/derived/Desktop_Hero_Screen-1400.webp',
     alt: 'Letter River home screen: language pickers, a greeting, and the Bridge Builder lesson in progress',
   },
   idl: {
-    layout: 'split',
+    layout: 'diagram',
     src: '/images/derived/idl-case-study-1100.webp',
     alt: 'Store drawings and fixture elevations spread across a desk',
     bars: bySlug('idl')?.caseStudy?.solution?.bars,
-  },
-  'ai-archiving': {
-    layout: 'diagram',
-    steps: bySlug('ai-archiving')?.caseStudy?.solution,
   },
 };
 
 // One sentence that makes a claim, in place of three bullets that were labels.
 // Each is drawn from the case study's own copy, not invented here.
 const claims = {
+  'earth-hero': 'People who already care about their footprint still stop logging actions after a week, so the work was motivation design \u2014 and then a study written to check whether players read the mechanics the way we intended.',
   'letter-river': 'A learner who can name a letter still cannot hear it inside a word, so recognition, vocabulary and reading are one connected path rather than three separate drills.',
   idl: 'Two stages, kept apart on purpose: the team took drawing turnaround from eight hours to two, and I then refined my own workflow to 37 minutes across 500+ AT&T locations.',
-  'ai-archiving': 'A suggestion is only worth anything if it can be checked, so the archivist sees the source material and the model\'s uncertainty before any of it becomes metadata.',
 };
 
 const supporting = projects
-  .filter((project) => project.data.image && !selectedSlugs.includes(project.data.slug))
+  .filter((project) => !selectedSlugs.includes(project.data.slug))
   .sort((a, b) => a.data.order - b.data.order)
   .map((project) => project.data);
 
-// Exploration thumbnails. Agora 21's image is a screenshot of a text slide,
-// not of the work, so its card is type only.
+// Exploration thumbnails, where a real one exists. A card with no entry here
+// is typed instead of filled, and says what state the work is in:
+//   agora-21      the only image is a photograph of a text slide, not the work
+//   ai-archiving  public/images/ai-archiver.png is an AI-generated picture of
+//                 an interface, so it is deliberately not shown
+//   bball         no interface capture in the repository
 const thumbs = {
-  'earth-hero': { src: '/images/derived/earth-hero-768.webp', fit: 'contain' },
   rotogo: { src: '/images/derived/rotogoscreen-768.webp', fit: 'cover' },
+};
+
+const typeCardNote = {
+  'agora-21': 'Concept \u00b7 not built',
+  'ai-archiving': 'Concept \u00b7 prototype',
+  bball: 'Personal project',
 };
 
 // Most recent first.
@@ -225,7 +244,7 @@ const experience = [
                   <div class={`uxw-explore__thumb${thumb ? '' : ' is-type'}`}>
                     {thumb
                       ? <img src={thumb.src} alt="" loading="lazy" decoding="async" style={`object-fit: ${thumb.fit}`} />
-                      : <span aria-hidden="true">Concept · not built</span>}
+                      : <span aria-hidden="true">{typeCardNote[data.slug] ?? 'Case study'}</span>}
                   </div>
                   <p class="uxw-label">{data.tagline}</p>
                   <h3>{data.title}</h3>

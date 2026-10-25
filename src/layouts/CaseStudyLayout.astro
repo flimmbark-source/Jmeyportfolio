@@ -11,6 +11,7 @@ import IconStepGrid from '../components/case-study/IconStepGrid.astro';
 import ComparisonTable from '../components/case-study/ComparisonTable.astro';
 import MediaSlot from '../components/case-study/MediaSlot.astro';
 import ModuleGrid from '../components/case-study/ModuleGrid.astro';
+import PaletteGrid from '../components/case-study/PaletteGrid.astro';
 import ComparisonBars from '../components/case-study/ComparisonBars.astro';
 import DonutChart from '../components/case-study/DonutChart.astro';
 import { UX, resolveHref } from '../data/siteNav';
@@ -201,6 +202,7 @@ const sectionLinks = navLinksProp && navLinksProp.length > 0
               ))}
             </ul>
           )}
+          <MediaSlot media={challenge.media} />
         </section>
       )}
 
@@ -214,6 +216,7 @@ const sectionLinks = navLinksProp && navLinksProp.length > 0
           <MediaSlot media={solution.media} />
           <StepList steps={solution.steps} />
           {solution.modules && <ModuleGrid modules={solution.modules} />}
+          {solution.palette && <PaletteGrid palette={solution.palette} />}
           {solution.metrics && <MetricsGrid metrics={solution.metrics} />}
           {solution.bars && <ComparisonBars data={solution.bars} />}
         </section>
@@ -239,6 +242,7 @@ const sectionLinks = navLinksProp && navLinksProp.length > 0
             </ul>
           )}
           {impact.donut && <DonutChart data={impact.donut} />}
+          <MediaSlot media={impact.media} />
         </section>
       )}
 
@@ -251,6 +255,7 @@ const sectionLinks = navLinksProp && navLinksProp.length > 0
           />
           {interaction.modules && <ModuleGrid modules={interaction.modules} />}
           {interaction.cards && <CardDeck cards={interaction.cards} />}
+          <MediaSlot media={interaction.media} />
         </section>
       )}
 
