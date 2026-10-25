@@ -401,3 +401,11 @@ html { color-scheme: light; }
   color: var(--pv2-muted);
   font-size: .84rem;
 }
+
+/* A document is shown whole. `cover` plus a max-height is right for a
+   photograph and silently truncates a page of text. */
+.case-media--doc .case-media__img {
+  max-height: none;
+  object-fit: contain;
+  background: #fff;
+}

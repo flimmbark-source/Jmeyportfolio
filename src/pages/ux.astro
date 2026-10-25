@@ -57,12 +57,12 @@ const visuals = {
     },
   },
   'letter-river': {
-    layout: 'split',
+    layout: 'media',
     src: '/images/derived/Desktop_Hero_Screen-1400.webp',
     alt: 'Letter River home screen: language pickers, a greeting, and the Bridge Builder lesson in progress',
   },
   idl: {
-    layout: 'diagram',
+    layout: 'split',
     src: '/images/derived/idl-case-study-1100.webp',
     alt: 'Store drawings and fixture elevations spread across a desk',
     bars: bySlug('idl')?.caseStudy?.solution?.bars,
@@ -200,11 +200,25 @@ const experience = [
                 </div>
               );
 
+              // A layout that names content the piece does not have used to
+              // render an empty card in silence: IDL sat on 'diagram', which
+              // draws `steps`, while IDL has `bars` — so it lost both its
+              // photograph and its chart and nothing failed. Fall back to
+              // whatever the piece actually carries.
+              const has = { media: !!visual?.src, bars: !!bars, steps: !!steps };
+              const layout = visual?.layout === 'media' && has.media ? 'media'
+                : visual?.layout === 'split' && (has.media || has.bars) ? 'split'
+                : visual?.layout === 'diagram' && has.steps ? 'diagram'
+                : has.steps ? 'diagram'
+                : has.media && has.bars ? 'split'
+                : has.media ? 'media'
+                : 'diagram';
+
               return (
-                <article class={`uxw-case uxw-case--${visual?.layout ?? 'media'}`}>
-                  {visual?.layout === 'media' && <>{Media}{Text}</>}
-                  {visual?.layout === 'split' && <>{Text}<div class="uxw-case__pair">{Media}{Bars}</div></>}
-                  {visual?.layout === 'diagram' && <>{Text}{Steps}</>}
+                <article class={`uxw-case uxw-case--${layout}`}>
+                  {layout === 'media' && <>{Media}{Text}</>}
+                  {layout === 'split' && <>{Text}<div class="uxw-case__pair">{has.media && Media}{Bars}</div></>}
+                  {layout === 'diagram' && <>{Text}{Steps}</>}
                 </article>
               );
             })}
@@ -235,29 +249,28 @@ const experience = [
             <p class="pv2-overline">More</p>
             <h2 id="uxw-further">Further explorations</h2>
           </div>
-          <div class="uxw-explore">
+          <!-- Three of these four have no image of the work, and three empty
+               typed panels in a row read as an unfinished site rather than as a
+               deliberate choice. This is an index, so it is set as one. -->
+          <ul class="uxw-index">
             {supporting.map((data) => {
-              const thumb = thumbs[data.slug];
               const link = data.links?.[0];
               return (
-                <article class="uxw-explore__card">
-                  <div class={`uxw-explore__thumb${thumb ? '' : ' is-type'}`}>
-                    {thumb
-                      ? <img src={thumb.src} alt="" loading="lazy" decoding="async" style={`object-fit: ${thumb.fit}`} />
-                      : <span aria-hidden="true">{typeCardNote[data.slug] ?? 'Case study'}</span>}
+                <li class="uxw-index__row">
+                  <div class="uxw-index__head">
+                    <h3>{data.title}</h3>
+                    <p class="uxw-label">{data.tagline}</p>
                   </div>
-                  <p class="uxw-label">{data.tagline}</p>
-                  <h3>{data.title}</h3>
-                  <p class="uxw-muted">{data.summary}</p>
+                  <p class="uxw-index__note">{data.summary}</p>
                   {link && (
-                    <a class="uxw-link" href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noopener noreferrer' : undefined}>
-                      {link.label} {link.external ? <span aria-hidden="true">↗</span> : <span aria-hidden="true">→</span>}<span class="sr-only">: {data.title}{link.external ? ' (opens in a new tab)' : ''}</span>
+                    <a class="uxw-link uxw-index__link" href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noopener noreferrer' : undefined}>
+                      {link.label} <span aria-hidden="true">{link.external ? '\u2197' : '\u2192'}</span><span class="sr-only">: {data.title}{link.external ? ' (opens in a new tab)' : ''}</span>
                     </a>
                   )}
-                </article>
+                </li>
               );
             })}
-          </div>
+          </ul>
         </section>
 
         <section class="uxw-section uxw-contact" id="contact" aria-labelledby="uxw-contact">
@@ -744,6 +757,45 @@ const experience = [
   }
 
   /* --- Contact ------------------------------------------------------------- */
+  .uxw-index {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--pv2-line);
+  }
+
+  .uxw-index__row {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr) auto;
+    gap: clamp(16px, 2.6vw, 40px);
+    align-items: baseline;
+    padding: clamp(18px, 2.4vh, 26px) 0;
+    border-bottom: 1px solid var(--pv2-line);
+  }
+
+  .uxw-index__head h3 {
+    margin: 0 0 3px;
+    font-size: var(--pv2-step-heading);
+    font-weight: 600;
+    line-height: 1.15;
+  }
+
+  .uxw-index__note {
+    margin: 0;
+    max-width: 56ch;
+    color: var(--pv2-muted);
+    font-size: .92rem;
+  }
+
+  .uxw-index__link { white-space: nowrap; }
+
+  @media (max-width: 780px) {
+    .uxw-index__row {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 8px;
+    }
+  }
+
   .uxw-contact {
     padding: clamp(28px, 5vw, 56px);
     border-radius: var(--pv2-r-lg);

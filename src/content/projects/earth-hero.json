@@ -260,7 +260,8 @@
         "type": "image",
         "src": "/images/earth-hero/test-plan.webp",
         "alt": "The written test plan: objectives, the six tasks participants performed, what else was measured, and the moderated-remote methodology",
-        "title": "The test plan, as written"
+        "title": "The test plan, as written",
+        "kind": "document"
       }
     },
     "friction": {

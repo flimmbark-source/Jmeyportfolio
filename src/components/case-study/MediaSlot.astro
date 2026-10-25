@@ -1,11 +1,14 @@
 ---
 const { media } = Astro.props;
+// A photograph can be cropped to fit its box. A page of text cannot: cropping
+// the test plan cut 23% of its height and chopped the methodology mid-line.
+const isDoc = media?.fit === 'contain' || media?.kind === 'document';
 const isImage = media?.type === 'image';
 const isVideo = media?.type === 'video';
 const isEmbed = media?.type === 'embed';
 ---
 {media && (
-  <figure class="case-media mt-10 overflow-hidden">
+  <figure class={`case-media mt-10 overflow-hidden${isDoc ? ' case-media--doc' : ''}`}>
     {isImage && (
       <img
         src={media.src}
