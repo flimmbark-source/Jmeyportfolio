@@ -47,7 +47,13 @@
     "overview": {
       "eyebrow": "Context",
       "title": "Store drawings for a national retail rollout",
-      "description": "At IDL Worldwide, I digitized more than 500 AT&T retail locations in SolidWorks to support Apple fixture installations. Store-drawing turnaround was initially eight hours."
+      "description": "At IDL Worldwide, I digitized more than 500 AT&T retail locations in SolidWorks to support Apple fixture installations. Store-drawing turnaround was initially eight hours.",
+      "media": {
+        "type": "image",
+        "src": "/images/derived/idl-case-study-1100.webp",
+        "alt": "Store drawings and fixture elevations spread across a desk: plan views, exploded assemblies and a rendered store layout",
+        "title": "Store drawings for the AT&T rollout"
+      }
     },
     "solution": {
       "title": "Improve the workflow, then keep refining it",

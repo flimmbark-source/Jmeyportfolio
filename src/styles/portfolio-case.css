@@ -376,3 +376,28 @@ html { color-scheme: light; }
   .pv2-case .mb-16 { margin-bottom: 32px; }
   .pv2-case .mb-12 { margin-bottom: 24px; }
 }
+
+/* Case-study media. The slot used cool slate surfaces from before the warm
+   palette, and stretched a portrait photograph to fill whatever box it was
+   given. */
+.case-media {
+  margin-inline: 0;
+  border: 1px solid var(--pv2-line);
+  border-radius: var(--pv2-r-lg);
+  background: var(--pv2-soft);
+}
+
+.case-media__img {
+  display: block;
+  width: 100%;
+  max-height: 620px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.case-media__caption {
+  padding: 12px 18px 14px;
+  border-top: 1px solid var(--pv2-line);
+  color: var(--pv2-muted);
+  font-size: .84rem;
+}

@@ -25,12 +25,46 @@ const labels = {
   'ai-archiving': 'Independent concept / prototype',
 };
 
-// Each case study's visual is drawn from real material only: a screenshot of
-// the work, the work's own numbers, or its documented workflow.
+// Each piece takes the shape its own evidence wants, rather than all three
+// repeating one card. Three identical modules in a row is the thing that reads
+// as a template no matter how good the type is.
+//
+//   letter-river  a real screenshot of the running app, so the screen leads
+//                 and the writing sits underneath it
+//   idl           a photograph of the actual store drawings beside the real
+//                 before/after numbers: two artefacts, no mockup
+//   ai-archiving  a concept with nothing built, so its own documented flow is
+//                 the visual and it runs the full width
+//
+// Everything here is real material. public/images/ai-archiver.png is an
+// AI-generated picture of an interface — its labels read "ALASSISTANT",
+// "Confience level", "game wirning point" — so it is deliberately not used:
+// a generated screenshot presented as prototype work is the fastest way to
+// lose a reviewer's trust.
 const visuals = {
-  'letter-river': { kind: 'image', src: '/images/derived/Desktop_Hero_Screen-768.webp', alt: bySlug('letter-river')?.image?.alt ?? '' },
-  idl: { kind: 'bars', data: bySlug('idl')?.caseStudy?.solution?.bars },
-  'ai-archiving': { kind: 'steps', data: bySlug('ai-archiving')?.caseStudy?.solution },
+  'letter-river': {
+    layout: 'media',
+    src: '/images/derived/Desktop_Hero_Screen-1400.webp',
+    alt: 'Letter River home screen: language pickers, a greeting, and the Bridge Builder lesson in progress',
+  },
+  idl: {
+    layout: 'split',
+    src: '/images/derived/idl-case-study-1100.webp',
+    alt: 'Store drawings and fixture elevations spread across a desk',
+    bars: bySlug('idl')?.caseStudy?.solution?.bars,
+  },
+  'ai-archiving': {
+    layout: 'diagram',
+    steps: bySlug('ai-archiving')?.caseStudy?.solution,
+  },
+};
+
+// One sentence that makes a claim, in place of three bullets that were labels.
+// Each is drawn from the case study's own copy, not invented here.
+const claims = {
+  'letter-river': 'A learner who can name a letter still cannot hear it inside a word, so recognition, vocabulary and reading are one connected path rather than three separate drills.',
+  idl: 'Two stages, kept apart on purpose: the team took drawing turnaround from eight hours to two, and I then refined my own workflow to 37 minutes across 500+ AT&T locations.',
+  'ai-archiving': 'A suggestion is only worth anything if it can be checked, so the archivist sees the source material and the model\'s uncertainty before any of it becomes metadata.',
 };
 
 const supporting = projects
@@ -97,57 +131,61 @@ const experience = [
               const visual = visuals[data.slug];
               const caseLink = data.links?.find((link) => !link.external);
               const otherLinks = data.links?.filter((link) => link !== caseLink) ?? [];
-              const bars = visual?.kind === 'bars' ? visual.data : null;
+              const bars = visual?.bars;
               const max = bars ? Math.max(...bars.values) : 1;
-              return (
-                <article class="uxw-case">
-                  <div class="uxw-case__text">
-                    <p class="uxw-label">{labels[data.slug]}</p>
-                    <h3>{data.title}</h3>
-                    <p class="uxw-case__summary">{data.summary}</p>
-                    <ul class="uxw-case__highlights">
-                      {data.highlights.map((highlight) => <li>{highlight}</li>)}
-                    </ul>
-                    <div class="uxw-actions">
-                      {caseLink && <a class="uxw-button" href={caseLink.href}>{caseLink.label}<span class="sr-only">: {data.title}</span></a>}
-                      {otherLinks.map((link) => (
-                        <a class="uxw-link" href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noopener noreferrer' : undefined}>
-                          {link.label} {link.external && <span aria-hidden="true">↗</span>}<span class="sr-only">: {data.title}{link.external ? ' (opens in a new tab)' : ''}</span>
-                        </a>
-                      ))}
-                    </div>
-                  </div>
+              const steps = visual?.steps;
 
-                  <div class="uxw-case__visual">
-                    {visual?.kind === 'image' && (
-                      <figure class="uxw-shot">
-                        <img src={visual.src} alt={visual.alt} loading="lazy" decoding="async" />
-                      </figure>
-                    )}
-                    {bars && (
-                      <figure class="uxw-bars">
-                        <figcaption class="uxw-label">{bars.label}</figcaption>
-                        {bars.labels.map((label, i) => (
-                          <div class={`uxw-bar${i === bars.values.length - 1 ? ' is-mine' : ''}`}>
-                            <span class="uxw-bar__label">{label}</span>
-                            <span class="uxw-bar__track"><span class="uxw-bar__fill" style={`width: ${(bars.values[i] / max) * 100}%`}></span></span>
-                            <span class="uxw-bar__value">{bars.values[i]} {bars.suffix}</span>
-                          </div>
-                        ))}
-                      </figure>
-                    )}
-                    {visual?.kind === 'steps' && visual.data && (
-                      <figure class="uxw-steps">
-                        <figcaption>
-                          <span class="uxw-label">{visual.data.eyebrow}</span>
-                          <strong>{visual.data.title}</strong>
-                        </figcaption>
-                        <ol>
-                          {visual.data.steps.map((step) => <li>{step.title}</li>)}
-                        </ol>
-                      </figure>
-                    )}
+              const Media = (
+                <figure class="uxw-shot">
+                  <img src={visual?.src} alt={visual?.alt} loading="lazy" decoding="async" />
+                </figure>
+              );
+
+              const Bars = bars && (
+                <figure class="uxw-bars">
+                  <figcaption class="uxw-label">{bars.label}</figcaption>
+                  {bars.labels.map((label, i) => (
+                    <div class={`uxw-bar${i === bars.values.length - 1 ? ' is-mine' : ''}`}>
+                      <span class="uxw-bar__label">{label}</span>
+                      <span class="uxw-bar__track"><span class="uxw-bar__fill" style={`width: ${(bars.values[i] / max) * 100}%`}></span></span>
+                      <span class="uxw-bar__value">{bars.values[i]} {bars.suffix}</span>
+                    </div>
+                  ))}
+                </figure>
+              );
+
+              const Steps = steps && (
+                <figure class="uxw-steps">
+                  <figcaption>
+                    <span class="uxw-label">{steps.eyebrow}</span>
+                    <strong>{steps.title}</strong>
+                  </figcaption>
+                  <ol>{steps.steps.map((step) => <li>{step.title}</li>)}</ol>
+                </figure>
+              );
+
+              const Text = (
+                <div class="uxw-case__text">
+                  <p class="uxw-label">{labels[data.slug]}</p>
+                  <h3>{data.title}</h3>
+                  <p class="uxw-case__claim">{claims[data.slug]}</p>
+                  <p class="uxw-case__summary">{data.summary}</p>
+                  <div class="uxw-actions">
+                    {caseLink && <a class="uxw-button" href={caseLink.href}>{caseLink.label}<span class="sr-only">: {data.title}</span></a>}
+                    {otherLinks.map((link) => (
+                      <a class="uxw-link" href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noopener noreferrer' : undefined}>
+                        {link.label} {link.external && <span aria-hidden="true">↗</span>}<span class="sr-only">: {data.title}{link.external ? ' (opens in a new tab)' : ''}</span>
+                      </a>
+                    ))}
                   </div>
+                </div>
+              );
+
+              return (
+                <article class={`uxw-case uxw-case--${visual?.layout ?? 'media'}`}>
+                  {visual?.layout === 'media' && <>{Media}{Text}</>}
+                  {visual?.layout === 'split' && <>{Text}<div class="uxw-case__pair">{Media}{Bars}</div></>}
+                  {visual?.layout === 'diagram' && <>{Text}{Steps}</>}
                 </article>
               );
             })}
@@ -187,7 +225,7 @@ const experience = [
                   <div class={`uxw-explore__thumb${thumb ? '' : ' is-type'}`}>
                     {thumb
                       ? <img src={thumb.src} alt="" loading="lazy" decoding="async" style={`object-fit: ${thumb.fit}`} />
-                      : <span aria-hidden="true">{data.title}</span>}
+                      : <span aria-hidden="true">Concept · not built</span>}
                   </div>
                   <p class="uxw-label">{data.tagline}</p>
                   <h3>{data.title}</h3>
@@ -347,14 +385,14 @@ const experience = [
   .uxw-cases {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: clamp(28px, 4vh, 56px);
   }
 
+  /* Three layouts, not three copies of one. Each is driven by what the piece
+     actually has to show; the shared rules are only the shell. */
   .uxw-case {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: clamp(24px, 4vw, 52px);
-    align-items: center;
+    gap: clamp(22px, 3vw, 40px);
     padding: clamp(22px, 3.4vw, 40px);
     border: 1px solid var(--pv2-line);
     border-radius: var(--pv2-r-lg);
@@ -362,6 +400,26 @@ const experience = [
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
   }
+
+  /* Image-led: the screen runs the full width of the card and the writing
+     sits under it. The work is the argument, so it gets the room. */
+  .uxw-case--media { grid-template-columns: minmax(0, 1fr); }
+  .uxw-case--media .uxw-case__text { max-width: var(--pv2-measure); }
+
+  /* Two real artefacts side by side: the photograph of the drawings and the
+     numbers they produced. */
+  .uxw-case--split { grid-template-columns: minmax(0, 1fr); }
+  .uxw-case__pair {
+    display: grid;
+    grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+    gap: clamp(18px, 2.4vw, 32px);
+    align-items: center;
+  }
+
+  /* Nothing is built, so the documented flow is the visual and it runs wide
+     rather than being squeezed into a half-column. */
+  .uxw-case--diagram { grid-template-columns: minmax(0, 1fr); }
+  .uxw-case--diagram .uxw-case__text { max-width: var(--pv2-measure); }
 
   .uxw-case h3 {
     margin: 12px 0 14px;
@@ -372,41 +430,25 @@ const experience = [
     text-wrap: balance;
   }
 
-  .uxw-case__summary {
-    margin: 0;
-    color: #3d3a36;
+  /* The claim. One sentence that says something, where three bullets used to
+     sit saying nothing. */
+  .uxw-case__claim {
+    margin: 0 0 14px;
+    max-width: var(--pv2-measure);
+    color: var(--pv2-text);
+    font-size: var(--pv2-step-lead);
+    line-height: 1.45;
   }
 
-  .uxw-case__highlights {
-    margin: 18px 0 0;
-    padding: 0;
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    color: #4f4c47;
+  .uxw-case__summary {
+    margin: 0;
+    max-width: var(--pv2-measure);
+    color: var(--pv2-muted);
     font-size: .94rem;
   }
 
-  .uxw-case__highlights li {
-    position: relative;
-    padding-left: 18px;
-  }
-
-  .uxw-case__highlights li::before {
-    content: '';
-    position: absolute;
-    left: 2px;
-    top: .62em;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--pv2-text);
-    opacity: .45;
-  }
-
-  .uxw-case__visual {
-    min-width: 0;
+  @media (max-width: 760px) {
+    .uxw-case__pair { grid-template-columns: minmax(0, 1fr); }
   }
 
   .uxw-shot {
@@ -418,18 +460,22 @@ const experience = [
     box-shadow: 0 18px 40px -24px rgba(36, 30, 20, .55);
   }
 
-  /* The Letter River screenshot has wide empty margins either side of the
-     app; a 4:3 crop from the centre keeps just the app. */
-  .uxw-shot {
-    aspect-ratio: 4 / 3;
-  }
-
   .uxw-shot img {
     display: block;
     width: 100%;
-    height: 100%;
+    height: auto;
+  }
+
+  /* The 1400px screenshot is wider than it is tall and leads the card, so it
+     is shown whole rather than cropped into a tile. */
+  .uxw-case--media .uxw-shot img { aspect-ratio: auto; }
+
+  /* The drawings photograph is portrait; capping it keeps it from towering
+     over the numbers beside it. */
+  .uxw-case--split .uxw-shot img {
+    max-height: 420px;
     object-fit: cover;
-    object-position: center top;
+    object-position: center;
   }
 
   /* IDL: the work's own numbers, drawn. */
@@ -639,19 +685,25 @@ const experience = [
     height: 100%;
   }
 
+  /* Agora 21 was never implemented and there is no screenshot of it in the
+     repository — the only image is a photograph of a text slide. A dark panel
+     with the title typeset on it reads as a missing asset, so the card says
+     plainly that there is nothing to show instead of pretending there is. */
   .uxw-explore__thumb.is-type {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
+    justify-content: center;
     padding: 18px;
-    background: #2a2926;
+    border: 1px dashed var(--pv2-line);
+    background: linear-gradient(135deg, rgba(255, 255, 255, .5), rgba(234, 230, 220, .55));
   }
 
   .uxw-explore__thumb.is-type span {
-    color: #f2f0ea;
-    font-size: clamp(1.25rem, 2vw, 1.6rem);
-    font-weight: 560;
-    letter-spacing: -.03em;
-    line-height: 1.05;
+    color: var(--pv2-muted);
+    font-size: .78rem;
+    font-weight: 650;
+    letter-spacing: .1em;
+    text-transform: uppercase;
   }
 
   .uxw-explore__card h3 {

@@ -5,13 +5,14 @@ const isVideo = media?.type === 'video';
 const isEmbed = media?.type === 'embed';
 ---
 {media && (
-  <div class="mt-10 overflow-hidden rounded-3xl border border-slate-200/70 bg-slate-100/80 shadow-lg transition-colors duration-300 dark:border-slate-700 dark:bg-slate-900/70">
+  <figure class="case-media mt-10 overflow-hidden">
     {isImage && (
       <img
         src={media.src}
         alt={media.alt ?? media.title ?? 'Illustration of the project work'}
-        class="h-full w-full object-cover"
+        class="case-media__img"
         loading="lazy"
+        decoding="async"
       />
     )}
     {isVideo && (
@@ -31,5 +32,6 @@ const isEmbed = media?.type === 'embed';
         ></iframe>
       </div>
     )}
-  </div>
+    {media.title && <figcaption class="case-media__caption">{media.title}</figcaption>}
+  </figure>
 )}
