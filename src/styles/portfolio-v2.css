@@ -39,6 +39,13 @@
 
   /* Line length. Body copy that runs the full width of a 1440px page is the
      fastest way to make a page unreadable. */
+  /* Three corner steps. The audit found seven different radii in use on the
+     Work screen alone, which is a set of one-off decisions rather than a
+     system. Pills stay 999px. */
+  --pv2-r-sm: 8px;
+  --pv2-r-md: 16px;
+  --pv2-r-lg: 24px;
+
   --pv2-measure: 66ch;
   --pv2-measure-tight: 52ch;
 

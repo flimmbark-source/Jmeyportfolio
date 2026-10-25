@@ -253,7 +253,7 @@
   height: 86%;
   aspect-ratio: 349 / 724;
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: var(--pv2-r-md);
   border: 1px solid rgba(36, 36, 36, 0.14);
   background: #fff;
   box-shadow:
