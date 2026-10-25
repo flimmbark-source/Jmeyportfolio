@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { portfolioV2NodeMap } from '../data/portfolioV2';
+import { resolveHref } from '../data/siteNav';
 import { pickWorkBackground, workBackgroundSrcSet } from '../data/workBackgrounds';
 import ThresholdGate from './ThresholdGate.jsx';
 
@@ -527,7 +528,7 @@ function ProjectContextPanel({ node, anchorEl, onClose, reducedMotion }) {
   const wasMediaExpanded = useRef(false);
   const [position, setPosition] = useState(null);
   const [mediaExpanded, setMediaExpanded] = useState(false);
-  const primaryUrl = node.localPlayUrl || node.playUrl || node.route;
+  const primaryUrl = node.localPlayUrl || node.playUrl || (node.route && resolveHref(node.route));
   const primaryExternal = Boolean(primaryUrl && /^https?:/i.test(primaryUrl) && !node.localPlayUrl);
 
   useLayoutEffect(() => {
@@ -772,7 +773,7 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
               {node.localPlayUrl && node.playUrl && (
                 <a className="pv2-secondary-action" href={node.playUrl} target="_blank" rel="noreferrer">Open itch.io ↗</a>
               )}
-              {!primaryPlayUrl && node.route && <a href={node.route}>Open project →</a>}
+              {!primaryPlayUrl && node.route && <a href={resolveHref(node.route)}>Open project →</a>}
               {!primaryPlayUrl && !node.route && <span className="pv2-focus__pending">Playable build not connected yet</span>}
             </div>
           </motion.div>
@@ -832,7 +833,7 @@ function Workshop({ onBack, onSelect, reducedMotion }) {
   );
 }
 
-function UXGateway({ onBack }) {
+function UXGateway({ onBack, uxHref }) {
   const node = portfolioV2NodeMap.get('ux-work');
   return (
     <main className="pv2-ux-gateway">
@@ -841,7 +842,7 @@ function UXGateway({ onBack }) {
         <p className="pv2-overline">Professional portfolio</p>
         <h1>UX Work</h1>
         <p>{node?.summary}</p>
-        <a href="/ux">Enter classic UX portfolio →</a>
+        <a href={uxHref}>Enter classic UX portfolio →</a>
       </div>
     </main>
   );
@@ -992,7 +993,7 @@ export default function RelationalPortfolio({ threshold = false, statement = nul
           <button data-polish="magnet" type="button" aria-current={!selected ? 'page' : undefined} onClick={() => { setSelectedId(null); writeProjectToUrl(null); }}><span className="pv2-polish-label">Playground</span></button>
           <button data-polish="magnet" type="button" aria-current={selected && selected.id !== 'ux-work' ? 'page' : undefined} onClick={() => select('unfinished')}><span className="pv2-polish-label">Work</span></button>
           <a data-polish="magnet" href="/research"><span className="pv2-polish-label">Research</span></a>
-          <a data-polish="magnet" href="/ux"><span className="pv2-polish-label">UX</span></a>
+          <a data-polish="magnet" href={uxHref}><span className="pv2-polish-label">UX</span></a>
           <a data-polish="magnet" href="/contact"><span className="pv2-polish-label">Contact</span></a>
         </nav>
         )}
@@ -1037,7 +1038,7 @@ export default function RelationalPortfolio({ threshold = false, statement = nul
       </AnimatePresence>
       {selected?.kind === 'project' && <ProjectFocus key={selected.id} node={selected} onBack={back} onSelect={select} reducedMotion={reducedMotion} />}
       {selected?.id === 'unfinished' && <Workshop key="unfinished" onBack={back} onSelect={select} reducedMotion={reducedMotion} />}
-      {selected?.id === 'ux-work' && <UXGateway key="ux" onBack={back} />}
+      {selected?.id === 'ux-work' && <UXGateway key="ux" onBack={back} uxHref={uxHref} />}
       </div>
     </>
   );

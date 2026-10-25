@@ -7,9 +7,9 @@ import sitemap from '@astrojs/sitemap';
 // Without it, og:image is relative and no platform will render the card.
 const SITE = 'https://jacobmeyportfolio.netlify.app';
 
-// Routes kept out of the sitemap: previews of the new homepage and Work
-// screen, the sidelined carousel, and the redirect stubs.
-const EXCLUDED = ['/home-v2', '/ux-v2', '/start', '/v2', '/playground'];
+// The only route kept out of the sitemap is the redirect stub that keeps
+// shared /playground links working.
+const EXCLUDED = ['/playground'];
 
 export default defineConfig({
   site: SITE,

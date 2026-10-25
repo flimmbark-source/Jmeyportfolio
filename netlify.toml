@@ -4,3 +4,30 @@
 
 [build.environment]
   NODE_VERSION = "22.12.0"
+
+# The new homepage and Work screen were built at preview routes and shared
+# from there. Keep those links working.
+[[redirects]]
+  from = "/home-v2"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/ux-v2"
+  to = "/ux"
+  status = 301
+  force = true
+
+# The sidelined carousel front door and an old copy of the playground.
+[[redirects]]
+  from = "/start"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/v2"
+  to = "/"
+  status = 301
+  force = true
