@@ -12,7 +12,7 @@ const { cards = [] } = Astro.props;
         )}
         {card.link && (
           <a
-            class="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-sky-600 transition hover:text-sky-700 dark:text-sky-300 dark:hover:text-sky-200"
+            class="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-brand-600 transition hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200"
             href={card.link.href}
             target={card.link.external ? '_blank' : undefined}
             rel={card.link.external ? 'noreferrer noopener' : undefined}

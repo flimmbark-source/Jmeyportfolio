@@ -1,10 +1,47 @@
+@import './fonts.css';
+
 :root {
-  --pv2-bg: #f7f6f2;
-  --pv2-text: #242424;
-  --pv2-muted: #77736d;
-  --pv2-line: #dedbd4;
-  --pv2-soft: #eceae4;
-  --pv2-accent: #222;
+  /* Ground and ink. Warm paper rather than a neutral grey: it sits with the
+     painting backdrop instead of fighting it. Every value below is measured
+     against --pv2-bg — the weakest, --pv2-muted, is 6.4:1. */
+  --pv2-bg: #f4f2ec;
+  --pv2-text: #1a1917;
+  --pv2-text-soft: #3d3a35;
+  --pv2-muted: #5c574f;
+  --pv2-line: #ddd8cd;
+  --pv2-soft: #eae6dc;
+
+  /* A real accent. This used to be #222, which is to say no accent at all:
+     everything on the page carried the same weight and nothing could be
+     pointed at. Sienna is pulled from the oil backdrops, so it reads as part
+     of the painting rather than a UI colour dropped on top. 6.85:1 on paper;
+     --pv2-accent-deep (8.66:1) is for small text and focus rings. */
+  --pv2-accent: #8c3a1f;
+  --pv2-accent-deep: #73301a;
+
+  /* Type. Fraunces carries the voice; Atkinson Hyperlegible Next carries the
+     reading. Atkinson was drawn by the Braille Institute for low-vision
+     readability — unambiguous I/l/1, open apertures — which is both the most
+     legible choice here and the one that matches what this portfolio is
+     about. */
+  --pv2-font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --pv2-font-text: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* One scale, five steps. The old page jumped from a display headline
+     straight to 16px body with nothing between, so everything that was not
+     the headline read as the same small thing. */
+  --pv2-step-display: clamp(2.6rem, 1.4rem + 4.4vw, 5rem);
+  --pv2-step-title: clamp(1.75rem, 1.2rem + 1.9vw, 2.75rem);
+  --pv2-step-heading: clamp(1.25rem, 1.05rem + .72vw, 1.6rem);
+  --pv2-step-lead: clamp(1.06rem, .99rem + .3vw, 1.22rem);
+  --pv2-step-body: 1rem;
+  --pv2-step-small: .84rem;
+
+  /* Line length. Body copy that runs the full width of a 1440px page is the
+     fastest way to make a page unreadable. */
+  --pv2-measure: 66ch;
+  --pv2-measure-tight: 52ch;
+
   --pv2-ease: cubic-bezier(.22, 1, .36, 1);
   --pv2-ease-major: cubic-bezier(.16, 1, .3, 1);
   --pv2-fast: 140ms;
@@ -22,8 +59,27 @@ body.pv2-body {
   min-height: 100svh;
   background: var(--pv2-bg);
   color: var(--pv2-text);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* This used to name Inter, which was never loaded anywhere in the project,
+     so every page rendered in whatever grotesque the browser defaulted to. */
+  font-family: var(--pv2-font-text);
+  font-size: var(--pv2-step-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
+
+h1, h2, h3, .pv2-display {
+  font-family: var(--pv2-font-display);
+  /* Fraunces' own axes. SOFT rounds the terminals and WONK lets the italic-ish
+     forms show; at 0 it is a plain serif and there is no reason to use it. */
+  font-variation-settings: 'SOFT' 24, 'WONK' 1;
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+p { text-wrap: pretty; }
 
 button, a { -webkit-tap-highlight-color: transparent; }
 button { font: inherit; }
@@ -202,14 +258,35 @@ button { font: inherit; }
   left: 50%;
   top: 46%;
   z-index: 2;
-  width: min(650px, 50vw);
+  width: min(960px, 70vw);
   transform: translate(-50%, -50%);
   text-align: center;
+  /* The statement sits over a full-strength oil painting, so the sentence
+     under the headline was grey text on clouds. A soft radial wash of the
+     paper colour lifts it off the picture without drawing a box around it;
+     the painting still reads at the edges. */
+  /* The wash has to reach full transparency well inside the box, or the box
+     itself shows as a pale rectangle over the picture. Hence the generous
+     padding and the short ellipse: the fade finishes at ~78%, with clear
+     space after it. */
+  padding: clamp(44px, 8vh, 96px) clamp(28px, 3.4vw, 60px);
+  background: radial-gradient(
+    ellipse 64% 56% at 50% 48%,
+    rgba(244, 242, 236, 0.9) 0%,
+    rgba(244, 242, 236, 0.72) 44%,
+    rgba(244, 242, 236, 0) 78%
+  );
+}
+
+.pv2-overview__statement > p:last-child {
+  color: var(--pv2-text-soft);
+  max-width: 54ch;
+  margin-inline: auto;
 }
 
 .pv2-overline {
   margin: 0 0 clamp(10px, 1.5vh, 16px);
-  color: var(--pv2-muted);
+  color: var(--pv2-accent);
   font-size: clamp(.66rem, .74vw, .72rem);
   font-weight: 650;
   letter-spacing: .14em;
@@ -652,7 +729,7 @@ button { font: inherit; }
     height: calc(100svh - 64px - 6px);
     min-height: min(540px, calc(100svh - 64px - 6px));
   }
-  .pv2-overview__statement { top: 50%; width: min(600px, 46vw); }
+  .pv2-overview__statement { top: 50%; width: min(900px, 66vw); }
   .pv2-overview__statement h1 { font-size: clamp(2.6rem, min(4.4vw, 7.4vh), 4.9rem); }
   .pv2-overview__statement > p:last-child { font-size: clamp(.86rem, 1.1vw, 1.02rem); }
   .pv2-project-tile { width: clamp(96px, min(9.6vw, 14vh), 140px); }

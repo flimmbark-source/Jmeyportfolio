@@ -41,6 +41,11 @@ const ogImage = new URL(image, site).href;
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={ogImage} />
 
+<!-- The two faces that paint the first screen. Without these the headline
+     and body arrive a beat after the layout and the page visibly reflows. -->
+<link rel="preload" as="font" type="font/woff2" href="/fonts/fraunces-latin-normal.woff2" crossorigin />
+<link rel="preload" as="font" type="font/woff2" href="/fonts/atkinson-latin-normal.woff2" crossorigin />
+
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 

@@ -230,7 +230,7 @@ const experience = [
 
   .uxw-label {
     margin: 0;
-    color: #5f5b55;
+    color: var(--pv2-accent);
     font-size: .7rem;
     font-weight: 650;
     letter-spacing: .12em;
@@ -288,16 +288,19 @@ const experience = [
     min-height: 44px;
     padding: 0 20px;
     border-radius: 999px;
-    background: var(--pv2-text);
-    color: #f7f6f2;
+    background: var(--pv2-accent);
+    color: #faf8f4;
     font-weight: 600;
     text-decoration: none;
     transition: background var(--pv2-fast) ease;
   }
 
-  .uxw-button:hover { background: #000; }
+  .uxw-button:hover { background: var(--pv2-accent-deep); }
 
   .uxw-link {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
     color: var(--pv2-text);
     font-weight: 600;
     text-decoration: underline;
