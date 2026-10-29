@@ -41,6 +41,8 @@ try {
  await desktop.getByRole('button',{name:'Open the portfolio Menu'}).click();
  await desktop.getByRole('heading',{name:'The Menu'}).waitFor();
  assert(new URL(desktop.url()).searchParams.get('view')==='menu','Menu state reflected in URL');
+ assert(await desktop.locator('body').evaluate(el=>el.classList.contains('is-dialog-open')),'Dialog-open state set');
+ assert(await desktop.locator('.cafe-header').evaluate(el=>getComputedStyle(el).visibility==='hidden'),'Site header is hidden while the Menu is open');
  await screenshot(desktop,'02-desktop-menu');
  assert(await desktop.getByRole('button',{name:/Preview Get to the Café/}).isVisible(),'Featured project present');
  await desktop.getByRole('button',{name:/Preview Get to the Café/}).click();
@@ -81,15 +83,21 @@ try{
  await screenshot(mobile,'07-mobile-scene');
  await mobile.getByRole('button',{name:'Open the portfolio Menu'}).tap();
  assert(await mobile.locator('#cafe-book').isVisible(),'Tap opens Menu on mobile');
+ assert(await mobile.locator('.cafe-header').evaluate(el=>getComputedStyle(el).visibility==='hidden'),'Mobile header does not overlay the Menu');
  await screenshot(mobile,'08-mobile-menu');
  const menus=mobile.locator('#cafe-categories button');
  assert(await menus.count()>=5,'Category controls available on mobile');
+ const visibleCategoryBoxes = await menus.evaluateAll(els=>els.map(el=>({left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,bottom:el.getBoundingClientRect().bottom,visible:getComputedStyle(el).visibility==='visible'})));
+ assert(visibleCategoryBoxes.every(b=>b.visible&&b.left>=0&&b.right<=390),'All five categories fit horizontally on mobile without hidden scrolling');
  await mobile.locator('[data-category="ux"]').click();
  assert(await mobile.locator('#cafe-category-title').innerText()==='UX Work','UX category works on mobile');
  await screenshot(mobile,'09-mobile-ux-menu');
  await mobile.getByRole('button',{name:/Preview IDL: improving a SolidWorks workflow/}).click();
  assert(await mobile.locator('#cafe-preview').isVisible(),'UX project preview opens on mobile');
  await screenshot(mobile,'10-mobile-preview');
+ const previewHeight = await mobile.locator('#cafe-dialog').evaluate(el=>el.getBoundingClientRect().height);
+ metrics.mobilePreviewHeight = previewHeight;
+ assert(previewHeight<750,'Contextual preview is compact rather than a tall empty panel');
  await mobile.getByRole('button',{name:'Read overview'}).click();
  assert(await mobile.locator('#cafe-focus').isVisible(),'Focused case study opens on mobile');
  await screenshot(mobile,'11-mobile-focused-reading');
@@ -99,6 +107,19 @@ try{
 } catch(err){
  errors.push('mobile flow: '+err.message);
  await screenshot(mobile,'99-mobile-failure');
+}
+const small=await browser.newPage({viewport:{width:320,height:568},deviceScaleFactor:1,isMobile:true,hasTouch:true,reducedMotion:'reduce'});
+try {
+ await loadPage(small);
+ await screenshot(small,'12-small-mobile-scene');
+ await small.getByRole('button',{name:'Open the portfolio Menu'}).tap();
+ assert(await small.locator('#cafe-book').isVisible(),'Narrow mobile Menu opens');
+ await screenshot(small,'13-small-mobile-menu');
+ const bounds=await small.locator('#cafe-categories button').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return{left:r.left,right:r.right}}));
+ assert(bounds.every(r=>r.left>=0&&r.right<=320),'Category buttons remain inside a 320px mobile viewport');
+} catch(err) {
+ errors.push('small-mobile flow: '+err.message);
+ await screenshot(small,'99-small-mobile-failure');
 }
 await browser.close();
 const report={date:new Date().toISOString(),url,steps,findings,errors,metrics,passed:errors.length===0};
