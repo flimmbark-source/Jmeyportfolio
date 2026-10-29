@@ -1,0 +1,43 @@
+name: Café browser QA
+on:
+  push:
+    branches:
+      - claude/hopeful-albattani-puzzes
+  workflow_dispatch:
+
+jobs:
+  screenshot-and-interaction-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install application and test browser
+        run: |
+          npm ci
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Build portfolio
+        run: npm run build
+      - name: Start preview server
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/cafe-preview.log 2>&1 &
+          echo $! > /tmp/cafe-preview.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4321/cafe/ > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/cafe-preview.log
+          exit 1
+      - name: Exercise navigation and take desktop/mobile screenshots
+        run: node scripts/cafe-browser-qa.mjs
+      - name: Upload screenshots and QA report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cafe-browser-qa
+          path: artifacts/cafe-qa/
+          if-no-files-found: warn
