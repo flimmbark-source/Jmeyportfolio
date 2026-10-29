@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 920" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustrated narrow Tel Aviv street in morning sunlight">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#8ad6e6"/><stop offset="1" stop-color="#ecf0d7"/></linearGradient>
+ <linearGradient id="road" x2="0" y2="1"><stop stop-color="#c5b6a3"/><stop offset="1" stop-color="#615b60"/></linearGradient>
+ <linearGradient id="wall" x2="1" y2="0"><stop stop-color="#f7edd5"/><stop offset="1" stop-color="#e3d5bb"/></linearGradient>
+ <linearGradient id="shadow" x2="0" y2="1"><stop stop-color="#534f58"/><stop offset="1" stop-color="#272f41"/></linearGradient>
+ <pattern id="grain" width="33" height="37" patternUnits="userSpaceOnUse"><path d="M4 5h4m17 24h5M14 17h2" stroke="#4c443e" stroke-opacity=".085" stroke-width="2"/></pattern>
+ <pattern id="stones" width="100" height="48" patternUnits="userSpaceOnUse"><path d="M0 0h100M0 24h100M40 0v24M72 24v24" stroke="#7c6b61" stroke-opacity=".22" stroke-width="1.5" fill="none"/></pattern>
+ <filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
+</defs>
+<path fill="url(#sky)" d="M0 0h1600v920H0z"/>
+<!-- far streetscape -->
+<path d="M0 225L160 165 230 230 328 189 430 243 548 205 665 246 760 222v385H0Z" fill="#f0e5ce"/>
+<path d="M0 300L185 256 345 300 490 281 610 330 765 310v375H0Z" fill="#bfc4b5"/>
+<path d="M0 500 610 420 760 425 1600 445 1600 920H0Z" fill="url(#road)"/>
+<path d="M0 550 618 440 785 450 1600 540V920H0Z" fill="url(#stones)" opacity=".8"/>
+<!-- left building receding with camera perspective -->
+<path d="M0 0h700L606 442 0 625Z" fill="#e9dfc8"/>
+<path d="M0 0h490L543 416 0 530Z" fill="#f7edda"/>
+<path d="M0 0h160L335 476 0 522Z" fill="#d4ccbc"/>
+<path d="M0 68L510 25 559 377 0 478Z" fill="#fcf5e7" opacity=".68"/>
+<path d="M135 120h116l25 197-114 9Z" fill="#7d8984"/>
+<path d="M151 137h86l20 158-91 7Z" fill="#a8b8b0"/>
+<path d="M265 170h113l16 132-109 14Z" fill="#77736b"/>
+<path d="M282 184h79l12 107-78 9Z" fill="#a8b0a5"/>
+<path d="M380 205h90l12 91-83 9Z" fill="#768278"/>
+<path d="M0 100 499 84 525 144 0 174Z" fill="#ddd9d0" opacity=".65"/>
+<!-- striped left awning -->
+<path d="M0 265 495 247 563 363 0 381Z" fill="#28374e"/>
+<path d="M55 262 102 260 143 375 91 378Z M185 256 224 254 256 372 213 374Z M325 250 368 248 390 367 348 371Z" fill="#41506b" opacity=".55"/>
+<path d="M0 382 565 363" fill="none" stroke="#1e2634" stroke-width="12"/>
+<!-- tables on side street -->
+<path d="M236 450 335 438 390 480 280 492Z" fill="#a35a38"/>
+<path d="M275 486v80m93-86v74" stroke="#694c42" stroke-width="12"/>
+<ellipse cx="313" cy="559" rx="93" ry="14" fill="#3b3941" opacity=".2"/>
+<path d="M485 424 553 420 578 445 505 452Z" fill="#934833"/>
+<path d="M511 450v58m55-61v57" stroke="#65544f" stroke-width="8"/>
+<!-- right wall -->
+<path d="M710 0H1600V610L803 470 726 393Z" fill="url(#wall)"/>
+<path d="M825 0H1600V610L1154 552 1052 190 948 395Z" fill="#f6eddb"/>
+<path d="M1240 0h360v615l-170-21Z" fill="#fff8e9"/>
+<path d="M1018 0h10v459h-10Z" fill="#d4c9b1"/>
+<!-- right windows -->
+<path d="M847 102h222v228l-225-20Z" fill="#e1e0cd" stroke="#b5b2a3" stroke-width="13"/>
+<path d="M862 120h188v189l-191-14Z" fill="#3a555a"/>
+<path d="M901 119v187m45-188v190m44-191v193m44-190v194" stroke="#f1f0df" stroke-width="9"/>
+<path d="M850 328h227" stroke="#d0c6b2" stroke-width="15"/>
+<path d="M1390 182h120v315l-125-8Z" fill="#e6e0cd" stroke="#b0a99e" stroke-width="13"/>
+<path d="M1399 193h100v284l-100-7Z" fill="#c6c6b9"/>
+<!-- wall shadow in morning -->
+<path d="M1080 315 1600 414v180l-503-81Z" fill="#c9c3b5" opacity=".25"/>
+<!-- curb and red painted portions -->
+<path d="M0 567 663 458 776 469 0 647Z" fill="#e5d8c5"/>
+<path d="M0 611 660 473 772 485" stroke="#a85e59" stroke-width="18" fill="none" stroke-dasharray="190 67"/>
+<path d="M810 477 1600 608" stroke="#ae625d" stroke-width="18" fill="none" stroke-dasharray="180 70"/>
+<!-- street bollards -->
+<g fill="#62696b" stroke="#4a5258" stroke-width="4">
+ <path d="M46 465h22v77q11 14 7 18H38q-4-6 8-18Z"/>
+ <path d="M108 449h18v69q9 13 5 17H102q-4-5 6-17Z"/>
+ <path d="M190 432h15v58q6 9 3 12h-23q-3-4 5-12Z"/>
+ <path d="M598 438h12v48q6 7 3 11h-19q-3-4 4-11Z"/>
+</g>
+<g fill="#afb3ad" stroke="#777e7d" stroke-width="3">
+ <path d="M1277 517h21l9 38-8 8v71h-29v-71l-7-8Z"/>
+ <path d="M1446 546h23l10 36-8 9v71h-30v-71l-7-9Z"/>
+</g>
+<!-- sign -->
+<path d="M659 116 698 615" stroke="#677277" stroke-width="15"/>
+<circle cx="652" cy="125" r="66" fill="#f4f2e5" stroke="#a2394a" stroke-width="13"/>
+<circle cx="652" cy="125" r="51" fill="#b33a4d"/>
+<path d="M615 114h73v18h-73Z" fill="#f4eee7"/>
+<!-- street textures -->
+<path d="M0 682 640 496M0 758 660 515M0 859 685 556M1470 640 1230 566M1580 735 1180 562" stroke="#403f44" stroke-opacity=".15" stroke-width="2"/>
+<path d="M720 505 703 580m74-62 21 88m65-75 57 91m-230-47-85 88m320-120 80 79" stroke="#3f3e41" stroke-opacity=".15" stroke-width="3"/>
+<!-- green branches above awning -->
+<g fill="#47735b"><ellipse cx="495" cy="156" rx="46" ry="19" transform="rotate(-23 495 156)"/><ellipse cx="547" cy="196" rx="36" ry="14" transform="rotate(28 547 196)"/><ellipse cx="477" cy="216" rx="47" ry="16"/><ellipse cx="596" cy="242" rx="35" ry="12" transform="rotate(-30 596 242)"/></g>
+<path d="M446 0q45 130 128 256" stroke="#5c654b" stroke-width="17" fill="none"/>
+<!-- planted pot and doorway shadows -->
+<path d="M564 410l28-8 20 55-46 4Z" fill="#ad7555"/>
+<path d="M565 412q-12-42 1-80m6 80q48-49 27-81m-30 81q-39-18-39-42" stroke="#42674b" stroke-width="8" fill="none"/>
+<path d="M0 0h1600v920H0Z" fill="url(#grain)" opacity=".8"/>
+<!-- light and shade -->
+<path d="M0 0h1600v920H0Z" fill="#ffecad" opacity=".075"/>
+</svg>
