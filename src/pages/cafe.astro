@@ -1,0 +1,206 @@
+---
+/**
+ * Isolated café vertical slice. The existing '/' playground and '/ux' remain
+ * unchanged while this interaction pattern is validated.
+ * Content below comes from the existing project records, not mock portfolio copy.
+ */
+import { getCollection } from 'astro:content';
+import SiteHead from '../components/SiteHead.astro';
+import { portfolioV2NodeMap } from '../data/portfolioV2';
+import { RESUME } from '../data/siteNav';
+import '../styles/cafe.css';
+
+const gameIds = ['get-to-the-cafe', 'letter-river', 'last-reading', 'rotogo', 'gig-duel'];
+const unfinishedIds = ['phase-g', 'splitpulse'];
+const gameImages = {
+  'letter-river': '/images/Desktop_Hero_Screen.png',
+  'last-reading': '/images/Thelastreadingscreen.png',
+  'rotogo': '/images/rotogoscreen.png',
+  'gig-duel': '/images/VenueRivalsscreen%20.png'
+};
+const gameCaseLinks = { 'letter-river': '/letter-river', 'rotogo': '/rotogo' };
+const gameEntries = gameIds.map((id) => {
+  const node = portfolioV2NodeMap.get(id);
+  if (!node) return null;
+  return {
+    id, title: node.title, group: 'games', kind: node.kicker ?? 'Interactive project',
+    summary: node.summary ?? '', purpose: node.purpose ?? '',
+    media: gameImages[id] ?? null, mediaAlt: node.title + ' project screenshot',
+    play: node.localPlayUrl ?? node.playUrl ?? node.route ?? null,
+    read: gameCaseLinks[id] ?? null, status: 'public', year: node.made ?? null
+  };
+}).filter(Boolean);
+
+const allCases = await getCollection('projects');
+const caseEntries = allCases
+  .filter(({data}) => !['letter-river', 'rotogo'].includes(data.slug))
+  .sort((a,b) => a.data.order - b.data.order)
+  .map(({data}) => ({
+    id: 'ux-' + data.slug, title: data.title, group: 'ux', kind: data.tagline,
+    summary: data.summary,
+    purpose: data.caseStudy?.overview?.description ?? data.highlights?.[0] ?? '',
+    media: data.image?.src ?? (data.slug === 'idl' ? '/images/idl-case-study.png' : null),
+    mediaAlt: data.image?.alt ?? data.title + ' project image',
+    play: null, read: data.links?.find((link) => !link.external)?.href ?? '/' + data.slug,
+    status: 'public', year: null,
+    highlights: data.highlights?.slice(0,3) ?? [],
+    sections: Object.values(data.caseStudy ?? {})
+      .filter((section) => section && typeof section === 'object' && typeof section.description === 'string')
+      .map((section) => ({title:section.title ?? section.eyebrow ?? 'About the work', text:section.description}))
+      .slice(0,5)
+  }));
+
+const unfinishedEntries = unfinishedIds.map(id => {
+  const node = portfolioV2NodeMap.get(id);
+  if (!node) return null;
+  return {
+    id, title: node.title, group: 'unfinished', kind: 'In progress',
+    summary: node.summary ?? '', purpose: '',
+    media: null, mediaAlt: '', play: null, read: null, status:'unfinished',year:null
+  };
+}).filter(Boolean);
+
+const researchEntry = {
+  id:'research', title:'Research in progress', group:'research', kind:'Research',
+  summary:'Can interaction change how people interpret another person\'s experience under incomplete information?',
+  purpose:'Current research questions, evidence states, and ways to participate.',
+  media:null,mediaAlt:'',play:null,read:'/research',status:'public',year:null
+};
+const entries = [...gameEntries, ...caseEntries, ...unfinishedEntries, researchEntry];
+const json = JSON.stringify(entries).replace(/</g, '\\u003c');
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <SiteHead
+      title="Café prototype — Jacob Meyerkopf"
+      description="An interactive café exploration of Jacob Meyerkopf's research, UX, and playable work."
+      noindex
+    />
+  </head>
+  <body class="cafe-page">
+    <a href="#cafe-navigation" class="cafe-skip">Skip to portfolio navigation</a>
+    <header class="cafe-header">
+      <div class="cafe-identity">
+        <a href="/cafe" class="cafe-name">Jacob Meyerkopf</a>
+        <p>Interactive Researcher &amp; Product Designer</p>
+        <span>I build experiences that make systems understandable from the inside.</span>
+      </div>
+      <nav id="cafe-navigation" class="cafe-quick-nav" aria-label="Direct portfolio navigation">
+        <button type="button" data-menu-open>Work</button>
+        <button type="button" data-category-open="research">Research</button>
+        <a href={RESUME}>Résumé</a>
+        <a href="/contact">Contact</a>
+        <a href="/" title="Current Playground">Playground</a>
+      </nav>
+    </header>
+
+    <main class="cafe-world" id="cafe-world" aria-label="Illustrated interactive café">
+      <div class="cafe-scene" id="cafe-scene" aria-hidden="true">
+        <img src="/cafe/street.svg" class="cafe-street-art" alt="" fetchpriority="high"/>
+        <div class="cafe-light"></div>
+        <div class="cafe-table-shadow"></div>
+        <div class="cafe-table">
+          <div class="cafe-table-patina"></div>
+        </div>
+        <div class="cafe-chair-edge"></div>
+      </div>
+
+      <div class="cafe-objects" id="cafe-objects">
+        <button class="cafe-object cafe-object--menu" type="button" data-object="menu" aria-label="Open the portfolio Menu">
+          <span class="cafe-menu-prop"><span class="cafe-menu-spine"></span><span class="cafe-menu-flourish">✦</span><span class="cafe-menu-title">The Menu</span><span class="cafe-menu-rule"></span><span class="cafe-menu-small">WORK &amp; DISCOVERIES</span></span>
+          <span class="cafe-object-label">Explore work <span aria-hidden="true">↗</span></span>
+        </button>
+        <button class="cafe-object cafe-object--coffee" type="button" data-object="coffee" aria-label="Enter the interactive Playground through the coffee">
+          <span class="cafe-steam cafe-steam--one"></span><span class="cafe-steam cafe-steam--two"></span><span class="cafe-steam cafe-steam--three"></span>
+          <span class="cafe-cup-handle"></span><span class="cafe-cup-body"><span class="cafe-coffee-liquid"><span class="cafe-coffee-swirl"></span></span></span>
+          <span class="cafe-saucer"></span>
+          <span class="cafe-object-label">Enter Playground <span aria-hidden="true">↗</span></span>
+        </button>
+        <button class="cafe-object cafe-object--glasses" type="button" data-object="glasses" aria-label="Put on the sunglasses and reveal a different view">
+          <span class="cafe-glasses-arm"></span><span class="cafe-glasses-left"></span><span class="cafe-glasses-bridge"></span><span class="cafe-glasses-right"></span>
+          <span class="cafe-object-label">A different perspective</span>
+        </button>
+        <a class="cafe-object cafe-object--receipt" href={RESUME} aria-label="View or download résumé PDF">
+          <span class="cafe-receipt-paper"><span class="cafe-receipt-heading">CAFÉ RECEIPT</span><span class="cafe-receipt-line"></span><span class="cafe-receipt-text">EXPERIENCE</span><span class="cafe-receipt-text">RESEARCH</span><span class="cafe-receipt-text">DESIGN</span><span class="cafe-receipt-line"></span><span class="cafe-receipt-total">J. M.</span></span>
+          <span class="cafe-object-label">Résumé (PDF)</span>
+        </a>
+        <a class="cafe-object cafe-object--phone" href="/contact" aria-label="Open Contact page">
+          <span class="cafe-phone-body"><span class="cafe-phone-screen"><span class="cafe-phone-clock">10:24</span><span class="cafe-phone-message">Let's talk.</span></span></span>
+          <span class="cafe-object-label">Get in touch</span>
+        </a>
+      </div>
+
+      <div class="cafe-bottom-hint" id="cafe-hint">Take a look around. Open the menu to see my work.</div>
+      <button class="cafe-look-toggle" type="button" id="cafe-look-toggle" aria-pressed="false">Look around</button>
+
+      <div id="cafe-overlay" class="cafe-overlay" hidden>
+        <div class="cafe-overlay-scrim" data-dismiss></div>
+        <section class="cafe-dialog" role="dialog" aria-modal="true" aria-label="Portfolio Menu" tabindex="-1" id="cafe-dialog">
+          <div class="cafe-dialog-bar">
+            <span class="cafe-dialog-crumb" id="cafe-crumb">The Menu</span>
+            <button type="button" class="cafe-close" id="cafe-back" aria-label="Go back">← Back</button>
+          </div>
+
+          <div class="cafe-book" id="cafe-book">
+            <aside class="cafe-book-left" aria-label="Menu categories">
+              <p class="cafe-eyebrow">AT THE CAFÉ</p>
+              <h2>The Menu<span class="cafe-book-star" aria-hidden="true">✳</span></h2>
+              <p class="cafe-book-intro">Ideas to explore, things to play, and work to read.</p>
+              <nav id="cafe-categories" aria-label="Project categories">
+                <button type="button" data-category="selected" aria-current="true">Selected Work</button>
+                <button type="button" data-category="games">Games &amp; Experiences</button>
+                <button type="button" data-category="ux">UX Work</button>
+                <button type="button" data-category="research">Research</button>
+                <button type="button" data-category="unfinished">In Progress</button>
+              </nav>
+              <div class="cafe-book-links">
+                <a href={RESUME}>Résumé ↗</a><a href="/contact">Contact ↗</a>
+              </div>
+            </aside>
+            <div class="cafe-book-right">
+              <p class="cafe-eyebrow" id="cafe-category-kicker">A FEW FAVORITES</p>
+              <h2 id="cafe-category-title">Selected Work</h2>
+              <p class="cafe-category-summary" id="cafe-category-desc">A selection across interactive work, games, and UX.</p>
+              <div id="cafe-projects" class="cafe-projects" aria-live="polite"></div>
+            </div>
+          </div>
+
+          <section id="cafe-preview" class="cafe-preview" hidden aria-labelledby="cafe-preview-title">
+            <div class="cafe-preview-media" id="cafe-preview-media"></div>
+            <div class="cafe-preview-text">
+              <p class="cafe-eyebrow" id="cafe-preview-kind"></p>
+              <h2 id="cafe-preview-title"></h2>
+              <p id="cafe-preview-summary"></p>
+              <div class="cafe-preview-actions" id="cafe-preview-actions"></div>
+            </div>
+          </section>
+
+          <article id="cafe-focus" class="cafe-focus" hidden aria-labelledby="cafe-focus-title">
+            <div class="cafe-focus-header">
+              <p class="cafe-eyebrow" id="cafe-focus-kind"></p>
+              <h2 id="cafe-focus-title"></h2>
+              <p class="cafe-focus-lead" id="cafe-focus-summary"></p>
+              <div id="cafe-focus-actions" class="cafe-focus-actions"></div>
+            </div>
+            <div id="cafe-focus-body" class="cafe-focus-body"></div>
+          </article>
+
+          <section id="cafe-lens" class="cafe-lens-panel" hidden aria-labelledby="cafe-lens-title">
+            <p class="cafe-eyebrow">A DIFFERENT PERSPECTIVE</p>
+            <h2 id="cafe-lens-title">The same street. A different view.</h2>
+            <p>Small changes in what we notice can change how we interpret a situation. The glasses tint the café, but they don't tell us everything happening beneath the surface.</p>
+            <div class="cafe-preview-actions">
+              <button type="button" class="cafe-action cafe-action--primary" data-category-open="research">Explore research</button>
+              <a class="cafe-action" href="/contact">Get in touch</a>
+            </div>
+          </section>
+        </section>
+      </div>
+      <div id="cafe-transition" class="cafe-transition" aria-hidden="true"></div>
+    </main>
+
+    <script type="application/json" id="cafe-project-data" set:html={json}></script>
+    <script src="/scripts/cafe.js" is:inline defer></script>
+  </body>
+</html>
