@@ -175,6 +175,7 @@
     const s = stateFromUrl();
     const visible = s.view !== 'scene';
     overlay.hidden = !visible;
+    document.body.classList.toggle('is-dialog-open',visible);
     header.inert = visible;
     objects.inert = visible;
     hint.hidden = visible;
@@ -184,6 +185,8 @@
     focus.hidden = s.view !== 'focus';
     lens.hidden = s.view !== 'lens';
     dialog.classList.toggle('is-focus',s.view === 'focus');
+    dialog.classList.toggle('is-preview',s.view === 'preview');
+    dialog.classList.toggle('is-lens',s.view === 'lens');
     world.classList.toggle('is-lensed',s.view === 'lens');
     if (visible) {
       if (s.view === 'menu') {
