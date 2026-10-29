@@ -22,7 +22,7 @@ a { color: inherit; }
 .cafe-skip:focus { transform: none; }
 
 .cafe-world { position: relative; height: 100vh; height: 100svh; min-height: 410px; isolation: isolate; overflow: hidden; perspective: 1100px; }
-.cafe-scene { position: absolute; inset: 0; overflow: hidden; pointer-events: none; transform: translate3d(calc(var(--look-x, 0) * -10px), calc(var(--look-y, 0) * -5px), 0); transition: transform .25s ease-out; }
+.cafe-scene { position: absolute; inset: 0; overflow: hidden; pointer-events: none; transform: translate3d(var(--camera-x, 0px), var(--camera-y, 0px), 0); transition: transform .25s ease-out; }
 .cafe-street-art { position: absolute; width: 105%; height: 105%; max-width: none; left: -2.5%; top: -3%; object-fit: cover; object-position: center; }
 .cafe-light { position: absolute; inset: 0; background: linear-gradient(135deg,rgba(255,249,205,.26),transparent 43%),linear-gradient(0deg,rgba(42,45,45,.22),transparent 70%); pointer-events: none; }
 .cafe-table-shadow { position: absolute; left: -6%; right: -6%; bottom: -12%; height: 50%; transform: rotate(-1deg); background: rgba(28,22,25,.48); filter: blur(40px); border-radius: 50%; }
@@ -40,7 +40,7 @@ a { color: inherit; }
 .cafe-quick-nav a,.cafe-quick-nav button { padding: 9px 12px; color: #fff8e9; text-decoration: none; background: rgba(25,32,32,.43); border: 1px solid rgba(255,251,224,.4); border-radius: 999px; font-weight: 650; line-height: 1.1; font-size: .85rem; backdrop-filter: blur(9px); }
 .cafe-quick-nav a:hover,.cafe-quick-nav button:hover { background: #fff5e1; color: #343028; text-shadow: none; }
 
-.cafe-objects { position: absolute; inset: 0; z-index: 4; transform: translate3d(calc(var(--look-x, 0) * -4px), calc(var(--look-y, 0) * -3px), 0); }
+.cafe-objects { position: absolute; inset: 0; z-index: 4; transform: translate3d(var(--foreground-x, 0px), var(--foreground-y, 0px), 0); }
 .cafe-object { position: absolute; display: block; padding: 0; border: 0; background: none; text-align: center; color: var(--cafe-ink); transform-origin: center; transition: filter .2s ease,translate .2s ease; }
 .cafe-object:hover,.cafe-object:focus-visible { filter: drop-shadow(0 0 15px rgba(255,239,166,.72)); translate: 0 -5px; }
 .cafe-object-label { position: absolute; left: 50%; bottom: calc(100% + 13px); transform: translate(-50%,6px); padding: 7px 12px; white-space: nowrap; border-radius: 10px; background: rgba(27,33,33,.89); color: #fff6df; font: 650 .87rem var(--cafe-body); opacity: 0; pointer-events: none; transition: opacity .14s ease,transform .14s ease; box-shadow: 0 4px 18px rgba(0,0,0,.18); }
