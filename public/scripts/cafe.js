@@ -132,12 +132,18 @@
     get('cafe-preview-media').replaceChildren(media(project,'cafe-preview-image'));
     const actions = get('cafe-preview-actions');
     actions.replaceChildren();
-    const read = element('button','cafe-action cafe-action--primary','Read overview');
-    read.type = 'button';
-    read.addEventListener('click',()=> navigate({view:'focus',category,project:project.id}));
-    actions.append(read);
-    if (project.play) actions.append(action('Play / open project ↗',project.play));
-    if (project.read) actions.append(action(project.group === 'research' ? 'Full research page ↗' : 'Full case study ↗',project.read));
+    // Do not invent a long-form destination for a project with only a short
+    // summary. The preview already carries that information. Focused reading
+    // is reserved for entries with actual case-study sections or highlights.
+    const hasDetails = Boolean(project.sections?.length || project.highlights?.length);
+    if (hasDetails) {
+      const read = element('button','cafe-action cafe-action--primary','Read overview');
+      read.type = 'button';
+      read.addEventListener('click',()=> navigate({view:'focus',category,project:project.id}));
+      actions.append(read);
+    }
+    if (project.play) actions.append(action('Play / open project ↗',project.play,!hasDetails));
+    if (project.read) actions.append(action(project.group === 'research' ? 'Full research page ↗' : 'Full case study ↗',project.read,!hasDetails && !project.play));
   }
   function renderFocus(project) {
     get('cafe-focus-kind').textContent = project.kind || project.status;
