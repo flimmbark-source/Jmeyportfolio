@@ -48,9 +48,14 @@ try {
  await desktop.getByRole('button',{name:/Preview Get to the Café/}).click();
  await desktop.locator('#cafe-preview-title').waitFor();
  assert(await desktop.locator('#cafe-preview').isVisible(),'Contextual project preview opens');
+ assert(await desktop.getByRole('link',{name:/Play \/ open project/}).isVisible(),'Playable work is directly accessible from a short preview');
+ assert(await desktop.getByRole('button',{name:'Read overview'}).count()===0,'Short game description does not create an empty long-form reading view');
  await screenshot(desktop,'03-desktop-preview');
+ await desktop.getByRole('button',{name:'Go back'}).click();
+ await desktop.getByRole('button',{name:'UX Work',exact:true}).click();
+ await desktop.getByRole('button',{name:/Preview IDL: improving a SolidWorks workflow/}).click();
  await desktop.getByRole('button',{name:'Read overview'}).click();
- assert(await desktop.locator('#cafe-focus').isVisible(),'Expanded reading opens');
+ assert(await desktop.locator('#cafe-focus').isVisible(),'Substantive case study expands to focused reading');
  await screenshot(desktop,'04-desktop-focused-reading');
  await desktop.keyboard.press('Escape');
  assert(await desktop.locator('#cafe-preview').isVisible(),'Escape returns from focused reading to preview');
