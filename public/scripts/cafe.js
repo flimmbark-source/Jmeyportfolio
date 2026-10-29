@@ -239,6 +239,10 @@
     lookY = Math.max(-1,Math.min(1,y));
     world.style.setProperty('--look-x',String(lookX));
     world.style.setProperty('--look-y',String(lookY));
+    world.style.setProperty('--camera-x',(-lookX * 10) + 'px');
+    world.style.setProperty('--camera-y',(-lookY * 5) + 'px');
+    world.style.setProperty('--foreground-x',(-lookX * 4) + 'px');
+    world.style.setProperty('--foreground-y',(-lookY * 3) + 'px');
   }
   lookToggle.addEventListener('click',() => {
     lookMode = !lookMode;
