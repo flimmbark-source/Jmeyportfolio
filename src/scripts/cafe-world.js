@@ -1,3 +1,4 @@
+import { buildStreetSet } from './cafe-scenography.js';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
@@ -200,151 +201,7 @@ if (canvas && world && layer) {
       m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),vb.sub(va).normalize());
       return m;
     }
-    function windowOnRight(z, y=2.55) {
-      const g=new THREE.Group();scene.add(g);
-      box(g,.12,1.6,1.32,mat('#d0d0c2'),4.1,y,z);
-      box(g,.07,1.4,1.19,mats.glass,4.02,y,z);
-      for(let i=0;i<8;i++)line(g,[3.94,y-.7,z-.52+i*.15],[3.94,y+.7,z-.52+i*.15],.026,mat('#d8d9d2'),7);
-      line(g,[3.92,y,z-.62],[3.92,y,z+.62],.025,mat('#d8d9d2'));
-      box(g,.18,.13,1.48,mats.whiteWall,3.92,y-.82,z);
-    }
-    function windowOnLeft(z,y) {
-      box(scene,.1,1.15,1.2,mat('#9b8f7c'),-4.07,y,z);
-      box(scene,.06,1.05,1.08,mat('#3c5661'),-4,y,z);
-      line(scene,[-3.95,y-.5,z],[-3.95,y+.5,z],.036,mat('#e2decf'));
-      line(scene,[-3.95,y,z-.52],[-3.95,y,z+.52],.036,mat('#e2decf'));
-    }
-
-    // Road and uneven curb, deliberately narrow and urban rather than resort-like.
-    plane(scene,10,70,mats.pavement,0,-.085,-20);
-    plane(scene,2.0,52,mats.stone,-5.55,-.025,-17);
-    plane(scene,1.8,52,mats.stone,5.12,-.024,-17);
-    box(scene,.25,.18,54,mats.curb,-4.61,.02,-17);
-    box(scene,.3,.18,54,mats.curb,4.22,.02,-17);
-    const redEdge=mat('#aa4b49');
-    for(let z=0;z>-36;z-=4.7) {
-      box(scene,.31,.04,2.6,redEdge,4.22,.13,z-1.3);
-      box(scene,.28,.04,2.6,redEdge,-4.61,.13,z-1.3);
-    }
-
-    // Tall plaster buildings, realistic shadow planes and architectural irregularity.
-    box(scene,2.1,8.9,31,plasterWarm,-5.65,4.24,-12);
-    box(scene,1.9,8.6,28,plasterLight,5.0,4.18,-11);
-    box(scene,2.5,7.4,7,plasterLight,5.75,3.6,1.2);
-    box(scene,2.8,7.2,6.3,plasterPale,-6.2,3.48,1.0);
-    for(let z=-3.8;z>-31;z-=4.5){
-      windowOnLeft(z,2.45);windowOnLeft(z,5.65);
-      windowOnRight(z,2.55);
-    }
-    for(let z=-2.2;z>-32;z-=5.2) {
-      const m=box(scene,.12,6.9,.08,mat('#f0e9df'),4.13,3.4,z);
-      m.castShadow=false;
-    }
-
-    // Front-facing white façade at the corner: the real street turns away to
-    // the left, rather than running between two identical featureless walls.
-    const frontage=box(scene,4.8,7.2,.7,plasterLight,4.62,3.55,-2.25);
-    frontage.castShadow=true;
-    box(scene,1.28,1.76,.09,mat('#d4d3c9'),3.0,3.25,-1.86);
-    box(scene,1.17,1.6,.09,mat('#50666a'),3.0,3.25,-1.81);
-    const bars=mat('#d7d7cb');
-    for(let i=0;i<9;i++)
-      line(scene,[2.48+i*.13,2.48,-1.73],[2.48+i*.13,4.02,-1.73],.025,bars);
-    box(scene,1.45,.17,.27,plasterWarm,3.0,2.37,-1.75);
-    box(scene,1.15,2.6,.1,mat('#ded6c8'),5.22,1.25,-1.83);
-    box(scene,.055,.12,.12,mat('#b4a99b'),4.85,1.36,-1.72);
-    // An electrical service box and battered ventilation unit add human scale.
-    box(scene,.7,.46,.11,mat('#bfc6bd'),4.65,3.12,-1.79,.035);
-    const vent=mat('#858f8c');
-    for(let i=0;i<7;i++)box(scene,.052,.33,.013,vent,4.43+i*.07,3.12,-1.71);
-    box(scene,.62,.85,.14,mat('#d0d3cc'),6.28,1.62,-1.8,.02);
-    for(let i=0;i<4;i++)line(scene,[6.04+i*.14,1.23,-1.7],[6.04+i*.14,2.02,-1.7],.01,vent);
-    // A shadowed shop entrance and overhead cabling across the street.
-    box(scene,.19,2.2,1.32,mat('#695649'),-4.02,1.15,-.7);
-    box(scene,.06,1.98,1.15,mat('#3e4c4e'),-3.91,1.12,-.7);
-    for(let i=0;i<4;i++)box(scene,.025,.04,1.12,mat('#8c846c'),-3.87,.51+i*.44,-.7);
-    line(scene,[-4,4.9,-1],[4.2,5.3,-8],.016,mat('#484d50'));
-    line(scene,[-4,5.3,-4],[4.2,5.1,-12],.012,mat('#6e665f'));
-
-    function pedestrian(x,z,color,scale=1) {
-      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.scale.setScalar(scale);
-      const cloth=mat(color,.96),skin=mat('#b28d74',.95),shoes=mat('#53504b');
-      cylinder(g,.18,.22,.72,cloth,0,1.0,0,10);
-      sphere(g,.15,skin,0,1.56,0);
-      line(g,[-.14,.83,0],[-.23,.42,.05],.055,cloth);
-      line(g,[.14,.83,0],[.22,.43,-.07],.055,cloth);
-      line(g,[-.1,.67,0],[-.1,.04,.12],.07,shoes);
-      line(g,[.1,.67,0],[.12,.04,-.1],.07,shoes);
-    }
-    pedestrian(-.8,-13,'#526f74',.75);
-    pedestrian(.55,-18,'#a37c69',.7);
-    pedestrian(-1.6,-25,'#897d66',.65);
-
-    // Distant buildings close the road without resort architecture.
-    for(let z=-32;z>-58;z-=7){
-      box(scene,6,7+(z%4),5,mat(z%2?'#d2c2b1':'#dbd3c0'),-6.0,3.1,z);
-      box(scene,6,8,5,mat('#ded9cf'),6.2,3.8,z);
-    }
-
-    // An awning throws broad striped shade over the left-side tables.
-    const awning = new THREE.Group();scene.add(awning);
-    const awningColors=[mat('#283a50'),mat('#4b6378')];
-    for(let i=0;i<8;i++){
-      const stripe=box(awning,.6,.075,3.9,awningColors[i%2],-5.0,.0,-.95+i*.6);
-      stripe.castShadow=true;
-    }
-    awning.position.y=3.75;
-    box(scene,.18,.22,8.2,mat('#313d4f'),-4.08,3.63,-2.7);
-    line(scene,[-4.08,3.63,0],[-4.08,2.7,0],.045,mats.iron);
-
-    // Side-street café furniture, reinforcing the scale of the seated view.
-    for(const [x,z,size] of [[-3.4,-1.8,.78],[-3.4,-5.0,.62],[-3.2,-9.2,.52]]) {
-      box(scene,size,.07,size*.7,mats.wood,x,.72,z,.04);
-      line(scene,[x,.7,z],[x,.04,z],.06,mats.iron);
-      for(const side of [-1,1]){
-        const cx=x+side*.57*size;
-        box(scene,size*.42,.11,size*.55,mat('#554439'),cx,.43,z,.06);
-        box(scene,size*.42,.65,.09,mats.wood,cx,.83,z-.24);
-      }
-    }
-    // Bollards in near street and right sidewalk.
-    const bollardMat=mat('#797f7e',.72,{metalness:.25});
-    for(const [x,z] of [[-3.9,0],[-3.95,-1.9],[-3.98,-4.0],[4.15,0],[4.13,-2.4],[4.12,-5.7]]) {
-      cylinder(scene,.092,.135,.62,bollardMat,x,.27,z);
-      sphere(scene,.12,bollardMat,x,.58,z);
-    }
-    // Pole and red no-entry sign, a recognisable landmark in the source photo.
-    const poleX=-1.25,poleZ=-3.8;
-    cylinder(scene,.065,.065,5.2,mats.iron,poleX,2.5,poleZ);
-    const redSignMat=mat('#a93442',.45);
-    const signDisc=cylinder(scene,.42,.42,.06,mat('#efefe8'),poleX,4.65,poleZ,30);
-    signDisc.rotation.x=Math.PI/2;
-    const redDisc=cylinder(scene,.367,.367,.065,redSignMat,poleX,4.65,poleZ+.042,30);
-    redDisc.rotation.x=Math.PI/2;
-    box(scene,.58,.08,.08,mat('#f5f1e6'),poleX,4.65,poleZ+.092,.025);
-
-    // Potted vines and irregular foliage around the café, modest not floral resort.
-    const random=seeded(567);
-    function plant(x,y,z,height=1,scale=1) {
-      const pot=cylinder(scene,.21*scale,.15*scale,.42*scale,mat('#8a6857'),x,y+.19*scale,z);
-      for(let b=0;b<4;b++){
-        const ex=x+(random()-.5)*.65*scale,ey=y+height*(.72+random()*.22),ez=z+(random()-.5)*.55*scale;
-        line(scene,[x,y+.45*scale,z],[ex,ey,ez],.02*scale,mat('#567051'));
-        for(let i=0;i<7;i++){
-          const pct=.36+i*.09;
-          sphere(scene,(.08+random()*.065)*scale,mats.foliage[Math.floor(random()*mats.foliage.length)],
-            x+(ex-x)*pct+(random()-.5)*.2*scale,
-            y+.45*scale+(ey-y-.45*scale)*pct,
-            z+(ez-z)*pct+(random()-.5)*.2*scale).scale.set(1.15,.58,.8);
-        }
-      }
-      return pot;
-    }
-    for(const [x,z,s] of [[-4.0,-.5,.82],[-3.8,-7,.7],[4.0,-4,.9],[4.0,-10,.68],[-4.2,-15,.7]]) plant(x,0,z,1.5*s,s);
-    for(let k=0;k<65;k++){
-      const x=-3.96-(random()*.33),y=3.1+random()*.6,z=-3+random()*4;
-      sphere(scene,.085+random()*.08,mats.foliage[k%5],x,y,z).scale.set(.8,.5,1.7);
-    }
+    buildStreetSet({THREE,scene,mat,mats,box,plane,cylinder,sphere,line,plaster,texture,seeded});
 
     // The original rectangular weathered red metal table, not a round café set.
     const table = new THREE.Group();scene.add(table);
@@ -429,12 +286,11 @@ if (canvas && world && layer) {
     crema.rotation.x=Math.PI/2;crema.scale.set(1,.7,1);
     const handle=addMesh(coffee,new THREE.TorusGeometry(.175,.057,10,24),mats.ceramic,.47,.257,0);
     handle.rotation.y=Math.PI/2;
-    // Slightly irregular painted motifs share the cup material and light.
-    for(let i=0;i<10;i++){
-      const a=i*Math.PI*2/10,dist=.372;
-      const bead=sphere(coffee,.036,mats.porcelain,dist*Math.sin(a),.21,dist*Math.cos(a));
-      bead.scale.set(.75,1.45,.75);
-    }
+    // The blue-glazed ceramic is intentionally undecorated; its irregular
+    // reflections, ivory rim, and espresso crema carry the material character.
+    const blueGlaze=mat('#2a6682',.2);
+    const cupBase=cylinder(coffee,.27,.27,.034,blueGlaze,0,.073,0,36);
+    cupBase.receiveShadow=true;
     tag('coffee',coffee,new THREE.Vector3(0,.25,0),.88,.82);
 
     // Sunglasses physically resting beside the cup; no magic graphics at idle.
