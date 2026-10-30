@@ -438,7 +438,7 @@ if (canvas && world && layer) {
       const w=world.clientWidth,h=world.clientHeight;
       renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,smallScreen.matches?1:1.25));
       renderer.setSize(w,h,false);
-      camera.aspect=w/h;camera.fov=smallScreen.matches?57:51;
+      camera.aspect=w/h;camera.fov=smallScreen.matches?77:51;
       camera.updateProjectionMatrix();
     };
     window.addEventListener('resize',place,{passive:true});
@@ -459,10 +459,17 @@ if (canvas && world && layer) {
           Math.max(.8,Math.min(1.2,6.4/Math.abs(camera.position.z-obj.group.position.z)));
         const sw=smallScreen.matches?Math.max(77,obj.sizeX*110*perspective):obj.sizeX*200*perspective;
         const sh=smallScreen.matches?Math.max(56,obj.sizeY*110*perspective):obj.sizeY*148*perspective;
-        obj.button.style.left=(x-sw/2)+'px';
-        obj.button.style.top=(y-sh/2)+'px';
-        obj.button.style.width=sw+'px';
-        obj.button.style.height=sh+'px';
+        // Quantized, stable, fully on-screen hit targets. Continuous subpixel
+        // movement made touch targets unstable even with no camera input.
+        const left=Math.round(Math.max(8,Math.min(bounds.width-sw-8,x-sw/2))/4)*4;
+        const top=Math.round(Math.max(150,Math.min(bounds.height-sh-16,y-sh/2))/4)*4;
+        const box=[left,top,Math.round(sw),Math.round(sh)];
+        if (obj.lastBox && box.every((v,i)=>v===obj.lastBox[i])) continue;
+        obj.lastBox=box;
+        obj.button.style.left=left+'px';
+        obj.button.style.top=top+'px';
+        obj.button.style.width=Math.round(sw)+'px';
+        obj.button.style.height=Math.round(sh)+'px';
       }
     }
 
@@ -480,12 +487,12 @@ if (canvas && world && layer) {
       const rawX=parseFloat(world.style.getPropertyValue('--look-x'))||0;
       const rawY=parseFloat(world.style.getPropertyValue('--look-y'))||0;
       const mobile=smallScreen.matches;
-      const targetZ=mobile?8.35:6.45;
-      const targetY=mobile?2.85:2.7;
+      const targetZ=mobile?9.15:6.45;
+      const targetY=mobile?2.95:2.7;
       camera.position.x=THREE.MathUtils.lerp(camera.position.x,rawX*.22, .075);
       camera.position.y=THREE.MathUtils.lerp(camera.position.y,targetY+rawY*.15,.075);
       camera.position.z=THREE.MathUtils.lerp(camera.position.z,targetZ,.085);
-      camera.lookAt(rawX*.24,1.25+rawY*.2,-.4);
+      camera.lookAt(rawX*.24,mobile?1.04+rawY*.12:1.25+rawY*.2,mobile?2.05:-.4);
       const shouldAnimate=!reduced.matches && !document.body.classList.contains('is-dialog-open');
       for(let i=0;i<steam.length;i++) {
         const t=shouldAnimate?(tick*.17+i/7)%1:i/7;
@@ -501,8 +508,8 @@ if (canvas && world && layer) {
       moveHotspots();
       renderer.render(scene,camera);
     }
-    camera.position.set(0,2.7,smallScreen.matches?8.35:6.45);
-    camera.lookAt(0,1.25,-.4);
+    camera.position.set(0,smallScreen.matches?2.95:2.7,smallScreen.matches?9.15:6.45);
+    camera.lookAt(0,smallScreen.matches?1.04:1.25,smallScreen.matches?2.05:-.4);
     requestAnimationFrame(frame);
   }
 }
