@@ -227,7 +227,8 @@ if (canvas && world && layer) {
       m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),vb.sub(va).normalize());
       return m;
     }
-    buildStreetSet({THREE,scene,mat,mats,box,plane,cylinder,sphere,line,plaster,texture,seeded});
+    const streetSet=buildStreetSet({THREE,scene,mat,mats,box,plane,cylinder,sphere,line,plaster,texture,seeded});
+    canvas.dataset.facadeMaterialValid=String(Boolean(streetSet.facade.material?.isMaterial));
 
     // The original rectangular weathered red metal table, not a round café set.
     const table = new THREE.Group();scene.add(table);
