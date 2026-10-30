@@ -196,7 +196,7 @@
     world.classList.toggle('is-lensed',s.view === 'lens');
     if (visible) {
       if (s.view === 'menu') {
-        get('cafe-crumb').textContent = 'The Menu / ' + categories[s.category].title;
+        get('cafe-crumb').textContent = 'Selections / ' + categories[s.category].title;
         renderBook(s.category);
       } else if (s.view === 'lens') {
         get('cafe-crumb').textContent = 'Sunglasses / Another perspective';
