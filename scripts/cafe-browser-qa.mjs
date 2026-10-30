@@ -21,6 +21,8 @@ async function loadPage(page){
   const response=await page.goto(url+'/cafe/',{waitUntil:'networkidle',timeout:60000});
   assert(response?.status()===200,'The /cafe route returns HTTP 200');
   assert(await page.locator('#cafe-world').isVisible(),'Café scene loads');
+  await page.waitForFunction(()=>document.querySelector('#cafe-canvas')?.classList.contains('is-ready'),null,{timeout:20000});
+  assert(await page.locator('#cafe-canvas.is-ready').isVisible(),'Real 3D canvas is initialized');
 }
 async function inspectObjects(page,key){
   const names=['menu','coffee','glasses'];
@@ -37,9 +39,11 @@ const desktop=await browser.newPage({viewport:{width:1440,height:900},deviceScal
 try {
  await loadPage(desktop);
  await inspectObjects(desktop,'desktop');
+ const glValid=await desktop.evaluate(()=>{const gl=document.querySelector('#cafe-canvas').getContext('webgl2')||document.querySelector('#cafe-canvas').getContext('webgl');return !!gl&&!gl.isContextLost();});
+ assert(glValid,'WebGL context active on desktop');
  await screenshot(desktop,'01-desktop-scene');
  await desktop.getByRole('button',{name:'Open the portfolio Menu'}).click();
- await desktop.getByRole('heading',{name:'The Menu'}).waitFor();
+ await desktop.getByRole('heading',{name:/Selections/}).waitFor();
  assert(new URL(desktop.url()).searchParams.get('view')==='menu','Menu state reflected in URL');
  assert(await desktop.locator('body').evaluate(el=>el.classList.contains('is-dialog-open')),'Dialog-open state set');
  assert(await desktop.locator('.cafe-header').evaluate(el=>getComputedStyle(el).visibility==='hidden'),'Site header is hidden while the Menu is open');
