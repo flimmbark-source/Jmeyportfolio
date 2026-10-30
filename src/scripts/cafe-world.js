@@ -509,7 +509,7 @@ if (canvas && world && layer) {
       const w=world.clientWidth,h=world.clientHeight;
       renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,smallScreen.matches?1:1.25));
       renderer.setSize(w,h,false);
-      camera.aspect=w/h;camera.fov=smallScreen.matches?77:51;
+      camera.aspect=w/h;camera.fov=smallScreen.matches?65:51;
       camera.updateProjectionMatrix();
     };
     window.addEventListener('resize',place,{passive:true});
@@ -558,12 +558,12 @@ if (canvas && world && layer) {
       const rawX=parseFloat(world.style.getPropertyValue('--look-x'))||0;
       const rawY=parseFloat(world.style.getPropertyValue('--look-y'))||0;
       const mobile=smallScreen.matches;
-      const targetZ=mobile?9.15:6.45;
-      const targetY=mobile?2.95:2.7;
-      camera.position.x=THREE.MathUtils.lerp(camera.position.x,rawX*.22, .075);
+      const targetZ=mobile?7.6:6.45;
+      const targetY=mobile?3.2:2.7;
+      camera.position.x=THREE.MathUtils.lerp(camera.position.x,rawX*(mobile?.55:.22), .075);
       camera.position.y=THREE.MathUtils.lerp(camera.position.y,targetY+rawY*.15,.075);
       camera.position.z=THREE.MathUtils.lerp(camera.position.z,targetZ,.085);
-      camera.lookAt(rawX*.24,mobile?1.04+rawY*.12:1.25+rawY*.2,mobile?2.05:-.4);
+      camera.lookAt(rawX*(mobile?1.6:.24),mobile?.95+rawY*.16:1.25+rawY*.2,mobile?1.95:-.4);
       const shouldAnimate=!reduced.matches && !document.body.classList.contains('is-dialog-open');
       for(let i=0;i<steam.length;i++) {
         const t=shouldAnimate?(tick*.17+i/7)%1:i/7;
@@ -579,8 +579,8 @@ if (canvas && world && layer) {
       moveHotspots();
       renderer.render(scene,camera);
     }
-    camera.position.set(0,smallScreen.matches?2.95:2.7,smallScreen.matches?9.15:6.45);
-    camera.lookAt(0,smallScreen.matches?1.04:1.25,smallScreen.matches?2.05:-.4);
+    camera.position.set(0,smallScreen.matches?3.2:2.7,smallScreen.matches?7.6:6.45);
+    camera.lookAt(0,smallScreen.matches?.95:1.25,smallScreen.matches?1.95:-.4);
     requestAnimationFrame(frame);
   }
 }
