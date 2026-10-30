@@ -507,9 +507,24 @@ if (canvas && world && layer) {
 
     const place = () => {
       const w=world.clientWidth,h=world.clientHeight;
+      // Portrait uses a closer, narrower table staging. It is still the same
+      // seated world, but props remain visible rather than shrinking to dots.
+      if (smallScreen.matches) {
+        table.scale.set(.84,1,1.58);
+        table.position.z=2.85;
+        menu.position.set(-.88,1.09,3.1);
+        coffee.position.set(.18,1.07,2.30);
+        glasses.position.set(.95,1.105,3.13);
+      } else {
+        table.scale.set(1,1,1);
+        table.position.z=2.68;
+        menu.position.set(-1.28,1.09,2.85);
+        coffee.position.set(.1,1.07,2.25);
+        glasses.position.set(1.3,1.105,2.98);
+      }
       renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,smallScreen.matches?1:1.25));
       renderer.setSize(w,h,false);
-      camera.aspect=w/h;camera.fov=smallScreen.matches?65:51;
+      camera.aspect=w/h;camera.fov=smallScreen.matches?68:51;
       camera.updateProjectionMatrix();
     };
     window.addEventListener('resize',place,{passive:true});
@@ -558,12 +573,12 @@ if (canvas && world && layer) {
       const rawX=parseFloat(world.style.getPropertyValue('--look-x'))||0;
       const rawY=parseFloat(world.style.getPropertyValue('--look-y'))||0;
       const mobile=smallScreen.matches;
-      const targetZ=mobile?7.6:6.45;
-      const targetY=mobile?3.2:2.7;
+      const targetZ=mobile?7.3:6.45;
+      const targetY=mobile?3.05:2.7;
       camera.position.x=THREE.MathUtils.lerp(camera.position.x,rawX*(mobile?.55:.22), .075);
       camera.position.y=THREE.MathUtils.lerp(camera.position.y,targetY+rawY*.15,.075);
       camera.position.z=THREE.MathUtils.lerp(camera.position.z,targetZ,.085);
-      camera.lookAt(rawX*(mobile?1.6:.24),mobile?.95+rawY*.16:1.25+rawY*.2,mobile?1.95:-.4);
+      camera.lookAt(rawX*(mobile?1.6:.24),mobile?1.22+rawY*.15:1.25+rawY*.2,mobile?.7:-.4);
       const shouldAnimate=!reduced.matches && !document.body.classList.contains('is-dialog-open');
       for(let i=0;i<steam.length;i++) {
         const t=shouldAnimate?(tick*.17+i/7)%1:i/7;
@@ -579,8 +594,8 @@ if (canvas && world && layer) {
       moveHotspots();
       renderer.render(scene,camera);
     }
-    camera.position.set(0,smallScreen.matches?3.2:2.7,smallScreen.matches?7.6:6.45);
-    camera.lookAt(0,smallScreen.matches?.95:1.25,smallScreen.matches?1.95:-.4);
+    camera.position.set(0,smallScreen.matches?3.05:2.7,smallScreen.matches?7.3:6.45);
+    camera.lookAt(0,smallScreen.matches?1.22:1.25,smallScreen.matches?.7:-.4);
     requestAnimationFrame(frame);
   }
 }
