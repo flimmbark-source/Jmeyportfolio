@@ -23,6 +23,8 @@ async function loadPage(page){
   assert(await page.locator('#cafe-world').isVisible(),'Café scene loads');
   await page.waitForFunction(()=>document.querySelector('#cafe-canvas')?.classList.contains('is-ready'),null,{timeout:20000});
   assert(await page.locator('#cafe-canvas.is-ready').isVisible(),'Real 3D canvas is initialized');
+  assert(await page.locator('#cafe-canvas').getAttribute('data-facade-material-valid')==='true',
+    'Main building façade uses a renderable material rather than a raw texture');
 }
 async function inspectObjects(page,key){
   const names=['menu','coffee','glasses'];
