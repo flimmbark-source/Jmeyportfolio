@@ -16,8 +16,9 @@
 
 ## What this slice actually implements
 - `src/pages/cafe.astro`: a new Astro route using `portfolioV2NodeMap` and `getCollection('projects')`.
-- `src/styles/cafe.css`: layered 2.5D café stage, physical props, illustrated two-page Menu, contextual preview, and focused-reading panel.
-- `public/cafe/street.svg`: deliberately simplified drawing using the photo's narrow street, white plaster walls, awning, street bollards, and morning lighting. **Not final art.**
+- `src/styles/cafe.css` and `src/styles/cafe-world.css`: accessible two-page Menu, progressive reading interface, and semantic controls projected over 3D objects.
+- `src/scripts/cafe-world.js`: Three.js 3D street, rectangular weathered café table, branded physical menu, blue cup, glasses, architectural details, sunlight/shadows, responsive camera and projected touch targets.
+- `public/cafe/street.svg`: fallback only if WebGL is unavailable. **Not final art.**
 - `public/scripts/cafe.js`: object selection, hover/focus behavior, categories, project previews, reading state, browser history, focus containment, and limited seated camera parallax.
 - Coffee routes to existing `/`. Secondary props link to existing résumé/contact; glasses provide an optional visual-lens panel.
 
@@ -26,12 +27,11 @@
 - The original physical photo is an art-direction reference, not currently bundled as a deployable asset.
 - Unfinished projects are labeled as unfinished.
 - The generated visualization boards are directional only. Their idealized tourist-street architecture and round table are **rejected**.
-- This slice is not a WebGL/React Three Fiber scene yet. A production 3D asset workflow remains unresolved.
+- The scene now uses local, pinned Three.js and real WebGL, but its procedural geometry and textures remain **visual blockout-quality**. Artist-authored stylized models, original surface textures and audiovisual ambience remain unresolved.
 
 ## Verification
-- GitHub Portfolio CI push build passed for commit `0aa7511bf46ba48f05918719cccc32428db083d5`.
-- Astro's build log explicitly generated `dist/cafe/index.html`.
-- This is a production-build check, **not** a screenshot review or browser interaction test.
+- The production build and browser QA now run on every branch push. Chromium verifies desktop and mobile navigation, menu reading, Back/Escape, Coffee transition, and WebGL scene initialization.
+- Current browser screenshots are uploaded as GitHub Actions `cafe-browser-qa` artifacts. Automated passage is not a human visual-design approval.
 
 ## Manual acceptance checks before promotion
 1. Open `/cafe` at desktop and mobile sizes. All primary objects should be visible and discoverable without hunting.
@@ -43,4 +43,4 @@
 7. Review mobile cropping and scene clarity, then decide whether to move to WebGL/R3F before art production.
 
 ## Next implementation milestone
-Review the **actual running** slice, fix usability and responsive problems, and approve a faithful 3D scene composition. Only then proceed to illustrated asset production and ambient life.
+Use the captured browser screenshots to replace the procedural blockout with art-directed, high-fidelity stylized meshes and materials. Preserve tested Menu/reading behavior, then add sound and ambient simulation. Do not promote `/cafe` to `/` on the basis of functional tests alone.
