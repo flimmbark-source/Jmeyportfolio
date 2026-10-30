@@ -18,7 +18,7 @@ if (canvas && world && layer) {
   const base = new THREE.Color('#d7d5c6');
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#bcdce1');
-  scene.fog = new THREE.FogExp2('#ccc8b7', 0.014);
+  scene.fog = new THREE.FogExp2('#ddd0b6', 0.011);
   const camera = new THREE.PerspectiveCamera(51, 1, 0.08, 120);
   let renderer;
   try {
@@ -32,16 +32,16 @@ if (canvas && world && layer) {
   if (renderer) {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.38;
+    renderer.toneMappingExposure = 1.24;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     canvas.classList.add('is-ready');
     fallback?.setAttribute('hidden', '');
     world.classList.add('is-three-dimensional');
 
-    const ambient = new THREE.HemisphereLight('#e8f7ff', '#8c7164', 2.0);
+    const ambient = new THREE.HemisphereLight('#e8f7ff', '#79685e', 1.35);
     scene.add(ambient);
-    const sun = new THREE.DirectionalLight('#ffebbf', 3.7);
+    const sun = new THREE.DirectionalLight('#ffdfae', 3.1);
     sun.position.set(-6, 13, 7);
     sun.castShadow = true;
     sun.shadow.mapSize.set(1024, 1024);
@@ -76,7 +76,7 @@ if (canvas && world && layer) {
       ceramic: mat('#225979', 0.19),
       porcelain: mat('#f2eee1',0.24),
       paper: mat('#f1dfbd',0.95),
-      redTable: mat('#af3733',0.62,{metalness:0.12}),
+      redTable: mat('#b2453d',0.87,{metalness:0.08}),
       menuSpine: mat('#6b5543',1),
       lens: mat('#302e2c',0.15,{metalness:0.28}),
       spectacle: mat('#5d3c2b',0.38,{metalness:0.22})
@@ -139,6 +139,36 @@ if (canvas && world && layer) {
     roadTexture.repeat.set(2.5,15);
     mats.pavement.map=roadTexture;
     mats.pavement.needsUpdate=true;
+    // The chipped original table is a painted surface, not a flat coral slab.
+    const paint = texture((ctx,w,h)=>{
+      const rnd=seeded(902);
+      ctx.fillStyle='#a63d39';ctx.fillRect(0,0,w,h);
+      const glaze=ctx.createLinearGradient(0,0,w,h);
+      glaze.addColorStop(0,'rgba(244,120,87,.21)');
+      glaze.addColorStop(.5,'rgba(146,33,37,.03)');
+      glaze.addColorStop(1,'rgba(60,19,27,.24)');
+      ctx.fillStyle=glaze;ctx.fillRect(0,0,w,h);
+      for(let i=0;i<2800;i++){
+        const x=rnd()*w,y=rnd()*h,r=rnd()*5+.3;
+        ctx.fillStyle=rnd()>.56?'rgba(248,205,171,.07)':'rgba(71,25,28,.08)';
+        ctx.beginPath();ctx.ellipse(x,y,r*2,r*(.15+rnd()*.65),rnd()*3,0,6.29);ctx.fill();
+      }
+      for(let i=0;i<270;i++){
+        const x=rnd()*w,y=rnd()*h,r=2+rnd()*13;
+        ctx.fillStyle=rnd()>.6?'#d1afa0':'#6d6660';
+        ctx.globalAlpha=.28+rnd()*.35;
+        ctx.beginPath();ctx.moveTo(x-r*.6,y);ctx.lineTo(x+r*.45,y-r*.35);
+        ctx.lineTo(x+r,y+r*.15);ctx.lineTo(x-r*.3,y+r*.3);ctx.closePath();ctx.fill();
+      }
+      ctx.globalAlpha=1;
+      for(let i=0;i<230;i++){
+        ctx.strokeStyle='rgba(247,219,184,'+(rnd()*.21)+')';ctx.lineWidth=rnd()*1.5+.4;
+        const x=rnd()*w,y=rnd()*h;ctx.beginPath();ctx.moveTo(x,y);
+        ctx.lineTo(x+8+rnd()*45,y-1+rnd()*5);ctx.stroke();
+      }
+    },1024,1024);
+    mats.redTable.map=paint;mats.redTable.color.set('#ffffff');mats.redTable.needsUpdate=true;
+
 
     const addMesh=(parent,geometry,material,x=0,y=0,z=0)=>{
       const m=new THREE.Mesh(geometry,material);
@@ -343,6 +373,7 @@ if (canvas && world && layer) {
 
     // Actual hollow ceramic cup, espresso surface, saucer and handle.
     const coffee=new THREE.Group();coffee.position.set(.1,1.07,2.25);
+    coffee.scale.setScalar(.87);
     cylinder(coffee,.51,.49,.07,mats.ceramic,0,.02,0,44);
     cylinder(coffee,.4,.4,.013,mats.porcelain,0,.057,0,44);
     const profile=[
