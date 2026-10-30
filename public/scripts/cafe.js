@@ -260,16 +260,18 @@
     if (!lookMode) applyLook(0,0);
   });
   world.addEventListener('pointerdown',event => {
-    if (event.target.closest('button,a,#cafe-overlay') || event.pointerType === 'touch' || !overlay.hidden) return;
+    if (event.target.closest('button,a,#cafe-overlay') || !overlay.hidden) return;
     dragging = true; originX = event.clientX;originY = event.clientY;baseX = lookX;baseY = lookY;
+    if (event.pointerType === 'touch') world.setPointerCapture?.(event.pointerId);
   });
   window.addEventListener('pointerup',()=>{dragging = false;});
   window.addEventListener('pointermove',event => {
-    if (reduced.matches || !overlay.hidden || event.pointerType === 'touch') return;
+    if (reduced.matches || !overlay.hidden || (event.pointerType === 'touch' && !dragging)) return;
     if (dragging || lookMode) {
       const dx = dragging ? event.clientX-originX : event.clientX-innerWidth/2;
       const dy = dragging ? event.clientY-originY : event.clientY-innerHeight/2;
-      applyLook((dragging?baseX:0)+dx/(dragging?300:innerWidth/2),(dragging?baseY:0)+dy/(dragging?300:innerHeight/2));
+      const divisor = event.pointerType === 'touch' ? 145 : 300;
+      applyLook((dragging?baseX:0)+dx/(dragging?divisor:innerWidth/2),(dragging?baseY:0)+dy/(dragging?divisor:innerHeight/2));
     } else applyLook((event.clientX/innerWidth-.5)*.5,(event.clientY/innerHeight-.5)*.35);
   });
   render();
