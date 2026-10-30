@@ -44,7 +44,7 @@ if (canvas && world && layer) {
     const sun = new THREE.DirectionalLight('#ffebbf', 3.7);
     sun.position.set(-6, 13, 7);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.mapSize.set(1024, 1024);
     sun.shadow.camera.left = -14;
     sun.shadow.camera.right = 14;
     sun.shadow.camera.top = 15;
@@ -143,12 +143,15 @@ if (canvas && world && layer) {
     const addMesh=(parent,geometry,material,x=0,y=0,z=0)=>{
       const m=new THREE.Mesh(geometry,material);
       m.position.set(x,y,z);
-      m.castShadow=true;m.receiveShadow=true;
+      m.castShadow=false;m.receiveShadow=true;
       parent.add(m);return m;
     };
     const box=(parent,w,h,d,material,x,y,z,rounded=0)=>{
       const geom=rounded?new RoundedBoxGeometry(w,h,d,3,rounded):new THREE.BoxGeometry(w,h,d);
-      return addMesh(parent,geom,material,x,y,z);
+      const mesh=addMesh(parent,geom,material,x,y,z);
+      mesh.castShadow=(material===mats.redTable || material===mats.ceramic || material===mats.wood ||
+        material===mats.menuSpine || material===mats.paper);
+      return mesh;
     };
     const plane=(parent,w,h,material,x,y,z,rx=-Math.PI/2)=>{
       const m=addMesh(parent,new THREE.PlaneGeometry(w,h),material,x,y,z);
@@ -433,7 +436,7 @@ if (canvas && world && layer) {
 
     const place = () => {
       const w=world.clientWidth,h=world.clientHeight;
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, smallScreen.matches?1.4:1.65));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,smallScreen.matches?1:1.25));
       renderer.setSize(w,h,false);
       camera.aspect=w/h;camera.fov=smallScreen.matches?57:51;
       camera.updateProjectionMatrix();
@@ -442,6 +445,7 @@ if (canvas && world && layer) {
     place();
 
     let hover=null, tick=0, last=0;
+    let frameNumber=0;
     const tmp=new THREE.Vector3();
     function moveHotspots() {
       const bounds=world.getBoundingClientRect();
@@ -465,6 +469,11 @@ if (canvas && world && layer) {
     function frame(now) {
       requestAnimationFrame(frame);
       if (!renderer || !canvas.isConnected) return;
+      frameNumber++;
+      // Do not burn GPU cycles animating a scene behind a reading view.
+      if (document.body.classList.contains('is-dialog-open') && frameNumber % 8 !== 0) return;
+      // A reduced-motion scene is mostly static, but still responds to focus/resize.
+      if (reduced.matches && frameNumber>3 && frameNumber % 18 !== 0) return;
       const dt=Math.min(.045,(now-last)/1000 || .016);
       last=now;
       tick+=dt;
