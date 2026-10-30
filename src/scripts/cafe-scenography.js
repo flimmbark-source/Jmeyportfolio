@@ -13,9 +13,9 @@ export function buildStreetSet({THREE,scene,mat,mats,box,plane,cylinder,sphere,l
   const shadow=paint('#b4ab9d');
   const darkMetal=mat('#475252',.74,{metalness:.24});
   const paleMetal=mat('#aeb2a9',.8,{metalness:.15});
-  const plaster1=plaster('#f1e7d8',14);
-  const plaster2=plaster('#e5dfd2',17);
-  const plaster3=plaster('#f7f1e6',3);
+  const plaster1=mat('#ffffff',1,{map:plaster('#f1e7d8',14)});
+  const plaster2=mat('#ffffff',1,{map:plaster('#e5dfd2',17)});
+  const plaster3=mat('#ffffff',1,{map:plaster('#f7f1e6',3)});
 
   // Grainy, irregular Jerusalem-stone pavement with ink-like joints.
   const stone=texture((ctx,w,h)=>{
