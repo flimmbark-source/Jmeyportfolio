@@ -240,6 +240,46 @@ if (canvas && world && layer) {
       const m=box(scene,.12,6.9,.08,mat('#f0e9df'),4.13,3.4,z);
       m.castShadow=false;
     }
+
+    // Front-facing white façade at the corner: the real street turns away to
+    // the left, rather than running between two identical featureless walls.
+    const frontage=box(scene,4.8,7.2,.7,plasterLight,4.62,3.55,-2.25);
+    frontage.castShadow=true;
+    box(scene,1.28,1.76,.09,mat('#d4d3c9'),3.0,3.25,-1.86);
+    box(scene,1.17,1.6,.09,mat('#50666a'),3.0,3.25,-1.81);
+    const bars=mat('#d7d7cb');
+    for(let i=0;i<9;i++)
+      line(scene,[2.48+i*.13,2.48,-1.73],[2.48+i*.13,4.02,-1.73],.025,bars);
+    box(scene,1.45,.17,.27,plasterWarm,3.0,2.37,-1.75);
+    box(scene,1.15,2.6,.1,mat('#ded6c8'),5.22,1.25,-1.83);
+    box(scene,.055,.12,.12,mat('#b4a99b'),4.85,1.36,-1.72);
+    // An electrical service box and battered ventilation unit add human scale.
+    box(scene,.7,.46,.11,mat('#bfc6bd'),4.65,3.12,-1.79,.035);
+    const vent=mat('#858f8c');
+    for(let i=0;i<7;i++)box(scene,.052,.33,.013,vent,4.43+i*.07,3.12,-1.71);
+    box(scene,.62,.85,.14,mat('#d0d3cc'),6.28,1.62,-1.8,.02);
+    for(let i=0;i<4;i++)line(scene,[6.04+i*.14,1.23,-1.7],[6.04+i*.14,2.02,-1.7],.01,vent);
+    // A shadowed shop entrance and overhead cabling across the street.
+    box(scene,.19,2.2,1.32,mat('#695649'),-4.02,1.15,-.7);
+    box(scene,.06,1.98,1.15,mat('#3e4c4e'),-3.91,1.12,-.7);
+    for(let i=0;i<4;i++)box(scene,.025,.04,1.12,mat('#8c846c'),-3.87,.51+i*.44,-.7);
+    line(scene,[-4,4.9,-1],[4.2,5.3,-8],.016,mat('#484d50'));
+    line(scene,[-4,5.3,-4],[4.2,5.1,-12],.012,mat('#6e665f'));
+
+    function pedestrian(x,z,color,scale=1) {
+      const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.scale.setScalar(scale);
+      const cloth=mat(color,.96),skin=mat('#b28d74',.95),shoes=mat('#53504b');
+      cylinder(g,.18,.22,.72,cloth,0,1.0,0,10);
+      sphere(g,.15,skin,0,1.56,0);
+      line(g,[-.14,.83,0],[-.23,.42,.05],.055,cloth);
+      line(g,[.14,.83,0],[.22,.43,-.07],.055,cloth);
+      line(g,[-.1,.67,0],[-.1,.04,.12],.07,shoes);
+      line(g,[.1,.67,0],[.12,.04,-.1],.07,shoes);
+    }
+    pedestrian(-.8,-13,'#526f74',.75);
+    pedestrian(.55,-18,'#a37c69',.7);
+    pedestrian(-1.6,-25,'#897d66',.65);
+
     // Distant buildings close the road without resort architecture.
     for(let z=-32;z>-58;z-=7){
       box(scene,6,7+(z%4),5,mat(z%2?'#d2c2b1':'#dbd3c0'),-6.0,3.1,z);
