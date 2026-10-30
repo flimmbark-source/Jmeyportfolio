@@ -98,18 +98,44 @@ if (canvas && world && layer) {
       return () => ((v=(v*1664525+1013904223)>>>0)/4294967296);
     }
     function plaster(baseColor,seed=2) {
+      // Layered, imperfect watercolour-plaster surface. Broad pigment washes
+      // matter more visually than random high-frequency noise.
       const random=seeded(seed);
       const t=texture((ctx,w,h)=>{
         ctx.fillStyle=baseColor;ctx.fillRect(0,0,w,h);
-        for(let i=0;i<2100;i++){
+        const wash=ctx.createLinearGradient(0,0,w,h);
+        wash.addColorStop(0,'rgba(255,255,243,.09)');
+        wash.addColorStop(.4,'rgba(255,247,224,0)');
+        wash.addColorStop(1,'rgba(106,88,79,.10)');
+        ctx.fillStyle=wash;ctx.fillRect(0,0,w,h);
+        for(let i=0;i<170;i++){
+          const x=random()*w,y=random()*h;
+          const rx=10+random()*110,ry=2+random()*35;
+          ctx.globalAlpha=.018+random()*.028;
+          ctx.fillStyle=random()>.45?'#755e51':'#fffcf2';
+          ctx.beginPath();ctx.ellipse(x,y,rx,ry,(random()-.5)*1.1,0,Math.PI*2);
+          ctx.fill();
+        }
+        ctx.globalAlpha=1;
+        for(let i=0;i<2900;i++){
           const x=random()*w,y=random()*h,r=random()*2.8+.3;
-          ctx.fillStyle=random()<.5?'rgba(122,93,65,.037)':'rgba(255,255,255,.078)';
+          ctx.fillStyle=random()<.5?'rgba(112,81,61,.055)':'rgba(255,255,255,.11)';
           ctx.fillRect(x,y,r*2,r);
         }
-        for(let i=0;i<56;i++){
-          ctx.beginPath();const x=random()*w,y=random()*h;
-          ctx.strokeStyle='rgba(120,91,72,.045)';
-          ctx.lineWidth=random()*2+0.5;ctx.moveTo(x,y);ctx.lineTo(x+random()*16,y+random()*7);ctx.stroke();
+        for(let i=0;i<145;i++){
+          const x=random()*w,y=random()*h;
+          ctx.strokeStyle=random()>.5?'rgba(118,95,75,.08)':'rgba(255,255,255,.14)';
+          ctx.lineWidth=random()*1.8+.4;
+          ctx.beginPath();ctx.moveTo(x,y);
+          ctx.bezierCurveTo(x+random()*7,y+random()*3,x+random()*18,y+random()*7,x+random()*33,y+random()*4);
+          ctx.stroke();
+        }
+        // Water-damage and raised stucco around lower edges.
+        for(let i=0;i<26;i++){
+          const x=random()*w,y=h*(.74+random()*.25);
+          ctx.fillStyle='rgba(111,102,83,'+(.018+random()*.026)+')';
+          ctx.beginPath();ctx.ellipse(x,y,8+random()*62,1+random()*12,0,0,Math.PI*2);
+          ctx.fill();
         }
       });
       t.wrapS=t.wrapT=THREE.RepeatWrapping;
