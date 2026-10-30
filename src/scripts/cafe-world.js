@@ -240,6 +240,7 @@ if (canvas && world && layer) {
     const legs=mat('#30363b',.75,{metalness:.35});
     cylinder(table,.1,.105,.96,legs,0,.46,0);
     box(table,1.4,.12,.65,legs,0,.12,0,.04);
+    const random=seeded(567);
     // Chipped paint and scattered wear, drawn in world coordinates on the top.
     for(let i=0;i<130;i++){
       const x=(random()-.5)*4.05,z=(random()-.5)*2.15;
