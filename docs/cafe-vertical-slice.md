@@ -44,3 +44,17 @@
 
 ## Next implementation milestone
 Use the captured browser screenshots to replace the procedural blockout with art-directed, high-fidelity stylized meshes and materials. Preserve tested Menu/reading behavior, then add sound and ambient simulation. Do not promote `/cafe` to `/` on the basis of functional tests alone.
+
+## Art-direction iteration: 2026-10-30
+
+**Confirmed visual correction:** The original reference shows a near-frontal white corner building, with the side street receding to the left. The first procedural version incorrectly rendered a centered corridor. The street model now follows the corner-building composition.
+
+**Implemented in the branch:**
+- `src/scripts/cafe-scenography.js` builds the white façade, barred window and upper transom, modest service details, red-and-white curb, narrow side street, awning, bollards, utility poles, signage and planters as real lit geometry.
+- Painterly/worn plaster maps and a distressed red table replace the flat base materials.
+- The blue espresso cup has been simplified to read as ceramic rather than a decorative toy; existing interaction hotspots and reading flow remain functional.
+- Automated browser QA now rejects non-renderable façade materials, after an early scene refactor accidentally passed a texture in place of a Three.js Material.
+
+**Still unresolved:** The geometry remains constructed primitives with programmatic textures. It is **not yet the intended art-directed, hand-painted 3D asset set**. Architectural detail, sculptural silhouettes, and visual authenticity need a dedicated authored-model and material pass. The generated seaside/tourist café illustrations are not approved or used as scene assets.
+
+**Promotion rule:** Keep this behind `/cafe` until the visual direction has been reviewed and the primary objects are clear at desktop and mobile sizes. The production build and interaction tests are necessary, but not sufficient, for art approval.
