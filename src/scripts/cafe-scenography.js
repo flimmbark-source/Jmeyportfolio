@@ -1,188 +1,265 @@
 /**
- * Café Almar street set, art pass 02.
- * Composition comes from the supplied photograph: a sunlit, mostly frontal
- * white corner building, a much narrower street opening to the left, a dark
- * awning, barred window, sign, wires, planters and shaded stone pavement.
- * Coordinates deliberately avoid generic straight-ahead fantasy streets.
+ * Café Almar street set.
+ *
+ * Everything here is placed at real-world scale, one unit to the metre, and
+ * every solid object is an authored mesh loaded from `public/cafe/models/`
+ * (built by `tools/cafe-assets/`). This module owns composition: where the
+ * corner building sits, how far the side street recedes, and which silhouettes
+ * fall on which third of the frame.
+ *
+ * Composition notes, from the reference photograph:
+ *  - the white corner block is near-frontal and sits right of centre, so the
+ *    barred window lands on the right third;
+ *  - the side street opens on the left and recedes away from the camera;
+ *  - the utility pole is deliberately off the centre line. In the first pass
+ *    it ran straight down the middle of the frame and cut the image in half.
  */
-export function buildStreetSet({THREE,scene,mat,mats,box,plane,cylinder,sphere,line,plaster,texture,seeded}) {
-  const rnd=seeded(20261030);
-  const paint=(color,roughness=1)=>mat(color,roughness);
-  const chalk=paint('#e6ded0');
-  const trim=paint('#eee9dc');
-  const shadow=paint('#b4ab9d');
-  const darkMetal=mat('#475252',.74,{metalness:.24});
-  const paleMetal=mat('#aeb2a9',.8,{metalness:.15});
-  const plaster1=mat('#ffffff',1,{map:plaster('#f1e7d8',14)});
-  const plaster2=mat('#ffffff',1,{map:plaster('#e5dfd2',17)});
-  const plaster3=mat('#ffffff',1,{map:plaster('#f7f1e6',3)});
 
-  // Grainy, irregular Jerusalem-stone pavement with ink-like joints.
-  const stone=texture((ctx,w,h)=>{
-    ctx.fillStyle='#8f8f8b';ctx.fillRect(0,0,w,h);
-    const r=seeded(189);
-    for(let row=0,y=-8;y<h;row++,y+=38+r()*11){
-      let x=row%2?-42:0;
-      while(x<w) {
-        const len=62+r()*45,v=r()*25|0;
-        ctx.fillStyle='rgb('+(125+v)+','+(124+v)+','+(119+v)+')';
-        ctx.fillRect(x+2,y+2,len-4,37);
-        ctx.fillStyle='rgba(255,247,227,.09)';
-        ctx.fillRect(x+4,y+3,len-8,2);
-        ctx.fillStyle='rgba(44,40,42,.07)';
-        for(let j=0;j<12;j++){
-          ctx.fillRect(x+r()*len,y+r()*31+5,r()*4+1,r()*2+1);
-        } x+=len;
-      }
+const BUILDING_X = 4.15;     // pushes the corner onto the left third
+const BUILDING_Z = -9.95;    // façade plane; far enough for aerial depth
+const KERB_Z = -3.15;        // near kerb: the pavement we are sitting on
+const FAR_KERB_Z = -7.70;    // far kerb: the street is deliberately narrow
+
+
+export function buildStreetSet({ THREE, scene, models, surfaces, clone, quality }) {
+  const group = new THREE.Group();
+  // The whole street is turned a few degrees off the image plane. Dead-square
+  // to camera, the kerbs and the façade stacked into flat horizontal bands
+  // with nothing for the eye to travel along; at this angle the kerb lines
+  // converge and the side street opens towards the viewer.
+  group.rotation.y = -0.095;
+  scene.add(group);
+
+  const mat = (color, roughness = 1, extra = {}) =>
+    new THREE.MeshStandardMaterial({ color, roughness, ...extra });
+
+  // ---------------------------------------------------------------- ground
+  // Every ground plane gets its own copy of the maps with a repeat derived
+  // from its real size, so a 1.1 m paving slab stays 1.1 m on all of them.
+  // A single shared material stretched the slabs into floorboards on any
+  // plane that was not square.
+  const SLAB = 3.2;                                   // metres per texture tile
+  const tiled = (texture, width, depth, metres) => {
+    const copy = texture.clone();
+    copy.needsUpdate = true;
+    copy.wrapS = copy.wrapT = THREE.RepeatWrapping;
+    copy.repeat.set(width / metres, depth / metres);
+    return copy;
+  };
+  const pavingFor = (width, depth) => mat('#d8cfbe', 0.97, {
+    map: tiled(surfaces.pavement, width, depth, SLAB),
+    normalMap: tiled(surfaces.pavementNormal, width, depth, SLAB),
+    normalScale: new THREE.Vector2(0.8, 0.8),
+  });
+
+  // A street is pavement, kerb, carriageway, kerb, pavement. The first pass
+  // ran the roadway all the way to the building, so the façade rose straight
+  // out of the tarmac and the middle of the frame read as a black trough.
+  const slab = (width, depth, z, y = 0) => {
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(width, depth),
+      pavingFor(width, depth));
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.set(0, y, z);
+    mesh.receiveShadow = true;
+    group.add(mesh);
+    return mesh;
+  };
+  const pavement = slab(80, 30, KERB_Z + 15);                   // ours
+  slab(80, 6.0, FAR_KERB_Z - 3.0);                              // theirs
+
+  const roadDepth = Math.abs(FAR_KERB_Z - KERB_Z) + 0.2;
+  const roadway = mat('#e8dfd0', 0.99, {
+    map: tiled(surfaces.asphalt, 120, roadDepth, 2.4),
+  });
+  const road = new THREE.Mesh(new THREE.PlaneGeometry(120, roadDepth), roadway);
+  road.rotation.x = -Math.PI / 2;
+  road.position.set(0, -0.135, (KERB_Z + FAR_KERB_Z) / 2);
+  road.receiveShadow = true;
+  group.add(road);
+
+  // Kerbs, the near one carrying the painted red-and-white no-parking banding
+  // of the reference street.
+  const kerbStone = mat('#c9c0b1', 0.95);
+  const bandGeometry = new THREE.BoxGeometry(0.62, 0.016, 0.355);
+  const bandRed = mat('#a4453f', 0.9);
+  const bandWhite = mat('#ddd4c4', 0.9);
+  [[KERB_Z, true], [FAR_KERB_Z, false]].forEach(([z, painted]) => {
+    const kerb = new THREE.Mesh(new THREE.BoxGeometry(80, 0.15, 0.34), kerbStone);
+    kerb.position.set(0, 0.075, z);
+    kerb.castShadow = kerb.receiveShadow = true;
+    group.add(kerb);
+    if (!painted) return;
+    for (let i = 0; i < 44; i += 1) {
+      const band = new THREE.Mesh(bandGeometry, i % 2 ? bandWhite : bandRed);
+      band.position.set(-13.9 + i * 0.64, 0.152, z);
+      group.add(band);
     }
-  },1024,1024);
-  stone.wrapS=stone.wrapT=THREE.RepeatWrapping;stone.repeat.set(4,5);
-  const paving=new THREE.MeshStandardMaterial({map:stone,roughness:1,color:'#ffffff'});
-  const road=plane(scene,80,75,paving,-.5,-.12,-19.3);
-  road.receiveShadow=true;
-  // Main curb in front of the building, interrupted by pedestrian crossing.
-  box(scene,16,.14,.65,paint('#c3b6a9'),5.85,-.03,-4.5);
-  for(let i=0;i<7;i++){
-    const x=-1.1+i*2.1;
-    box(scene,1.13,.024,.17,paint(i%3===1?'#a85d59':'#cfc6b9'),x,.054,-4.13);
-  }
-  box(scene,2,.11,43,paint('#c8c1b6'),-5.18,-.03,-17.1);
-  box(scene,.18,.2,44,paint('#b9a99e'),-4.21,.03,-17.1);
-  for(let i=0;i<12;i++)
-    box(scene,.2,.025,1.24,paint(i%3===1?'#a74f4d':'#ddd1c3'),-4.21,.15,-2-i*2.9);
+  });
 
-  // The white corner building is the composition's main silhouette.
-  // Its face runs across the viewport. No repetitive right-hand alley.
-  const facade=box(scene,12.6,8.6,.83,plaster3,5.15,4.14,-5.36);
-  facade.castShadow=true;
-  box(scene,1.1,8.7,.86,plaster1,-1.15,4.18,-5.36);
-  box(scene,13,.24,.94,paint('#f0e9de'),5.05,8.27,-5.33);
-  box(scene,13,.13,.96,shadow,5.05,7.82,-5.31);
-  // Very subtle stucco patches, a few exposed plaster scars and aging bands.
-  for(let i=0;i<28;i++){
-    const x=-.95+rnd()*11.6,y=.7+rnd()*7.2;
-    if(x>1.4&&x<3.5&&y>2&&y<4.8)continue;
-    const patch=box(scene,.18+rnd()*.28,.012+rnd()*.045,.016,
-      paint(rnd()>.48?'#ddd6c8':'#fdf6e8'),x,y,-4.925);
-    patch.rotation.z=(rnd()-.5)*.18;patch.castShadow=false;
-  }
-  // Upper transom window and lower barred window sit within the front wall.
-  const windowFrame=paint('#c6c9bd');
-  const glass=mat('#3c5158',.36,{metalness:.10});
-  box(scene,3.05,1.18,.14,windowFrame,2.60,6.58,-4.87,.035);
-  box(scene,2.85,.95,.015,glass,2.60,6.56,-4.786);
-  line(scene,[2.6,6.12,-4.765],[2.6,7.08,-4.765],.052,trim);
-  box(scene,2.6,2.36,.16,windowFrame,2.65,4.03,-4.88,.025);
-  box(scene,2.4,2.1,.03,glass,2.65,4.03,-4.767);
-  const rail=paint('#d2d5d0');
-  for(let i=0;i<13;i++){
-    const x=1.55+i*.185;
-    line(scene,[x,3.02,-4.67],[x,5.05,-4.67],.025,rail);
-  }
-  line(scene,[1.44,3.3,-4.67],[3.86,3.3,-4.67],.028,rail);
-  line(scene,[1.44,4.68,-4.67],[3.86,4.68,-4.67],.028,rail);
-  box(scene,2.94,.22,.24,paint('#e4e5d9'),2.65,2.84,-4.74);
-  // Door with a very unglamorous utility lock and chipped wall panels.
-  box(scene,1.66,3.08,.16,paint('#d8dcd5'),6.18,1.43,-4.89);
-  box(scene,1.4,2.93,.02,paint('#f1eee5'),6.18,1.42,-4.79);
-  line(scene,[5.51,.72,-4.755],[6.84,.72,-4.755],.02,paint('#c1c1b8'));
-  box(scene,.10,.18,.06,paleMetal,5.51,1.58,-4.735,.012);
-  // Service boxes, stencil sign and urban imperfections, not tourist props.
-  box(scene,.68,.46,.12,paint('#c9cbc4'),4.72,3.06,-4.82,.025);
-  for(let i=0;i<7;i++)box(scene,.05,.29,.013,paint('#919995'),4.51+i*.069,3.07,-4.73);
-  const numberTexture=texture((c,w,h)=>{
-    c.fillStyle='#f1f0e9';c.fillRect(0,0,w,h);
-    c.fillStyle='#35629e';c.font='bold 240px sans-serif';c.textAlign='center';c.fillText('3',w/2,h*.73);
-    c.fillStyle='#737475';c.font='33px sans-serif';c.fillText('6650',w/2,h*.90);
-  },256,256);
-  plane(scene,.46,.59,new THREE.MeshStandardMaterial({map:numberTexture,roughness:1,side:THREE.DoubleSide}),-.48,4.1,-4.91,0);
+  // --------------------------------------------------------- corner building
+  const building = models.building;
+  building.position.set(BUILDING_X, 0, BUILDING_Z);
+  group.add(building);
 
-  // Recessed street on the left: converging walls and smaller shop openings.
-  box(scene,1.75,8.1,48,plaster1,-5.25,3.95,-28);
-  box(scene,1.35,8.0,47,plaster2,-.63,3.92,-29);
-  for(let z=-8.2;z>-38;z-=5.2){
-    box(scene,.08,1.6,1.22,paint('#7d887b'),-4.32,2.9,z);
-    box(scene,.015,1.43,1.07,glass,-4.267,2.9,z);
-    box(scene,.10,1.2,.77,paint('#cbc6b9'),-1.30,2.9,z);
-    box(scene,.014,1.07,.61,glass,-1.244,2.9,z);
-    for(let i=0;i<3;i++)
-      line(scene,[-4.244,2.23,z-.45+i*.4],[-4.244,3.60,z-.45+i*.4],.017,rail);
-  }
-  // Awnings: dark practical fabric, repeated panel seams and shading.
-  const awningNavy=paint('#2a3d55');
-  const awningAlt=paint('#384b63');
-  for(let i=0;i<8;i++){
-    const m=box(scene,.67,.07,4.7,i%2?awningAlt:awningNavy,-4.59,.0,-6.35+i*.71);
-    m.position.y=4.0; m.rotation.z=-.03; m.castShadow=true;
-  }
-  line(scene,[-4.52,4.0,-6.55],[-4.52,3.45,-6.55],.045,darkMetal);
-  line(scene,[-4.52,4.0,-2.1],[-4.52,3.45,-2.1],.045,darkMetal);
-  box(scene,.18,.20,8,paint('#1f2e42'),-4.28,3.85,-4.0);
-  // Modest tables, bags and pots in the recessed street.
-  for(const [x,z,size] of [[-3.15,-7.1,.83],[-3.38,-11.0,.70],[-3.56,-18,.5]]){
-    box(scene,size,.07,size*.72,mats.wood,x,.72,z,.025);
-    line(scene,[x,.70,z],[x,.08,z],.065,darkMetal);
-    box(scene,.52*size,.10,.45*size,paint('#674e42'),x-size*.8,.45,z,.017);
-    box(scene,.52*size,.56,.1,mats.wood,x-size*.8,.82,z+.18);
-  }
-  // Wall-mounted cabling and junction boxes.
-  for(const [x,z] of [[-.93,-8.5],[-1.03,-15.8]]) {
-    box(scene,.12,.28,.27,paint('#c4c2b7'),x,4.9,z,.012);
-    line(scene,[x,5.05,z-.1],[x,6.7,z-.1],.019,darkMetal);
-  }
+  // Ghost sign on the plaster directly behind the table. At phone widths the
+  // façade behind the props is otherwise an empty wall, and this is the one
+  // piece of storybook charm the composition can carry without clutter.
+  // It is parented to the building, not to the street: the street is turned a
+  // few degrees, so the façade plane is not at a constant world z and a sign
+  // placed in street space ends up buried inside the wall.
+  const painted = new THREE.Mesh(
+    new THREE.PlaneGeometry(3.3, 1.65),
+    new THREE.MeshStandardMaterial({
+      map: surfaces.wallSign, transparent: true, roughness: 0.98,
+      depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2,
+    }));
+  painted.name = 'GhostSign';
+  painted.position.set(-3.95, 2.28, 0.07);
+  building.add(painted);
 
-  // Two street signs / poles from the source composition.
-  const signMetal=paint('#697172');
-  cylinder(scene,.051,.056,5.2,signMetal,-3.05,2.5,-5.5,12);
-  const signDisc=cylinder(scene,.43,.43,.065,paint('#f1e7dc'),-3.05,4.58,-5.5,36);
-  signDisc.rotation.x=Math.PI/2;
-  const signRed=cylinder(scene,.375,.375,.071,paint('#ae3441'),-3.05,4.58,-5.42,36);
-  signRed.rotation.x=Math.PI/2;
-  box(scene,.60,.080,.024,paint('#ece9df'),-3.05,4.58,-5.37,.015);
-  // Foreground utility pole obscures a little of the façade like the photograph.
-  const util=cylinder(scene,.065,.08,8.8,paint('#6d7778'),.36,4.22,-2.1,14);
-  util.rotation.z=.035;
-  for(let i=0;i<7;i++){
-    const y=2.6+i*.53;
-    const strip=box(scene,.21,.08,.018,paint(i%2?'#53666c':'#87716a'),.35,y,-2.00,.012);
-    strip.rotation.y=(i%3)*.07;
-  }
-  line(scene,[-1.05,7.4,-6.2],[3.9,6.7,-5.1],.015,paint('#666b68'));
+  // The side street: a receding terrace on the left, each block a different
+  // height and depth so the roofline is never a repeating sawtooth.
+  // The far side of the alley. It starts well in front of the corner so the
+  // street reads as a slot the eye can travel down, and each block steps back
+  // and changes height so the far end dissolves into haze rather than ending.
+  // Heights are deliberately low. A tall terrace put the whole alley in its
+  // own shadow; at two storeys the morning sun clears it and lays a lit band
+  // down the far wall, which is what gives the side street its depth.
+  // The first block is kept to a single storey on purpose: its roofline
+  // falls just below the top of frame, so a wedge of sky opens over the mouth
+  // of the side street. That slot is the only sky in the composition and it
+  // is what stops the background reading as one continuous wall.
+  const terrace = [
+    { x: -8.55, z: -8.6, w: 2.8, h: 3.35, d: 5.0, tone: '#e9e0cd' },
+    { x: -9.05, z: -14.0, w: 3.2, h: 4.45, d: 5.6, tone: '#f2ebdc' },
+    { x: -8.45, z: -19.6, w: 2.6, h: 3.70, d: 5.4, tone: '#dfd6c2' },
+    { x: -9.25, z: -25.2, w: 3.4, h: 5.30, d: 6.0, tone: '#eee6d4' },
+    { x: -8.65, z: -31.4, w: 2.8, h: 4.30, d: 6.6, tone: '#e4dbc8' },
+  ];
+  const plasterFar = (tone) => mat(tone, 0.98, {
+    map: surfaces.plaster,
+    normalMap: surfaces.plasterNormal,
+    normalScale: new THREE.Vector2(0.5, 0.5),
+  });
+  terrace.forEach((block, index) => {
+    const body = new THREE.Mesh(
+      new THREE.BoxGeometry(block.w, block.h, block.d), plasterFar(block.tone));
+    body.position.set(block.x, block.h / 2, block.z);
+    body.castShadow = true;
+    body.receiveShadow = true;
+    group.add(body);
 
-  // Street bollards and heavy traffic wear.
-  for(const [x,z,s] of [[-4.05,-4.7,.94],[-4.05,-6.5,.80],[-4.05,-8.4,.72],[.0,-4.24,.99],
-    [1.7,-4.20,.90],[6.0,-4.2,.85],[8.6,-4.2,.82]]){
-    cylinder(scene,.083*s,.12*s,.65*s,signMetal,x,.30*s,z,10);
-    sphere(scene,.115*s,signMetal,x,.61*s,z);
-  }
-  // Uneven curb cuts and painted street repairs.
-  for(let i=0;i<24;i++){
-    const x=-4+rnd()*14,z=-1-rnd()*4;
-    const a=box(scene,.3+rnd()*1,.003,.03+rnd()*.25,paint(rnd()>.5?'#a29f97':'#787c7c'),x,-.103,z);
-    a.rotation.y=rnd()*1.3;a.castShadow=false;
-  }
+    // A cornice band gives each block a lit top edge at distance.
+    const cap = new THREE.Mesh(
+      new THREE.BoxGeometry(block.w + 0.32, 0.30, block.d + 0.32),
+      mat('#f7f1e3', 0.9));
+    cap.position.set(block.x, block.h - 0.12, block.z);
+    group.add(cap);
 
-  const leaves=[paint('#456750'),paint('#567756'),paint('#73855c'),paint('#385a43'),paint('#8b9662')];
-  function plant(x,z,height=.9){
-    cylinder(scene,.19,.13,.34,paint('#a57c62'),x,.17,z);
-    for(let k=0;k<4;k++){
-      const ex=x+(rnd()-.5)*.48,ey=.4+height*(.8+rnd()*.35),ez=z+(rnd()-.5)*.45;
-      line(scene,[x,.36,z],[ex,ey,ez],.018,paint('#5e6750'));
-      for(let j=0;j<5;j++){
-        const t=.45+j*.12;
-        const obj=sphere(scene,.095+rnd()*.035,leaves[Math.floor(rnd()*leaves.length)],
-          x+(ex-x)*t+(rnd()-.5)*.22,.38+(ey-.38)*t,z+(ez-z)*t+(rnd()-.5)*.18);
-        obj.scale.set(.76,1.23,.63);
-      }
+    // Shop openings and shuttered upper windows facing the street.
+    for (let k = 0; k < 2; k += 1) {
+      const opening = new THREE.Mesh(
+        new THREE.BoxGeometry(0.1, 2.05, 1.15), mat('#2d3a3c', 0.6));
+      opening.position.set(block.x + block.w / 2 + 0.02, 1.10,
+        block.z - block.d / 4 + k * block.d / 2);
+      group.add(opening);
+      const shutter = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12, 1.25, 0.95), mat(k ? '#5d7a72' : '#7d6a52', 0.78));
+      shutter.position.set(block.x + block.w / 2 + 0.05, block.h * 0.62,
+        block.z - block.d / 4 + k * block.d / 2);
+      group.add(shutter);
     }
-  }
-  for(const [x,z,h] of [[-3.98,-5.95,1.4],[-4.0,-9.5,1.0],[-1.35,-7.4,1.1],[8.8,-4.4,.8]])
-    plant(x,z,h);
-  for(let i=0;i<45;i++){
-    const px=-4.28+(rnd()-.5)*.8,py=4.0+rnd()*.7,pz=-3.5-rnd()*3.2;
-    const leaf=sphere(scene,.11+rnd()*.12,leaves[i%leaves.length],px,py,pz);
-    leaf.scale.set(1,.45,.8);
-  }
-  // Foreground uses the same morning light / atmosphere as the actual objects.
-  return {facade,road};
+  });
+
+  // Awnings over the first two shopfronts, where they still read as fabric.
+  [[-7.05, -8.2, 0.0], [-7.45, -13.6, 0.04]].forEach(([x, z, tilt], index) => {
+    const awning = clone('Awning');
+    awning.position.set(x, 2.68 - index * 0.08, z);
+    awning.rotation.y = -Math.PI / 2 + tilt;
+    awning.scale.setScalar(index ? 0.92 : 1.0);
+    awning.traverse((node) => { if (node.isMesh) node.castShadow = true; });
+    group.add(awning);
+  });
+
+  // The café's own awning on the corner block. A dark horizontal above the
+  // door is one of the defining notes of the reference street.
+  const shopAwning = clone('Awning');
+  shopAwning.position.set(BUILDING_X + 5.35, 2.92, BUILDING_Z + 0.14);
+  shopAwning.rotation.y = Math.PI;
+  shopAwning.scale.set(0.82, 0.86, 0.80);
+  shopAwning.traverse((node) => { if (node.isMesh) node.castShadow = true; });
+  group.add(shopAwning);
+
+  // ------------------------------------------------------------ street props
+  // The pole sits on the left third, framing the mouth of the side street
+  // instead of bisecting the picture.
+  const pole = clone('UtilityPole');
+  pole.position.set(-4.40, 0, -6.05);
+  pole.rotation.set(0, 0.42, 0.020);
+  pole.traverse((node) => { if (node.isMesh) node.castShadow = true; });
+  group.add(pole);
+
+  // Overhead cable: one of the few straight lines allowed to cross the sky.
+  const cable = new THREE.Mesh(
+    new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-4.40, 6.4, -6.05),
+      new THREE.Vector3(1.0, 5.45, -8.4),
+      new THREE.Vector3(6.0, 5.85, -10.6),
+    ]), 20, 0.018, 5, false), mat('#4c524f', 0.85));
+  group.add(cable);
+
+  const sign = clone('RoundSign');
+  sign.position.set(-6.05, 0, -7.6);
+  sign.rotation.y = -0.30;
+  sign.traverse((node) => { if (node.isMesh) node.castShadow = true; });
+  group.add(sign);
+
+  // Bollards along the kerb, irregularly spaced and slightly out of plumb -
+  // a perfectly even row is the quickest way to look procedural.
+  [[-5.4, 0.96, 0.05], [-3.5, 1.0, -0.03], [-1.6, 0.93, 0.02],
+   [0.6, 1.02, -0.04], [2.9, 0.97, 0.03], [5.4, 1.0, -0.02],
+   [8.1, 0.94, 0.04]].forEach(([x, scale, lean], index) => {
+    const bollard = clone('Bollard');
+    bollard.position.set(x, 0, KERB_Z + 0.42 + (index % 2) * 0.05);
+    bollard.scale.setScalar(scale);
+    bollard.rotation.set(lean, index * 1.1, lean * 0.6);
+    bollard.traverse((node) => { if (node.isMesh) node.castShadow = true; });
+    group.add(bollard);
+  });
+
+  // Planting: three pots, deliberately few. The brief rules out decorative
+  // clutter, so the greenery exists to break hard architectural verticals.
+  [[-6.85, -7.2, 1.0], [-7.50, -12.6, 0.86], [8.20, -10.2, 0.92]]
+    .forEach(([x, z, scale], index) => {
+      const pot = clone('Planter');
+      pot.position.set(x, 0, z);
+      pot.scale.setScalar(scale);
+      pot.rotation.y = index * 1.7;
+      pot.traverse((node) => { if (node.isMesh) node.castShadow = true; });
+      group.add(pot);
+
+      const bush = clone('Shrub');
+      bush.position.set(x, 0.30 * scale, z);
+      bush.scale.setScalar(scale * 1.05);
+      bush.rotation.y = index * 2.3;
+      bush.traverse((node) => { if (node.isMesh) node.castShadow = quality.shadows; });
+      group.add(bush);
+    });
+
+  // A second table further up the street, so the café reads as a place that
+  // has other customers rather than a single staged prop.
+  const neighbour = models.table.clone(true);
+  neighbour.position.set(-6.35, 0, -10.0);
+  neighbour.rotation.y = 0.58;
+  neighbour.traverse((node) => { if (node.isMesh) node.castShadow = true; });
+  group.add(neighbour);
+  [[-5.70, -9.4, 2.3], [-7.00, -10.7, -0.7]].forEach(([x, z, turn]) => {
+    const seat = clone('Chair');
+    seat.position.set(x, 0, z);
+    seat.rotation.y = turn;
+    seat.traverse((node) => { if (node.isMesh) node.castShadow = true; });
+    group.add(seat);
+  });
+
+  return { facade: building, road, pavement };
 }
