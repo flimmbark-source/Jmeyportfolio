@@ -1,5 +1,5 @@
 """
-Café Almar - the physical menu.
+Café Apollo - the physical menu.
 
 A stapled-and-taped card menu of the kind a small street café actually owns:
 slightly oversized boards, a cloth tape spine, a block of pages whose fore

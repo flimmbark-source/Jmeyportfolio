@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { buildStreetSet } from './cafe-scenography.js';
 
 /**
- * Café Almar - the three-dimensional café.
+ * Café Apollo - the three-dimensional café.
  *
  * The scene is assembled from artist-authored meshes built in Blender
  * (`tools/cafe-assets/`, exported to `public/cafe/models/`) and painterly
@@ -167,31 +167,41 @@ if (canvas && world && layer) {
     // the table enters the bottom of frame, which is what stops the scene
     // reading as a diorama viewed from across the room.
     const VIEWS = {
-      // Worked out from the geometry rather than by eye: with the eye 55 cm
-      // above the table top and 59 cm behind its near edge, the far edge of
-      // the table lands two thirds of the way down the frame and the near
-      // edge runs off the bottom. That is what makes the table read as being
-      // in front of the visitor instead of across the room.
+      // Worked out from the geometry, not by eye. Two angles govern this
+      // composition and they pull against each other:
+      //
+      //   the table's far edge sits atan(eyeAboveTop / distanceToFarEdge)
+      //     below horizontal, and everything below that is table;
+      //   the top of frame sits (fov / 2 - pitch) ABOVE horizontal, so the
+      //     façade only stays in view while the pitch is under half the fov.
+      //
+      // Pitching further down to enlarge the table therefore deletes the
+      // street: past fov/2 the horizon itself leaves the frame. The lever
+      // that gives both is table size, which is why the top is a 1.15 m
+      // four-top. With a 1.15 m seated eye - a real seated eye height, not a
+      // standing one - the far edge lands around 42% down and the near edge
+      // and both near corners run off the bottom and the sides, so the table
+      // holds roughly 58% of the frame while the painted sign, the kerb, the
+      // bollards and the mouth of the side street all stay above it.
       desktop: {
-        fov: 55,
-        eye: new THREE.Vector3(0, 1.272, 0.955),
-        look: new THREE.Vector3(0, 0.432, -2.55),
-        sway: 0.085,
-      },
-      tablet: {
-        fov: 59,
-        eye: new THREE.Vector3(0, 1.282, 0.950),
-        look: new THREE.Vector3(0, 0.455, -2.35),
+        fov: 62,
+        eye: new THREE.Vector3(0, 1.150, 0.660),
+        look: new THREE.Vector3(0, 0.016, -1.840),
         sway: 0.075,
       },
-      // Portrait is composed separately rather than cropped: the camera comes
-      // in and rotates slightly so the three props stack into the tall frame
-      // instead of spreading past both edges.
+      tablet: {
+        fov: 66,
+        eye: new THREE.Vector3(0, 1.155, 0.640),
+        look: new THREE.Vector3(0, 0.063, -1.560),
+        sway: 0.065,
+      },
+      // Portrait is composed separately rather than cropped: a taller frame
+      // needs a wider vertical angle to hold the same share of table.
       mobile: {
-        fov: 64,
-        eye: new THREE.Vector3(0.04, 1.292, 0.912),
-        look: new THREE.Vector3(-0.05, 0.400, -2.10),
-        sway: 0.055,
+        fov: 70,
+        eye: new THREE.Vector3(0.03, 1.160, 0.620),
+        look: new THREE.Vector3(-0.04, 0.079, -1.380),
+        sway: 0.050,
       },
     };
     const view = () => (smallScreen.matches ? VIEWS.mobile
@@ -343,28 +353,28 @@ if (canvas && world && layer) {
 
       const menu = new THREE.Group();
       menu.add(menuSrc);
-      menu.position.set(-0.205, TABLE_TOP, 0.045);
+      menu.position.set(-0.286, TABLE_TOP, 0.212);
       menu.rotation.y = -0.30;
       scene.add(menu);
 
       const coffee = new THREE.Group();
       coffee.add(cupSrc);
       cupSrc.scale.setScalar(1.10);
-      coffee.position.set(0.085, TABLE_TOP, 0.095);
+      coffee.position.set(0.118, TABLE_TOP, 0.268);
       coffee.rotation.y = -0.62;
       scene.add(coffee);
 
       const glasses = new THREE.Group();
       glasses.add(glassesSrc);
       glassesSrc.scale.setScalar(1.16);
-      glasses.position.set(0.272, TABLE_TOP, 0.010);
+      glasses.position.set(0.392, TABLE_TOP, 0.178);
       glasses.rotation.y = 0.42;
       scene.add(glasses);
 
       // Incidental table dressing. These are not competing navigation targets,
       // they are the things that make a table look used.
       const ashtray = clone('Ashtray');
-      ashtray.position.set(-0.325, TABLE_TOP, -0.185);
+      ashtray.position.set(-0.448, TABLE_TOP, -0.112);
       ashtray.rotation.y = 0.8;
       dress(ashtray);
       scene.add(ashtray);
@@ -408,23 +418,34 @@ if (canvas && world && layer) {
         const v = view();
         const portrait = smallScreen.matches;
 
-        // Portrait gets its own prop layout. Scaling the desktop arrangement
-        // down pushed the menu and glasses past both edges of the frame.
-        if (portrait) {
-          menu.position.set(-0.088, TABLE_TOP, 0.090);
-          menu.rotation.y = -0.17;
-          coffee.position.set(0.168, TABLE_TOP, 0.028);
-          glasses.position.set(0.030, TABLE_TOP, -0.180);
-          glasses.rotation.y = 0.26;
-          ashtray.position.set(-0.280, TABLE_TOP, -0.210);
-        } else {
-          menu.position.set(-0.205, TABLE_TOP, 0.045);
-          menu.rotation.y = -0.30;
-          coffee.position.set(0.085, TABLE_TOP, 0.095);
-          glasses.position.set(0.272, TABLE_TOP, 0.010);
-          glasses.rotation.y = 0.42;
-          ashtray.position.set(-0.330, TABLE_TOP, -0.190);
-        }
+        // Each breakpoint stages the table for its own horizontal angle, not
+        // just its own camera. A landscape frame at 62 degrees sees about
+        // 44 degrees either side of the axis; a phone at 70 degrees sees 18.
+        // The desktop spread therefore pushes the menu and the cup straight
+        // off both edges of a narrow frame, so the props close up and stack
+        // front-to-back as the viewport narrows rather than being scaled.
+        const staging = portrait ? {
+          menu: [-0.070, 0.215, -0.15],
+          coffee: [0.112, 0.145],
+          glasses: [0.010, -0.055, 0.22],
+          ashtray: [-0.195, -0.150],
+        } : midScreen.matches ? {
+          menu: [-0.168, 0.205, -0.26],
+          coffee: [0.105, 0.262],
+          glasses: [0.215, 0.120, 0.38],
+          ashtray: [-0.330, -0.120],
+        } : {
+          menu: [-0.286, 0.212, -0.30],
+          coffee: [0.118, 0.268],
+          glasses: [0.392, 0.178, 0.42],
+          ashtray: [-0.448, -0.112],
+        };
+        menu.position.set(staging.menu[0], TABLE_TOP, staging.menu[1]);
+        menu.rotation.y = staging.menu[2];
+        coffee.position.set(staging.coffee[0], TABLE_TOP, staging.coffee[1]);
+        glasses.position.set(staging.glasses[0], TABLE_TOP, staging.glasses[1]);
+        glasses.rotation.y = staging.glasses[2];
+        ashtray.position.set(staging.ashtray[0], TABLE_TOP, staging.ashtray[1]);
 
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1,
           portrait ? 1.5 : 1.75));

@@ -1,5 +1,5 @@
 """
-Café Almar - the small blue espresso cup, its saucer and the espresso itself.
+Café Apollo - the small blue espresso cup, its saucer and the espresso itself.
 
 Real espresso proportions: a 60-70 ml cup is ~62 mm across the rim, 55 mm
 tall, with a thick wall that tapers to a narrow foot. It is glazed cobalt

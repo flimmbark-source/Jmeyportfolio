@@ -1,5 +1,5 @@
 """
-Café Almar - the street prop kit.
+Café Apollo - the street prop kit.
 
 Each object is exported under its own name inside one GLB so the scene can
 clone and place them. Everything here exists to build depth behind the table:

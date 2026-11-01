@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Café Almar - painterly surface maps.
+Café Apollo - painterly surface maps.
 
     python3 tools/cafe-assets/build_textures.py
 
@@ -16,6 +16,12 @@ import random
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
+
+# The café's name, used on the printed menu cover and on the painted wall
+# sign. Defined once: both lockups auto-fit their type to the space, so a
+# longer or shorter name needs no other change.
+CAFE_NAME = "APOLLO"
+CAFE_PLACE = "· JAFFA ·"
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 OUT = os.path.join(ROOT, "public", "cafe", "tex")
@@ -90,6 +96,21 @@ def font(size, italic=False, bold=False):
             "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf", size)
     except OSError:
         return ImageFont.load_default(size)
+
+
+def fit_font(draw, text, start, spacing, max_width, bold=False, italic=False,
+             minimum=36):
+    """Largest size at which `text` still fits `max_width` with this letter
+    spacing. Keeps a display lockup inside its rule no matter the name."""
+    size = start
+    while size > minimum:
+        candidate = font(size, bold=bold, italic=italic)
+        width = sum(draw.textlength(ch, font=candidate) for ch in text) \
+            + spacing * max(0, len(text) - 1)
+        if width <= max_width:
+            return candidate
+        size -= 4
+    return font(minimum, bold=bold, italic=italic)
 
 
 def crack_network(draw, w, h, rng, count, length, colour, width=1.6, branch=0.5):
@@ -241,14 +262,14 @@ def enamel(size=1024, seed=19):
 
     # chips: a pale grey primer island with a dark lifted-paint outline, which
     # is what a real chip looks like. Density follows the edge weight.
-    for _ in range(900):
+    for _ in range(1250):
         x, y = rng.uniform(0, size), rng.uniform(0, size)
         wear = edge_weight(x, y)
         arc = math.exp(-((math.hypot(x - size * 0.42, y - size * 0.52)
                           - size * 0.26) ** 2) / (2 * (size * 0.085) ** 2))
         if rng.random() > wear * 0.95 + arc * 0.22 + 0.006:
             continue
-        r = rng.uniform(1.8, 7.0) * (0.45 + wear)
+        r = rng.uniform(1.4, 5.2) * (0.45 + wear)
         pts = []
         for i in range(7):
             a = i / 7 * math.tau
@@ -263,19 +284,22 @@ def enamel(size=1024, seed=19):
                                   tone - rng.randint(0, 12), rng.randint(190, 240)))
 
     # scratches follow the wiping direction
-    for _ in range(420):
+    for _ in range(560):
         x, y = rng.uniform(0, size), rng.uniform(0, size)
         a = rng.gauss(0.32, 0.30)
-        length = rng.uniform(25, 200)
+        length = rng.uniform(20, 155)
         draw.line((x, y, x + math.cos(a) * length, y + math.sin(a) * length),
                   fill=(222, 196, 172, rng.randint(16, 54)), width=1)
 
     # cup rings and a splash of old coffee
-    for _ in range(3):
-        x, y = rng.uniform(size * .18, size * .82), rng.uniform(size * .18, size * .82)
-        r = rng.uniform(46, 68)
-        draw.ellipse((x - r, y - r, x + r, y + r), outline=(96, 56, 36, 38),
-                     width=rng.randint(3, 5))
+    # Cup rings are sized in texture space, and the map covers the whole top,
+    # so these radii are tuned to land at roughly a saucer's width on a
+    # 1.15 m table rather than reading as big pale discs.
+    for _ in range(4):
+        x, y = rng.uniform(size * .16, size * .84), rng.uniform(size * .16, size * .84)
+        r = rng.uniform(30, 46)
+        draw.ellipse((x - r, y - r, x + r, y + r), outline=(96, 56, 36, 34),
+                     width=rng.randint(2, 4))
 
     # rust creeping in from the edges where the enamel has gone
     rust = Image.new('RGBA', (size, size), (0, 0, 0, 0))
@@ -284,7 +308,7 @@ def enamel(size=1024, seed=19):
         x, y = rng.uniform(0, size), rng.uniform(0, size)
         if rng.random() > edge_weight(x, y) * 1.25:
             continue
-        r = rng.uniform(5, 26)
+        r = rng.uniform(4, 19)
         rd.ellipse((x - r, y - r, x + r, y + r),
                    fill=(rng.randint(126, 162), rng.randint(70, 96),
                          rng.randint(40, 58), rng.randint(40, 110)))
@@ -399,7 +423,6 @@ def menu_cover(w=820, h=1160):
     draw.rectangle((70, 78, w - 70, h - 78), outline=ink + (110,), width=2)
 
     f_small = font(34, italic=True)
-    f_name = font(132, bold=True)
     f_sub = font(30)
     f_foot = font(29, italic=True)
 
@@ -415,9 +438,10 @@ def menu_cover(w=820, h=1160):
             tw = draw.textlength(text, font=fnt)
             draw.text(((w - tw) / 2, y), text, font=fnt, fill=fill)
 
+    f_name = fit_font(draw, CAFE_NAME, 132, 9, w - 200, bold=True)
     centred("a morning at", 150, f_small, ink + (210,))
-    centred("ALMAR", 215, f_name, ink + (238,), spacing=9)
-    centred("· JAFFA ·", 392, f_sub, accent + (215,), spacing=6)
+    centred(CAFE_NAME, 215, f_name, ink + (238,), spacing=9)
+    centred(CAFE_PLACE, 392, f_sub, accent + (215,), spacing=6)
 
     # hand-drawn rule
     for i in range(3):
@@ -504,7 +528,6 @@ def wall_sign(w=1024, h=512):
     ink = (118, 74, 54)
     blue = (58, 86, 112)
 
-    f_big = font(188, bold=True)
     f_mid = font(58, italic=True)
     f_small = font(42)
 
@@ -516,8 +539,9 @@ def wall_sign(w=1024, h=512):
             draw.text((x, y), ch, font=fnt, fill=fill)
             x += cw + spacing
 
+    f_big = fit_font(draw, CAFE_NAME, 188, 16, w - 150, bold=True)
     centred("a morning at", 46, f_mid, ink + (190,))
-    centred("ALMAR", 118, f_big, ink + (225,), spacing=16)
+    centred(CAFE_NAME, 118, f_big, ink + (225,), spacing=16)
     centred("COFFEE  ·  SINCE  ALWAYS", 346, f_small, blue + (180,), spacing=7)
     draw.line((w * 0.22, 326, w * 0.78, 326), fill=ink + (140,), width=4)
 
@@ -543,7 +567,7 @@ def wall_sign(w=1024, h=512):
 
 
 def main():
-    print("Café Almar surface maps ->", OUT)
+    print("Café Apollo surface maps ->", OUT)
     plaster()
     enamel()
     pavement()

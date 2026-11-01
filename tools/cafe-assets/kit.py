@@ -1,5 +1,5 @@
 """
-Shared Blender authoring helpers for the Café Almar asset set.
+Shared Blender authoring helpers for the Café Apollo asset set.
 
 Run with the `bpy` pip module (Blender 5.2 LTS as a Python library):
     python3 tools/cafe-assets/build_all.py

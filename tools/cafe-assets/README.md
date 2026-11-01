@@ -1,4 +1,4 @@
-# Café Almar asset pipeline
+# Café Apollo asset pipeline
 
 The `/cafe` scene is built from artist-authored meshes and painted surface
 maps, not from Three.js primitives. This directory holds the sources that
@@ -66,10 +66,22 @@ texture on it.
 | `a_props.py` | Street kit: bollard, pole, awning, planter, shrub, chair, sign, ashtray, sugar glass |
 | `build_textures.py` | Plaster, worn enamel, paving, asphalt, menu cover art, ghost sign |
 
+The café's name lives in one place: `CAFE_NAME` at the top of
+`build_textures.py`. It is set in both lockups — the printed menu cover and
+the painted wall sign — and each one auto-fits its display type to the space
+available, so a longer or shorter name needs no other change. Rebuild the
+textures after editing it.
+
 ## Conventions that are easy to get wrong
 
-- **One Blender unit is one metre.** The table is 0.86 m, the cup rim is
+- **One Blender unit is one metre.** The table is 1.15 m, the cup rim is
   63 mm. The scene relies on this; do not rescale assets to "look right".
+- **The table's size is a composition decision, not a modelling one.** It is
+  a four-top because the seated camera has to hold a majority of the frame
+  with it, and widening the table is the only lever that does that without
+  pitching the camera past half its field of view — past which the horizon,
+  and the whole street with it, leaves the frame. `a_table.py` says this at
+  the top; changing `W`/`D` means re-checking the camera in `cafe-world.js`.
 - **Build primitives at true size**, never by scaling the object. A bevel on
   a non-uniformly scaled object produces a different width per axis and the
   boolean solver misbehaves.

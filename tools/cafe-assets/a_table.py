@@ -1,5 +1,5 @@
 """
-Café Almar - the weathered red metal table.
+Café Apollo - the weathered red metal table.
 
 Reference: the rectangular pressed-steel pavement tables outside Jaffa
 cafés. A single folded sheet-steel top with a downturned lip, welded to a
@@ -10,7 +10,12 @@ import math
 from mathutils import Vector
 import kit
 
-W, D = 0.86, 0.66          # top, metres
+# A four-top rather than a two-top. The seated composition needs the table to
+# hold a majority of the frame, and widening it does that without steepening
+# the camera - a steeper pitch swings the whole street out of view, because
+# anything above the horizon leaves the frame once the pitch exceeds half the
+# field of view.
+W, D = 1.15, 0.85          # top, metres
 TOP_H = 0.745              # standing height of the tabletop
 SHEET = 0.009              # pressed-steel sheet thickness
 LIP = 0.030                # downturned edge

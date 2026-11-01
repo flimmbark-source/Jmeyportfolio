@@ -1,5 +1,5 @@
 """
-Café Almar - the sunglasses lying on the table.
+Café Apollo - the sunglasses lying on the table.
 
 The recognisable silhouette comes from three things: a flattened, slightly
 cat-eyed rim rather than a circle; temple arms folded so one crosses the

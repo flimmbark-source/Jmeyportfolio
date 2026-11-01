@@ -164,3 +164,39 @@ Automated passage is still not a visual-design approval.
   brief's restraint, but it would not survive being brought forward.
 - **No ambience.** No sound, no passers-by, no animation beyond the steam and
   the seated parallax.
+
+
+## Framing and naming pass: 2026-11-01
+
+**The table now holds the frame.** It is a 1.15 m four-top rather than a
+0.86 m two-top, the seated eye dropped to 1.15 m — a real seated eye height —
+and the camera moved in to 0.66 m behind the table's near edge at a 24-degree
+downward pitch. The far edge lands around 42% down and the near edge and both
+near corners run off the bottom and the sides, so the table occupies roughly
+58% of the frame.
+
+The size change was the only way to get there. Two angles govern this
+composition and they pull against each other: the table's far edge sits
+`atan(eyeAboveTop / distanceToFarEdge)` below horizontal, and the top of
+frame sits `fov/2 - pitch` above it. Pitching down to enlarge the table
+therefore deletes the street — once the pitch passes half the field of view
+the horizon itself leaves the frame, taking the façade, the painted sign and
+the mouth of the side street with it. Widening the table enlarges it without
+touching either angle.
+
+Each breakpoint now stages the table for its own horizontal angle rather than
+its own camera alone. A landscape frame at 62 degrees sees about 44 degrees
+either side of the axis; a phone at 70 degrees sees 18. The desktop spread
+pushed the menu and cup straight off both edges of a narrow frame, so the
+props close up and stack front-to-back as the viewport narrows.
+
+**The café is now Apollo**, replacing the placeholder Almar. The name is set
+once, as `CAFE_NAME` in `tools/cafe-assets/build_textures.py`, and appears on
+the printed menu cover and the painted wall sign. Both lockups auto-fit their
+display type to the space, so the name can change length without breaking
+either composition.
+
+Browser QA passes all 45 assertions at 1440, 390 and 320 widths with no page
+errors. The larger props make the projected hit targets correspondingly
+bigger: at 1440 the Menu target is 241x343 px, Coffee 214x168, glasses
+159x91.

@@ -1,5 +1,5 @@
 /**
- * Café Almar street set.
+ * Café Apollo street set.
  *
  * Everything here is placed at real-world scale, one unit to the metre, and
  * every solid object is an authored mesh loaded from `public/cafe/models/`
@@ -108,13 +108,13 @@ export function buildStreetSet({ THREE, scene, models, surfaces, clone, quality 
   // few degrees, so the façade plane is not at a constant world z and a sign
   // placed in street space ends up buried inside the wall.
   const painted = new THREE.Mesh(
-    new THREE.PlaneGeometry(3.3, 1.65),
+    new THREE.PlaneGeometry(3.0, 1.42),
     new THREE.MeshStandardMaterial({
       map: surfaces.wallSign, transparent: true, roughness: 0.98,
       depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2,
     }));
   painted.name = 'GhostSign';
-  painted.position.set(-3.95, 2.28, 0.07);
+  painted.position.set(-3.95, 1.45, 0.07);
   building.add(painted);
 
   // The side street: a receding terrace on the left, each block a different

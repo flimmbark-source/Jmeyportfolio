@@ -1,5 +1,5 @@
 """
-Café Almar - the white plaster corner building.
+Café Apollo - the white plaster corner building.
 
 The reference is a near-frontal whitewashed corner block with a barred ground
 floor window, a transom above it, a service door, and a side street that peels

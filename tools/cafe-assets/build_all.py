@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Build the Café Almar asset set.
+Build the Café Apollo asset set.
 
     pip install bpy==5.2.3
     python3 tools/cafe-assets/build_all.py [--preview]
@@ -149,7 +149,7 @@ def main():
                 "menu": a_menu.build, "glasses": a_glasses.build,
                 "building": a_building.build}
     wanted = [a for a in sys.argv[1:] if not a.startswith("-")] or list(ASSETS)
-    print("Café Almar asset build (Blender %s)" % bpy.app.version_string)
+    print("Café Apollo asset build (Blender %s)" % bpy.app.version_string)
     for name in wanted:
         if name == "props":
             props()
