@@ -1,7 +1,9 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { portfolioV2NodeMap } from '../data/portfolioV2';
+import { resolveHref } from '../data/siteNav';
 import { pickWorkBackground, workBackgroundSrcSet } from '../data/workBackgrounds';
+import ThresholdGate from './ThresholdGate.jsx';
 
 const MOTION = {
   ease: [0.22, 1, 0.36, 1],
@@ -52,14 +54,28 @@ function hasPlayedIntro() {
 
 const INTRO_PHASE = { hidden: 0, statement: 1, spheres: 2, settled: 3 };
 
-function useIntroPhase(reducedMotion) {
-  const [phase, setPhase] = useState(() =>
-    reducedMotion || hasPlayedIntro() ? INTRO_PHASE.settled : INTRO_PHASE.hidden);
+// `gated`: the threshold homepage holds the arrival at the statement beat until
+// the visitor chooses Play. It is fixed for the life of the mount — a visitor
+// who already chose Play and comes back to the overview sees it settled.
+// `released`: the visitor has chosen Play; the arrival continues from there.
+function useIntroPhase(reducedMotion, gated = false, released = true) {
+  const [phase, setPhase] = useState(() => {
+    if (gated) return reducedMotion ? INTRO_PHASE.statement : INTRO_PHASE.hidden;
+    return reducedMotion || hasPlayedIntro() ? INTRO_PHASE.settled : INTRO_PHASE.hidden;
+  });
+  const releasedRef = useRef(!gated || released);
+  const advanceRef = useRef(null);
 
   useEffect(() => {
-    if (reducedMotion || hasPlayedIntro()) {
+    if (!gated && (reducedMotion || hasPlayedIntro())) {
       setPhase(INTRO_PHASE.settled);
       return undefined;
+    }
+    if (reducedMotion) {
+      // Gated, without motion: the statement waits, then everything is there.
+      advanceRef.current = () => setPhase(INTRO_PHASE.settled);
+      setPhase(releasedRef.current ? INTRO_PHASE.settled : INTRO_PHASE.statement);
+      return () => { advanceRef.current = null; };
     }
     introPlayed = true;
 
@@ -70,8 +86,9 @@ function useIntroPhase(reducedMotion) {
 
     const toSpheres = () => {
       // Both: the simulation has placed them, AND the statement has had the
-      // screen to itself. Whichever is slower sets the pace.
-      if (advanced || !physicsReady || !statementShown) return;
+      // screen to itself. Whichever is slower sets the pace. On the threshold
+      // homepage the visitor's choice is a third condition.
+      if (advanced || !physicsReady || !statementShown || !releasedRef.current) return;
       advanced = true;
       setPhase(INTRO_PHASE.spheres);
       const spheres = publicProjectIds.length;
@@ -87,13 +104,21 @@ function useIntroPhase(reducedMotion) {
     timers.push(window.setTimeout(() => { statementShown = true; toSpheres(); }, INTRO.statement * 1000));
 
     const frame = requestAnimationFrame(() => setPhase(INTRO_PHASE.statement));
+    advanceRef.current = toSpheres;
 
     return () => {
+      advanceRef.current = null;
       cancelAnimationFrame(frame);
       timers.forEach(window.clearTimeout);
       window.removeEventListener('pv2:physics-ready', onPhysicsReady);
     };
-  }, [reducedMotion]);
+  }, [reducedMotion, gated]);
+
+  useEffect(() => {
+    const isReleased = !gated || released;
+    releasedRef.current = isReleased;
+    if (isReleased) advanceRef.current?.();
+  }, [gated, released]);
 
   // The nav and the credit drawer live outside this tree, so they take the
   // phase off the document element and fade themselves in CSS.
@@ -280,7 +305,7 @@ function ProjectVisual({ node, large = false }) {
   );
 }
 
-function ProjectTile({ node, placement, index, onSelect, reducedMotion, register, position, arrived, playIntro }) {
+function ProjectTile({ node, placement, index, onSelect, reducedMotion, register, position, arrived, playIntro, ghost = false }) {
   return (
     <div
       ref={(el) => register(node.id, el)}
@@ -296,12 +321,19 @@ function ProjectTile({ node, placement, index, onSelect, reducedMotion, register
         data-polish="orb"
         onClick={() => onSelect(node.id)}
         initial={reducedMotion || !playIntro ? false : { opacity: 0, scale: 0.965 }}
-        animate={arrived ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.965 }}
+        // `ghost`: on the threshold homepage, hovering Play shows the spheres
+        // faintly before they arrive — the playground seen through the door.
+        // Arrival then carries them from here to solid, with no dip.
+        animate={arrived
+          ? { opacity: 1, scale: 1 }
+          : ghost ? { opacity: 0.3, scale: 0.985 } : { opacity: 0, scale: 0.965 }}
         whileHover={reducedMotion || !arrived ? undefined : hoverMotion[placement]}
         whileFocus={reducedMotion || !arrived ? undefined : { y: -4, scale: 1.01 }}
         whileTap={reducedMotion ? undefined : { scale: 0.985 }}
-        transition={reducedMotion || !arrived
+        transition={reducedMotion
           ? { duration: 0 }
+          : !arrived
+          ? { duration: 0.6, ease: INTRO.ease }
           // Scale, not a y-offset: the simulation owns where the slot sits, and
           // a sphere sliding up into a position that is itself drifting reads
           // as a wobble rather than an arrival.
@@ -344,7 +376,7 @@ function GatewayLink({ id, className, eyebrow, title, onClick, reducedMotion, de
   );
 }
 
-function Overview({ onSelect, reducedMotion }) {
+function Overview({ onSelect, reducedMotion, gate = null, statement = null, peek = false }) {
   const projects = publicProjectIds.map((id) => portfolioV2NodeMap.get(id)).filter(Boolean);
   const placements = ['top', 'left', 'right', 'bottom-left', 'bottom-right'];
   const stageRef = useRef(null);
@@ -352,8 +384,9 @@ function Overview({ onSelect, reducedMotion }) {
   const itemRefs = useRef({});
   const [positions, setPositions] = useState({});
   const [contextProjectId, setContextProjectId] = useState(null);
-  const [playIntro] = useState(() => !reducedMotion && !hasPlayedIntro());
-  const introPhase = useIntroPhase(reducedMotion);
+  const [gatedAtMount] = useState(() => Boolean(gate) && !gate.released);
+  const [playIntro] = useState(() => !reducedMotion && (gatedAtMount || !hasPlayedIntro()));
+  const introPhase = useIntroPhase(reducedMotion, gatedAtMount, gate ? gate.released : true);
   const contextNode = contextProjectId ? portfolioV2NodeMap.get(contextProjectId) : null;
 
   const register = useCallback((id, element) => {
@@ -413,8 +446,19 @@ function Overview({ onSelect, reducedMotion }) {
             : { duration: INTRO.statementFade, ease: INTRO.ease }}
         >
           <p className="pv2-overline"></p>
-          <h1>Interactive Designer <br /> & Creative Thinker</h1>
-          <p>I create games, interactive art, thought experiments, and UX work, in order to explore how interaction fosters growth, connection, and positive change.</p>
+          {/* `statement` lets a page set its own headline and subtext (the
+              threshold homepage does); otherwise the playground's own. */}
+          {statement ? (
+            <>
+              <h1>{statement.headline}</h1>
+              <p>{statement.subtext}</p>
+            </>
+          ) : (
+            <>
+              <h1>Interactive Designer <br /> & Creative Thinker</h1>
+              <p>I create games, interactive art, thought experiments, and UX work, in order to explore how interaction fosters growth, connection, and positive change.</p>
+            </>
+          )}
         </motion.div>
 
         {projects.map((node, index) => (
@@ -428,6 +472,7 @@ function Overview({ onSelect, reducedMotion }) {
             register={register}
             position={positions[node.id]}
             arrived={introPhase >= INTRO_PHASE.spheres}
+            ghost={peek}
             playIntro={playIntro}
           />
         ))}
@@ -483,7 +528,7 @@ function ProjectContextPanel({ node, anchorEl, onClose, reducedMotion }) {
   const wasMediaExpanded = useRef(false);
   const [position, setPosition] = useState(null);
   const [mediaExpanded, setMediaExpanded] = useState(false);
-  const primaryUrl = node.localPlayUrl || node.playUrl || node.route;
+  const primaryUrl = node.localPlayUrl || node.playUrl || (node.route && resolveHref(node.route));
   const primaryExternal = Boolean(primaryUrl && /^https?:/i.test(primaryUrl) && !node.localPlayUrl);
 
   useLayoutEffect(() => {
@@ -728,7 +773,7 @@ function ProjectFocus({ node, onBack, onSelect, reducedMotion }) {
               {node.localPlayUrl && node.playUrl && (
                 <a className="pv2-secondary-action" href={node.playUrl} target="_blank" rel="noreferrer">Open itch.io ↗</a>
               )}
-              {!primaryPlayUrl && node.route && <a href={node.route}>Open project →</a>}
+              {!primaryPlayUrl && node.route && <a href={resolveHref(node.route)}>Open project →</a>}
               {!primaryPlayUrl && !node.route && <span className="pv2-focus__pending">Playable build not connected yet</span>}
             </div>
           </motion.div>
@@ -788,7 +833,7 @@ function Workshop({ onBack, onSelect, reducedMotion }) {
   );
 }
 
-function UXGateway({ onBack }) {
+function UXGateway({ onBack, uxHref }) {
   const node = portfolioV2NodeMap.get('ux-work');
   return (
     <main className="pv2-ux-gateway">
@@ -797,15 +842,15 @@ function UXGateway({ onBack }) {
         <p className="pv2-overline">Professional portfolio</p>
         <h1>UX Work</h1>
         <p>{node?.summary}</p>
-        <a href="/ux">Enter classic UX portfolio →</a>
+        <a href={uxHref}>Enter classic UX portfolio →</a>
       </div>
     </main>
   );
 }
 
-function WorkBackdrop({ reducedMotion, content = false }) {
+function WorkBackdrop({ reducedMotion, content = false, forceIntro = false }) {
   const [background, setBackground] = useState(null);
-  const [playIntro] = useState(() => !reducedMotion && !content && !hasPlayedIntro());
+  const [playIntro] = useState(() => !reducedMotion && !content && (forceIntro || !hasPlayedIntro()));
 
   useEffect(() => {
     // The image is a local public asset. Let CSS load it directly rather than
@@ -878,9 +923,17 @@ function WorkBackdropCredit({ reducedMotion }) {
   );
 }
 
-export default function RelationalPortfolio() {
+// `threshold`: the homepage opens on the statement alone, with UX to the left
+// and Play to the right. Play continues the arrival; UX leaves for /ux.
+// `statement`: { headline, subtext } to replace the playground's own.
+// `navLinks`: [{ label, href }] to replace the playground's nav. The threshold
+// homepage passes the same list to its own frame, so nothing moves when the
+// one fades into the other. `homeHref`: where the name links.
+export default function RelationalPortfolio({ threshold = false, statement = null, navLinks = null, homeHref = '/', uxHref = '/ux' }) {
   const reducedMotion = useReducedMotion();
   const [selectedId, setSelectedId] = useState(null);
+  const [released, setReleased] = useState(!threshold);
+  const [peek, setPeek] = useState(false);
 
   useEffect(() => {
     // portfolio-physics-v3.js repositions these same .pv2-float-slot elements
@@ -926,14 +979,24 @@ export default function RelationalPortfolio() {
     <>
       <div className="pv2-site">
       <header className="pv2-nav">
-        <a href="/" className="pv2-nav__name">Jacob Meyerkopf</a>
+        <a href={homeHref} className="pv2-nav__name">Jacob Meyerkopf</a>
+        {navLinks ? (
+          <nav aria-label="Portfolio navigation">
+            {navLinks.map((link) => (
+              <a key={link.href} data-polish="magnet" href={link.href}>
+                <span className="pv2-polish-label">{link.label}</span>
+              </a>
+            ))}
+          </nav>
+        ) : (
         <nav aria-label="Portfolio navigation">
           <button data-polish="magnet" type="button" aria-current={!selected ? 'page' : undefined} onClick={() => { setSelectedId(null); writeProjectToUrl(null); }}><span className="pv2-polish-label">Playground</span></button>
           <button data-polish="magnet" type="button" aria-current={selected && selected.id !== 'ux-work' ? 'page' : undefined} onClick={() => select('unfinished')}><span className="pv2-polish-label">Work</span></button>
           <a data-polish="magnet" href="/research"><span className="pv2-polish-label">Research</span></a>
-          <a data-polish="magnet" href="/ux"><span className="pv2-polish-label">UX</span></a>
+          <a data-polish="magnet" href={uxHref}><span className="pv2-polish-label">UX</span></a>
           <a data-polish="magnet" href="/contact"><span className="pv2-polish-label">Contact</span></a>
         </nav>
+        )}
       </header>
 
       {(!selected || selected?.id === 'unfinished') && (
@@ -941,6 +1004,7 @@ export default function RelationalPortfolio() {
           key="portfolio-backdrop"
           reducedMotion={reducedMotion}
           content={selected?.id === 'unfinished'}
+          forceIntro={threshold}
         />
       )}
       {(!selected || selected?.id === 'unfinished') && (
@@ -949,10 +1013,32 @@ export default function RelationalPortfolio() {
           reducedMotion={reducedMotion}
         />
       )}
-      {!selected && <Overview key="overview" onSelect={select} reducedMotion={reducedMotion} />}
+      {!selected && (
+        <Overview
+          key="overview"
+          onSelect={select}
+          reducedMotion={reducedMotion}
+          gate={threshold ? { released } : null}
+          statement={statement}
+          peek={threshold && peek}
+        />
+      )}
+      <AnimatePresence>
+        {threshold && !released && !selected && (
+          <ThresholdGate
+            key="threshold"
+            reducedMotion={reducedMotion}
+            links={navLinks}
+            homeHref={homeHref}
+            uxHref={uxHref}
+            onPeek={setPeek}
+            onPlay={() => setReleased(true)}
+          />
+        )}
+      </AnimatePresence>
       {selected?.kind === 'project' && <ProjectFocus key={selected.id} node={selected} onBack={back} onSelect={select} reducedMotion={reducedMotion} />}
       {selected?.id === 'unfinished' && <Workshop key="unfinished" onBack={back} onSelect={select} reducedMotion={reducedMotion} />}
-      {selected?.id === 'ux-work' && <UXGateway key="ux" onBack={back} />}
+      {selected?.id === 'ux-work' && <UXGateway key="ux" onBack={back} uxHref={uxHref} />}
       </div>
     </>
   );

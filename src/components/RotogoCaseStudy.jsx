@@ -140,7 +140,7 @@ export default function RotogoCaseStudy() {
                 rel="noopener noreferrer"
                 className="relative z-10 block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950"
               >
-                <img src="https://api.microlink.io/?url=https://rotogo.netlify.app/&screenshot=true&meta=false&embed=screenshot.url" alt="Rotogo Live App Preview" className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105" />
+                <img src="/images/derived/rotogoscreen-768.webp" alt="Rotogo Live App Preview" className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105" />
               </a>
               {/* Gradient overlay must not block clicks */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>

@@ -6,7 +6,7 @@ const { modules = [] } = Astro.props;
     {modules.map((module) => (
       <article class="flex flex-col gap-4 rounded-2xl border border-slate-200/70 bg-slate-100/80 p-6 shadow-sm transition-colors duration-300 dark:border-slate-700 dark:bg-slate-900/60">
         <div>
-          <p class="text-sm font-semibold uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300">{module.kicker}</p>
+          <p class="text-sm font-semibold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-300">{module.kicker}</p>
           <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-white">{module.title}</h3>
         </div>
         {module.description && (
@@ -16,7 +16,7 @@ const { modules = [] } = Astro.props;
           <ul class="mt-2 space-y-2 text-sm text-slate-700 dark:text-slate-200">
             {module.bullets.map((bullet) => (
               <li class="flex gap-2">
-                <span class="text-sky-500 dark:text-sky-300">•</span>
+                <span class="text-brand-500 dark:text-brand-300">•</span>
                 <span>{bullet}</span>
               </li>
             ))}

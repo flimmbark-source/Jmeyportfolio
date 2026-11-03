@@ -26,6 +26,11 @@
   const CONTEXT_HOVER_FOLLOW_SPEED = 0.0018;
   const CONTEXT_HOVER_RESPONSE_MS = 110;
   const CONTEXT_HOVER_RELEASE_PAD = 28;
+  // First contact: the first time the pointer bumps each sphere, the sphere
+  // latches onto it straight away (no dwell, no knock) and, for this long, the
+  // release distance above is not checked, so it can catch up to a pointer
+  // that has already moved past it. After that the usual rules apply.
+  const FIRST_LATCH_GRACE = 1200;
   // --- "Click to Explore!" nudge -------------------------------------------
   // The spheres are the way into the actual work, but nothing on the stage says
   // so — the Points box gets a "Click to Spend" sticker and the projects get
@@ -3190,7 +3195,12 @@
 
   function updateContextHover(body, now, stageRect) {
     const directlyHovered = body.el.matches(':hover');
+    // A first-contact latch passes the distance check while it catches up.
+    const firstLatchGrace = body.contextHoverActive
+      && body.firstLatchUntil > now
+      && pointer.x > -9000;
     const hovering = directlyHovered
+      || firstLatchGrace
       || (body.contextHoverActive && pointerNearBody(body, stageRect, CONTEXT_HOVER_RELEASE_PAD));
 
     if (!hovering || projectContextPaused || activeProjectLevelUp) {
@@ -3209,6 +3219,9 @@
   function collideWithPointer(event, pointerVx = 0, pointerVy = 0) {
     const now = performance.now();
     if (!stage || activeProjectLevelUp || projectContextPaused || document.documentElement.classList.contains('pv2-upgrades-open')) return;
+    // While the threshold homepage is up the spheres are hidden or ghosted;
+    // the pointer must not move them or spend their first-contact latch.
+    if (document.documentElement.classList.contains('pv2-threshold-open')) return;
 
     const effects = currentEffects();
     // Use simulation boxes only to reject distant bodies. Measure the artwork
@@ -3238,6 +3251,18 @@
         continue;
       }
       if (inside && !body.pointerInside && now - body.lastPointerHit >= POINTER_COOLDOWN) {
+        // The first bump on each sphere latches instead of knocking it away.
+        // Mouse only: a touch has no pointer to follow once the finger lifts.
+        if (!body.firstLatchUsed && event.pointerType !== 'touch' && !reducedMotion()) {
+          body.firstLatchUsed = true;
+          body.firstLatchUntil = now + FIRST_LATCH_GRACE;
+          body.contextHoverSince = now - CONTEXT_HOVER_DELAY;
+          setContextHoverActive(body, true);
+          body.lastPointerHit = now;
+          body.pointerInside = true;
+          activateGame();
+          continue;
+        }
         let dx = pointerVx;
         let dy = pointerVy;
         let length = Math.hypot(dx, dy);

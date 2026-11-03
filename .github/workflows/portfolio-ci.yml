@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - portfolio-v2
+      - claude/hopeful-albattani-puzzes
   pull_request:
 
 jobs:

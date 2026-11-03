@@ -5,9 +5,9 @@
   "tagline": "Independent prototype · Learning experience",
   "summary": "An independent Hebrew-learning prototype exploring a guided path from letter recognition to vocabulary and reading. The case study shows the screens, connected practice flow, and the decisions behind them.",
   "highlights": [
-    "Letter-to-sound matching and guided practice",
-    "Desktop and mobile interface examples",
-    "Design goals and next validation steps"
+    "A path from letter recognition through vocabulary to reading, built as one flow",
+    "Desktop and mobile screens from the working prototype",
+    "What the prototype does not yet prove, and the next step to test it"
   ],
   "image": {
     "src": "/images/Desktop_Hero_Screen.png",

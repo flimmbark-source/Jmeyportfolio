@@ -1,0 +1,90 @@
+---
+// A colour system shown as the tokens themselves, with their names and values,
+// rather than as a screenshot of the Figma frame they were defined in. Values
+// are sampled from the source file.
+const { palette } = Astro.props;
+const groups = palette?.groups ?? [];
+---
+{groups.length > 0 && (
+  <div class="palette mt-10">
+    {palette.caption && <p class="palette__caption">{palette.caption}</p>}
+    {groups.map((group) => (
+      <section class="palette__group">
+        <h4 class="palette__name">{group.name}</h4>
+        {group.note && <p class="palette__note">{group.note}</p>}
+        <ul class="palette__swatches">
+          {group.swatches.map((swatch) => (
+            <li class="palette__swatch">
+              <span class="palette__chip" style={`background:${swatch.value}`} aria-hidden="true"></span>
+              <span class="palette__label">{swatch.name}</span>
+              <code class="palette__value">{swatch.value}</code>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+)}
+
+<style is:global>
+  .palette__caption {
+    margin: 0 0 18px;
+    color: var(--pv2-muted);
+    font-size: .92rem;
+  }
+
+  .palette__group + .palette__group { margin-top: 26px; }
+
+  .palette__name {
+    margin: 0 0 2px;
+    font-family: var(--pv2-font-display);
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  .palette__note {
+    margin: 0 0 12px;
+    color: var(--pv2-muted);
+    font-size: .86rem;
+  }
+
+  .palette__swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .palette__swatch {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px;
+    border: 1px solid var(--pv2-line);
+    border-radius: var(--pv2-r-sm);
+    background: rgba(255, 255, 255, .55);
+  }
+
+  .palette__chip {
+    display: block;
+    height: 44px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(26, 25, 23, .14);
+    border-radius: 6px;
+  }
+
+  .palette__label {
+    font-size: .82rem;
+    font-weight: 650;
+    line-height: 1.2;
+  }
+
+  .palette__value {
+    color: var(--pv2-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: .74rem;
+    text-transform: uppercase;
+  }
+</style>

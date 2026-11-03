@@ -1,34 +1,24 @@
 ---
 import PortfolioBackdrop from '../components/PortfolioBackdrop.astro';
 import PortfolioPolish from '../components/PortfolioPolish.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteHead from '../components/SiteHead.astro';
 import '../styles/portfolio-v2.css';
 import '../styles/portfolio-chrome.css';
 ---
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="Get in touch with Jacob Meyerkopf — games, interactive work, learning systems, and UX."
+    <SiteHead
+      title="Contact — Jacob Meyerkopf"
+      description="Get in touch with Jacob Meyerkopf — product design, UX research, games and interactive work."
     />
-    <title>Contact — Jacob Meyerkopf</title>
   </head>
   <body class="pv2-body">
     <PortfolioPolish />
     <PortfolioBackdrop />
     <div class="pv2-site">
-      <header class="pv2-nav">
-        <a href="/" class="pv2-nav__name">Jacob Meyerkopf</a>
-        <nav aria-label="Portfolio navigation">
-          <a data-polish="magnet" href="/"><span class="pv2-polish-label">Playground</span></a>
-          <a data-polish="magnet" href="/?project=unfinished"><span class="pv2-polish-label">Work</span></a>
-          <a data-polish="magnet" href="/research"><span class="pv2-polish-label">Research</span></a>
-          <a data-polish="magnet" href="/ux"><span class="pv2-polish-label">UX</span></a>
-          <a data-polish="magnet" href="/contact" aria-current="page"><span class="pv2-polish-label">Contact</span></a>
-        </nav>
-      </header>
+      <SiteNav />
 
       <main class="contact">
         <section class="contact__intro">
@@ -189,7 +179,7 @@ import '../styles/portfolio-chrome.css';
     gap: 4px;
     padding: 16px 18px;
     border: 1px solid var(--pv2-line);
-    border-radius: 16px;
+    border-radius: var(--pv2-r-md);
     background: rgba(255, 255, 255, .5);
     text-decoration: none;
     color: var(--pv2-text);
@@ -224,7 +214,7 @@ import '../styles/portfolio-chrome.css';
     gap: 16px;
     padding: clamp(20px, 3vw, 30px);
     border: 1px solid var(--pv2-line);
-    border-radius: 20px;
+    border-radius: var(--pv2-r-lg);
     background: rgba(255, 255, 255, .62);
   }
 
@@ -247,7 +237,7 @@ import '../styles/portfolio-chrome.css';
     width: 100%;
     padding: 12px 13px;
     border: 1px solid var(--pv2-line);
-    border-radius: 12px;
+    border-radius: var(--pv2-r-md);
     background: #fff;
     color: var(--pv2-text);
     font: inherit;
@@ -273,7 +263,7 @@ import '../styles/portfolio-chrome.css';
     padding: 12px 24px;
     border: 0;
     border-radius: 999px;
-    background: var(--pv2-text);
+    background: var(--pv2-accent);
     color: #f7f6f2;
     font-weight: 640;
     font-size: .98rem;

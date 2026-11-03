@@ -1,6 +1,7 @@
 ---
 import RelationalPortfolio from '../components/RelationalPortfolio.jsx';
 import PortfolioPolish from '../components/PortfolioPolish.astro';
+import SiteHead from '../components/SiteHead.astro';
 import '../styles/portfolio-v2.css';
 import '../styles/portfolio-chrome.css';
 import '../styles/portfolio-v2-overrides.css';
@@ -8,15 +9,28 @@ import '../styles/portfolio-v2-adaptive.css';
 import '../styles/portfolio-loading.css';
 import '../styles/portfolio-incremental.css';
 import '../styles/portfolio-battle.css';
+import '../styles/portfolio-threshold.css';
+
+// The homepage: the playground, held at its statement until the visitor picks
+// UX (left) or Play (right). Play releases the arrival in place, so the
+// threshold and the playground are one route.
+
+// Home, UX and the nav come from one place, shared with the playground,
+// the UX screen and every case study.
+import { HOME, UX, navLinks } from '../data/siteNav';
+
+const statement = {
+  headline: 'Interactive Researcher & Product Designer',
+  subtext: 'I build interactive systems that let people experience how something works from the inside \u2014 overstimulation, learning, complex workflows. Research-led, and I build my own prototypes.',
+};
+
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" data-ux-href={UX}>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="Interactive work by Jacob Meyerkopf: games, disability experiences, learning systems, unfinished experiments, and UX work."
+    <SiteHead
+      title="Jacob Meyerkopf — Interactive Researcher & Product Designer"
+      description="Jacob Meyerkopf builds interactive systems that let people experience how something works from the inside — overstimulation, learning, complex workflows."
     />
     <link rel="preload" as="image" href="/images/levelup/chest-states.png" />
     <!-- The level-up cards and the upgrade tree both paint these 12 icons the
@@ -35,7 +49,6 @@ import '../styles/portfolio-battle.css';
     <link rel="preload" as="image" href="/icons/mechanics/collision.webp" type="image/webp" />
     <link rel="preload" as="image" href="/icons/mechanics/value.webp" type="image/webp" />
     <link rel="preload" as="image" href="/icons/mechanics/multiplier.webp" type="image/webp" />
-    <title>Jacob Meyerkopf — Interactive Work</title>
   </head>
   <body class="pv2-body">
     <script is:inline>
@@ -45,14 +58,17 @@ import '../styles/portfolio-battle.css';
       // disappeared. Set it here, before the first paint, and let React take
       // it off at the end of the sequence.
       (() => {
+        // The threshold always opens on the statement alone, so the chrome is
+        // held on every visit. React releases it once the visitor picks Play.
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        try { if (sessionStorage.getItem('pv2-intro-played') === '1') return; } catch {}
         const root = document.documentElement;
         root.classList.add('pv2-intro-hold');
-        // If the portfolio never mounts, the chrome must still come back. Well
-        // clear of the arrival itself, which now runs about 11s end to end —
-        // at the old 6s this fired mid-sequence and showed the bar early.
-        window.setTimeout(() => root.classList.remove('pv2-intro-hold'), 18000);
+        // If the portfolio never mounts, the chrome must still come back. Once
+        // it has mounted, the hold is the visitor's to end, however long they
+        // take to choose.
+        window.setTimeout(() => {
+          if (!root.classList.contains('pv2-hydrated')) root.classList.remove('pv2-intro-hold');
+        }, 18000);
       })();
     </script>
     <PortfolioPolish />
@@ -61,18 +77,19 @@ import '../styles/portfolio-battle.css';
       <div class="pv2-loader-dots" aria-hidden="true"><span></span><span></span><span></span></div>
     </div>
     <div id="portfolio-v2">
-      <RelationalPortfolio client:load />
+      <RelationalPortfolio
+        client:load
+        threshold
+        homeHref={HOME}
+        uxHref={UX}
+        statement={statement}
+        navLinks={navLinks}
+      />
     </div>
     <script is:inline>
       (() => {
         const loader = document.querySelector('.pv2-boot-loader');
         if (!loader) return;
-        try {
-          if (sessionStorage.getItem('pv2-intro-played') === '1') {
-            loader.remove();
-            return;
-          }
-        } catch {}
 
         const waitForPortfolio = new Promise((resolve) => {
           const check = () => {
@@ -98,9 +115,9 @@ import '../styles/portfolio-battle.css';
         window.setTimeout(finish, 1500);
       })();
     </script>
-    <script src="/scripts/portfolio-physics-v3.js?v=82" defer></script>
+    <script src="/scripts/portfolio-physics-v3.js?v=83" defer></script>
     <script src="/scripts/portfolio-battle.js?v=1" defer></script>
-    <script src="/scripts/ux-direct-link.js?v=1" defer></script>
+    <script src="/scripts/ux-direct-link.js?v=2" defer></script>
     <script src="/scripts/letter-river-preview.js?v=8" defer></script>
   </body>
 </html>

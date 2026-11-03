@@ -1,9 +1,7 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import PortfolioShell from '../layouts/PortfolioShell.astro';
 import RotogoCaseStudy from '../components/RotogoCaseStudy.jsx';
-
-const navLinks = [{ href: '/', label: 'Home' }];
 ---
-<BaseLayout title="Rotogo Case Study | Jacob Meyerkopf" mainClass="p-0" navLinks={navLinks}>
+<PortfolioShell title="Rotogo Case Study | Jacob Meyerkopf">
   <RotogoCaseStudy client:load />
-</BaseLayout>
+</PortfolioShell>

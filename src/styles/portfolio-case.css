@@ -1,0 +1,411 @@
+/* --- Case studies inside the portfolio shell --------------------------------
+   Case-study content is written with Tailwind in cool slate and a generic sky
+   accent. Inside .pv2-case it takes the portfolio's palette instead: warm
+   paper surfaces over the painting, warm greys for text, the portfolio's ink
+   for the generic accent, and its type weights. A project's own accent — the
+   green of Letter River, the teal of Rotogo — is left alone.
+
+   Each rule targets the exact classes the case studies use (see the list in
+   the commit that added this file); nothing here pattern-matches class
+   names, so a new shade simply keeps Tailwind's colour until it is added. */
+
+html { color-scheme: light; }
+
+/* --- Reading pages: solid chrome --------------------------------------
+   Over a painting the translucent nav reads as glass; over scrolling text it
+   reads as clutter, the lines showing through the links. */
+.pv2-body:has(.pv2-case) .pv2-nav,
+.pv2-body:has(.uxw) .pv2-nav {
+  background: #f7f6f2;
+}
+
+/* --- The bar under the nav ---------------------------------------------- */
+.pv2-case-bar {
+  position: sticky;
+  top: var(--pv2-nav-height);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 8px 28px;
+  min-height: 44px;
+  /* Full width: .pv2-site pads its content by this much, so the bar steps
+     back out and re-pads itself to line up with the nav's name. */
+  margin-inline: calc(-1 * clamp(18px, 3.8vw, 68px));
+  padding: 0 clamp(18px, 3.8vw, 68px);
+  background: #f3f1eb;
+  border-bottom: 1px solid rgba(36, 36, 36, 0.08);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  font-size: .84rem;
+}
+
+.pv2-case-bar a {
+  color: #4f4c47;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--pv2-fast) ease;
+}
+
+.pv2-case-bar a:hover { color: var(--pv2-text); }
+
+.pv2-case-bar__back {
+  flex: 0 0 auto;
+  color: var(--pv2-text) !important;
+  font-weight: 600;
+}
+
+.pv2-case-bar__sections {
+  display: flex;
+  gap: 4px 22px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* The right padding is the fade zone, so the last label only fades when
+     the links genuinely overflow. */
+  padding: 12px 28px 12px 0;
+  /* Fade the overflow edge rather than cutting a label in half. */
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+}
+
+.pv2-case-bar__sections::-webkit-scrollbar { display: none; }
+
+.pv2-case-bar__progress {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 2px;
+  width: calc(var(--pv2-read, 0) * 100%);
+  background: var(--pv2-text);
+}
+
+.pv2-case-bar a:focus-visible {
+  outline: 2px solid var(--pv2-text);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.pv2-case-skip {
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  z-index: 1100;
+  transform: translateY(-160%);
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: var(--pv2-text);
+  color: #f7f6f2;
+  font: 600 14px/1 system-ui, sans-serif;
+  text-decoration: none;
+}
+
+.pv2-case-skip:focus { transform: translateY(0); }
+
+/* Anchored sections land below the nav and the bar. */
+.pv2-case [id] { scroll-margin-top: calc(var(--pv2-nav-height) + 60px); }
+
+/* The pages' own progress bars sat under the nav; the bar above has one. */
+.pv2-case .fixed.top-0.h-1,
+.pv2-case .fixed.top-0.h-1\.5 {
+  display: none;
+}
+
+/* --- Page backgrounds give way to the painting -------------------------- */
+.pv2-case .bg-\[\#f6f2e8\] { background-color: transparent; }
+
+.pv2-case .from-slate-100,
+.pv2-case .from-slate-900.bg-clip-text {
+  background-image: none;
+}
+
+/* Rotogo's title was gradient-clipped text; with the gradient gone it needs
+   its own colour back. */
+.pv2-case .bg-clip-text.text-transparent {
+  color: var(--pv2-text);
+  background-image: none;
+}
+
+/* Rotogo opened on a full-screen title; under a nav and a bar, a tall hero
+   reads as the page, not a screen to scroll past. */
+.pv2-case header.h-screen {
+  height: auto;
+  min-height: min(68vh, 620px);
+  padding-top: 48px;
+  padding-bottom: 48px;
+}
+
+/* --- Surfaces ----------------------------------------------------------- */
+/* Rotogo's sections sat straight on its page background; on the painting
+   they need the same reading panel as every other case study. */
+.pv2-case main.max-w-7xl {
+  margin-top: 8px;
+  margin-bottom: 32px;
+  padding-top: clamp(8px, 2vw, 24px);
+  padding-bottom: clamp(24px, 4vw, 48px);
+  border: 1px solid rgba(36, 36, 36, .1);
+  border-radius: var(--pv2-r-lg);
+  background: rgba(247, 246, 242, .88);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.pv2-case .bg-white {
+  background-color: rgba(255, 255, 255, .8);
+}
+
+.pv2-case .bg-white\/80,
+.pv2-case .hover\:bg-white\/70:hover {
+  background-color: rgba(255, 255, 255, .7);
+}
+
+.pv2-case .bg-slate-100,
+.pv2-case .bg-slate-100\/80,
+.pv2-case .bg-slate-100\/70,
+.pv2-case .bg-slate-50\/80,
+.pv2-case .hover\:bg-slate-50:hover {
+  background-color: rgba(244, 242, 236, .84);
+}
+
+.pv2-case .bg-slate-300 { background-color: #d9d5cc; }
+
+/* Tag chips: the portfolio's ink instead of cool navy. */
+.pv2-case .bg-slate-900\/90 { background-color: var(--pv2-text); }
+
+/* Hero buttons were outlined in white for the old dark background. */
+.pv2-case .border-white\/80,
+.pv2-case .border-white\/30 {
+  border-color: rgba(36, 36, 36, .22);
+}
+
+/* The outermost case-study panel sits on the painting: a little blur keeps
+   long reading comfortable over a busy image. */
+.pv2-case > div > section.backdrop-blur-sm,
+.pv2-case > div > main > section,
+.pv2-case > div > section {
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* --- Borders and dividers ----------------------------------------------- */
+.pv2-case .border-slate-200,
+.pv2-case .border-slate-200\/70 {
+  border-color: rgba(36, 36, 36, .12);
+}
+
+.pv2-case .border-slate-300 { border-color: rgba(36, 36, 36, .2); }
+
+.pv2-case .divide-slate-200\/70 > :not([hidden]) ~ :not([hidden]),
+.pv2-case .divide-slate-100\/70 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(36, 36, 36, .1);
+}
+
+.pv2-case .shadow-slate-900\/5,
+.pv2-case .shadow-slate-900\/10 {
+  --tw-shadow-color: rgba(36, 30, 20, .08);
+}
+
+/* --- Text --------------------------------------------------------------- */
+.pv2-case .text-slate-950,
+.pv2-case .text-slate-900 { color: var(--pv2-text); }
+.pv2-case .text-slate-800 { color: #34312d; }
+.pv2-case .text-slate-700 { color: #3d3a36; }
+.pv2-case .text-slate-600 { color: #5f5b55; }
+
+/* --- The generic accent becomes the portfolio's ink ---------------------- */
+.pv2-case .text-sky-500,
+.pv2-case .text-sky-600,
+.pv2-case .text-sky-700 { color: #5f5b55; }
+
+.pv2-case .hover\:text-sky-700:hover { color: var(--pv2-text); }
+
+.pv2-case .bg-sky-500 { background-color: var(--pv2-text); }
+
+.pv2-case .bg-sky-100 {
+  background-color: #ebe8e1;
+  color: #3d3a36;
+}
+
+.pv2-case .focus-visible\:ring-sky-500:focus-visible { --tw-ring-color: var(--pv2-text); }
+.pv2-case .focus-visible\:ring-offset-slate-100:focus-visible { --tw-ring-offset-color: #f7f6f2; }
+
+/* --- Type: the portfolio's weights and tracking --------------------------
+   Headings are scoped twice so they outrank the weight classes below. */
+.pv2-case.pv2-case h1 {
+  font-weight: 520;
+  letter-spacing: -.045em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.pv2-case.pv2-case h2 {
+  font-weight: 540;
+  letter-spacing: -.035em;
+  text-wrap: balance;
+}
+
+.pv2-case.pv2-case h3 {
+  font-weight: 600;
+  letter-spacing: -.02em;
+}
+
+/* Letter River set much of its type in Tailwind's heaviest weight. */
+.pv2-case .font-black { font-weight: 650; }
+.pv2-case .font-extrabold { font-weight: 600; }
+
+@media (max-width: 720px) {
+  .pv2-case-bar {
+    gap: 4px 16px;
+    font-size: .8rem;
+  }
+}
+
+/* =========================================================================
+   Phones (≤ 720px)
+   One gutter (16px) from the screen edge to a panel, one inset (20px) from a
+   panel's edge to its text. On desktop the case studies nest a page padding,
+   a container padding, a panel padding and an inner card padding; at phone
+   width those stacked into a text column of about 250px. Here the outer
+   layers give their padding up so the reading panel keeps it.
+   ========================================================================= */
+@media (max-width: 720px) {
+  /* The site's own side padding goes; each page's container supplies the
+     16px gutter instead. The bar no longer has padding to step back out of. */
+  .pv2-site:has(.pv2-case) { padding-inline: 0; }
+  .pv2-case-bar { margin-inline: 0; }
+
+  /* The image credit sits over the text at the bottom of every page. */
+  .pv2-body:has(.pv2-case) .pv2-credit-drawer { display: none; }
+
+  /* --- Shared case-study layout (IDL, AI Archiving, Agora 21, Bball) --- */
+  /* Container → panel → hero: keep the panel's inset, drop the rest. */
+  .pv2-case > div.relative.mx-auto.max-w-5xl {
+    padding: 16px 16px 40px;
+  }
+
+  .pv2-case > div.relative.mx-auto.max-w-5xl > section {
+    padding: 24px 20px 32px;
+    border-radius: var(--pv2-r-lg);
+  }
+
+  .pv2-case .case-study-hero {
+    padding: 0;
+    background: none;
+  }
+
+  /* Section rhythm: 80px between sections is a desktop gap. */
+  .pv2-case section.mt-16 { margin-top: 40px; }
+  .pv2-case section.mt-20 { margin-top: 48px; }
+  .pv2-case article.mt-12 { margin-top: 24px; padding: 20px; }
+
+  /* Long centred paragraphs read poorly in a narrow column. */
+  .pv2-case header.mx-auto.max-w-3xl.text-center { text-align: left; }
+
+  /* --- Type ----------------------------------------------------------- */
+  /* Wide tracking wrapped short labels onto three lines. */
+  .pv2-case .tracking-\[0\.35em\],
+  .pv2-case .tracking-\[0\.25em\],
+  .pv2-case .tracking-\[0\.2em\] { letter-spacing: .12em; }
+
+  .pv2-case .text-lg { font-size: 1.0625rem; line-height: 1.6; }
+  .pv2-case .text-xl { font-size: 1.125rem; line-height: 1.55; }
+  .pv2-case .leading-8 { line-height: 1.6; }
+  .pv2-case .text-4xl { font-size: 2rem; line-height: 1.08; }
+  .pv2-case .text-5xl { font-size: 2.35rem; line-height: 1.05; }
+  .pv2-case .text-3xl { font-size: 1.6rem; line-height: 1.15; }
+
+  /* Step numbers were squeezed into thin pills beside long titles. */
+  .pv2-case li.flex > .h-12.w-12 { flex-shrink: 0; }
+
+  /* Hero meta cards: two across instead of a tall stack. */
+  .pv2-case .case-study-hero dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .pv2-case .case-study-hero dl > div { padding: 12px 14px; }
+
+  /* An odd last card takes the full row instead of sitting alone. */
+  .pv2-case .case-study-hero dl > div:last-child:nth-child(odd) { grid-column: 1 / -1; }
+
+  /* Metric cards: compact. */
+  .pv2-case .text-center.p-6 { padding: 18px; }
+
+  /* --- Letter River ---------------------------------------------------- */
+  .pv2-case #overview.mx-auto.max-w-6xl { padding: 16px 16px 32px; }
+
+  /* Hero buttons: one full-width stack rather than two ragged widths. */
+  .pv2-case #overview .mt-8.flex.flex-wrap.gap-3 > a {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+  .pv2-case .p-6.sm\:p-8 { padding: 22px 20px; }
+
+  /* Its seven "what the learner carries" cards: two across, compact. */
+  .pv2-case .grid.gap-3.sm\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .pv2-case .grid.gap-3.sm\:grid-cols-2 > article { padding: 14px 10px; }
+
+  /* Role / status / tools / focus: two across. */
+  .pv2-case section.mt-5.grid.md\:grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .pv2-case section.mt-5.grid.md\:grid-cols-4 > article { padding: 14px; }
+
+  /* --- Rotogo ---------------------------------------------------------- */
+  .pv2-case header.h-screen {
+    min-height: 0;
+    padding: 40px 20px 32px;
+  }
+
+  /* The scroll arrow collided with the meta line once the hero was short. */
+  .pv2-case header.h-screen .animate-bounce { display: none; }
+
+  .pv2-case main.max-w-7xl {
+    margin: 0 16px 32px;
+    padding-inline: 20px;
+    border-radius: var(--pv2-r-lg);
+  }
+
+  .pv2-case main.max-w-7xl > section { padding-top: 40px; padding-bottom: 40px; }
+  .pv2-case main.max-w-7xl .text-center.max-w-3xl { text-align: left; }
+  .pv2-case .mb-16 { margin-bottom: 32px; }
+  .pv2-case .mb-12 { margin-bottom: 24px; }
+}
+
+/* Case-study media. The slot used cool slate surfaces from before the warm
+   palette, and stretched a portrait photograph to fill whatever box it was
+   given. */
+.case-media {
+  margin-inline: 0;
+  border: 1px solid var(--pv2-line);
+  border-radius: var(--pv2-r-lg);
+  background: var(--pv2-soft);
+}
+
+.case-media__img {
+  display: block;
+  width: 100%;
+  max-height: 620px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.case-media__caption {
+  padding: 12px 18px 14px;
+  border-top: 1px solid var(--pv2-line);
+  color: var(--pv2-muted);
+  font-size: .84rem;
+}
+
+/* A document is shown whole. `cover` plus a max-height is right for a
+   photograph and silently truncates a page of text. */
+.case-media--doc .case-media__img {
+  max-height: none;
+  object-fit: contain;
+  background: #fff;
+}
