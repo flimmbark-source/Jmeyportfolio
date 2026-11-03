@@ -252,15 +252,24 @@ def round_sign():
 
 
 def ashtray():
-    tin = kit.material("AshTin", kit.hexcolor('#8e897c'), 0.42, 0.72)
+    """A pressed-tin café ashtray with the four cigarette rests notched into
+    its rim - the detail that separates one from a small metal bowl."""
+    tin = kit.material("AshTin", kit.hexcolor('#c8c2b4'), 0.28, 0.85)
     body = kit.lathe("Ashtray", [
         (0.000, 0.000), (0.052, 0.000), (0.055, 0.006), (0.058, 0.024),
-        (0.060, 0.030), (0.054, 0.032), (0.050, 0.020), (0.044, 0.010),
-        (0.000, 0.009)], segments=20, close=True)
+        (0.062, 0.031), (0.056, 0.033), (0.050, 0.020), (0.044, 0.010),
+        (0.000, 0.009)], segments=28, close=True)
     kit.jitter(body, 0.0006, seed=71)
     kit.shade_smooth(body, 44)
     kit.assign(body, tin)
     kit.apply_all(body)
+    for i in range(4):
+        a = kit.TAU * i / 4 + 0.4
+        cutter = kit.cylinder(f"notch{i}", 0.0052, 0.05, 10,
+                              (math.cos(a) * 0.058, math.sin(a) * 0.058, 0.0305),
+                              (math.radians(90), 0, -a))
+        kit.boolean(body, cutter)
+    kit.shade_smooth(body, 44)
     return body
 
 

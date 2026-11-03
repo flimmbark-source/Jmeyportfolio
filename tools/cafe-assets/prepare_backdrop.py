@@ -27,8 +27,8 @@ OUT = os.path.join(ROOT, "public", "cafe", "backdrop.jpg")
 PAINTED_UI = [
     (0.015, 0.005, 0.245, 0.125),   # identity block, top left
     (0.655, 0.008, 0.996, 0.078),   # navigation pills, top right
-    (0.365, 0.895, 0.625, 0.975),   # hint pill, bottom centre
-    (0.870, 0.895, 0.990, 0.975),   # "Look around", bottom right
+    (0.350, 0.920, 0.635, 0.990),   # hint pill, bottom centre
+    (0.855, 0.910, 1.000, 0.985),   # "Look around", bottom right
 ]
 
 
@@ -38,9 +38,18 @@ def heal(img, box, feather=18):
     x0, y0, x1, y1 = (int(box[0] * w), int(box[1] * h),
                       int(box[2] * w), int(box[3] * h))
     bh = y1 - y0
-    src_top = min(h - bh, y1)
-    donor = img.crop((x0, src_top, x1, src_top + bh)).transpose(
-        Image.FLIP_TOP_BOTTOM)
+    # Take the donor band from below normally, but from ABOVE for anything
+    # close to the bottom edge: clamping a below-band against the bottom of
+    # the image makes it overlap the very thing being removed, and the patch
+    # then copies the control back into itself, mirrored.
+    if y1 > h - bh - 4:
+        donor = img.crop((x0, max(0, y0 - bh), x1, y0)).transpose(
+            Image.FLIP_TOP_BOTTOM)
+    else:
+        donor = img.crop((x0, y1, x1, min(h, y1 + bh))).transpose(
+            Image.FLIP_TOP_BOTTOM)
+    if donor.size != (x1 - x0, bh):
+        donor = donor.resize((x1 - x0, bh))
 
     patch = np.asarray(donor, np.float32)
     target = np.asarray(img.crop((x0, y0, x1, y1)), np.float32)

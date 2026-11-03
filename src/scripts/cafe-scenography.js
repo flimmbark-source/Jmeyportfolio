@@ -31,12 +31,22 @@ export function buildForeground({ THREE, scene, models, surfaces, clone }) {
   table.position.set(0, 0, 0);
   group.add(table);
 
-  // No ground shadow catcher. It was an obvious idea - composite the table's
-  // own shadow onto the painted pavement - but the only ground still visible
-  // is beyond the table's far edge, and a catching plane there also collects
-  // the gobo's leaf shadows and prints them across painted cobbles and wall
-  // that already have their own painted light. The painting keeps its own
-  // shadows; the geometry keeps its shadows to the table.
+  // --- the moving shadow on the painted road -----------------------------
+  // The street is a painting, so its shadows cannot move. To get wind across
+  // it the scene has to lay a real shadow layer over the top: a transparent
+  // catcher on the ground plane, and a canopy off-frame throwing leaf shadow
+  // onto it. Kept to the band of pavement between the table's far edge and
+  // the foot of the building - far enough back and it stops agreeing with the
+  // painting's own perspective, and high enough and it starts printing leaves
+  // onto painted wall that already has its own light.
+  const roadShadow = new THREE.Mesh(
+    new THREE.PlaneGeometry(26, 5.4),
+    new THREE.ShadowMaterial({ opacity: 0.17, transparent: true,
+      depthWrite: false }));
+  roadShadow.rotation.x = -Math.PI / 2;
+  roadShadow.position.set(0.4, 0.004, -3.3);
+  roadShadow.receiveShadow = true;
+  group.add(roadShadow);
 
   // --- the gobo -----------------------------------------------------------
   // A canopy hung over the viewer's shoulder, well outside the frame. It is
@@ -61,7 +71,18 @@ export function buildForeground({ THREE, scene, models, surfaces, clone }) {
   gobo.scale.setScalar(0.60);
   gobo.traverse((node) => { if (node.isMesh) node.castShadow = true; });
   group.add(gobo);
-  swaying.push({ node: gobo, amount: 0.016, rate: 0.5, phase: 1.4 });
+  swaying.push({ node: gobo, amount: 0.046, rate: 0.62, phase: 1.4 });
+
+  // The canopy that dapples the road. Solved the same way as the table gobo
+  // but for a point four metres further back, which puts it higher, further
+  // left and further behind the lens.
+  const roadGobo = clone('Canopy');
+  roadGobo.position.set(-5.95, 0.9, 1.70);
+  roadGobo.rotation.y = 0.6;
+  roadGobo.scale.setScalar(1.05);
+  roadGobo.traverse((node) => { if (node.isMesh) node.castShadow = true; });
+  group.add(roadGobo);
+  swaying.push({ node: roadGobo, amount: 0.030, rate: 0.37, phase: 2.6 });
 
   return { table, group, swaying };
 }

@@ -57,6 +57,7 @@ if (canvas && world && layer) {
     renderer.toneMappingExposure = 1.16;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.autoUpdate = false;
     renderer.setClearColor(0x000000, 0);
 
     const quality = {
@@ -76,27 +77,33 @@ if (canvas && world && layer) {
     // No fog: there is no distant geometry left to lose into it, and fogging
     // a transparent canvas would only wash the painting underneath.
 
-    const sky = new THREE.HemisphereLight('#cfe6f6', '#b08a62', 1.15);
+    const SKY_INTENSITY = 1.15;
+    const sky = new THREE.HemisphereLight('#cfe6f6', '#b08a62', SKY_INTENSITY);
     scene.add(sky);
 
-    const sun = new THREE.DirectionalLight('#ffe2ad', 3.7);
+    const SUN_INTENSITY = 3.7;
+    const sun = new THREE.DirectionalLight('#ffe2ad', SUN_INTENSITY);
     sun.position.set(-4.6, 4.4, 3.4);
+    const SUN_HOME = sun.position.clone();
     sun.castShadow = true;
     sun.shadow.mapSize.set(quality.shadowSize, quality.shadowSize);
     // The shadow frustum only has to cover the table and its near dressing
     // now, which is what buys the resolution: at this size a chip in the
     // enamel and a leaf on the pot plant are both several texels across.
-    sun.shadow.camera.left = -3.2;
-    sun.shadow.camera.right = 3.2;
-    sun.shadow.camera.top = 3.0;
-    sun.shadow.camera.bottom = -3.0;
+    // Wide enough to cover the table and the strip of painted road the
+    // moving dapple falls on, tight enough that a leaf is still several
+    // texels across at this map size.
+    sun.shadow.camera.left = -7.0;
+    sun.shadow.camera.right = 7.0;
+    sun.shadow.camera.top = 6.0;
+    sun.shadow.camera.bottom = -6.0;
     sun.shadow.camera.near = 0.3;
-    sun.shadow.camera.far = 16;
+    sun.shadow.camera.far = 26;
     sun.shadow.bias = -0.00012;
     sun.shadow.normalBias = 0.018;
     scene.add(sun);
     scene.add(sun.target);
-    sun.target.position.set(0.1, 0.70, -0.4);
+    sun.target.position.set(0.1, 0.55, -1.4);
 
     // Cool sky fill from the right, so the shaded sides of the cup and the
     // menu stay readable without flattening the key.
@@ -195,6 +202,7 @@ if (canvas && world && layer) {
       menuCover: loadTexture('menu-cover.jpg', { wrap: false }),
       wallSign: loadTexture('wall-sign.png', { wrap: false }),
       numberPlate: loadTexture('number-plate.jpg', { wrap: false }),
+      tortoiseshell: loadTexture('tortoiseshell.jpg', { repeat: 2 }),
     };
 
     // Named materials come through from Blender, so dressing them with the
@@ -229,7 +237,12 @@ if (canvas && world && layer) {
         m.envMapIntensity = 1.9;
         m.side = THREE.DoubleSide;
       },
-      GlassFrame: (m) => { m.color.set('#4a3425'); m.roughness = 0.19; },
+      GlassFrame: (m) => {
+        m.map = surfaces.tortoiseshell;
+        m.color.set('#ffffff');
+        m.roughness = 0.17;
+        m.envMapIntensity = 1.3;
+      },
       SugarGlass: (m) => { m.transparent = true; m.opacity = 0.42; m.roughness = 0.06; },
       CupGlaze: (m) => { m.roughness = 0.11; m.envMapIntensity = 1.35; },
       CupInner: (m) => { m.roughness = 0.14; },
@@ -492,6 +505,11 @@ if (canvas && world && layer) {
         // Do not burn GPU cycles animating a scene behind a reading view.
         if (document.body.classList.contains('is-dialog-open') && frameNumber % 8 !== 0) return;
         if (reduced.matches && frameNumber > 3 && frameNumber % 18 !== 0) return;
+        // Nothing moves behind a reading view or under reduced motion, so the
+        // shadow map only needs re-rendering when the light or the leaves are
+        // actually moving. It is the most expensive thing in the frame.
+        renderer.shadowMap.needsUpdate = !reduced.matches
+          && !document.body.classList.contains('is-dialog-open');
 
         const dt = Math.min(0.045, (now - last) / 1000 || 0.016);
         last = now;
@@ -539,10 +557,28 @@ if (canvas && world && layer) {
         }
 
         // The breeze. Each mass leans on its own period and phase, so the
-        // planting never pulses in unison; the amounts are a couple of
-        // degrees, which is all it takes to stop foliage looking cast in
-        // resin. Reduced motion holds everything at its rest pose.
+        // planting never pulses in unison, and a slow gust envelope rides
+        // over the top of all of them so the whole set lulls and picks up
+        // together the way air actually moves. Because the canopies are the
+        // only things casting shadow here, swinging them IS the dappled light
+        // travelling across the table and the road.
+        // Reduced motion holds everything at its rest pose.
         if (animate) {
+          // The sun drifts too. A couple of degrees of azimuth and a few per
+          // cent of intensity over about a minute reads as high cloud passing
+          // rather than as a light being dimmed: slow enough that you never
+          // catch it moving, fast enough that the scene is never twice the
+          // same. Everything shares one clock, so the shadows lengthen as the
+          // light warms.
+          const drift = Math.sin(tick * 0.055);
+          const haze = Math.sin(tick * 0.031 + 1.7);
+          sun.position.set(
+            SUN_HOME.x + drift * 0.42,
+            SUN_HOME.y + haze * 0.16,
+            SUN_HOME.z - drift * 0.26,
+          );
+          sun.intensity = SUN_INTENSITY * (1 + haze * 0.07);
+          sky.intensity = SKY_INTENSITY * (1 - haze * 0.05);
           for (let i = 0; i < street.swaying.length; i += 1) {
             const sway = street.swaying[i];
             const gust = 0.72 + 0.28 * Math.sin(tick * 0.21 + sway.phase * 0.6);

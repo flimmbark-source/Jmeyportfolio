@@ -9,9 +9,9 @@ It is a bound object with weight - never a rectangle with a word on it.
 import math
 import kit
 
-W, H = 0.206, 0.292        # a generous bistro card, a touch over A5
+W, H = 0.212, 0.300        # a generous bistro card, a touch over A5
 BOARD = 0.0021
-PAGES = 6
+PAGES = 11
 
 
 def warp(obj, amount, seed, axis='x'):

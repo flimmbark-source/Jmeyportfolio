@@ -287,3 +287,66 @@ Menu, Coffee and Glasses hit targets still track their meshes.
   around the rim.
 - **Looking around is a parallax shift, not a camera move through a street.**
   The backdrop's perspective is fixed, so the shift is kept deliberately small.
+
+
+## Tableware and weather, 2026-11-03
+
+### The objects
+
+Reworked against the reference, which turned out to disagree with instinct in
+two places:
+
+- **The saucer is blue with a cream rim**, not cream with a blue centre. The
+  first attempt had it exactly inverted.
+- **The cup carries a pale porcelain lip** above the glaze, so the rim reads
+  as a bright line rather than as more blue. The cup is also chunkier than a
+  real espresso cup - rim diameter about 1.35 times its height against a true
+  1.15 - because that is what the painting shows.
+- The espresso is crema all over with the dark coffee showing only as a ring
+  at the wall. A dark disc on top rendered as black.
+- Three nicks are knocked into the rim individually. A periodic function was
+  tried first and produced eight even scallops, which read as a crown.
+- The menu gained wire ring binding through punched holes, a thicker page
+  block and a printed cover carrying a coloured drawing of the café's own
+  frontage.
+- The spectacle frames carry a mottled tortoiseshell map, and the ashtray has
+  the four cigarette rests notched into its rim.
+
+### Wind and shifting light
+
+The street is a painting, so its shadows cannot move on their own. To get
+weather across it the scene lays a real shadow layer over the top: a
+transparent catcher on the ground plane, and a canopy off-frame throwing leaf
+shadow onto it. A second canopy does the same for the table. Because those
+canopies are the only shadow casters in the scene, swaying them *is* the
+dappled light travelling.
+
+The sun drifts as well - a couple of degrees of azimuth and a few per cent of
+intensity over about a minute, which reads as high cloud passing rather than
+as a light being dimmed. Everything shares one clock, so shadows lengthen as
+the light warms. All of it is gated on reduced motion, and the shadow map is
+only re-rendered when something is actually moving, since it is the most
+expensive thing in the frame.
+
+Verified by measurement rather than by eye: sampling the same regions seven
+and fourteen seconds apart gives a mean luminance change of 15-16 on the 3D
+table, 2.4-4.0 on the strip of painted road the catcher covers, and 0.4-0.7
+on the painted wall. The wall figure is the one that matters - the catcher is
+deliberately bounded so the moving leaves are never printed onto painted
+architecture that already has its own light.
+
+### The projection experiment
+
+Painting the 3D objects with the backdrop's own pixels - camera projection -
+is the right instinct and `tools/cafe-assets/project_paint.py` implements it.
+It fails on content rather than on mechanics: the painting's own menu, cup,
+glasses, ashtray and the sitter's knee cover most of the tabletop it shows, so
+strict projection recovers about 4% of the map, and collaging the few clean
+patches across the rest produced visible diagonal repetition that read worse
+than the procedural map. The script is kept as the record, and would be worth
+revisiting if the backdrop were ever regenerated with a bare table.
+
+What the painting's table actually has that a generated map was missing turned
+out to be simpler than brushwork: larger, flatter, pale blue-grey chipped
+patches with soft dark lips. That is well within procedural reach and is what
+the enamel map now draws.

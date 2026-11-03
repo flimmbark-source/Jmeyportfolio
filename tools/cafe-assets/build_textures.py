@@ -268,19 +268,20 @@ def enamel(size=1024, seed=19):
 
     # chips: a pale grey primer island with a dark lifted-paint outline, which
     # is what a real chip looks like. Density follows the edge weight.
-    for _ in range(820):
+    for _ in range(640):
         x, y = rng.uniform(0, size), rng.uniform(0, size)
         wear = edge_weight(x, y)
         arc = math.exp(-((math.hypot(x - size * 0.42, y - size * 0.52)
                           - size * 0.26) ** 2) / (2 * (size * 0.085) ** 2))
         if rng.random() > wear * 1.05 + arc * 0.30 + 0.022:
             continue
-        r = rng.uniform(3.0, 10.5) * (0.5 + wear)
+        r = rng.uniform(4.5, 12.5) * (0.55 + wear)
         pts = []
-        for i in range(7):
-            a = i / 7 * math.tau
-            rr = r * rng.uniform(0.55, 1.35)
-            pts.append((x + math.cos(a) * rr, y + math.sin(a) * rr * 0.75))
+        lobes = rng.randint(8, 12)
+        for i in range(lobes):
+            a = i / lobes * math.tau
+            rr = r * rng.uniform(0.48, 1.38)
+            pts.append((x + math.cos(a) * rr, y + math.sin(a) * rr * 0.78))
         draw.polygon(pts, fill=(112, 56, 50, 120))
         inner = [(x + (px - x) * 0.62, y + (py - y) * 0.62) for px, py in pts]
         # exposed primer is a dull warm grey, and it varies: a uniform light
@@ -288,9 +289,29 @@ def enamel(size=1024, seed=19):
         # Exposed primer, not bare metal: a cool pale grey that the red still
         # shows through. Opaque near-white chips read as confetti dropped on
         # the table rather than as enamel lifted off it.
-        tone = rng.randint(128, 168)
-        draw.polygon(inner, fill=(tone + rng.randint(0, 10), tone + rng.randint(0, 8),
-                                  tone + rng.randint(2, 16), rng.randint(108, 164)))
+        tone = rng.randint(138, 174)
+        draw.polygon(inner, fill=(tone + rng.randint(0, 8), tone + rng.randint(2, 10),
+                                  tone + rng.randint(8, 20), rng.randint(104, 152)))
+
+    # A handful of large worn patches where the enamel has gone altogether,
+    # along the high-traffic arc. These are the shapes that read at a glance;
+    # the small chipping only registers close up.
+    for _ in range(9):
+        a = rng.uniform(0, math.tau)
+        rad = size * rng.uniform(0.16, 0.34)
+        x = size * 0.44 + math.cos(a) * rad
+        y = size * 0.52 + math.sin(a) * rad
+        R = rng.uniform(15, 29)
+        pts = []
+        lobes = rng.randint(10, 15)
+        for i in range(lobes):
+            t = i / lobes * math.tau
+            rr = R * rng.uniform(0.42, 1.3)
+            pts.append((x + math.cos(t) * rr, y + math.sin(t) * rr * 0.7))
+        draw.polygon(pts, fill=(104, 58, 52, 76))
+        inner = [(x + (px - x) * 0.74, y + (py - y) * 0.74) for px, py in pts]
+        tone = rng.randint(142, 178)
+        draw.polygon(inner, fill=(tone, tone + 4, tone + 14, rng.randint(96, 138)))
 
     # scratches follow the wiping direction
     for _ in range(560):
@@ -524,6 +545,22 @@ def menu_cover(w=820, h=1160):
     centred("coffee · conversation · curiosities", h - 112, f_foot, ink + (180,))
     centred("EST. ALWAYS", h - 66, font(24), accent + (165,), spacing=5)
 
+    # leafy sprigs at two corners, as the reference cover has
+    for corner, flip in (((104, 470), 1), ((w - 104, 760), -1)):
+        sx, sy = corner
+        draw.line([(sx, sy), (sx + flip * 54, sy - 46), (sx + flip * 96, sy - 118)],
+                  fill=(96, 118, 74, 210), width=4)
+        for k in range(7):
+            t = k / 6
+            lx = sx + flip * (54 * t + 42 * t * t)
+            ly = sy - (46 * t + 72 * t * t)
+            # small paired leaves, not blobs: at this size the first pass read
+            # as a green caterpillar crawling up the cover
+            for side in (-1, 1):
+                draw.ellipse((lx - 11, ly - 6 + side * 7, lx + 11, ly + 6 + side * 7),
+                             fill=(104, 132, 80, 165))
+            draw.line((lx - 4, ly, lx + 6, ly), fill=(84, 108, 66, 150), width=2)
+
     # honest wear: a ring stain, a thumbed corner, a crease
     draw.ellipse((w - 330, 560, w - 90, 800), outline=(118, 78, 48, 52), width=7)
     draw.polygon([(w - 54, h - 62), (w - 190, h - 62), (w - 54, h - 196)],
@@ -703,6 +740,32 @@ def number_plate(w=256, h=330):
          quality=88)
 
 
+def tortoiseshell(size=512, seed=404):
+    """Mottled acetate for the spectacle frames. The frames carry a smart-UV
+    unwrap, so the islands land arbitrarily - which for tortoiseshell is not
+    a problem but the whole point: the pattern wants to be irregular."""
+    rng = random.Random(seed)
+    base = fbm(size, 5, 5, seed)
+    img = Image.new('RGB', (size, size), (122, 74, 34))
+    draw = ImageDraw.Draw(img, 'RGBA')
+    for _ in range(190):                      # dark resin blooms
+        x, y = rng.uniform(0, size), rng.uniform(0, size)
+        rx, ry = rng.uniform(9, 46), rng.uniform(7, 34)
+        draw.ellipse((x - rx, y - ry, x + rx, y + ry),
+                     fill=(rng.randint(36, 62), rng.randint(20, 34),
+                           rng.randint(10, 20), rng.randint(110, 205)))
+    for _ in range(150):                      # amber flecks caught in them
+        x, y = rng.uniform(0, size), rng.uniform(0, size)
+        rx, ry = rng.uniform(5, 26), rng.uniform(4, 18)
+        draw.ellipse((x - rx, y - ry, x + rx, y + ry),
+                     fill=(rng.randint(176, 220), rng.randint(116, 154),
+                           rng.randint(44, 74), rng.randint(70, 150)))
+    img = img.filter(ImageFilter.GaussianBlur(2.2))
+    arr = np.asarray(img, np.float32) / 255.0 * (0.82 + 0.34 * base)[..., None]
+    save(Image.fromarray((np.clip(arr, 0, 1) * 255).astype(np.uint8), 'RGB'),
+         "tortoiseshell.jpg", 512, 88)
+
+
 def main():
     print("Café Apollo surface maps ->", OUT)
     plaster()
@@ -713,6 +776,7 @@ def main():
     wall_sign()
     sky()
     number_plate()
+    tortoiseshell()
 
 
 if __name__ == "__main__":
