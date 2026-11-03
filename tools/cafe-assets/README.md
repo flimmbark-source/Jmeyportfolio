@@ -10,6 +10,13 @@ changes.
 | --- | --- |
 | `public/cafe/models/*.glb` | `build_all.py` (Blender) |
 | `public/cafe/tex/*` | `build_textures.py` (Pillow + NumPy) |
+| `public/cafe/backdrop.jpg` | `prepare_backdrop.py` (Pillow) |
+
+The scene is a hybrid: the street is the painted backdrop and only the table
+and the objects on it are geometry. The street models - `building.glb`, and
+most of `props.glb` and `nature.glb` - are still built and still committed,
+but only the table, cup, menu, glasses, ashtray and one canopy (used off-frame
+as a lighting gobo) are loaded at runtime.
 
 ## Requirements
 

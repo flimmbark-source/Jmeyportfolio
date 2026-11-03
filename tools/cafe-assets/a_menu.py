@@ -75,8 +75,27 @@ def build():
     kit.assign(front, cover)
     parts.append(front)
 
-    # --- cloth tape wrapped round the spine, creased over both boards.
+    # --- ring binding, as in the reference: three wire rings through punched
+    # holes down the spine. A taped spine was plausible but it is not what the
+    # approved art shows, and the rings are most of what reads as "menu" at a
+    # glance.
     spine_x = -W / 2
+    ring_mat = kit.material("MenuRing", kit.hexcolor('#8a7a52'), 0.30, 0.92)
+    stack = BOARD * 2 + PAGES * 0.00098
+    for y in (-0.082, 0.0, 0.082):
+        ring = kit.torus(f"ring{y:.3f}", stack * 0.62 + 0.0042, 0.0019, 16, 7,
+                         (spine_x + 0.013, y, stack * 0.5),
+                         (math.radians(90), 0, 0))
+        kit.shade_smooth(ring, 45)
+        kit.assign(ring, ring_mat)
+        parts.append(ring)
+        for board_z in (BOARD * 0.5, stack - BOARD * 0.5):
+            hole = kit.cylinder(f"hole{y:.3f}", 0.0032, BOARD * 1.6, 10,
+                                (spine_x + 0.013, y, board_z))
+            kit.assign(hole, kit.material("MenuHole", kit.hexcolor('#4a3a28'), 0.9))
+            parts.append(hole)
+
+    # --- cloth tape wrapped round the spine, creased over both boards.
     tape_w = 0.022
     for side, z in (("b", BOARD * 0.5 - 0.0014),
                     ("f", BOARD + PAGES * 0.00098 + 0.0016 + BOARD * 0.5 + 0.0012)):
@@ -90,7 +109,7 @@ def build():
         (spine_x - 0.0020, 0.0, (BOARD + PAGES * 0.00098) / 2 + 0.0008),
         (spine_x + 0.0015, H / 2 - 0.003, (BOARD + PAGES * 0.00098) / 2)],
         radius=(BOARD + PAGES * 0.00098) / 2 + 0.0022, segments=8)
-    wrap.scale = (0.50, 1.0, 1.0)
+    wrap.scale = (0.34, 1.0, 1.0)
     kit.apply_all(kit.active(wrap))
     kit.assign(wrap, tape)
     parts.append(wrap)

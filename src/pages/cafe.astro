@@ -98,8 +98,16 @@ const json = JSON.stringify(entries).replace(/</g, '\\u003c');
 
     <main class="cafe-world" id="cafe-world" aria-label="Illustrated interactive café">
       <div class="cafe-scene" id="cafe-scene" aria-hidden="true">
+        <!--
+          Hybrid staging. The street is a painted backdrop; the table and the
+          objects on it are real geometry rendered over it on a transparent
+          canvas. The backdrop is anchored by its table line rather than by
+          its centre, so the painted edge and the 3D table edge stay aligned
+          at every aspect ratio.
+        -->
+        <img id="cafe-backdrop" class="cafe-backdrop" src="/cafe/backdrop.jpg" alt="" />
         <canvas id="cafe-canvas" aria-hidden="true"></canvas>
-        <img id="cafe-scene-fallback" class="cafe-scene-fallback" src="/cafe/street.svg" alt="" />
+        <img id="cafe-scene-fallback" class="cafe-scene-fallback" src="/cafe/street.svg" alt="" hidden />
       </div>
 
       <div class="cafe-objects" id="cafe-objects">

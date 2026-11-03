@@ -10,3 +10,6 @@ artifacts/
 # Python bytecode
 __pycache__/
 *.pyc
+
+# Asset review renders
+tools/cafe-assets/preview/

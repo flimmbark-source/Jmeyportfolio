@@ -130,17 +130,47 @@ def props():
     made = []
     offset = 0.0
     for name, builder in a_props.BUILDERS.items():
-        obj = builder()
-        obj.name = name
-        obj.data.name = name
-        obj.location.x += offset
+        built = builder()
+        # A builder may return several named objects (the walker ships as a
+        # body and a pair of legs so the scene can swing them).
+        group = built if isinstance(built, (list, tuple)) else [built]
+        for index, obj in enumerate(group):
+            if len(group) == 1:
+                obj.name = obj.data.name = name
+            else:
+                obj.data.name = obj.name
+            obj.location.x += offset
+            made.append(obj)
         offset += 6.0
-        made.append(obj)
     os.makedirs(OUT, exist_ok=True)
     kit.export(os.path.join(OUT, "props.glb"), made, "props")
 
 
-ASSETS = ("table", "cup", "menu", "glasses", "building", "props")
+def nature():
+    """Canopy, bougainvillea and vine in one GLB, each its own named object."""
+    import a_nature
+    if PREVIEW_ON:
+        for name, builder in a_nature.BUILDERS.items():
+            kit.reset()
+            kit._MATERIALS.clear()
+            obj = builder()
+            obj.name = name
+            render_preview("nature-" + name.lower())
+    kit.reset()
+    kit._MATERIALS.clear()
+    made = []
+    offset = 0.0
+    for name, builder in a_nature.BUILDERS.items():
+        obj = builder()
+        obj.name = obj.data.name = name
+        obj.location.x += offset
+        offset += 12.0
+        made.append(obj)
+    os.makedirs(OUT, exist_ok=True)
+    kit.export(os.path.join(OUT, "nature.glb"), made, "nature")
+
+
+ASSETS = ("table", "cup", "menu", "glasses", "building", "props", "nature")
 
 
 def main():
@@ -153,6 +183,8 @@ def main():
     for name in wanted:
         if name == "props":
             props()
+        elif name == "nature":
+            nature()
         elif name in builders:
             run(name, builders[name], preview=True)
         else:

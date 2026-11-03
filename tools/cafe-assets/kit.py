@@ -363,6 +363,11 @@ def leaf(name, length=0.09, width=0.035, curl=0.35, segments=7):
     return link(bpy.data.objects.new(name, mesh))
 
 
+def remove(obj):
+    if obj is not None and obj.name in bpy.data.objects:
+        bpy.data.objects.remove(obj, do_unlink=True)
+
+
 def duplicate(obj, name, location=(0, 0, 0), rotation=(0, 0, 0), scale=None):
     copy = obj.copy()
     copy.data = obj.data.copy()
@@ -528,6 +533,21 @@ def planar_uv(obj, width, depth, offset=(0.0, 0.0), flip=False):
             # glTF's Y-up conversion turns Blender's +Y into -Z, so a
             # top-down projection lands vertically inverted on screen.
             uv[loop_index].uv = (u, 1.0 - v) if flip else (u, v)
+    return obj
+
+
+def planar_uv_xz(obj, width, height, flip_u=False):
+    """Project from the front (-Y) into 0..1 across X and Z, for wall plates
+    and signage whose artwork has to land square on one face."""
+    mesh = obj.data
+    if not mesh.uv_layers:
+        mesh.uv_layers.new(name="UVMap")
+    uv = mesh.uv_layers.active.data
+    for poly in mesh.polygons:
+        for loop_index in poly.loop_indices:
+            co = mesh.vertices[mesh.loops[loop_index].vertex_index].co
+            u = co.x / width + 0.5
+            uv[loop_index].uv = (1.0 - u if flip_u else u, co.z / height + 0.5)
     return obj
 
 

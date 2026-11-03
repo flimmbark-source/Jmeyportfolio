@@ -1,29 +1,40 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { buildStreetSet } from './cafe-scenography.js';
+import { buildForeground } from './cafe-scenography.js';
 
 /**
- * Café Apollo - the three-dimensional café.
+ * Café Apollo - the hybrid café.
  *
- * The scene is assembled from artist-authored meshes built in Blender
- * (`tools/cafe-assets/`, exported to `public/cafe/models/`) and painterly
- * surface maps authored into `public/cafe/tex/`. Nothing here is a Three.js
- * primitive standing in for an object.
+ * The street is a painted backdrop; the table and the objects on it are real
+ * geometry rendered over it on a transparent canvas. That split is deliberate.
+ * A real-time renderer was never going to reach the painting's brushwork, and
+ * a flat image was never going to let you pick up a menu, so each half does
+ * the job it is actually good at:
  *
- * Two rules govern the staging:
- *  1. Real-world scale, one unit to the metre. The table is 86 cm across and
- *     the espresso cup is 6.3 cm, so the seated camera - not an inflated
- *     prop - is what makes the foreground feel close.
- *  2. The HTML interface is untouched. Semantic buttons stay projected over
- *     the meshes, so mouse, touch and keyboard remain equivalent.
+ *   painted   the street, the architecture, the light, the people. Fixed, and
+ *             far better than anything this scene could render.
+ *   geometry  the table and everything on it. Lit to match the painting,
+ *             casting a real shadow onto it, and shifting against it when the
+ *             viewer looks around - which is the one thing the image cannot do.
+ *
+ * Registration between the two is handled by anchoring: the backdrop is placed
+ * by its painted table line rather than by its centre (see cafe-world.css),
+ * and the camera below is composed so the real table's far edge lands on that
+ * same line. They stay aligned at every aspect ratio without per-breakpoint
+ * fudging.
+ *
+ * Everything the interface relies on is unchanged: semantic buttons stay
+ * projected over the meshes, so mouse, touch and keyboard remain equivalent.
  */
 const canvas = document.getElementById('cafe-canvas');
 const world = document.getElementById('cafe-world');
 const layer = document.getElementById('cafe-objects');
 const fallback = document.getElementById('cafe-scene-fallback');
+const backdrop = document.getElementById('cafe-backdrop');
 
 const MODELS = '/cafe/models/';
 const TEX = '/cafe/tex/';
+const TEX_BACKDROP = '/cafe/backdrop.jpg';
 const TABLE_TOP = 0.745;
 
 if (canvas && world && layer) {
@@ -34,7 +45,7 @@ if (canvas && world && layer) {
   let renderer;
   try {
     renderer = new THREE.WebGLRenderer({
-      canvas, antialias: true, alpha: false, powerPreference: 'high-performance',
+      canvas, antialias: true, alpha: true, powerPreference: 'high-performance',
     });
   } catch (error) {
     console.warn('3D scene unavailable; retaining illustrated fallback', error);
@@ -43,165 +54,115 @@ if (canvas && world && layer) {
   if (renderer) {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.02;
+    renderer.toneMappingExposure = 1.16;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setClearColor(0x000000, 0);
 
     const quality = {
       shadows: true,
-      shadowSize: smallScreen.matches ? 1024 : 2048,
+      shadowSize: smallScreen.matches ? 1536 : 3072,
       anisotropy: Math.min(renderer.capabilities.getMaxAnisotropy(), 8),
     };
 
     // ------------------------------------------------------------- the light
-    // Low morning sun from the left, a cool sky above and a warm bounce off
-    // the pavement. The first pass was ambient-dominated, which is why every
-    // surface read as the same flat value.
+    // Matched to the painting rather than invented. In the backdrop the sun
+    // is low and off to the left-front: the awnings throw their shadows down
+    // and to the right, the right-hand wall is raked across its face, and the
+    // table catches a warm highlight along its left edge. These numbers put
+    // the key in the same place, so the geometry's shadows run the same way
+    // as the painted ones and the two halves read as one photograph.
     const scene = new THREE.Scene();
-    // Aerial perspective is doing real work here: it is what separates the
-    // table from the kerb from the far end of the alley. At the first
-    // density the whole street sat in one tonal plane.
-    const HAZE = new THREE.Color('#dfd0b4');
-    scene.fog = new THREE.FogExp2(HAZE, 0.0295);
+    // No fog: there is no distant geometry left to lose into it, and fogging
+    // a transparent canvas would only wash the painting underneath.
 
-    const sky = new THREE.HemisphereLight('#bfe0f4', '#a98c6c', 0.76);
+    const sky = new THREE.HemisphereLight('#cfe6f6', '#b08a62', 1.15);
     scene.add(sky);
 
-    // Low morning sun raking in from the left, almost across the street
-    // rather than down onto it. Two things follow from the low angle: long
-    // shadows that travel right across the empty pavement and give the
-    // mid-ground something to look at, and grazing light on the plaster that
-    // picks out every sill, pipe and patch. The first pass lit from behind
-    // the table, which hid its shadow and left it reading as a flat rug.
-    const sun = new THREE.DirectionalLight('#ffdfa8', 3.5);
-    sun.position.set(-12.5, 8.6, 2.6);
+    const sun = new THREE.DirectionalLight('#ffe2ad', 3.7);
+    sun.position.set(-4.6, 4.4, 3.4);
     sun.castShadow = true;
     sun.shadow.mapSize.set(quality.shadowSize, quality.shadowSize);
-    // Wide enough that the edge of the shadow frustum never lands inside the
-    // frame; at the first size it drew a hard vertical seam across the
-    // foreground pavement.
-    sun.shadow.camera.left = -17;
-    sun.shadow.camera.right = 17;
-    sun.shadow.camera.top = 15;
-    sun.shadow.camera.bottom = -13;
-    sun.shadow.camera.near = 0.4;
-    sun.shadow.camera.far = 60;
-    sun.shadow.bias = -0.00016;
-    sun.shadow.normalBias = 0.012;
+    // The shadow frustum only has to cover the table and its near dressing
+    // now, which is what buys the resolution: at this size a chip in the
+    // enamel and a leaf on the pot plant are both several texels across.
+    sun.shadow.camera.left = -3.2;
+    sun.shadow.camera.right = 3.2;
+    sun.shadow.camera.top = 3.0;
+    sun.shadow.camera.bottom = -3.0;
+    sun.shadow.camera.near = 0.3;
+    sun.shadow.camera.far = 16;
+    sun.shadow.bias = -0.00012;
+    sun.shadow.normalBias = 0.018;
     scene.add(sun);
     scene.add(sun.target);
-    sun.target.position.set(0, 0.55, -3.0);
+    sun.target.position.set(0.1, 0.70, -0.4);
 
-    // Sky fill from the opposite side keeps shadow sides readable without
-    // flattening the key.
-    const fill = new THREE.DirectionalLight('#a6c8e0', 0.55);
-    fill.position.set(7.5, 3.6, 3.2);
+    // Cool sky fill from the right, so the shaded sides of the cup and the
+    // menu stay readable without flattening the key.
+    const fill = new THREE.DirectionalLight('#a9cbe4', 0.70);
+    fill.position.set(5.0, 2.6, 1.6);
     scene.add(fill);
 
-    // A short-range warm bounce so the table top is not lit only from above.
-    const bounce = new THREE.PointLight('#ffd3a0', 1.1, 2.6, 2.0);
-    bounce.position.set(0.30, 0.90, 0.70);
+    // A short warm bounce standing in for the light coming back off the lit
+    // pavement in the painting.
+    const bounce = new THREE.PointLight('#ffd09a', 1.3, 2.4, 2.0);
+    bounce.position.set(-0.45, 0.95, 0.30);
     scene.add(bounce);
 
-    // --------------------------------------------------------------- the sky
-    // A vertical gradient dome rather than a flat background colour, so the
-    // horizon glows warm behind the hazy end of the street. The same dome is
-    // pre-filtered into an environment map below.
-    const skyDome = new THREE.Mesh(
-      new THREE.SphereGeometry(160, 24, 16),
-      new THREE.ShaderMaterial({
-        side: THREE.BackSide,
-        depthWrite: false,
-        fog: false,
-        uniforms: {
-          zenith: { value: new THREE.Color('#79b4d8') },
-          middle: { value: new THREE.Color('#bcd9e4') },
-          horizon: { value: new THREE.Color('#f2e3c6') },
-        },
-        vertexShader: `
-          varying vec3 vPos;
-          void main() {
-            vPos = position;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          }`,
-        fragmentShader: `
-          uniform vec3 zenith; uniform vec3 middle; uniform vec3 horizon;
-          varying vec3 vPos;
-          void main() {
-            float h = clamp(normalize(vPos).y * 0.5 + 0.5, 0.0, 1.0);
-            vec3 c = mix(horizon, middle, smoothstep(0.46, 0.60, h));
-            c = mix(c, zenith, smoothstep(0.58, 0.92, h));
-            gl_FragColor = vec4(c, 1.0);
-          }`,
-      }),
-    );
-    scene.add(skyDome);
-
-    // Pre-filter the sky into an environment map. Without one, every metal in
-    // the scene renders black and the ceramic glaze, the smoked lenses and the
-    // window panes have nothing to reflect - which is most of why the first
-    // pass read as matte plastic rather than as glazed, polished materials.
+    // ------------------------------------------------------- the environment
+    // The backdrop doubles as the environment map. Mapping a flat painting as
+    // an equirectangular panorama is not physically meaningful, but the point
+    // here is colour agreement, not accuracy: the glaze on the cup and the
+    // smoked lenses pick up the painting's own warm stone and blue sky, so
+    // the reflections cannot disagree with the street behind them. The canvas
+    // itself stays transparent - the painting is a DOM layer underneath.
     const pmrem = new THREE.PMREMGenerator(renderer);
     pmrem.compileEquirectangularShader();
-    const envScene = new THREE.Scene();
-    const envDome = skyDome.clone();
-    envDome.material = skyDome.material.clone();
-    envScene.add(envDome);
-    // A bright ground card so reflections pick up warm bounce from below
-    // rather than a black floor.
-    const envGround = new THREE.Mesh(
-      new THREE.PlaneGeometry(600, 600),
-      new THREE.MeshBasicMaterial({ color: '#b9a687' }));
-    envGround.rotation.x = -Math.PI / 2;
-    envGround.position.y = -6;
-    envScene.add(envGround);
-    const environment = pmrem.fromScene(envScene, 0.04).texture;
-    scene.environment = environment;
-    scene.environmentIntensity = 0.95;
-    pmrem.dispose();
+    const backdropTexture = new THREE.TextureLoader().load(TEX_BACKDROP);
+    backdropTexture.colorSpace = THREE.SRGBColorSpace;
+    backdropTexture.mapping = THREE.EquirectangularReflectionMapping;
+    let environment = null;
+    const applyEnvironment = () => {
+      if (environment) return;
+      environment = pmrem.fromEquirectangular(backdropTexture).texture;
+      scene.environment = environment;
+      scene.environmentIntensity = 1.05;
+    };
+    if (backdropTexture.image) applyEnvironment();
+    else backdropTexture.addEventListener('load', applyEnvironment);
 
     // ------------------------------------------------------------- the camera
     const camera = new THREE.PerspectiveCamera(52, 1, 0.05, 260);
 
-    // Seated framing. `pitch` is implicit in the look target: the near edge of
-    // the table enters the bottom of frame, which is what stops the scene
-    // reading as a diorama viewed from across the room.
+    // Composed to register with the painting, not derived in the abstract.
+    // Two things have to be true at once and both are measured off the
+    // backdrop: the real table's far edge has to land on the painted table
+    // line at 63.5% of frame height, and the real table has to be wide enough
+    // to still span the frame there, because the painted one does. That
+    // second constraint is what puts the eye so close and so low - in the
+    // painting you are leaning over the table, and the near edge is behind
+    // the lens rather than inside the picture.
     const VIEWS = {
-      // Worked out from the geometry, not by eye. Two angles govern this
-      // composition and they pull against each other:
-      //
-      //   the table's far edge sits atan(eyeAboveTop / distanceToFarEdge)
-      //     below horizontal, and everything below that is table;
-      //   the top of frame sits (fov / 2 - pitch) ABOVE horizontal, so the
-      //     façade only stays in view while the pitch is under half the fov.
-      //
-      // Pitching further down to enlarge the table therefore deletes the
-      // street: past fov/2 the horizon itself leaves the frame. The lever
-      // that gives both is table size, which is why the top is a 1.15 m
-      // four-top. With a 1.15 m seated eye - a real seated eye height, not a
-      // standing one - the far edge lands around 42% down and the near edge
-      // and both near corners run off the bottom and the sides, so the table
-      // holds roughly 58% of the frame while the painted sign, the kerb, the
-      // bollards and the mouth of the side street all stay above it.
       desktop: {
-        fov: 62,
-        eye: new THREE.Vector3(0, 1.150, 0.660),
-        look: new THREE.Vector3(0, 0.016, -1.840),
-        sway: 0.075,
+        fov: 60,
+        eye: new THREE.Vector3(0, 1.168, 0.268),
+        look: new THREE.Vector3(0, 0.420, -1.870),
+        sway: 0.055,
       },
       tablet: {
-        fov: 66,
-        eye: new THREE.Vector3(0, 1.155, 0.640),
-        look: new THREE.Vector3(0, 0.063, -1.560),
-        sway: 0.065,
+        fov: 64,
+        eye: new THREE.Vector3(0, 1.172, 0.246),
+        look: new THREE.Vector3(0, 0.430, -1.870),
+        sway: 0.048,
       },
-      // Portrait is composed separately rather than cropped: a taller frame
-      // needs a wider vertical angle to hold the same share of table.
+      // Portrait crops the painting hard at the sides, so the props close up
+      // to stay inside the narrower horizontal angle.
       mobile: {
         fov: 70,
-        eye: new THREE.Vector3(0.03, 1.160, 0.620),
-        look: new THREE.Vector3(-0.04, 0.079, -1.380),
-        sway: 0.050,
+        eye: new THREE.Vector3(0.015, 1.180, 0.220),
+        look: new THREE.Vector3(-0.02, 0.400, -1.870),
+        sway: 0.038,
       },
     };
     const view = () => (smallScreen.matches ? VIEWS.mobile
@@ -233,6 +194,7 @@ if (canvas && world && layer) {
       enamelRough: loadTexture('enamel-rough.jpg', { wrap: false, srgb: false }),
       menuCover: loadTexture('menu-cover.jpg', { wrap: false }),
       wallSign: loadTexture('wall-sign.png', { wrap: false }),
+      numberPlate: loadTexture('number-plate.jpg', { wrap: false }),
     };
 
     // Named materials come through from Blender, so dressing them with the
@@ -245,9 +207,9 @@ if (canvas && world && layer) {
         m.roughnessMap = surfaces.enamelRough;
         // Slightly knocked back from the raw map: full-strength the enamel
         // read as fresh pillar-box red rather than a repainted street table.
-        m.color.set('#bfada6');
+        m.color.set('#ffffff');
         m.roughness = 1.0;
-        m.metalness = 0.16;
+        m.metalness = 0.04;
       },
       MenuCover: (m) => {
         m.map = surfaces.menuCover;
@@ -281,6 +243,11 @@ if (canvas && world && layer) {
       material.roughness = 1.0;
     }
 
+    // Foliage ships as single-sided cards - the solidify shell was pure
+    // weight - so every leaf, bract and petal material is turned double
+    // sided here, and softened so it reads as a translucent leaf in sun.
+    const FOLIAGE = /^(Canopy|BougLeaf|Bract|VineLeaf|Leaf)\d*$/;
+
     function dress(root) {
       root.traverse((node) => {
         if (!node.isMesh) return;
@@ -291,7 +258,13 @@ if (canvas && world && layer) {
           if (!material || material.userData.dressed) return;
           material.userData.dressed = true;
           const handler = DRESS[material.name];
-          if (handler) handler(material);
+          if (handler) {
+            handler(material);
+          } else if (FOLIAGE.test(material.name || '')) {
+            material.side = THREE.DoubleSide;
+            material.roughness = 0.68;
+            material.envMapIntensity = 0.5;
+          }
           material.needsUpdate = true;
         });
       });
@@ -317,12 +290,19 @@ if (canvas && world && layer) {
 
     Promise.all([
       load('table.glb'), load('cup.glb'), load('menu.glb'),
-      load('glasses.glb'), load('building.glb'), load('props.glb'),
-    ]).then(([tableSrc, cupSrc, menuSrc, glassesSrc, buildingSrc, propsSrc]) => {
-      [tableSrc, cupSrc, menuSrc, glassesSrc, buildingSrc, propsSrc].forEach(dress);
+      load('glasses.glb'), load('props.glb'), load('nature.glb'),
+    ]).then(([tableSrc, cupSrc, menuSrc, glassesSrc, propsSrc, natureSrc]) => {
+      // The corner building is still in the repository and still built by the
+      // asset pipeline, but the painting supplies the street now, so loading
+      // it would be geometry that never appears on screen. The foliage kit
+      // does still load: one canopy from it hangs outside the frame as the
+      // gobo that dapples the table.
+      [tableSrc, cupSrc, menuSrc, glassesSrc, propsSrc, natureSrc].forEach(dress);
 
       const kit = new Map();
-      propsSrc.children.slice().forEach((child) => { kit.set(child.name, child); });
+      [propsSrc, natureSrc].forEach((source) => {
+        source.children.slice().forEach((child) => { kit.set(child.name, child); });
+      });
       const clone = (name) => {
         const source = kit.get(name);
         if (!source) return new THREE.Group();
@@ -333,13 +313,18 @@ if (canvas && world && layer) {
         return copy;
       };
 
-      const models = { table: tableSrc, building: buildingSrc };
-      const street = buildStreetSet({ THREE, scene, models, surfaces, clone, quality });
+      const models = { table: tableSrc };
+      const street = buildForeground({ THREE, scene, models, surfaces, clone });
+      street.swaying.forEach((entry) => {
+        entry.restX = entry.node.rotation.x;
+        entry.restZ = entry.node.rotation.z;
+      });
 
-      // The browser QA gate asserts this, after an early refactor once passed
-      // a bare texture where a Material belonged and rendered nothing.
+      // The browser QA gate asserts this. In the hybrid it is the table, not
+      // a façade, that has to be a real lit Material - an early refactor once
+      // passed a bare texture where a Material belonged and rendered nothing.
       let facadeMaterial = null;
-      street.facade.traverse((node) => {
+      street.table.traverse((node) => {
         if (!facadeMaterial && node.isMesh) {
           facadeMaterial = Array.isArray(node.material) ? node.material[0] : node.material;
         }
@@ -359,14 +344,12 @@ if (canvas && world && layer) {
 
       const coffee = new THREE.Group();
       coffee.add(cupSrc);
-      cupSrc.scale.setScalar(1.10);
       coffee.position.set(0.118, TABLE_TOP, 0.268);
       coffee.rotation.y = -0.62;
       scene.add(coffee);
 
       const glasses = new THREE.Group();
       glasses.add(glassesSrc);
-      glassesSrc.scale.setScalar(1.16);
       glasses.position.set(0.392, TABLE_TOP, 0.178);
       glasses.rotation.y = 0.42;
       scene.add(glasses);
@@ -424,22 +407,31 @@ if (canvas && world && layer) {
         // The desktop spread therefore pushes the menu and the cup straight
         // off both edges of a narrow frame, so the props close up and stack
         // front-to-back as the viewport narrows rather than being scaled.
+        // With the eye this close and this low, only a band of the table is
+        // actually in frame - roughly z -0.16 to -0.60 - and the horizontal
+        // angle collapses as the viewport narrows. So each breakpoint gets
+        // its own placement AND its own prop scale: the painting shows a
+        // large bistro menu filling a third of the width, which a real A5
+        // card at this distance does not do on its own.
         const staging = portrait ? {
-          menu: [-0.070, 0.215, -0.15],
-          coffee: [0.112, 0.145],
-          glasses: [0.010, -0.055, 0.22],
-          ashtray: [-0.195, -0.150],
+          menu: [-0.058, -0.300, -0.16, 1.02],
+          coffee: [0.086, -0.240, 1.04],
+          glasses: [0.034, -0.420, 0.26, 0.98],
+          ashtray: [0.235, -0.520],
         } : midScreen.matches ? {
-          menu: [-0.168, 0.205, -0.26],
-          coffee: [0.105, 0.262],
-          glasses: [0.215, 0.120, 0.38],
-          ashtray: [-0.330, -0.120],
+          menu: [-0.168, -0.320, -0.26, 1.16],
+          coffee: [0.078, -0.270, 1.14],
+          glasses: [0.222, -0.320, 0.40, 1.10],
+          ashtray: [-0.120, -0.500],
         } : {
-          menu: [-0.286, 0.212, -0.30],
-          coffee: [0.118, 0.268],
-          glasses: [0.392, 0.178, 0.42],
-          ashtray: [-0.448, -0.112],
+          menu: [-0.262, -0.330, -0.32, 1.30],
+          coffee: [0.100, -0.280, 1.26],
+          glasses: [0.400, -0.310, 0.44, 1.22],
+          ashtray: [0.300, -0.490],
         };
+        menuSrc.scale.setScalar(staging.menu[3]);
+        cupSrc.scale.setScalar(staging.coffee[2]);
+        glassesSrc.scale.setScalar(staging.glasses[3]);
         menu.position.set(staging.menu[0], TABLE_TOP, staging.menu[1]);
         menu.rotation.y = staging.menu[2];
         coffee.position.set(staging.coffee[0], TABLE_TOP, staging.coffee[1]);
@@ -521,7 +513,15 @@ if (canvas && world && layer) {
           v.look.z,
         );
         camera.lookAt(target);
-        skyDome.position.copy(camera.position);
+
+        // Parallax. The painting moves a little, the geometry in front of it
+        // moves more, and the difference is the depth cue. Keep the backdrop
+        // shift small: push it too far and the fixed perspective inside the
+        // image starts to argue with the moving camera in front of it.
+        if (backdrop) {
+          backdrop.style.setProperty('--backdrop-x', (-lookX * 13).toFixed(2) + 'px');
+          backdrop.style.setProperty('--backdrop-y', (-lookY * 8).toFixed(2) + 'px');
+        }
 
         const animate = !reduced.matches
           && !document.body.classList.contains('is-dialog-open');
@@ -536,6 +536,23 @@ if (canvas && world && layer) {
           const grow = 0.030 + t * 0.055;
           steam[i].scale.set(grow, grow * 1.35, 1);
           steam[i].material.opacity = Math.sin(t * Math.PI) * 0.17;
+        }
+
+        // The breeze. Each mass leans on its own period and phase, so the
+        // planting never pulses in unison; the amounts are a couple of
+        // degrees, which is all it takes to stop foliage looking cast in
+        // resin. Reduced motion holds everything at its rest pose.
+        if (animate) {
+          for (let i = 0; i < street.swaying.length; i += 1) {
+            const sway = street.swaying[i];
+            const gust = 0.72 + 0.28 * Math.sin(tick * 0.21 + sway.phase * 0.6);
+            sway.node.rotation.z = sway.restZ
+              + Math.sin(tick * sway.rate + sway.phase) * sway.amount * gust;
+            sway.node.rotation.x = sway.restX
+              + Math.cos(tick * sway.rate * 0.73 + sway.phase) * sway.amount
+                * 0.55 * gust;
+          }
+
         }
 
         for (const [id, obj] of physical) {

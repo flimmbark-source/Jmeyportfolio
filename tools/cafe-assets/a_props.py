@@ -68,8 +68,10 @@ def utility_pole():
 def awning():
     """A sagging canvas on a steel frame, with a scalloped valance. The sag is
     the whole point: a flat plank reads as plastic."""
-    canvas = kit.material("AwningCanvas", kit.hexcolor('#22384e'), 0.95, sheen=0.4)
-    stripe = kit.material("AwningStripe", kit.hexcolor('#2d4a63'), 0.95, sheen=0.4)
+    # Warm dark canvas, as in the reference street: a navy awning reads as
+    # municipal, a deep umber one reads as a café that has been there a while.
+    canvas = kit.material("AwningCanvas", kit.hexcolor('#4a2a24'), 0.94, sheen=0.4)
+    stripe = kit.material("AwningStripe", kit.hexcolor('#5e382c'), 0.94, sheen=0.4)
     iron = kit.material("AwningFrame", kit.hexcolor('#37403d'), 0.55, 0.6)
     parts = []
     span, reach, drop = 4.6, 1.75, 0.46
@@ -289,6 +291,199 @@ def sugar():
     return kit.join("SugarGlass", parts)
 
 
+def pedestrian_a():
+    """A stylised walker for the far street. Read at fifteen to thirty metres
+    it is a silhouette and a colour, so it is built as one: a tapered torso,
+    a simple head, and legs split far enough apart to read as mid-stride.
+    Exported as three objects - body, left leg, right leg - so the scene can
+    swing the legs in opposite phase. One joined leg block swung as a unit
+    reads as a waddle, not a stride."""
+    skin = kit.material("Skin", kit.hexcolor('#c99a76'), 0.86)
+    shirt = kit.material("Shirt", kit.hexcolor('#d8d2c4'), 0.90)
+    trousers = kit.material("Trousers", kit.hexcolor('#4a5a6b'), 0.92)
+    hair = kit.material("Hair", kit.hexcolor('#3b2f29'), 0.95)
+    upper, left, right = [], [], []
+
+    torso = kit.lathe("torso", [
+        (0.000, 0.98), (0.135, 0.99), (0.158, 1.10), (0.165, 1.28),
+        (0.150, 1.42), (0.118, 1.48), (0.000, 1.50)], segments=14, close=True)
+    kit.shade_smooth(torso, 46)
+    kit.assign(torso, shirt)
+    upper.append(torso)
+
+    neck = kit.cylinder("neck", 0.042, 0.07, 10, (0, 0, 1.52))
+    kit.assign(neck, skin)
+    upper.append(neck)
+    head = kit.uvsphere("head", 0.093, 14, 10, (0, 0, 1.625))
+    head.scale = (0.92, 0.88, 1.08)
+    kit.shade_smooth(head, 50)
+    kit.assign(head, skin)
+    upper.append(head)
+    cap = kit.uvsphere("hair", 0.097, 14, 10, (0, -0.012, 1.645))
+    cap.scale = (0.95, 0.95, 0.82)
+    kit.shade_smooth(cap, 50)
+    kit.assign(cap, hair)
+    upper.append(cap)
+
+    for sign in (-1, 1):
+        arm = kit.tube_along(f"arm{sign}", [
+            (sign * 0.145, 0.0, 1.44), (sign * 0.175, 0.03, 1.22),
+            (sign * 0.160, -0.05, 1.02)], radius=0.037, segments=7)
+        kit.shade_smooth(arm, 46)
+        kit.assign(arm, shirt)
+        upper.append(arm)
+
+    for sign in (-1, 1):
+        bucket = left if sign < 0 else right
+        leg = kit.tube_along(f"leg{sign}", [
+            (sign * 0.068, 0.0, 1.00), (sign * 0.072, sign * 0.02, 0.55),
+            (sign * 0.070, sign * 0.03, 0.09)], radius=0.052, segments=8)
+        kit.shade_smooth(leg, 46)
+        kit.assign(leg, trousers)
+        bucket.append(leg)
+        shoe = kit.cube(f"shoe{sign}", (0.075, 0.17, 0.055),
+                        (sign * 0.070, sign * 0.03 + 0.02, 0.028))
+        kit.bevel(shoe, 0.016, 2, 45)
+        kit.assign(shoe, hair)
+        bucket.append(shoe)
+
+    for part in upper + left + right:
+        kit.apply_all(part)
+    body = kit.join("WalkerBody", upper)
+    legL = kit.join("WalkerLegL", left)
+    legR = kit.join("WalkerLegR", right)
+    # Legs are modelled standing on the ground; the scene hangs them from a
+    # hip pivot, so bake the hip height out of their origin here.
+    for leg in (legL, legR):
+        leg.location = (0, 0, -1.02)
+        kit.apply_transform(leg, location=True)
+    return body, legL, legR
+
+
+def car():
+    """A small stylised hatchback for the far end of the street."""
+    paint = kit.material("CarPaint", kit.hexcolor('#d8d4cb'), 0.36, 0.25,
+                         clearcoat=0.6)
+    glass = kit.material("CarGlass", kit.hexcolor('#2c3a42'), 0.12, 0.5)
+    rubber = kit.material("Tyre", kit.hexcolor('#232326'), 0.95)
+    trim = kit.material("CarTrim", kit.hexcolor('#50534f'), 0.5, 0.6)
+    parts = []
+
+    body = kit.cube("body", (1.70, 3.90, 0.78), (0, 0, 0.62))
+    kit.bevel(body, 0.22, 4, 48)
+    kit.assign(body, paint)
+    parts.append(body)
+    cabin = kit.cube("cabin", (1.54, 2.05, 0.62), (0, -0.18, 1.22))
+    kit.bevel(cabin, 0.24, 4, 48)
+    kit.assign(cabin, glass)
+    parts.append(cabin)
+    roof = kit.cube("roof", (1.46, 1.70, 0.16), (0, -0.20, 1.50))
+    kit.bevel(roof, 0.12, 3, 48)
+    kit.assign(roof, paint)
+    parts.append(roof)
+    for sy in (-1, 1):
+        bumper = kit.cube("bump", (1.66, 0.22, 0.26), (0, sy * 1.90, 0.46))
+        kit.bevel(bumper, 0.09, 3, 45)
+        kit.assign(bumper, trim)
+        parts.append(bumper)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            wheel = kit.cylinder("wheel", 0.33, 0.21, 18,
+                                 (sx * 0.80, sy * 1.28, 0.33),
+                                 (0, math.radians(90), 0))
+            kit.bevel(wheel, 0.055, 2, 40)
+            kit.shade_smooth(wheel, 40)
+            kit.assign(wheel, rubber)
+            parts.append(wheel)
+    for part in parts:
+        kit.apply_all(part)
+    return kit.join("Car", parts)
+
+
+def stone_bollard():
+    """The pale tapered stone posts of the reference, rather than cast iron."""
+    stone = kit.material("BollardStone", kit.hexcolor('#cdc5b4'), 0.95)
+    body = kit.lathe("StoneBollard", [
+        (0.000, 0.000), (0.128, 0.000), (0.124, 0.055), (0.112, 0.120),
+        (0.101, 0.560), (0.098, 0.690), (0.104, 0.730), (0.100, 0.760),
+        (0.072, 0.800), (0.038, 0.818), (0.000, 0.822),
+    ], segments=20, close=True)
+    kit.jitter(body, 0.0035, seed=55)
+    kit.shade_smooth(body, 42)
+    kit.assign(body, stone)
+    kit.apply_all(body)
+    return body
+
+
+def lantern():
+    """A warm wall lantern under the awnings. Emissive, so it still glows in
+    the shade without needing its own light."""
+    iron = kit.material("LanternIron", kit.hexcolor('#3a332c'), 0.55, 0.5)
+    glow = kit.material("LanternGlow", kit.hexcolor('#8c6a34'), 0.3,
+                        emission=kit.hexcolor('#ffb867'))
+    parts = []
+    bracket = kit.tube_along("bracket", [
+        (0, 0, 0), (0, -0.16, 0.03), (0, -0.24, -0.02)], radius=0.016,
+        segments=6)
+    kit.assign(bracket, iron)
+    parts.append(bracket)
+    cage = kit.lathe("cage", [
+        (0.000, -0.06), (0.070, -0.10), (0.082, -0.20), (0.070, -0.30),
+        (0.000, -0.34)], segments=10)
+    kit.shade_smooth(cage, 45)
+    kit.assign(cage, iron)
+    parts.append(cage)
+    bulb = kit.uvsphere("bulb", 0.052, 12, 8, (0, -0.24, -0.20))
+    kit.shade_smooth(bulb, 50)
+    kit.assign(bulb, glow)
+    parts.append(bulb)
+    for part in parts:
+        kit.apply_all(part)
+    merged = kit.join("Lantern", parts)
+    merged.location = (0, 0.24, 0)
+    kit.apply_transform(merged, location=True)
+    return merged
+
+
+def wood_table():
+    """A plain wooden table for the street terrace, so not every table in the
+    scene is the hero's red one."""
+    wood = kit.material("StreetWood", kit.hexcolor('#9c7347'), 0.86)
+    dark = kit.material("StreetWoodDark", kit.hexcolor('#6d4f31'), 0.9)
+    parts = []
+    for i in range(5):
+        plank = kit.cube(f"plank{i}", (0.148, 0.74, 0.032),
+                         (-0.31 + i * 0.156, 0, 0.73))
+        kit.bevel(plank, 0.007, 2, 45)
+        kit.assign(plank, wood if i % 2 else dark)
+        parts.append(plank)
+    for sy in (-1, 1):
+        rail = kit.cube("rail", (0.80, 0.055, 0.075), (0, sy * 0.32, 0.685))
+        kit.bevel(rail, 0.008, 2, 45)
+        kit.assign(rail, dark)
+        parts.append(rail)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            leg = kit.cube("leg", (0.062, 0.062, 0.70),
+                           (sx * 0.34, sy * 0.30, 0.35))
+            kit.bevel(leg, 0.009, 2, 45)
+            kit.assign(leg, dark)
+            parts.append(leg)
+    for part in parts:
+        kit.apply_all(part)
+    return kit.join("WoodTable", parts)
+
+
+def number_plate():
+    """The enamelled street-number plaque from the reference façade."""
+    plate = kit.cube("NumberPlate", (0.42, 0.028, 0.54), (0, 0, 0))
+    kit.bevel(plate, 0.022, 3, 50)
+    kit.assign(plate, kit.material("NumberPlate", kit.hexcolor('#ffffff'), 0.5))
+    kit.apply_all(plate)
+    kit.planar_uv_xz(plate, 0.42, 0.54)
+    return plate
+
+
 BUILDERS = {
     "Bollard": bollard,
     "UtilityPole": utility_pole,
@@ -299,4 +494,10 @@ BUILDERS = {
     "RoundSign": round_sign,
     "Ashtray": ashtray,
     "SugarGlass": sugar,
+    "Car": car,
+    "StoneBollard": stone_bollard,
+    "Lantern": lantern,
+    "WoodTable": wood_table,
+    "NumberPlate": number_plate,
+    "Walker": pedestrian_a,
 }

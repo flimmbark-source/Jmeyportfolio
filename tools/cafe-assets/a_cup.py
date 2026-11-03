@@ -18,7 +18,7 @@ def build():
     white = kit.material("CupInner", kit.hexcolor('#f6f1e4'), 0.13, 0.0,
                          clearcoat=0.5)
     espresso = kit.material("Espresso", kit.hexcolor('#2c1710'), 0.09)
-    crema = kit.material("Crema", kit.hexcolor('#9c6436'), 0.38)
+    crema = kit.material("Crema", kit.hexcolor('#c07e36'), 0.34)
     parts = []
 
     # --- saucer: a real well, a rolled rim and a foot ring it stands on.

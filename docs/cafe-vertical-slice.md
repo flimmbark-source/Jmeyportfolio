@@ -200,3 +200,90 @@ Browser QA passes all 45 assertions at 1440, 390 and 320 widths with no page
 errors. The larger props make the projected hit targets correspondingly
 bigger: at 1440 the Menu target is 241x343 px, Coffee 214x168, glasses
 159x91.
+
+
+## Direction change: hybrid staging, 2026-11-03
+
+The full real-time street has been replaced by a **hybrid**: the street is a
+painted backdrop, and the table with everything on it is real geometry
+rendered over it on a transparent canvas.
+
+### Why
+
+The approved art-direction reference is a painted frame. A WebGL scene was
+never going to reach its brushwork, and when the two were compared directly
+the remaining gap was not modelling - it was hand-painted texture, global
+illumination and depth of field, none of which real-time gives you. Asked to
+choose between pushing the 3D further, going hybrid, or going flat 2D, the
+decision was hybrid. This supersedes the earlier instruction not to use the
+reference as a backdrop.
+
+Each half now does what it is actually good at:
+
+| | |
+| --- | --- |
+| painted | the street, the architecture, the light, the people |
+| geometry | the table, menu, cup, glasses and ashtray - lit to match, and shifting against the backdrop when the viewer looks around |
+
+### How the two halves stay registered
+
+The backdrop is anchored by its **painted table line**, not by its centre.
+That line was measured off the image at 63.5% of its height, and the CSS
+`object-position: 50% 63.5%` makes the browser put it at 63.5% of the
+viewport at any aspect ratio. The camera is then composed so the real table's
+far edge lands on the same line. No per-breakpoint fudging is needed, and the
+3D table is kept slightly wider than the painted one so it always covers it.
+
+The camera position follows from that: the painted table nearly spans the
+frame at its far edge, which only happens if you are leaning over it. The eye
+sits 42 cm above the top and 27 cm behind its centre, so the table's near edge
+is behind the lens rather than in the picture.
+
+### Matching the light
+
+The key light is placed to match the painted sun - low, left, in front - so
+the geometry's shadows run the same way as the painted ones. A canopy hangs
+outside the frame purely as a gobo, breaking the key into leaf dapple across
+the table; its position is solved from the sun vector rather than guessed.
+The backdrop doubles as the environment map, so the glaze on the cup and the
+smoked lenses reflect the painting's own stone and sky.
+
+The table's colour was matched by measurement, not by eye - the painted table
+sits at roughly RGB (146, 57, 56), lightness 0.40, saturation 0.45, and the
+first few attempts were out by a long way in both directions. Sampling the
+left and right halves separately also caught that the dapple had been placed
+on the sunlit side.
+
+### What was removed
+
+- The procedural street: corner building, terrace, kerbs, bollards, awnings,
+  poles, pedestrians and the parked car. The asset pipeline still builds all
+  of it and the GLBs are still committed; `building.glb` simply is not loaded.
+- The painted reference ships with a mock-up of this site's own interface
+  drawn into it. `tools/cafe-assets/prepare_backdrop.py` removes those four
+  patches by resynthesising them from the pixels below, or every control would
+  appear twice.
+
+### Verification
+
+Browser QA passes all 48 assertions at 1440, 390 and 320 widths with no page
+errors, including a new check that the backdrop image actually loads. The
+Menu, Coffee and Glasses hit targets still track their meshes.
+
+### What still differs from the reference
+
+- **The table's far edge is a straight line.** The painted table has rounded
+  far corners inset from the frame; the 3D one is deliberately wider so it
+  covers the painted one, which squares that silhouette off. Narrowing it
+  would show the painted table's surface beside the real one.
+- **No knee, chair arm or pot plant in the foreground.** The painting has all
+  three at the bottom edge and the 3D table covers them. A visible avatar was
+  ruled out earlier and that still holds; the chair and plant were tried in
+  geometry and sit outside the frame at this camera distance.
+- **The tabletop's surface detail is generated, not painted.** Its structure
+  is described - chipping that follows the edges, a wear arc, cup rings - but
+  it does not have the reference's per-pixel brushwork.
+- **The cup is cleaner than the painted one**, which is chunkier and chipped
+  around the rim.
+- **Looking around is a parallax shift, not a camera move through a street.**
+  The backdrop's perspective is fixed, so the shift is kept deliberately small.

@@ -21,6 +21,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 # sign. Defined once: both lockups auto-fit their type to the space, so a
 # longer or shorter name needs no other change.
 CAFE_NAME = "APOLLO"
+CAFE_PREFIX = "CAFÉ"
 CAFE_PLACE = "· JAFFA ·"
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -232,15 +233,20 @@ def enamel(size=1024, seed=19):
     corners where the table is knocked, plus one high-wear arc in the middle
     where years of elbows and wiping have polished the paint thin."""
     rng = random.Random(seed)
-    img = Image.new('RGB', (size, size), (164, 62, 52))
+    # Sampled off the painted backdrop: its table sits at roughly RGB
+    # (146, 57, 56) in the final image, lightness 0.40 and saturation 0.45.
+    # The map therefore starts lighter and much less saturated than a "red
+    # table" instinctively wants to be - the lighting and the tone mapping
+    # both pull it down and in from here.
+    img = Image.new('RGB', (size, size), (154, 78, 68))
     draw = ImageDraw.Draw(img, 'RGBA')
 
     # uneven hand-painted coverage
     for _ in range(90):
         x, y = rng.uniform(0, size), rng.uniform(0, size)
         rx, ry = rng.uniform(40, 260), rng.uniform(14, 90)
-        tone = rng.choice(((186, 83, 64, 36), (118, 38, 40, 42),
-                           (205, 101, 72, 28), (96, 30, 34, 34)))
+        tone = rng.choice(((186, 110, 92, 40), (104, 46, 46, 62),
+                           (204, 128, 104, 34), (86, 36, 38, 58)))
         draw.ellipse((x - rx, y - ry, x + rx, y + ry), fill=tone)
     img = img.filter(ImageFilter.GaussianBlur(5))
     draw = ImageDraw.Draw(img, 'RGBA')
@@ -251,8 +257,8 @@ def enamel(size=1024, seed=19):
         x = rng.uniform(0, size)
         length = rng.uniform(60, 330)
         draw.line((x, y, x + length, y + rng.uniform(-5, 5)),
-                  fill=(rng.randint(150, 205), rng.randint(60, 95),
-                        rng.randint(50, 78), rng.randint(14, 34)),
+                  fill=(rng.randint(186, 232), rng.randint(104, 140),
+                        rng.randint(92, 122), rng.randint(14, 34)),
                   width=rng.randint(1, 3))
 
     def edge_weight(x, y):
@@ -262,26 +268,29 @@ def enamel(size=1024, seed=19):
 
     # chips: a pale grey primer island with a dark lifted-paint outline, which
     # is what a real chip looks like. Density follows the edge weight.
-    for _ in range(1250):
+    for _ in range(820):
         x, y = rng.uniform(0, size), rng.uniform(0, size)
         wear = edge_weight(x, y)
         arc = math.exp(-((math.hypot(x - size * 0.42, y - size * 0.52)
                           - size * 0.26) ** 2) / (2 * (size * 0.085) ** 2))
-        if rng.random() > wear * 0.95 + arc * 0.22 + 0.006:
+        if rng.random() > wear * 1.05 + arc * 0.30 + 0.022:
             continue
-        r = rng.uniform(1.4, 5.2) * (0.45 + wear)
+        r = rng.uniform(3.0, 10.5) * (0.5 + wear)
         pts = []
         for i in range(7):
             a = i / 7 * math.tau
             rr = r * rng.uniform(0.55, 1.35)
             pts.append((x + math.cos(a) * rr, y + math.sin(a) * rr * 0.75))
-        draw.polygon(pts, fill=(84, 36, 32, 165))
+        draw.polygon(pts, fill=(112, 56, 50, 120))
         inner = [(x + (px - x) * 0.62, y + (py - y) * 0.62) for px, py in pts]
         # exposed primer is a dull warm grey, and it varies: a uniform light
         # grey is what makes chips read as gravel scattered on the surface.
-        tone = rng.randint(112, 154)
-        draw.polygon(inner, fill=(tone + rng.randint(0, 14), tone + rng.randint(-4, 8),
-                                  tone - rng.randint(0, 12), rng.randint(190, 240)))
+        # Exposed primer, not bare metal: a cool pale grey that the red still
+        # shows through. Opaque near-white chips read as confetti dropped on
+        # the table rather than as enamel lifted off it.
+        tone = rng.randint(128, 168)
+        draw.polygon(inner, fill=(tone + rng.randint(0, 10), tone + rng.randint(0, 8),
+                                  tone + rng.randint(2, 16), rng.randint(108, 164)))
 
     # scratches follow the wiping direction
     for _ in range(560):
@@ -289,7 +298,7 @@ def enamel(size=1024, seed=19):
         a = rng.gauss(0.32, 0.30)
         length = rng.uniform(20, 155)
         draw.line((x, y, x + math.cos(a) * length, y + math.sin(a) * length),
-                  fill=(222, 196, 172, rng.randint(16, 54)), width=1)
+                  fill=(226, 198, 176, rng.randint(12, 38)), width=1)
 
     # cup rings and a splash of old coffee
     # Cup rings are sized in texture space, and the map covers the whole top,
@@ -310,8 +319,8 @@ def enamel(size=1024, seed=19):
             continue
         r = rng.uniform(4, 19)
         rd.ellipse((x - r, y - r, x + r, y + r),
-                   fill=(rng.randint(126, 162), rng.randint(70, 96),
-                         rng.randint(40, 58), rng.randint(40, 110)))
+                   fill=(rng.randint(158, 196), rng.randint(100, 128),
+                         rng.randint(66, 88), rng.randint(36, 96)))
     img = Image.alpha_composite(img.convert('RGBA'),
                                 rust.filter(ImageFilter.GaussianBlur(2.5))) \
         .convert('RGB')
@@ -398,7 +407,7 @@ def menu_cover(w=820, h=1160):
     engraved cup motif and a hand-drawn rule. No UI affordances, no arrows,
     and nothing that says the word 'menu'."""
     rng = random.Random(3)
-    img = Image.new('RGB', (w, h), (206, 185, 143))
+    img = Image.new('RGB', (w, h), (222, 203, 162))
     draw = ImageDraw.Draw(img, 'RGBA')
 
     # uneven board stock with fibre flecks
@@ -406,8 +415,8 @@ def menu_cover(w=820, h=1160):
         x, y = rng.uniform(0, w), rng.uniform(0, h)
         rx, ry = rng.uniform(60, 300), rng.uniform(30, 160)
         draw.ellipse((x - rx, y - ry, x + rx, y + ry),
-                     fill=rng.choice(((222, 203, 164, 40), (186, 165, 126, 38),
-                                      (214, 196, 158, 34))))
+                     fill=rng.choice(((206, 186, 144, 48), (166, 142, 102, 46),
+                                      (196, 174, 132, 42))))
     img = img.filter(ImageFilter.GaussianBlur(7))
     draw = ImageDraw.Draw(img, 'RGBA')
     for _ in range(5200):
@@ -415,12 +424,12 @@ def menu_cover(w=820, h=1160):
         draw.point((x, y), fill=(rng.randint(120, 190), rng.randint(104, 170),
                                  rng.randint(80, 134), rng.randint(14, 48)))
 
-    ink = (74, 52, 36)
-    accent = (138, 60, 46)
+    ink = (62, 42, 28)
+    accent = (124, 52, 38)
 
     # letterpress frame, double-ruled, slightly off-register
-    draw.rectangle((54, 62, w - 54, h - 62), outline=ink + (190,), width=5)
-    draw.rectangle((70, 78, w - 70, h - 78), outline=ink + (110,), width=2)
+    draw.rectangle((54, 62, w - 54, h - 62), outline=accent + (215,), width=6)
+    draw.rectangle((72, 80, w - 72, h - 80), outline=ink + (150,), width=2)
 
     f_small = font(34, italic=True)
     f_sub = font(30)
@@ -438,10 +447,11 @@ def menu_cover(w=820, h=1160):
             tw = draw.textlength(text, font=fnt)
             draw.text(((w - tw) / 2, y), text, font=fnt, fill=fill)
 
-    f_name = fit_font(draw, CAFE_NAME, 132, 9, w - 200, bold=True)
-    centred("a morning at", 150, f_small, ink + (210,))
-    centred(CAFE_NAME, 215, f_name, ink + (238,), spacing=9)
-    centred(CAFE_PLACE, 392, f_sub, accent + (215,), spacing=6)
+    f_name = fit_font(draw, CAFE_NAME, 128, 9, w - 200, bold=True)
+    f_prefix = font(44, italic=True)
+    centred(CAFE_PREFIX, 132, f_prefix, ink + (245,), spacing=11)
+    centred(CAFE_NAME, 196, f_name, ink + (255,), spacing=9)
+    centred(CAFE_PLACE, 368, f_sub, accent + (245,), spacing=6)
 
     # hand-drawn rule
     for i in range(3):
@@ -449,8 +459,43 @@ def menu_cover(w=820, h=1160):
                for j in range(49)]
         draw.line(pts, fill=ink + (90 - i * 24,), width=2)
 
-    # a small engraved espresso cup: the cover illustration
-    cx, cy, s = w / 2, 720, 150
+    # The cover illustration: the café's own frontage, drawn as an engraving.
+    # The reference shows a building on the menu, not just a cup, and a façade
+    # is what makes the object read as this café's menu rather than any menu.
+    bx, by, bw, bh = w / 2 - 120, 596, 240, 210
+    draw.rectangle((bx, by, bx + bw, by + bh), fill=(238, 228, 206, 220),
+                   outline=ink + (235,), width=4)
+    draw.polygon([(bx - 18, by), (bx + bw + 18, by), (bx + bw, by - 26),
+                  (bx + 18, by - 26)], outline=ink + (200,), width=4)
+    # the awning is the cover's one note of colour, as it is on the building
+    draw.rectangle((bx + 6, by + 6, bx + bw - 6, by + 38),
+                   fill=(176, 72, 52, 225))
+    for i in range(5):
+        ax = bx + 6 + i * (bw - 12) / 5
+        draw.pieslice((ax, by + 20, ax + (bw - 12) / 5, by + 54), 0, 180,
+                      fill=(196, 92, 66, 225))
+    for col in range(3):                      # shuttered windows
+        wx = bx + 24 + col * 72
+        draw.rectangle((wx, by + 64, wx + 44, by + 112), fill=(132, 150, 142, 210),
+                       outline=ink + (215,), width=3)
+        draw.line((wx + 22, by + 64, wx + 22, by + 112), fill=ink + (170,), width=2)
+    draw.rectangle((bx + bw / 2 - 26, by + 140, bx + bw / 2 + 26, by + bh),
+                   fill=(126, 88, 58, 215), outline=ink + (225,), width=3)
+    for i in range(7):                        # hatching on the shaded flank
+        draw.line((bx + bw - 6, by + 70 + i * 18, bx + bw - 44, by + 86 + i * 18),
+                  fill=ink + (52,), width=2)
+    # a planter either side of the door
+    for sx in (bx + 28, bx + bw - 28):
+        draw.pieslice((sx - 15, by + bh - 36, sx + 15, by + bh - 4), 0, 180,
+                      fill=(158, 92, 58, 215))
+        for k in range(5):                    # a little planting either side
+            lx = sx - 12 + k * 6
+            draw.ellipse((lx - 7, by + bh - 62 - (k % 2) * 8,
+                          lx + 7, by + bh - 40 - (k % 2) * 8),
+                         fill=(92, 124, 76, 205))
+
+    # a small engraved espresso cup beside it
+    cx, cy, s = w / 2, 872, 86
     draw.ellipse((cx - s * .95, cy + s * .34, cx + s * .95, cy + s * .62),
                  outline=ink + (190,), width=4)
     draw.ellipse((cx - s * .62, cy + s * .40, cx + s * .62, cy + s * .56),
@@ -476,8 +521,8 @@ def menu_cover(w=820, h=1160):
                for t in range(14)]
         draw.line(pts, fill=ink + (120,), width=3)
 
-    centred("coffee · conversation · curiosities", h - 190, f_foot, ink + (180,))
-    centred("EST. ALWAYS", h - 142, font(24), accent + (165,), spacing=5)
+    centred("coffee · conversation · curiosities", h - 112, f_foot, ink + (180,))
+    centred("EST. ALWAYS", h - 66, font(24), accent + (165,), spacing=5)
 
     # honest wear: a ring stain, a thumbed corner, a crease
     draw.ellipse((w - 330, 560, w - 90, 800), outline=(118, 78, 48, 52), width=7)
@@ -539,9 +584,9 @@ def wall_sign(w=1024, h=512):
             draw.text((x, y), ch, font=fnt, fill=fill)
             x += cw + spacing
 
-    f_big = fit_font(draw, CAFE_NAME, 188, 16, w - 150, bold=True)
-    centred("a morning at", 46, f_mid, ink + (190,))
-    centred(CAFE_NAME, 118, f_big, ink + (225,), spacing=16)
+    f_big = fit_font(draw, CAFE_NAME, 184, 16, w - 150, bold=True)
+    centred(CAFE_PREFIX, 34, f_mid, ink + (195,), spacing=14)
+    centred(CAFE_NAME, 112, f_big, ink + (225,), spacing=16)
     centred("COFFEE  ·  SINCE  ALWAYS", 346, f_small, blue + (180,), spacing=7)
     draw.line((w * 0.22, 326, w * 0.78, 326), fill=ink + (140,), width=4)
 
@@ -566,6 +611,98 @@ def wall_sign(w=1024, h=512):
     save(sign, "wall-sign.png")
 
 
+def sky(w=2048, h=1024):
+    """An equirectangular morning sky. Cumulus are built as overlapping lobes
+    with a lit upper edge and a cool shaded underside, because a cloud drawn
+    as one soft blob reads as fog."""
+    rng = random.Random(808)
+    arr = np.zeros((h, w, 3), np.float32)
+    t = np.linspace(0, 1, h)[:, None]                 # 0 = zenith, 1 = nadir
+    zenith = np.array([0.231, 0.482, 0.741])
+    mid = np.array([0.549, 0.749, 0.886])
+    horizon = np.array([0.937, 0.882, 0.776])
+    band = np.clip((t - 0.26) / 0.24, 0, 1)
+    arr += zenith * (1 - band)[..., None] + mid * band[..., None]
+    low = np.clip((t - 0.42) / 0.10, 0, 1)
+    arr = arr * (1 - low)[..., None] + horizon * low[..., None]
+    arr[int(h * 0.52):] = np.array([0.859, 0.820, 0.737])   # below the horizon
+
+    sky_img = Image.fromarray((np.clip(arr, 0, 1) * 255).astype(np.uint8), 'RGB')
+    clouds = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(clouds)
+
+    def cumulus(cx, cy, scale, alpha):
+        lobes = []
+        for _ in range(rng.randint(5, 9)):
+            lx = cx + rng.gauss(0, 58 * scale)
+            ly = cy + rng.gauss(0, 15 * scale)
+            lr = rng.uniform(26, 58) * scale
+            lobes.append((lx, ly, lr))
+        # shaded underside first, then the body, then the sunlit cap
+        for lx, ly, lr in lobes:
+            draw.ellipse((lx - lr, ly - lr * 0.62 + lr * 0.34,
+                          lx + lr, ly + lr * 0.62 + lr * 0.34),
+                         fill=(188, 196, 214, int(alpha * 0.82)))
+        for lx, ly, lr in lobes:
+            draw.ellipse((lx - lr, ly - lr * 0.66, lx + lr, ly + lr * 0.66),
+                         fill=(250, 250, 252, int(alpha)))
+        for lx, ly, lr in lobes:
+            draw.ellipse((lx - lr * 0.78, ly - lr * 0.72,
+                          lx + lr * 0.78, ly - lr * 0.14),
+                         fill=(255, 253, 246, int(alpha * 0.95)))
+
+    for _ in range(26):
+        cy = rng.uniform(h * 0.10, h * 0.44)
+        depth = (cy - h * 0.10) / (h * 0.34)          # nearer the horizon = smaller
+        cumulus(rng.uniform(0, w), cy, 1.25 - 0.75 * depth,
+                rng.uniform(150, 240) * (1.0 - 0.35 * depth))
+    for _ in range(14):                                # thin high wisps
+        cy = rng.uniform(h * 0.04, h * 0.22)
+        cx = rng.uniform(0, w)
+        for k in range(rng.randint(3, 6)):
+            rx, ry = rng.uniform(90, 230), rng.uniform(5, 13)
+            draw.ellipse((cx + k * 40 - rx, cy - ry, cx + k * 40 + rx, cy + ry),
+                         fill=(255, 255, 255, rng.randint(26, 58)))
+
+    clouds = clouds.filter(ImageFilter.GaussianBlur(5))
+    sky_img = Image.alpha_composite(sky_img.convert('RGBA'), clouds).convert('RGB')
+    # warm the air near the horizon where the sun is
+    a2 = np.asarray(sky_img, np.float32) / 255.0
+    glow = np.exp(-((np.linspace(0, 1, h)[:, None] - 0.49) ** 2) / 0.012)
+    xx = np.linspace(0, 1, w)[None, :]
+    glow = glow * (0.45 + 0.55 * np.exp(-((xx - 0.30) ** 2) / 0.06))
+    a2 += np.stack([glow * 0.20, glow * 0.14, glow * 0.05], -1)
+    save(Image.fromarray((np.clip(a2, 0, 1) * 255).astype(np.uint8), 'RGB'),
+         "sky.jpg", quality=88)
+
+
+def number_plate(w=256, h=330):
+    """The enamelled street-number plaque on the corner façade."""
+    img = Image.new('RGB', (w, h), (246, 245, 240))
+    draw = ImageDraw.Draw(img, 'RGBA')
+    draw.rounded_rectangle((8, 8, w - 8, h - 8), 14, fill=(249, 248, 243),
+                           outline=(206, 204, 196, 220), width=3)
+    draw.rounded_rectangle((20, 20, w - 20, int(h * 0.62)), 8,
+                           fill=(44, 78, 138, 255))
+    f_num = font(118, bold=True)
+    f_sub = font(30)
+    num = "3"
+    tw = draw.textlength(num, font=f_num)
+    draw.text(((w - tw) / 2, 36), num, font=f_num, fill=(255, 255, 255, 240))
+    sub = "6650"
+    tw = draw.textlength(sub, font=f_sub)
+    draw.text(((w - tw) / 2, int(h * 0.70)), sub, font=f_sub,
+              fill=(96, 98, 102, 230))
+    rng = random.Random(9)
+    for _ in range(260):                              # enamel chips and grime
+        x, y = rng.uniform(0, w), rng.uniform(0, h)
+        r = rng.uniform(0.6, 2.4)
+        draw.ellipse((x, y, x + r, y + r),
+                     fill=(rng.randint(120, 190),) * 3 + (rng.randint(18, 70),))
+    save(img.filter(ImageFilter.GaussianBlur(0.4)), "number-plate.jpg",
+         quality=88)
+
+
 def main():
     print("Café Apollo surface maps ->", OUT)
     plaster()
@@ -574,6 +711,8 @@ def main():
     menu_cover()
     asphalt()
     wall_sign()
+    sky()
+    number_plate()
 
 
 if __name__ == "__main__":
