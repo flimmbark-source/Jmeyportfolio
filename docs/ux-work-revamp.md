@@ -1,3 +1,39 @@
+# `/ux` — editorial Work layout, November 2026
+
+The current page follows the approved editorial concept: a short hero, Earth
+Hero as the flagship, two supporting projects, expandable experience and
+explorations, and a compact contact footer. The earlier notes below describe
+the superseded layout and its original asset fixes.
+
+## Current implementation
+
+- Retains shared typography, navigation, painting backdrop, larger-text control,
+  case-study routes, resume, external prototypes, and contact links.
+- Earth Hero pairs the original paper wireframes with the repository’s actual
+  prototype screenshot. A question/design/evidence strip explains the work
+  without inventing confidential session findings or performance metrics.
+- Letter River uses its gameplay screenshot rather than its home screen.
+- IDL makes 8h → 37m visible while retaining the 2h team intermediate result.
+- Native details/summary disclosures retain every experience and exploration
+  entry while shortening the default page. No new client-side JS is needed.
+- Layout stacks below 760px, with an additional narrow-phone adjustment.
+  Focus styles, image descriptions, external-link announcements, and a skip
+  link are included.
+
+## Validation for this revision
+
+- `npm run build` passes, generating all 15 routes.
+- Built `/ux` internal links, images, fragment targets, and unique IDs pass.
+- Browser inspection at 1363px: images render, no horizontal overflow,
+  experience and project disclosures open, and larger-text control works.
+- Mobile browser rendering was not verified in this environment.
+- Only `/ux` presentation changes. Case-study content and playground behavior
+  are unchanged. Preview-only host configuration was removed before commit.
+
+---
+
+## Previous revision (historical)
+
 # `/ux` — the Work screen, revamped
 
 The brief was "revamp the UX Work section." The page was not badly made: the
