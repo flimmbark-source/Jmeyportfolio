@@ -350,3 +350,83 @@ What the painting's table actually has that a generated map was missing turned
 out to be simpler than brushwork: larger, flatter, pale blue-grey chipped
 patches with soft dark lips. That is well within procedural reach and is what
 the enamel map now draws.
+
+
+## The living painting, 2026-11-03
+
+`/cafe` is now a single painted image animated by one fragment shader. There
+is no 3D, no Three.js and no models.
+
+### Why
+
+Each previous pass put real geometry in front of the painting and each one
+lost to it on quality. The honest read was that a real-time renderer was
+never going to reach the painting's brushwork, so the remaining question was
+what the geometry was actually buying - and the answer was motion, which can
+be had far more cheaply by warping the image itself.
+
+### How it works
+
+One quad, one shader, four images:
+
+| | |
+| --- | --- |
+| `backdrop.jpg` | the painting |
+| `motion.png` | four amplitude fields packed per channel - R foliage, G surfaces that receive travelling shade, B menu lift, A depth for parallax |
+| `gobo.png` | a tiling sheet of leaf shadow |
+| `noise.png` | tiling value noise driving the wind and the steam |
+
+The shader warps the sample coordinate before reading the painting. Foliage
+sways, the menu's free corner lifts and casts, leaf shadows travel across the
+table and the road, steam rises off the cup and bends what is behind it, and a
+slow drift reads as cloud crossing the sun. All of it shares one gust
+envelope, so the scene lulls and picks up together.
+
+**The masks are amplitude fields, not silhouettes.** That is the whole trick: a
+binary leaf mask slides the canopy about as a solid slab, where a field
+running from zero at the branch to one at the leaf tips makes it hinge. The
+menu is the same idea - zero at the spine, one at the free corner.
+
+### Two things that had to be done by hand
+
+**Foliage cannot be found by colour in this painting.** It is lit so warm that
+leaves and pavement land on identical ratios: a sunlit street tree samples
+(233,181,142) against pavement at (189,137,98), indistinguishable in both
+green-over-red and green-over-blue. So the planting is placed as explicit
+regions in `build_motion.py`, and colour is used only to reject sky and blown
+plaster inside each one.
+
+**Rigid things had to be subtracted.** A warp field does not know a leaf from
+a road sign. The first pass had the no-entry sign flexing, the enamel number
+plaque rippling, the sign post bending and the far-street balconies breathing.
+`RIGID_REGIONS` removes them.
+
+### Verified by measurement
+
+Sampling the same regions fourteen seconds apart gives mean luminance change
+of roughly 8-15 on the foliage, 3 on the table's travelling dapple, 7 on the
+steam - and 1 on the plaster wall and the protected sign and plaque, which is
+the global light drift and nothing more.
+
+### What was removed
+
+The entire 3D path: `cafe-scenography.js`, `tools/cafe-assets/` (the Blender
+pipeline and its procedural texture generator), `public/cafe/models/`,
+`public/cafe/tex/`, `public/cafe/street.svg`, and the `three` dependency.
+Café art went from about 5.8 MB to 756 KB and the page no longer ships a 3D
+engine.
+
+### Known compromises
+
+- **Portrait cannot show the painted objects.** A 16:9 image on a 9:19.5 phone
+  crops to about a quarter of its width, and the painted menu and sunglasses
+  are off screen. On narrow viewports the three controls are laid across the
+  visible band of tabletop instead of over their own objects. They stay
+  visible and tappable, and the header nav reaches the same places, but they
+  are no longer exactly on the thing they refer to.
+- **No audio.** Birdsong and street ambience would suit the scene, but there
+  is no usable bird asset in the repository and anything added needs sourcing
+  with attribution. Browsers also will not autoplay, so it needs a toggle,
+  default off.
+- **The scene is one fixed viewpoint.** Looking around is a parallax shift
+  weighted by the depth channel, not a camera move.

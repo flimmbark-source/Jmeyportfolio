@@ -11,5 +11,3 @@ artifacts/
 __pycache__/
 *.pyc
 
-# Asset review renders
-tools/cafe-assets/preview/

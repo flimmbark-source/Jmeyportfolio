@@ -2,16 +2,14 @@
    Semantic buttons remain projected over the meshes for keyboard/touch access. */
 body.cafe-page { background:#b7c5c0; }
 .cafe-scene { inset:0; transform:none !important; pointer-events:none; }
-/* The painted street. `object-position` is given in percent so the browser
-   lines the image's 63.5% height up with the viewport's 63.5% height: that is
-   where the painted table edge sits, and where the 3D table edge is composed
-   to sit, so the two stay registered at any aspect ratio. The slight scale-up
-   gives the parallax shift somewhere to travel without exposing an edge. */
+/* The painting, drawn plainly. The shader draws the same image over the top
+   using the same cover fit, so this is both the first paint and the fallback
+   when WebGL is missing. `object-position` is in percent, which makes the
+   browser line the image's 63.5% height up with the viewport's 63.5% height:
+   that is the painted table line, and the shader anchors to it too. */
 .cafe-backdrop {
   position:absolute;inset:0;width:100%;height:100%;
   object-fit:cover;object-position:50% 63.5%;
-  transform:scale(1.055) translate3d(var(--backdrop-x,0px),var(--backdrop-y,0px),0);
-  will-change:transform;
 }
 .cafe-scene canvas {
   position:absolute;inset:0;

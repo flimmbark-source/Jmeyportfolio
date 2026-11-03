@@ -23,14 +23,12 @@ async function loadPage(page){
   assert(await page.locator('#cafe-world').isVisible(),'Café scene loads');
   await page.waitForFunction(()=>document.querySelector('#cafe-canvas')?.classList.contains('is-ready'),null,{timeout:20000});
   assert(await page.locator('#cafe-canvas.is-ready').isVisible(),'Real 3D canvas is initialized');
-  // The scene is a hybrid: a painted street behind, real geometry in front.
-  // Both halves have to actually arrive, and the table has to be a real lit
-  // Material - an early refactor once passed a bare texture where a Material
-  // belonged and rendered nothing at all.
-  assert(await page.locator('#cafe-canvas').getAttribute('data-facade-material-valid')==='true',
-    'Table geometry uses a renderable material rather than a raw texture');
+  // The café is a painted image animated by a shader. Both have to arrive:
+  // the painting itself, and the shader that brings it to life over the top.
+  assert(await page.locator('#cafe-canvas').getAttribute('data-scene-ready')==='true',
+    'Living-painting shader compiles and its art loads');
   assert(await page.locator('#cafe-backdrop').evaluate(el=>el.complete && el.naturalWidth > 0),
-    'Painted street backdrop loads');
+    'Painted café loads, and is the fallback when WebGL is missing');
 }
 async function inspectObjects(page,key){
   const names=['menu','coffee','glasses'];
