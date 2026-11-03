@@ -48,10 +48,6 @@ body.cafe-page { background:#b7c5c0; }
   background:rgba(36,43,42,.3);border-color:rgba(255,244,229,.27);
   backdrop-filter:blur(12px);font-weight:550;
 }
-.cafe-bottom-hint {
-  padding:9px 16px;background:rgba(29,38,39,.55);
-  box-shadow:0 4px 24px rgba(24,25,24,.09);
-}
 .cafe-look-toggle {background:rgba(244,237,219,.85);border-color:rgba(255,255,255,.7);}
 .cafe-overlay-scrim {background:rgba(15,27,25,.28);backdrop-filter:blur(4px);}
 .cafe-dialog {box-shadow:0 28px 85px rgba(8,24,25,.35);}
@@ -71,7 +67,126 @@ body.cafe-page { background:#b7c5c0; }
   .cafe-quick-nav{gap:4px;}
   .cafe-quick-nav a,.cafe-quick-nav button{padding:7px 9px;font-size:.72rem;}
   .cafe-object-label{font-size:.74rem;}
-  .cafe-bottom-hint{bottom:15px;max-width:57%;font-size:.74rem;}
   .cafe-look-toggle{bottom:14px;}
 }
 @media(prefers-reduced-motion:reduce){.cafe-scene canvas{transition:none!important;}}
+
+/* ---------------------------------------------------------------------------
+   The Menu, restyled as a printed card.
+
+   It had grown a dark chrome bar across the top that fought the paper under
+   it, a thumbnail placeholder that read as a broken image, and the words
+   "Selected Work" three times over - in the breadcrumb, in the active
+   category and again as the page heading. This treats the panel as what it
+   is in the fiction: a café menu, printed on warm stock.
+--------------------------------------------------------------------------- */
+.cafe-dialog {
+  border:1px solid rgba(120,92,62,.38);
+  border-radius:14px;
+  box-shadow:0 34px 90px rgba(24,16,10,.46),0 2px 0 rgba(255,250,236,.5) inset;
+  background:#f6ecd6;
+}
+
+/* The bar sits on the paper instead of on top of it, and the breadcrumb is
+   demoted to a quiet label so it stops competing with the heading. */
+.cafe-dialog-bar {
+  background:transparent;
+  color:var(--cafe-muted);
+  padding:14px 18px 2px;
+  min-height:0;
+  border:0;
+}
+.cafe-dialog-crumb {
+  font-size:.68rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  color:#9b7d5c;
+}
+.cafe-close {
+  background:transparent;border:1px solid rgba(120,92,62,.34);
+  border-radius:999px;padding:7px 15px;color:#6b503a;
+  font-size:.82rem;font-weight:650;letter-spacing:.01em;
+  transition:background .16s,border-color .16s,color .16s;
+}
+.cafe-close:hover { background:#e9d8b4;border-color:#9b7d5c;color:#3f3024; }
+
+/* One sheet of paper, divided by a rule rather than a slab border. */
+.cafe-book { grid-template-columns:minmax(230px,33%) minmax(0,1fr); }
+.cafe-book-left {
+  background:transparent;
+  border-right:1px solid rgba(120,92,62,.26);
+  box-shadow:none;
+  padding-top:clamp(12px,1.6vw,22px);
+}
+.cafe-book-right {
+  background:transparent;
+  padding-top:clamp(12px,1.6vw,22px);
+}
+.cafe-eyebrow { color:#9b6a4c;letter-spacing:.2em;font-size:.68rem; }
+.cafe-book h2 { letter-spacing:-.02em; }
+.cafe-book-star { display:none; }          /* an asterisk floating by a heading */
+.cafe-book-intro,.cafe-category-summary { color:#6a5a48;max-width:42ch; }
+
+/* Categories as a printed list: ruled, serif, the current one in accent. */
+#cafe-categories { gap:0;margin-bottom:22px; }
+#cafe-categories button {
+  padding:11px 2px;border:0;border-bottom:1px solid rgba(120,92,62,.18);
+  border-radius:0;background:transparent;
+  font:550 1.02rem/1.25 var(--cafe-display);color:#5c4b39;
+  transition:color .16s,padding-left .16s;
+}
+#cafe-categories button:last-child { border-bottom:0; }
+#cafe-categories button:hover { background:transparent;color:#8e4630;padding-left:6px; }
+#cafe-categories button[aria-current=true] {
+  background:transparent;border-color:rgba(120,92,62,.18);
+  color:#8e4630;font-weight:650;
+}
+#cafe-categories button[aria-current=true]::before {
+  content:'';display:inline-block;width:14px;height:1px;
+  margin:0 9px 5px 0;background:#b4593c;vertical-align:middle;
+}
+.cafe-book-links { border-top:1px solid rgba(120,92,62,.26);gap:18px; }
+.cafe-book-links a { font-size:.86rem;font-weight:650;color:#6b503a; }
+
+/* Entries. Consistent media, a clear title, and the summary held to two
+   lines so nothing truncates mid-thought in the middle of a card. */
+.cafe-project-card {
+  gap:16px;padding:13px;border-radius:10px;
+  background:rgba(255,252,243,.62);border-color:rgba(120,92,62,.26);
+  align-items:flex-start;
+}
+.cafe-project-card:hover,.cafe-project-card:focus-visible {
+  background:#fffaed;transform:none;border-color:#a9845c;
+  box-shadow:0 6px 20px rgba(99,75,44,.14);
+}
+.cafe-card-media {
+  width:116px;min-width:116px;height:87px;border-radius:6px;
+  border:1px solid rgba(120,92,62,.3);background:#e3d3b4;
+}
+/* The placeholder used to be a teal gradient with a star in it, which read
+   as a failed image. A plain warm swatch reads as "no picture yet". */
+.cafe-card-fallback {
+  background:linear-gradient(135deg,#e7d7b8,#d8c29c);
+  color:transparent;font-size:0;
+}
+.cafe-card-copy { gap:5px;padding-top:2px; }
+.cafe-card-copy strong { font-size:clamp(1.02rem,1.4vw,1.18rem);line-height:1.2;color:#3b2f24; }
+.cafe-card-copy small {
+  font-size:.68rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;
+  color:#a2614a;
+}
+.cafe-card-copy span { color:#5d5347;font-size:.85rem;line-height:1.42; }
+.cafe-card-arrow { align-self:center;color:#b07a52;font-size:1.05rem;transition:transform .16s; }
+.cafe-project-card:hover .cafe-card-arrow { transform:translateX(3px);color:#8e4630; }
+
+@media(max-width:720px) {
+  .cafe-dialog-bar { padding:10px 12px 0; }
+  .cafe-book { grid-template-columns:40% 60%; }
+  .cafe-card-media { width:70px;min-width:70px;height:58px; }
+  #cafe-categories button { font-size:.92rem;padding:9px 2px; }
+}
+
+/* In the list view the left panel already names the section and the heading
+   repeats it, so the breadcrumb was the third telling. It still earns its
+   place once you are deeper in, where that panel is not on screen. */
+.cafe-dialog:not(.is-preview):not(.is-focus):not(.is-lens) .cafe-dialog-crumb {
+  visibility:hidden;
+}

@@ -79,7 +79,6 @@ a { color: inherit; }
 .cafe-phone-screen{position:absolute;inset:5px;border-radius:12px;background:linear-gradient(140deg,#8eafb3,#547275 42%,#2f3f50);color:white;display:flex;flex-direction:column;justify-content:space-between;padding:12px 4px}
 .cafe-phone-clock{font-size:clamp(.65rem,1.1vw,1rem);font-weight:700}
 .cafe-phone-message{font-size:clamp(.58rem,.95vw,.9rem)}
-.cafe-bottom-hint { position: absolute;z-index:9;bottom:24px;left:50%;transform:translateX(-50%);padding:8px 17px;border-radius:999px;background:rgba(31,35,37,.7);color:#fff8e7;font-size:.86rem;text-align:center;white-space:nowrap;pointer-events:none; }
 .cafe-look-toggle {position:absolute;z-index:9;bottom:24px;right:24px;border:1px solid #e6d6c0;background:#f6ead7;color:#4d3c2e;border-radius:100px;padding:9px 15px;font-weight:700;font-size:.83rem;}
 .cafe-look-toggle[aria-pressed=true]{background:#294b64;color:white}
 .cafe-transition {position:absolute;inset:0;z-index:40;pointer-events:none;opacity:0;transform:scale(.3);border-radius:50%;background:radial-gradient(circle,#251925 15%,#382d37 40%,#594334 60%,transparent 70%);transition:opacity .45s,transform .65s;}
@@ -162,7 +161,6 @@ a { color: inherit; }
  .cafe-object--glasses{left:55%;top:73%;width:25%;height:9%}
  .cafe-object--receipt{left:76%;top:66%;width:15%;height:17%}
  .cafe-object--phone{left:85%;top:79%;width:12%;height:13%}
- .cafe-bottom-hint{bottom:22px;left:18px;transform:none;font-size:.72rem;white-space:normal;max-width:60%;text-align:left;}
  .cafe-look-toggle{right:13px;bottom:20px;font-size:.76rem}
  .cafe-dialog{height:min(800px,91svh);width:97vw}
  .cafe-book{grid-template-columns:38% 62%}

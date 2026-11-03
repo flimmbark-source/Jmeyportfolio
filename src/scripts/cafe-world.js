@@ -65,6 +65,19 @@ const PORTRAIT_SPOTS = {
   glasses: [0.675, 0.655, 0.270, 0.150],
 };
 
+// The object layer, cropped to the three objects' bounding box. Must match
+// CROP in tools/cafe-art/build_objects.py. Given here bottom-up, because
+// that is the orientation textures are sampled in.
+const CROP = [0.118, 0.000, 0.882, 0.380];
+
+// Each object's own patch of that layer, again bottom-up, so a transformed
+// sample cannot stray into a neighbour. Then the pivot it moves about.
+const OBJECTS = {
+  menu:    { box: [0.128, 0.025, 0.470, 0.369], pivot: [0.163, 0.200] },
+  coffee:  { box: [0.470, 0.075, 0.675, 0.366], pivot: [0.566, 0.120] },
+  glasses: { box: [0.672, 0.120, 0.868, 0.322], pivot: [0.778, 0.210] },
+};
+
 const VERTEX = `
 attribute vec2 aPos;
 varying vec2 vUv;
@@ -80,13 +93,39 @@ uniform sampler2D uPaint;
 uniform sampler2D uMotion;
 uniform sampler2D uGobo;
 uniform sampler2D uNoise;
-uniform vec4 uCover;      // scaleU, scaleV, offsetU, offsetV (v measured down)
+uniform sampler2D uObject;      // the three objects, colour
+uniform sampler2D uObjectA;     // their matte
+uniform sampler2D uFill;        // the tabletop behind them
+uniform vec4 uCover;            // scaleU, scaleV, offsetU, offsetV
+uniform vec4 uCrop;             // the object layer's rect in image space
+uniform vec3 uHover;            // menu, coffee, glasses
 uniform vec2 uLook;
 uniform float uTime;
-uniform float uLive;      // 0 under reduced motion: the painting holds still
+uniform float uLive;
 uniform float uAspect;
 
 float noise(vec2 p) { return texture2D(uNoise, p).r; }
+
+vec2 layerUv(vec2 p) {
+  return (p - uCrop.xy) / (uCrop.zw - uCrop.xy);
+}
+
+// Undo an object's transform, so a destination pixel can ask the untouched
+// layer what belongs there. Rotation is done in square units or the image's
+// 16:9 shape shears it.
+vec2 untransform(vec2 p, vec2 pivot, float rot, float scale, vec2 shift) {
+  vec2 d = (p - shift - pivot) * vec2(uAspect, 1.0);
+  float c = cos(-rot), s = sin(-rot);
+  d = vec2(d.x * c - d.y * s, d.x * s + d.y * c) / scale;
+  return pivot + d / vec2(uAspect, 1.0);
+}
+
+float objectAlpha(vec2 src, vec4 box) {
+  if (src.x < box.x || src.x > box.z || src.y < box.y || src.y > box.w) return 0.0;
+  vec2 l = layerUv(src);
+  if (l.x < 0.0 || l.x > 1.0 || l.y < 0.0 || l.y > 1.0) return 0.0;
+  return texture2D(uObjectA, l).r;
+}
 
 void main() {
   // Screen position to image position, reproducing object-fit: cover with a
@@ -95,50 +134,93 @@ void main() {
   float vDown = (1.0 - vUv.y) * uCover.y + uCover.w;
   vec2 base = vec2(u, 1.0 - vDown);
 
-  // Parallax: near things travel further than far ones.
   float depth = texture2D(uMotion, base).a;
   vec2 uv = base + uLook * (0.003 + 0.019 * depth);
   vec4 m = texture2D(uMotion, uv);
 
   float t = uTime;
-  // One gust envelope over everything, so the whole scene lulls and picks up
-  // together the way air actually moves.
   float gust = 0.60 + 0.40 * sin(t * 0.19) * sin(t * 0.073 + 1.3);
 
-  vec2 drift = vec2(
-    noise(uv * vec2(1.6, 2.9) + vec2( t * 0.017,  t * 0.011)),
-    noise(uv * vec2(2.1, 2.3) + vec2(-t * 0.013,  t * 0.019))) - 0.5;
-  vec2 sway = vec2(drift.x * 1.7, drift.y * 0.6) * m.r * 0.011 * gust;
+  // The breeze in the planting. Deliberately slight: warping painted
+  // brushwork any harder than this reads as heat haze over the picture
+  // rather than as leaves moving in it. The travelling leaf shadow below
+  // does most of the work of making the air feel alive.
+  vec2 wind = vec2(
+    noise(uv * vec2(1.6, 2.9) + vec2( t * 0.0062, t * 0.0040)),
+    noise(uv * vec2(2.1, 2.3) + vec2(-t * 0.0048, t * 0.0071))) - 0.5;
+  vec2 sway = vec2(wind.x * 1.7, wind.y * 0.6) * m.r * 0.0034 * gust;
 
-  // The menu's free corner lifts and settles.
-  float lift = (0.5 + 0.5 * sin(t * 0.37 + 1.1)) * m.b * gust;
-  vec2 menuWarp = vec2(0.0011, 0.0024) * lift;
-
-  // Steam. Solved before the painting is sampled so it can bend what is
-  // behind it, which is most of what sells it as hot.
-  vec2 cup = vec2(0.566, 1.0 - 0.672);
-  vec2 d = (uv - cup) * vec2(uAspect, 1.0);
-  float rise = d.y;
-  float wobble = (noise(vec2(rise * 2.4, t * 0.055)) - 0.5) * 0.12 * rise;
-  float lateral = (d.x - wobble) / (0.009 + rise * 0.40);
-  float plume = exp(-lateral * lateral)
-    * smoothstep(0.0, 0.018, rise) * smoothstep(0.26, 0.04, rise);
-  plume *= 0.40 + 0.60 * noise(vec2(uv.x * 2.2, uv.y * 1.1 - t * 0.080));
-  plume = max(plume, 0.0) * uLive;
-
-  vec2 warped = uv + (sway + menuWarp) * uLive + vec2(drift.x, 0.0) * plume * 0.007;
-  vec3 col = texture2D(uPaint, warped).rgb;
+  vec3 col = texture2D(uPaint, uv + sway * uLive).rgb;
 
   // Leaf shadow travelling with the same wind. Multiplied, never replaced:
   // the painting already has its own light and this modulates it.
-  vec2 gobo = warped * vec2(2.4 * uAspect, 2.4)
-    + vec2(t * 0.0048, t * 0.0027) + drift * 0.055;
+  vec2 gobo = uv * vec2(2.4 * uAspect, 2.4)
+    + vec2(t * 0.0048, t * 0.0027) + wind * 0.055;
   float shade = texture2D(uGobo, gobo).r;
   col *= mix(1.0, 0.82 + 0.18 * shade, m.g * 0.9 * uLive);
 
-  // A lifting corner has to cast, or the card reads as painted-on.
-  col *= 1.0 - 0.34 * m.b * lift * uLive;
+  // ---- the objects -------------------------------------------------------
+  // Lift them off the painting and put them back transformed. They are never
+  // warped, so the brushwork on the menu, the cup and the glasses stays
+  // exactly as painted however far they move.
+  vec2 l0 = layerUv(uv);
+  if (l0.x >= 0.0 && l0.x <= 1.0 && l0.y >= 0.0 && l0.y <= 1.0) {
+    float resting = texture2D(uObjectA, l0).r;
+    col = mix(col, texture2D(uFill, l0).rgb, resting);
+  }
 
+  // A breath of movement even untouched, so the table is never quite still.
+  float idle = (0.5 + 0.5 * sin(t * 0.33)) * 0.08 * uLive;
+
+  // The menu tips up about its spine, the way a cover lifts when you start
+  // to open it: it rotates, foreshortens slightly and rises.
+  float hm = uHover.x + idle * 0.5;
+  vec2 srcM = untransform(uv, vec2(0.163, 0.200),
+    0.052 * hm, 1.0 - 0.030 * hm, vec2(-0.0035, 0.0075) * hm);
+  // The cup lifts straight off the saucer.
+  float hc = uHover.y + idle * 0.35;
+  vec2 srcC = untransform(uv, vec2(0.566, 0.120),
+    -0.028 * hc, 1.0 + 0.040 * hc, vec2(0.0, 0.0130) * hc);
+  // The glasses are nudged and turned, as though pushed aside.
+  float hg = uHover.z + idle * 0.3;
+  vec2 srcG = untransform(uv, vec2(0.778, 0.210),
+    0.075 * hg, 1.0 + 0.030 * hg, vec2(0.0045, 0.0060) * hg);
+
+  // Each one darkens the table under it as it rises. Offset up and left,
+  // because that is where the sun is in the painting.
+  vec2 castOff = vec2(-0.0032, 0.0048);
+  float sm = objectAlpha(untransform(uv + castOff, vec2(0.163, 0.200),
+    0.052 * hm, 1.0 - 0.030 * hm, vec2(-0.0035, 0.0075) * hm),
+    vec4(0.128, 0.025, 0.470, 0.369));
+  float sc = objectAlpha(untransform(uv + castOff, vec2(0.566, 0.120),
+    -0.028 * hc, 1.0 + 0.040 * hc, vec2(0.0, 0.0130) * hc),
+    vec4(0.470, 0.075, 0.675, 0.366));
+  float sg = objectAlpha(untransform(uv + castOff, vec2(0.778, 0.210),
+    0.075 * hg, 1.0 + 0.030 * hg, vec2(0.0045, 0.0060) * hg),
+    vec4(0.672, 0.120, 0.868, 0.322));
+  col *= 1.0 - 0.30 * (sm * hm + sc * hc + sg * hg);
+
+  float am = objectAlpha(srcM, vec4(0.128, 0.025, 0.470, 0.369));
+  col = mix(col, texture2D(uObject, layerUv(srcM)).rgb, am);
+  float ag = objectAlpha(srcG, vec4(0.672, 0.120, 0.868, 0.322));
+  col = mix(col, texture2D(uObject, layerUv(srcG)).rgb, ag);
+  float ac = objectAlpha(srcC, vec4(0.470, 0.075, 0.675, 0.366));
+  col = mix(col, texture2D(uObject, layerUv(srcC)).rgb, ac);
+
+  // Hovering warms the object a touch, which reads as attention.
+  col *= 1.0 + 0.10 * (am * uHover.x + ac * uHover.y + ag * uHover.z);
+
+  // ---- steam -------------------------------------------------------------
+  // Tracks the cup, so it keeps rising from the rim as the cup lifts.
+  vec2 cup = vec2(0.566, 1.0 - 0.672) + vec2(0.0, 0.0130) * hc;
+  vec2 d = (uv - cup) * vec2(uAspect, 1.0);
+  float rise = d.y;
+  float wobbleAt = (noise(vec2(rise * 2.4, t * 0.055)) - 0.5) * 0.12 * rise;
+  float lateral = (d.x - wobbleAt) / (0.009 + rise * 0.40);
+  float plume = exp(-lateral * lateral)
+    * smoothstep(0.0, 0.018, rise) * smoothstep(0.26, 0.04, rise);
+  plume *= 0.40 + 0.60 * noise(vec2(uv.x * 2.2, uv.y * 1.1 - t * 0.080));
+  plume = max(plume, 0.0) * uLive * (1.0 + 0.5 * uHover.y);
   col += vec3(1.0, 0.965, 0.90) * plume * 0.32;
 
   // High cloud crossing the sun.
@@ -157,7 +239,7 @@ if (canvas && world && layer) {
   if (!gl) {
     // The painted fallback image underneath is already correct; leave it.
     console.warn('WebGL unavailable; the café stays a still painting');
-  } else {
+  } else try {
     const compile = (type, source) => {
       const shader = gl.createShader(type);
       gl.shaderSource(shader, source);
@@ -188,7 +270,7 @@ if (canvas && world && layer) {
     const uniform = (name) => gl.getUniformLocation(program, name);
     const U = {
       cover: uniform('uCover'), look: uniform('uLook'), time: uniform('uTime'),
-      live: uniform('uLive'), aspect: uniform('uAspect'),
+      live: uniform('uLive'), aspect: uniform('uAspect'), hover: uniform('uHover'),
     };
 
     const loadTexture = (file, unit, repeat) => new Promise((resolve, reject) => {
@@ -217,12 +299,33 @@ if (canvas && world && layer) {
       loadTexture('motion.png', 1, false),
       loadTexture('gobo.png', 2, true),
       loadTexture('noise.png', 3, true),
+      loadTexture('objects.jpg', 4, false),
+      loadTexture('objects-alpha.png', 5, false),
+      loadTexture('objects-fill.jpg', 6, false),
     ]).then(() => {
       gl.uniform1i(uniform('uPaint'), 0);
       gl.uniform1i(uniform('uMotion'), 1);
       gl.uniform1i(uniform('uGobo'), 2);
       gl.uniform1i(uniform('uNoise'), 3);
+      gl.uniform1i(uniform('uObject'), 4);
+      gl.uniform1i(uniform('uObjectA'), 5);
+      gl.uniform1i(uniform('uFill'), 6);
       gl.uniform1f(U.aspect, IMAGE_W / IMAGE_H);
+      gl.uniform4f(uniform('uCrop'), CROP[0], CROP[1], CROP[2], CROP[3]);
+
+      // Pointer and keyboard both raise an object. Focus counts, so tabbing
+      // through the controls shows the same response as hovering them.
+      const want = { menu: 0, coffee: 0, glasses: 0 };
+      const have = { menu: 0, coffee: 0, glasses: 0 };
+      for (const id of Object.keys(OBJECTS)) {
+        const button = document.querySelector('[data-object="' + id + '"]');
+        if (!button) continue;
+        const set = (value) => () => { want[id] = value; };
+        button.addEventListener('pointerenter', set(1));
+        button.addEventListener('pointerleave', set(0));
+        button.addEventListener('focus', set(1));
+        button.addEventListener('blur', set(0));
+      }
 
       let cover = { scale: 1, offsetX: 0, offsetY: 0 };
 
@@ -301,13 +404,23 @@ if (canvas && world && layer) {
         lookY += (targetY - lookY) * 0.07;
 
         // Under reduced motion the painting is static, so once it has settled
-        // there is nothing to redraw until the viewer looks around.
-        if (!live && settled && !moved) return;
+        // there is nothing to redraw until the viewer looks around or raises
+        // an object.
         settled = true;
+
+        // Ease towards the wanted state so objects settle rather than snap.
+        let hovering = false;
+        for (const id of Object.keys(have)) {
+          have[id] += (want[id] - have[id]) * 0.16;
+          if (Math.abs(want[id] - have[id]) > 0.002) hovering = true;
+        }
+
+        if (!live && settled && !moved && !hovering) return;
 
         gl.uniform1f(U.time, live ? (now - start) / 1000 : 0);
         gl.uniform1f(U.live, live);
         gl.uniform2f(U.look, -lookX * 0.9, lookY * 0.55);
+        gl.uniform3f(U.hover, have.menu, have.coffee, have.glasses);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
       }
       requestAnimationFrame(frame);
@@ -321,5 +434,10 @@ if (canvas && world && layer) {
       console.warn('Café art failed to load; the painting stays still', error);
       canvas.dataset.sceneReady = 'false';
     });
+  } catch (error) {
+    // A shader that will not compile is not worth taking the page down for.
+    // The painting underneath is already drawn and already correct.
+    console.warn('Café shader unavailable; the painting stays still', error);
+    canvas.dataset.sceneReady = 'false';
   }
 }

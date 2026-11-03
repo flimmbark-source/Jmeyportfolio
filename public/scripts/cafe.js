@@ -18,7 +18,6 @@
   const book = get('cafe-book'), preview = get('cafe-preview'), focus = get('cafe-focus'), lens = get('cafe-lens');
   const objects = get('cafe-objects');
   const header = document.querySelector('.cafe-header');
-  const hint = get('cafe-hint');
   const lookToggle = get('cafe-look-toggle');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   let depth = 0;
@@ -184,7 +183,6 @@
     document.body.classList.toggle('is-dialog-open',visible);
     header.inert = visible;
     objects.inert = visible;
-    hint.hidden = visible;
     lookToggle.inert = visible;
     book.hidden = s.view !== 'menu';
     preview.hidden = s.view !== 'preview';

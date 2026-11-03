@@ -430,3 +430,63 @@ engine.
   default off.
 - **The scene is one fixed viewpoint.** Looking around is a parallax shift
   weighted by the depth channel, not a camera move.
+
+
+## Objects that move, 2026-11-03
+
+### Hover had to be real movement, not a warp
+
+Warping the image in place cannot pick something up: it smears the brushwork
+and the object stays welded to the table. So the menu, the cup and the
+sunglasses are cut out of the painting and composited back as their own layer
+(`tools/cafe-art/build_objects.py`). On hover the layer is transformed - the
+menu tips up about its spine and foreshortens, as a cover does when it starts
+to open; the cup lifts straight off its saucer; the glasses are nudged and
+turned - and each one darkens the table beneath it as it rises. They are
+never warped, so the paint on them stays exactly as painted however far they
+move.
+
+At rest the layer composites back to the original image exactly. Underneath
+sits a diffusion fill of the tabletop, revealed only by the few pixels a
+hover uncovers.
+
+Two things the matting needed:
+
+- **Grow from a seed, don't threshold.** A plain colour test pulled the pale
+  chips in the enamel into the sprites, so they travelled with the cup.
+  Growing a region outward from each object's centre keeps only what is
+  actually connected to it.
+- **Red and cream both run r > g > b.** The separator is how far red leads
+  green - the table sits near 0.35, the menu's card near 0.13 - with bright
+  pixels pardoned, because the crema in the cup is every bit as red-over-green
+  as the table and must not be mistaken for it.
+
+The layer ships cropped to the objects' bounding box with colour and alpha
+separate: a full-frame RGBA png came to 1.2 MB, where a cropped JPEG plus an
+8-bit matte is 281 KB.
+
+### The ambient warp was turned right down
+
+The foliage sway was too strong and read as heat haze over the picture rather
+than as leaves moving in it. Amplitude is down from 0.018 to 0.0034 and the
+noise scrolls about two and a half times slower, which leaves it barely
+perceptible. Measured over fourteen seconds the foliage now shifts by 1-3
+against 8-15 before. The travelling leaf shadow carries the scene instead,
+which is the part that looked right all along.
+
+### Removed
+
+The bottom hint line ("Explore the table, or go straight to my work") is
+gone, along with its styles and its handler. The hover response is now strong
+enough to be its own affordance, and the header reaches the same places.
+
+### The Menu, restyled
+
+It had grown a dark chrome bar that fought the paper under it, a thumbnail
+placeholder that read as a broken image, and the words "Selected Work" three
+times over - in the breadcrumb, in the active category and again as the
+heading. It is now one sheet of warm stock: the bar sits on the paper, the
+categories are a ruled printed list, entries have consistent media and a
+two-line summary, and the breadcrumb is hidden in the list view where the
+panel beside it already says where you are. The information architecture is
+untouched.
