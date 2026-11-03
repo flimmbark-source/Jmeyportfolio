@@ -1,3 +1,32 @@
+# Current revision: work that supports people
+
+The approved narrative is now “Making work work for people.” IDL leads with
+an explorable, simplified workflow: information preparation, drawing, handoff,
+and QC, connected by shared learning. The account comes from the owner's
+clarification about SolidWorks efficiencies, coworkers' shortcuts, cross-team
+information encoding, quicker handoffs, streamlined QC, and cooperation.
+
+Visitors select a stage to reveal its explanation in place or show everything.
+Native buttons expose selection and associated panel IDs. All explanations
+render without JavaScript, with controls revealed only after initialization.
+No autoplay, forced tour, or fabricated before/after artifact is introduced.
+
+The 480/120/37 minute comparison preserves team versus individual attribution.
+Earth Hero and Letter River support the story through motivation and learning,
+with optional decision explanations. The IDL case study now carries the same
+collaborative account. Stress, autonomy, and monetary gains remain aims, not
+measured outcomes. The playground cue fix remains included in this PR.
+
+Validation: Astro production build passed. Built Work and IDL pages passed
+internal destination, image, ID, and ARIA-target checks. All five explanations
+are available in static HTML. Browser checks confirmed stage selection,
+keyboard activation of Show all, and no desktop overflow with larger text.
+Mobile-specific browser verification remains outstanding.
+
+---
+
+## Superseded implementation notes
+
 # `/ux` — editorial Work layout, November 2026
 
 The current page follows the approved editorial concept: a short hero, Earth

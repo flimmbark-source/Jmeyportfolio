@@ -4,12 +4,13 @@ import PortfolioBackdrop from '../components/PortfolioBackdrop.astro';
 import PortfolioPolish from '../components/PortfolioPolish.astro';
 import SiteNav from '../components/SiteNav.astro';
 import SiteHead from '../components/SiteHead.astro';
+import WorkflowExplorer from '../components/WorkflowExplorer.astro';
 import { HOME, RESUME, resolveHref } from '../data/siteNav';
 import '../styles/portfolio-v2.css';
 import '../styles/portfolio-chrome.css';
 
 const projects = await getCollection('projects');
-const selectedSlugs = ['earth-hero', 'letter-river', 'idl'];
+const selectedSlugs = ['idl', 'earth-hero', 'letter-river'];
 const project = (slug: string) => projects.find((entry) => entry.data.slug === slug)!.data;
 const earth = project('earth-hero');
 const letter = project('letter-river');
@@ -29,29 +30,65 @@ const experience = [
 <!doctype html>
 <html lang="en">
   <head>
-    <SiteHead title="Work — Jacob Meyerkopf, UX Research & Product Design" description="Selected work in UX research, interaction design, and workflow improvement. Explore the decisions, prototypes, and outcomes behind Jacob Meyerkopf’s projects." />
+    <SiteHead title="Work — Jacob Meyerkopf, UX Research & Product Design" description="Selected work in Designing processes that support people’s work. Explore Jacob Meyerkopf’s workflow improvements, UX research, and interaction design." />
   </head>
   <body class="pv2-body">
-    <a class="uxw-skip" href="#main-content">Skip to selected work</a>
+    <a class="uxw-skip" href="#main-content">Skip to main content</a>
     <PortfolioPolish />
     <PortfolioBackdrop />
     <div class="pv2-site">
       <SiteNav />
       <main class="uxw" id="main-content" tabindex="-1">
         <section class="uxw-hero" aria-labelledby="uxw-title">
-          <h1 id="uxw-title">Making complex systems<br class="uxw-desktop-break" /> make sense.</h1>
-          <p class="uxw-lead">UX research, interaction design, and working prototypes.</p>
+          <h1 id="uxw-title">Making work<br class="uxw-desktop-break" /> work for people.</h1>
+          <p class="uxw-label uxw-hero__eyebrow">Jacob Meyerkopf · UX research &amp; product design</p>
+          <p class="uxw-lead">I connect the tools, information, and people behind a process to find where work can become easier.</p>
+          <p class="uxw-intent">My aim: less wasted time and cost, less stress, and more control for the people doing the work.</p>
+          <div class="uxw-actions"><a class="uxw-button" href="#idl-title">See the workflow improvement <span aria-hidden="true">↓</span></a><a class="uxw-link" href="#approach">How I approach a problem</a></div>
           <p class="uxw-location"><span aria-hidden="true">◎</span> Based in Tel Aviv-Yafo</p>
         </section>
 
         <section id="selected-work" aria-labelledby="uxw-selected">
           <h2 class="uxw-label uxw-section-label" id="uxw-selected">Selected work</h2>
-          <article class="uxw-feature" aria-labelledby="earth-title">
+          <article class="uxw-feature uxw-idl-feature" aria-labelledby="idl-title">
             <div class="uxw-feature__main">
               <div class="uxw-feature__text">
-                <p class="uxw-label">01 / Research into product</p>
-                <h3 id="earth-title">Earth Hero</h3>
-                <p class="uxw-subtitle">Designing the gamification layer</p>
+                <p class="uxw-label">01 / Rethinking the working process</p>
+                <h3 id="idl-title">An eight-hour task.<br />A different way to work.</h3>
+                <p class="uxw-project-name">IDL Worldwide · SolidWorks workflow improvement</p>
+                <p class="uxw-description">I combined SolidWorks knowledge with coworkers’ shortcuts, worked across the team to improve information preparation and handoffs, and streamlined QC. Sharing discoveries helped us improve the process together.</p>
+                <p class="uxw-role">Design Engineer · Apple fixture rollout at AT&amp;T retail<br />May 2015–May 2017</p>
+                <div class="uxw-actions"><a class="uxw-button" href={caseLink(idl)}>Read the case study <span aria-hidden="true">↗</span><span class="sr-only">: IDL</span></a></div>
+              </div>
+              <figure class="uxw-work-evidence">
+                <img src="/images/derived/idl-case-study-1400.webp" alt="Store drawings, fixture elevations, and a rendered store layout from the IDL rollout" width="1400" height="1867" fetchpriority="high" />
+                <figcaption>Original drawing work for the retail rollout</figcaption>
+              </figure>
+            </div>
+            <WorkflowExplorer />
+            <div class="uxw-comparison" aria-labelledby="turnaround-title">
+              <div class="uxw-comparison__intro"><h4 id="turnaround-title">Same unit of work.<br />Less time to produce it.</h4><p>Turnaround per store drawing, across two stages of improvement.</p></div>
+              <ol class="uxw-time-bars">
+                <li><span>Initial process</span><span class="uxw-time-track"><i style="--time:100%"></i></span><strong>8h</strong></li>
+                <li><span>With the team</span><span class="uxw-time-track"><i style="--time:25%"></i></span><strong>2h</strong></li>
+                <li><span>My later refinement</span><span class="uxw-time-track"><i style="--time:7.7083%"></i></span><strong>37m</strong></li>
+              </ol>
+            </div>
+
+            <details class="uxw-decision"><summary>What do these results establish?</summary><p>The time figures describe drawing turnaround. The two-hour result belongs to the team, and the later 37-minute result to my individual workflow. I digitized more than 500 locations during the rollout, but these figures do not establish a time saving for every location. Financial savings, stress reduction, and worker autonomy were not measured here.</p></details>
+          </article>
+          <section class="uxw-approach" id="approach" aria-labelledby="approach-title">
+            <div><p class="uxw-label">The perspective behind the work</p><h2 id="approach-title">The workaround is<br /> worth looking at.</h2></div>
+            <div><p>When someone has to keep compensating for a process, I want to understand what the process is asking of them. That is often where I see an opportunity to approach the problem differently.</p><p>I aim to make room for people’s judgment, reduce unnecessary effort, and connect those improvements to the needs of the business.</p></div>
+          </section>
+          <div class="uxw-related-heading"><h2>Supporting people in other contexts.</h2><p>The same concern for people’s effort also shapes how I approach motivation and learning.</p></div>
+          <div class="uxw-supporting">
+          <article class="uxw-card uxw-earth-card" aria-labelledby="earth-title">
+            <div class="uxw-feature__main">
+              <div class="uxw-feature__text">
+                <p class="uxw-label">02 / Supporting motivation</p>
+                <h3 id="earth-title">How can everyday actions<br /> feel like progress?</h3>
+                <p class="uxw-project-name">Earth Hero · Client research &amp; product design</p>
                 <p class="uxw-description">Exploring how everyday climate actions can become an ongoing practice.</p>
                 <p class="uxw-role">UX research &amp; product design · Tech Fleet<br />Volunteer client work, with a design partner</p>
                 <p class="uxw-outcome">Selected recommendations taken into the live app.</p>
@@ -75,41 +112,30 @@ const experience = [
                 <figcaption>Original wireframes and Figma prototype from the engagement.</figcaption>
               </figure>
             </div>
-            <dl class="uxw-reasoning">
+            <details class="uxw-decision"><summary>Explore the decision: connect actions to growth</summary><dl class="uxw-reasoning">
               <div><dt class="uxw-label">The question</dt><dd>Do people experience the game mechanics as intended?</dd></div>
               <div><dt class="uxw-label">The design</dt><dd>Connect daily actions to avatar growth and team progress.</dd></div>
               <div><dt class="uxw-label">The evidence</dt><dd>A working prototype and moderated usability study. Session findings remain with the client.</dd></div>
-            </dl>
+            </dl></details>
           </article>
 
-          <div class="uxw-supporting">
+
             <article class="uxw-card" aria-labelledby="letter-title">
-              <p class="uxw-label">02 / Interaction design</p>
-              <h3 id="letter-title">Learning through<br /> interaction.</h3>
+              <p class="uxw-label">03 / Supporting learning</p>
+              <h3 id="letter-title">How does a letter become<br /> a sound you recognize?</h3>
               <figure class="uxw-letter-art">
                 <img src="/images/Letter_River.png" alt="Letter River gameplay: drifting Hebrew letters above four sound-matching targets" width="342" height="715" loading="lazy" decoding="async" />
                 <figcaption><span class="uxw-art-label">Letter → sound</span><strong>Recognize it.<br />Hear it.<br />Make the connection.</strong><span>A screen from the working prototype.</span></figcaption>
               </figure>
               <p class="uxw-project-name">Letter River · Independent learning prototype</p>
               <p class="uxw-card__description">A connected path from letter recognition to vocabulary and reading. Designed and built independently.</p>
-              <p class="uxw-note">Public prototype. Learning outcomes not yet measured.</p>
+              <details class="uxw-decision"><summary>Explore the decision: connect recognition to reading</summary><p>Recognizing a letter is only part of reading. This prototype connects recognition, vocabulary, and reading in one practice path. It is a working design exploration, with learning outcomes still to be tested.</p></details>
               <div class="uxw-actions">
                 <a class="uxw-button" href={caseLink(letter)}>Explore the case study <span aria-hidden="true">↗</span><span class="sr-only">: Letter River</span></a>
                 <a class="uxw-link" href={liveApp.href} target="_blank" rel="noopener noreferrer">Try it <span aria-hidden="true">↗</span><span class="sr-only">: Letter River (opens in a new tab)</span></a>
               </div>
             </article>
-            <article class="uxw-card" aria-labelledby="idl-title">
-              <p class="uxw-label">03 / Workflow design</p>
-              <h3 id="idl-title">Making repetitive work repeatable.</h3>
-              <figure class="uxw-idl-art">
-                <img src="/images/derived/idl-case-study-768.webp" alt="Original store drawings and fixture elevations from the IDL rollout" width="768" height="1024" loading="lazy" decoding="async" />
-                <figcaption><strong>8h <span aria-hidden="true">→</span><span class="sr-only">to</span> 37m</strong><span>Per store drawing</span><p>8h initial · 2h team result<br />37m after my further refinement</p></figcaption>
-              </figure>
-              <p class="uxw-project-name">IDL · SolidWorks workflow improvement</p>
-              <p class="uxw-card__description">Making recurring drawing work repeatable across a nationwide retail rollout.</p>
-              <p class="uxw-note">Design Engineer · Apple fixtures across AT&amp;T retail</p>
-              <div class="uxw-actions"><a class="uxw-button" href={caseLink(idl)}>See the workflow <span aria-hidden="true">↗</span><span class="sr-only">: IDL</span></a></div>
-            </article>
+
           </div>
         </section>
 
@@ -129,7 +155,7 @@ const experience = [
         </section>
 
         <section class="uxw-contact" id="contact" aria-labelledby="uxw-contact">
-          <div><h2 id="uxw-contact">Let's talk about the work.</h2><p>I'm exploring product design and UX research opportunities.</p></div>
+          <div><h2 id="uxw-contact">Where is your process getting in the way?</h2><p>I'm exploring product design and UX research opportunities where I can make work better for the people doing it.</p></div>
           <div class="uxw-contact__links">
             <a class="uxw-button" href="mailto:jmeyerkopf@gmail.com">Contact <span aria-hidden="true">↗</span></a>
             <a class="uxw-link" href="https://www.linkedin.com/in/jacobmeyerkopf/" target="_blank" rel="noopener noreferrer">LinkedIn<span class="sr-only"> (opens in a new tab)</span></a>
@@ -261,5 +287,52 @@ const experience = [
     .uxw-idl-art figcaption { width: 88%; padding: 18px; }
     .uxw-disclosure summary { grid-template-columns: 1fr; }
     .uxw-disclosure__action { grid-row: 3; grid-column: 1; }
+  }
+
+  .uxw-hero .uxw-lead { max-width: 47ch; }
+  .uxw-hero__eyebrow { margin-bottom: 18px; }
+  .uxw-intent { max-width: 60ch; color: var(--pv2-muted); margin: 16px 0 24px; }
+  .uxw-idl-feature h3 { font-size: clamp(2.4rem, 3.6vw, 3.6rem); }
+  .uxw-idl-feature .uxw-description { margin-top: 20px; max-width: 44ch; }
+  .uxw-idl-feature .uxw-actions { margin-top: 24px; }
+  .uxw-work-evidence { position: relative; margin: 0; height: 430px; overflow: hidden; border-radius: 8px; }
+  .uxw-work-evidence img { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; }
+  .uxw-work-evidence figcaption { position: absolute; inset: auto 0 0; padding: 12px 18px; background: #f4f2ecef; font-size: .8rem; }
+  .uxw-comparison { display: grid; grid-template-columns: 1fr 1.6fr; align-items: center; gap: 36px; background: #e4e9e0; padding: 28px; margin-top: 24px; border-radius: 8px; }
+  .uxw-comparison h4 { font-family: var(--pv2-font-display); font-size: 1.5rem; line-height: 1.2; margin: 0; }
+  .uxw-comparison p { font-size: .9rem; margin: 12px 0 0; }
+  .uxw-time-bars { list-style: none; padding: 0; margin: 0; }
+  .uxw-time-bars li { display: grid; grid-template-columns: 145px 1fr 48px; gap: 14px; align-items: center; font-size: .9rem; }
+  .uxw-time-bars li + li { margin-top: 18px; }
+  .uxw-time-track { display: block; background: #26392d12; height: 14px; border-radius: 3px; }
+  .uxw-time-track i { display: block; width: var(--time); height: 100%; background: #7d8c7c; border-radius: inherit; }
+  .uxw-time-bars li:last-child i { background: #334c3a; }
+  .uxw-time-bars strong { text-align: right; font-variant-numeric: tabular-nums; }
+  .uxw-decision { border-top: 1px solid var(--pv2-line); margin: 0 0 20px; }
+  .uxw-decision summary { cursor: pointer; padding: 16px 0; font-weight: 600; min-height: 48px; }
+  .uxw-decision p { max-width: 76ch; margin: 0 0 20px; color: var(--pv2-muted); }
+  .uxw-approach { display: grid; grid-template-columns: 1fr 1.2fr; gap: 48px; padding: 52px 0; border-block: 1px solid var(--pv2-line); margin: 40px 0; scroll-margin-top: 90px; }
+  .uxw-approach h2 { font-size: clamp(2rem, 3vw, 2.8rem); margin: 14px 0 0; }
+  .uxw-approach p { max-width: 55ch; margin-top: 0; }
+  .uxw-related-heading { margin-bottom: 24px; }
+  .uxw-related-heading h2 { font-size: clamp(1.7rem, 3vw, 2.4rem); margin: 0; }
+  .uxw-related-heading p { color: var(--pv2-muted); margin-bottom: 0; }
+  #idl-title { scroll-margin-top: 90px; }
+  .uxw-earth-card .uxw-feature__main { display: flex; flex-direction: column; gap: 0; align-items: stretch; }
+  .uxw-earth-card .uxw-feature__text { padding: 0; }
+  .uxw-earth-card .uxw-description { font-size: 1rem; }
+  .uxw-earth-card .uxw-earth-art { margin: 24px 0 0; padding: 16px; height: auto; }
+  .uxw-earth-card .uxw-earth-art__phone img { max-height: 245px; width: auto; max-width: 100%; }
+  .uxw-earth-card .uxw-reasoning { display: grid; grid-template-columns: 1fr; gap: 16px; border: 0; padding: 0; margin: 0 0 16px; }
+  .uxw-earth-card .uxw-reasoning > div { border: 0; padding: 0; }
+  .uxw-earth-card .uxw-decision { margin-top: 20px; margin-bottom: 0; }
+  .uxw-card .uxw-decision { margin-top: 16px; }
+  @media (max-width: 760px) {
+    .uxw-comparison, .uxw-approach { grid-template-columns: 1fr; gap: 24px; }
+    .uxw-work-evidence { height: 300px; }
+    .uxw-comparison { padding: 20px; }
+    .uxw-time-bars li { grid-template-columns: 1fr 48px; gap: 8px 14px; }
+    .uxw-time-bars li > span:first-child { grid-column: 1 / -1; }
+    .uxw-approach { padding: 30px 0; margin: 30px 0; }
   }
 </style>
