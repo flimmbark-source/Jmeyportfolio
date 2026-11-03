@@ -29,8 +29,8 @@ const labels = {
 // repeating one card. Three identical modules in a row is the thing that reads
 // as a template no matter how good the type is.
 //
-//   letter-river  a real screenshot of the running app, so the screen leads
-//                 and the writing sits underneath it
+//   letter-river  a real screenshot of the running app, run full width under
+//                 the writing
 //   idl           a photograph of the actual store drawings beside the real
 //                 before/after numbers: two artefacts, no mockup
 //   ai-archiving  a concept with nothing built, so its own documented flow is
@@ -63,7 +63,7 @@ const visuals = {
   },
   idl: {
     layout: 'split',
-    src: '/images/derived/idl-case-study-1100.webp',
+    src: '/images/derived/idl-case-study-1400.webp',
     alt: 'Store drawings and fixture elevations spread across a desk',
     bars: bySlug('idl')?.caseStudy?.solution?.bars,
   },
@@ -74,8 +74,49 @@ const visuals = {
 const claims = {
   'earth-hero': 'People who already care about their footprint still stop logging actions after a week, so the work was motivation design \u2014 and then a study written to check whether players read the mechanics the way we intended.',
   'letter-river': 'A learner who can name a letter still cannot hear it inside a word, so recognition, vocabulary and reading are one connected path rather than three separate drills.',
-  idl: 'Two stages, kept apart on purpose: the team took drawing turnaround from eight hours to two, and I then refined my own workflow to 37 minutes across 500+ AT&T locations.',
+  idl: 'An eight-hour drawing, repeated across a national rollout, is a process problem rather than a drafting one \u2014 so the work was finding which parts of it could be made repeatable, and then being exact about which share of the gain was the team\u0027s and which was mine.',
 };
+
+// What the work actually produced. Every card used to bury this: Earth Hero's
+// adoption sat at the end of the case study, Letter River had no outcome stated
+// anywhere, and IDL's numbers were drawn in small grey bars at the bottom of
+// the third card. It is the line a reviewer is scanning for, so it gets the
+// same slot on all three.
+//
+// The second line is the honest qualifier in each case, not a second helping of
+// praise. A result with its own limits attached is the more credible claim.
+const outcomes = {
+  'earth-hero': {
+    value: 'Taken into the live app',
+    note: 'Recommendations went to the client and Earth Hero took elements of the work into its product. The session findings belong to the engagement, not to me.',
+  },
+  'letter-river': {
+    value: 'Built, and public',
+    note: 'The prototype runs the whole path end to end and anyone can open it. Learning outcomes are unmeasured \u2014 the case study says so, and names the study that would settle it.',
+  },
+  idl: {
+    value: '8 hours \u2192 37 minutes',
+    note: 'Turnaround per store drawing. Eight hours down to two with the team; 37 minutes after I kept refining my own pass.',
+  },
+};
+
+// Role, scope, dates. The three things a reviewer asks before reading anything
+// else \u2014 and the place where a volunteer engagement and a staff job have to be
+// told apart rather than flattened into one word.
+const facts = {
+  'earth-hero': ['UX Researcher & Product Designer', 'Cross-functional team, with a design partner', '2022\u20132026'],
+  'letter-river': ['Designed and built it myself', 'Independent prototype', 'Self-directed'],
+  idl: ['Design Engineer, on staff', 'Apple fixture rollout across AT&T retail', '2015\u20132017'],
+};
+
+// The hero promised and then proved nothing: the panel beside it restated the
+// experience timeline further down the page. Three facts a reviewer can check
+// against the case studies do more in five seconds than a paragraph does.
+const proof = [
+  { value: '8h \u2192 37min', label: 'Store-drawing turnaround, brought down over two stages at IDL Worldwide' },
+  { value: '500+', label: 'AT&T retail locations digitized in SolidWorks for the Apple fixture rollout' },
+  { value: 'Live product', label: 'Earth Hero took elements of the gamification work into its released app' },
+];
 
 const supporting = projects
   .filter((project) => !selectedSlugs.includes(project.data.slug))
@@ -101,9 +142,9 @@ const typeCardNote = {
 // Most recent first.
 const experience = [
   { dates: '2023–2026', company: 'Active Learning Adventures', role: 'Design Lead', detail: 'Used primary research, learning literature, rapid prototypes, playtesting, and stakeholder feedback to explore and revise learning-experience concepts.' },
-  { dates: '2022–2026 · Volunteer', company: 'Tech Fleet Community DAO', role: 'UX Researcher', detail: 'Designed and conducted interviews, surveys, and A/B tests. Co-designed app engagement features and presented recommendations to the client, who incorporated elements into its live product.' },
+  { dates: '2022–2026 · Volunteer', company: 'Tech Fleet Community DAO', role: 'UX Researcher', detail: 'Designed and conducted interviews, surveys, and A/B tests, and co-designed app engagement features on a cross-functional client team.' },
   { dates: '2018', company: 'SIG SAUER', role: 'Design Engineer', detail: 'Automated the migration of inventory and ticket data from large spreadsheets into Oracle.' },
-  { dates: 'May 2015–May 2017', company: 'IDL Worldwide', role: 'Design Engineer', detail: 'Worked with the team to reduce store-drawing turnaround from eight hours to two hours, then personally reduced it to 37 minutes. Digitized 500+ AT&T locations in SolidWorks for Apple fixture installations.' },
+  { dates: 'May 2015–May 2017', company: 'IDL Worldwide', role: 'Design Engineer', detail: 'Produced store drawings for a nationwide Apple fixture rollout and digitized 500+ AT&T locations in SolidWorks. The workflow improvement is the case study above.' },
 ];
 ---
 <!doctype html>
@@ -131,10 +172,17 @@ const experience = [
               <a class="uxw-link" href={RESUME} download>Download resume (PDF)</a>
             </div>
           </div>
-          <aside class="uxw-panel uxw-hero__aside" aria-labelledby="uxw-background">
-            <p class="pv2-overline" id="uxw-background">Background</p>
-            <p>Client application research at Tech Fleet, learning-experience prototyping at Active Learning Adventures, and workflow improvement at IDL Worldwide.</p>
-            <p class="uxw-muted">Tel Aviv-Yafo, Israel · Native English · Authorized to work in Israel</p>
+          <aside class="uxw-panel uxw-hero__aside" aria-labelledby="uxw-proof">
+            <p class="pv2-overline" id="uxw-proof">The short version</p>
+            <ul class="uxw-proof">
+              {proof.map((item) => (
+                <li>
+                  <span class="uxw-proof__value">{item.value}</span>
+                  <span class="uxw-proof__label">{item.label}</span>
+                </li>
+              ))}
+            </ul>
+            <p class="uxw-muted uxw-proof__foot">Tel Aviv-Yafo, Israel · Native English · Authorized to work in Israel</p>
           </aside>
         </section>
 
@@ -142,7 +190,7 @@ const experience = [
           <div class="uxw-heading">
             <p class="pv2-overline">Case studies</p>
             <h2 id="uxw-selected">Selected work</h2>
-            <p>A learning interface, a professional CAD workflow, and an AI review concept. Each case study identifies the work's scope and status.</p>
+            <p>A client research and product-design engagement, an independent learning prototype, and a professional CAD workflow. Each card states what I did, what came of it, and what it does not prove.</p>
           </div>
 
           <div class="uxw-cases">
@@ -183,20 +231,42 @@ const experience = [
                 </figure>
               );
 
+              const outcome = outcomes[data.slug];
+              const fact = facts[data.slug];
+
+              // One anatomy for all three: who and where, the title, the claim,
+              // the result, the scope. The old card said everything twice —
+              // a sharp framing sentence followed by the CV restatement of the
+              // same point — which halved the force of the good line. The
+              // summary still lives in the project data and still runs on the
+              // index below; it just no longer echoes the claim here.
               const Text = (
                 <div class="uxw-case__text">
                   <p class="uxw-label">{labels[data.slug]}</p>
                   <h3>{data.title}</h3>
                   <p class="uxw-case__claim">{claims[data.slug]}</p>
-                  <p class="uxw-case__summary">{data.summary}</p>
-                  <div class="uxw-actions">
-                    {caseLink && <a class="uxw-button" href={caseLink.href}>{caseLink.label}<span class="sr-only">: {data.title}</span></a>}
-                    {otherLinks.map((link) => (
-                      <a class="uxw-link" href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noopener noreferrer' : undefined}>
-                        {link.label} {link.external && <span aria-hidden="true">↗</span>}<span class="sr-only">: {data.title}{link.external ? ' (opens in a new tab)' : ''}</span>
-                      </a>
-                    ))}
-                  </div>
+                  {outcome && (
+                    <div class="uxw-outcome">
+                      <p class="uxw-outcome__value">{outcome.value}</p>
+                      <p class="uxw-outcome__note">{outcome.note}</p>
+                    </div>
+                  )}
+                  {fact && <ul class="uxw-facts">{fact.map((item) => <li>{item}</li>)}</ul>}
+                </div>
+              );
+
+              // Pulled out of the text block. On the split layout the button
+              // used to land between the writing and the two artefacts, so the
+              // call to action sat in the middle of the card. Every card now
+              // ends on it.
+              const Actions = (
+                <div class="uxw-actions uxw-case__actions">
+                  {caseLink && <a class="uxw-button" href={caseLink.href}>{caseLink.label}<span class="sr-only">: {data.title}</span></a>}
+                  {otherLinks.map((link) => (
+                    <a class="uxw-link" href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noopener noreferrer' : undefined}>
+                      {link.label} {link.external && <span aria-hidden="true">↗</span>}<span class="sr-only">: {data.title}{link.external ? ' (opens in a new tab)' : ''}</span>
+                    </a>
+                  ))}
                 </div>
               );
 
@@ -216,9 +286,11 @@ const experience = [
 
               return (
                 <article class={`uxw-case uxw-case--${layout}`}>
-                  {layout === 'media' && <>{Media}{Text}</>}
-                  {layout === 'split' && <>{Text}<div class="uxw-case__pair">{has.media && Media}{Bars}</div></>}
-                  {layout === 'diagram' && <>{Text}{Steps}</>}
+                  {Text}
+                  {layout === 'media' && Media}
+                  {layout === 'split' && <div class="uxw-case__pair">{has.media && Media}{Bars}</div>}
+                  {layout === 'diagram' && Steps}
+                  {Actions}
                 </article>
               );
             })}
@@ -344,6 +416,43 @@ const experience = [
   .uxw-panel p + p { margin-top: 12px; }
   .uxw-panel .uxw-muted { font-size: .9rem; }
 
+  /* Three checkable facts in place of the paragraph that used to restate the
+     experience timeline further down the page. */
+  .uxw-proof {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .uxw-proof li {
+    display: grid;
+    gap: 2px;
+    padding: 12px 0;
+    border-top: 1px solid var(--pv2-line);
+  }
+
+  .uxw-proof li:first-child { border-top: 0; padding-top: 0; }
+
+  .uxw-proof__value {
+    font-size: 1.3rem;
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -.035em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .uxw-proof__label {
+    color: var(--pv2-muted);
+    font-size: .85rem;
+    line-height: 1.4;
+  }
+
+  .uxw-proof__foot {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--pv2-line);
+  }
+
   .uxw-actions {
     display: flex;
     flex-wrap: wrap;
@@ -433,8 +542,9 @@ const experience = [
     backdrop-filter: blur(8px);
   }
 
-  /* Image-led: the screen runs the full width of the card and the writing
-     sits under it. The work is the argument, so it gets the room. */
+  /* Image-led: the screen runs the full width of the card. The work is the
+     argument, so it gets the room — but the label and title still come first,
+     because that is what a reviewer scans. */
   .uxw-case--media { grid-template-columns: minmax(0, 1fr); }
   .uxw-case--media .uxw-case__text { max-width: var(--pv2-measure); }
 
@@ -445,7 +555,7 @@ const experience = [
     display: grid;
     grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
     gap: clamp(18px, 2.4vw, 32px);
-    align-items: center;
+    align-items: stretch;
   }
 
   /* Nothing is built, so the documented flow is the visual and it runs wide
@@ -465,19 +575,63 @@ const experience = [
   /* The claim. One sentence that says something, where three bullets used to
      sit saying nothing. */
   .uxw-case__claim {
-    margin: 0 0 14px;
+    margin: 0;
     max-width: var(--pv2-measure);
     color: var(--pv2-text);
     font-size: var(--pv2-step-lead);
     line-height: 1.45;
   }
 
-  .uxw-case__summary {
-    margin: 0;
+  /* The result. Set at heading weight and marked with the accent rule, because
+     on a work page this is the sentence the reader came for — it should not
+     have to be found inside a paragraph. */
+  .uxw-outcome {
     max-width: var(--pv2-measure);
-    color: var(--pv2-muted);
-    font-size: .94rem;
+    margin-top: clamp(18px, 2.2vh, 24px);
+    padding-left: clamp(14px, 1.4vw, 18px);
+    border-left: 3px solid var(--pv2-accent);
   }
+
+  .uxw-outcome__value {
+    margin: 0 0 6px;
+    font-size: clamp(1.3rem, 2.1vw, 1.8rem);
+    font-weight: 600;
+    line-height: 1.04;
+    letter-spacing: -.035em;
+    font-variant-numeric: tabular-nums;
+    text-wrap: balance;
+  }
+
+  .uxw-outcome__note {
+    margin: 0;
+    color: var(--pv2-muted);
+    font-size: .92rem;
+  }
+
+  /* Role, scope, dates. Small, but first in the order a reviewer actually asks
+     questions in, and the only place a volunteer engagement is distinguished
+     from a staff job. */
+  .uxw-facts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    margin: clamp(16px, 2vh, 22px) 0 0;
+    padding: 0;
+    list-style: none;
+    color: #4f4c47;
+    font-size: .86rem;
+    line-height: 1.5;
+  }
+
+  .uxw-facts li + li::before {
+    content: '·';
+    padding: 0 10px;
+    color: rgba(36, 36, 36, .32);
+  }
+
+  /* The article is a grid, so the actions row inherits the card gap; its own
+     margin would double it. */
+  .uxw-case__actions { margin-top: 0; }
 
   @media (max-width: 760px) {
     .uxw-case__pair { grid-template-columns: minmax(0, 1fr); }
@@ -502,16 +656,29 @@ const experience = [
      is shown whole rather than cropped into a tile. */
   .uxw-case--media .uxw-shot img { aspect-ratio: auto; }
 
-  /* The drawings photograph is portrait; capping it keeps it from towering
-     over the numbers beside it. */
+  /* The drawings photograph is portrait and much taller than the chart beside
+     it. Give the pair one fixed height: the photograph crops into it and the
+     numbers panel fills it, so the two artefacts sit as a pair instead of a
+     tall image with a small chart floating in the space next to it. */
+  .uxw-case--split .uxw-shot { height: clamp(300px, 30vw, 420px); }
+
   .uxw-case--split .uxw-shot img {
-    max-height: 420px;
+    height: 100%;
     object-fit: cover;
     object-position: center;
   }
 
-  /* IDL: the work's own numbers, drawn. */
+  @media (max-width: 760px) {
+    .uxw-case--split .uxw-shot { height: clamp(240px, 56vw, 340px); }
+  }
+
+  /* IDL: the work's own numbers, drawn. Centred inside a panel that matches
+     the photograph beside it, so the two artefacts read as a pair rather than
+     as a tall image with a small chart parked next to it. */
   .uxw-bars {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     margin: 0;
     padding: clamp(18px, 2.4vw, 26px);
     border-radius: var(--pv2-r-md);
@@ -615,7 +782,7 @@ const experience = [
     z-index: 1;
   }
 
-  /* The line that joins the steps. */
+  /* The line that joins the steps when they are stacked. */
   .uxw-steps li + li::after {
     content: '';
     position: absolute;
@@ -630,6 +797,40 @@ const experience = [
     background: var(--pv2-text);
     border-color: var(--pv2-text);
     color: #f7f6f2;
+  }
+
+  /* Wide screens: run the steps across the card. Stacked, five of them filled
+     a third of a 1024px panel and left the rest blank, and a loop drawn as a
+     vertical list does not read as a loop.
+
+     The connector is the same pseudo-element, turned on its side: each step
+     after the first draws the segment back to the one before it. Items are
+     equal-width flex children, so that distance is one item plus one gap, and
+     the line stops at the last number instead of running off the panel — with
+     no step count written into the CSS. */
+  @media (min-width: 861px) {
+    .uxw-steps ol {
+      --uxw-step-gap: clamp(10px, 1.6vw, 22px);
+      flex-direction: row;
+      gap: var(--uxw-step-gap);
+    }
+
+    .uxw-steps li {
+      flex: 1 1 0;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 0;
+      font-size: .92rem;
+      line-height: 1.35;
+    }
+
+    .uxw-steps li + li::after {
+      top: 15px;
+      left: calc(15px - 100% - var(--uxw-step-gap));
+      width: calc(100% + var(--uxw-step-gap));
+      height: 1px;
+    }
   }
 
   /* --- Experience ---------------------------------------------------------- */
@@ -868,7 +1069,6 @@ const experience = [
     .uxw-contact { padding: 22px 20px; border-radius: var(--pv2-r-lg); }
     .uxw-case { gap: 22px; }
     .uxw-case h3 { font-size: 1.45rem; }
-    .uxw-case__summary { font-size: .98rem; }
     .uxw-cases { gap: 14px; }
     .uxw-bars,
     .uxw-steps { padding: 16px; }
@@ -889,6 +1089,15 @@ const experience = [
     .uxw-bar {
       grid-template-columns: minmax(0, 1fr) 3.6rem;
     }
+
+    /* Wrapped onto three lines, the interpuncts land at the start of lines two
+       and three and read as bullets. Drop them and let the facts stack. */
+    .uxw-facts {
+      display: grid;
+      gap: 2px;
+    }
+
+    .uxw-facts li + li::before { content: none; }
 
     .uxw-bar__label { grid-column: 1 / -1; }
   }

@@ -56,6 +56,19 @@ const artwork = [
 ];
 
 /**
+ * Two of the case-study screens do not run as small tiles: they lead a
+ * half-width card on /ux, which is around 700 CSS pixels wide, so 768 is
+ * already soft at 1x and mush on a retina display. They get a second,
+ * larger derivative as well.
+ *
+ * This list exists because /ux and idl.json were already asking for 1400 and
+ * 1100 wide files that nothing generated, so both images were simply broken
+ * on the work page.
+ */
+const LEAD_WIDTH = 1400;
+const lead = ['Desktop_Hero_Screen.png', 'idl-case-study.png'];
+
+/**
  * Backdrop paintings. Full-bleed `cover`, but behind a scrim and a saturation
  * filter, so they tolerate aggressive compression. Two widths let the phone
  * skip the desktop-sized file entirely.
@@ -112,6 +125,18 @@ for (const name of artwork) {
   const target = join(derivedDir, `${slug(name)}-${ARTWORK_WIDTH}.webp`);
   results.push([name, await emit(source, target, (img) =>
     img.resize({ width: ARTWORK_WIDTH, withoutEnlargement: true }).webp({ quality: 78, effort: 6 })
+  )]);
+}
+
+for (const name of lead) {
+  const source = join(imagesDir, name);
+  if (!existsSync(source)) {
+    console.warn(`[optimize-images] missing source: ${name}`);
+    continue;
+  }
+  const target = join(derivedDir, `${slug(name)}-${LEAD_WIDTH}.webp`);
+  results.push([`${name} @${LEAD_WIDTH}`, await emit(source, target, (img) =>
+    img.resize({ width: LEAD_WIDTH, withoutEnlargement: true }).webp({ quality: 80, effort: 6 })
   )]);
 }
 
