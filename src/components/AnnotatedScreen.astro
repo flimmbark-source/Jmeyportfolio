@@ -1,0 +1,50 @@
+---
+interface Point { label: string; title: string; text: string; top: number; height: number }
+interface Props { id: string; src: string; alt: string; width: number; height: number; points: Point[] }
+const { id, src, alt, width, height, points } = Astro.props;
+---
+<figure class="annotated" data-annotated>
+  <div class="annotated-screen">
+    <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
+    {points.map((point, i) => <div class="annotation-region" data-region={i} style={`--top:${point.top}%;--height:${point.height}%`}><button hidden type="button" data-point={i} aria-pressed="false" aria-controls={`${id}-note-${i}`} aria-label={`Inspect ${point.label}`}><span aria-hidden="true">{i + 1}</span></button></div>)}
+  </div>
+  <figcaption>
+    <p class="annotation-instruction" data-annotation-instruction hidden>Select a numbered detail</p>
+    {points.map((point, i) => <section data-note={i} id={`${id}-note-${i}`}><p class="annotation-label">{i + 1} / {point.label}</p><h4>{point.title}</h4><p>{point.text}</p></section>)}
+    <p class="annotation-source">Actual prototype screen</p>
+  </figcaption>
+</figure>
+<script>
+  document.querySelectorAll<HTMLElement>('[data-annotated]').forEach(root => {
+    const buttons = [...root.querySelectorAll<HTMLButtonElement>('[data-point]')];
+    const notes = [...root.querySelectorAll<HTMLElement>('[data-note]')];
+    const regions = [...root.querySelectorAll<HTMLElement>('[data-region]')];
+    const select = (index: number) => {
+      buttons.forEach((button, i) => button.setAttribute('aria-pressed', String(i === index)));
+      notes.forEach((note, i) => { note.hidden = i !== index; });
+      regions.forEach((region, i) => region.classList.toggle('is-selected', i === index));
+    };
+    buttons.forEach((button, i) => { button.hidden = false; button.addEventListener('click', () => select(i)); });
+    root.querySelector<HTMLElement>('[data-annotation-instruction]')!.hidden = false;
+    select(0);
+  });
+</script>
+<style>
+  .annotated { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1fr); align-items: center; gap: 24px; margin: 20px 0; padding: 24px; background: #e4ebe3; border-radius: 8px; }
+  .annotated [hidden] { display: none !important; }
+  .annotated-screen { position: relative; max-width: 210px; width: 100%; justify-self: center; }
+  img { display: block; width: 100%; height: auto; }
+  .annotation-region { position: absolute; left: 7%; right: 7%; top: var(--top); height: var(--height); border: 2px solid transparent; border-radius: 5px; pointer-events: none; }
+  .annotation-region.is-selected { border-color: #8c3a1f; box-shadow: 0 0 0 2px #fff; }
+  button { position: absolute; right: -22px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; padding: 6px; border: 0; background: transparent; cursor: pointer; pointer-events: auto; }
+  button span { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: #f4f2ec; color: #73301a; border: 2px solid #73301a; font: 700 14px var(--pv2-font-text); }
+  button[aria-pressed=true] span { color: #fff; background: #73301a; }
+  button:focus-visible { outline: 3px solid #73301a; outline-offset: 3px; border-radius: 5px; }
+  figcaption { min-width: 0; }
+  h4 { font: 550 1.3rem/1.2 var(--pv2-font-display); margin: 8px 0 12px; }
+  p { font-size: .95rem; margin: 0 0 12px; line-height: 1.5; }
+  .annotation-label { color: #73301a; font-weight: 700; font-size: .8rem; }
+  .annotation-instruction,.annotation-source { color: #4c594d; font-size: .78rem; }
+  .annotation-source { margin-top: 20px; }
+  @media (max-width: 420px) { .annotated { padding: 20px 16px; gap: 20px; grid-template-columns: minmax(0, 1fr); } .annotated-screen { max-width: 170px; } }
+</style>

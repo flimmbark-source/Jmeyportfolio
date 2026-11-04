@@ -8,11 +8,13 @@ const stages = [
 ];
 ---
 <section class="workflow" aria-labelledby="workflow-title" data-workflow>
-  <div class="workflow-heading"><div><p class="uxw-label">Inside the improvement</p><h4 id="workflow-title">Change the connections,<br />not just the task.</h4></div><p>A simplified account of the workflow.<br /><span data-workflow-instruction hidden>Select a stage to see what changed.</span></p></div>
+  <div class="workflow-heading"><div><p class="uxw-label">Inside the improvement</p><h4 id="workflow-title">Improve the work<br />between people.</h4></div><p>A simplified account of the workflow.<br /><span data-workflow-instruction hidden>Select a stage to see what changed.</span></p></div>
   <div class="workflow-controls" data-workflow-controls hidden>
     <div class="workflow-stages" role="group" aria-label="Explore workflow stages">
-      {stages.slice(0, 4).map((stage, index) => <button type="button" data-stage={stage.id} aria-controls={`workflow-${stage.id}`} aria-pressed={index === 0 ? 'true' : 'false'}><span class="workflow-number" aria-hidden="true">0{index + 1}</span><strong>{stage.label}</strong><span>{stage.note}</span></button>)}
+      {stages.slice(0, 4).map((stage, index) => <button type="button" data-stage={stage.id} aria-controls={`workflow-${stage.id}`} aria-pressed={index === 0 ? 'true' : 'false'}><span class="workflow-number" aria-hidden="true">0{index + 1}</span><svg class="workflow-icon" viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">{index === 0 ? <><path d="M12 5h17l8 8v30H12zM29 5v10h8M18 23h13M18 30h13M18 37h8" /></> : index === 1 ? <><path d="M7 9h34v30H7zM7 17h34M15 17v22M20 33l13-13 5 5-13 13-6 1z" /></> : index === 2 ? <><path d="M4 12h14v24H4zM30 12h14v24H30zM17 24h15M26 18l6 6-6 6" /></> : <><path d="M24 5l16 6v12c0 10-16 20-16 20S8 33 8 23V11zM16 24l6 6 12-13" /></>}</svg><strong>{stage.label}</strong><span>{stage.note}</span></button>)}
     </div>
+    <div class="workflow-bridges" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <p class="workflow-route" data-workflow-route aria-live="polite"></p>
     <button class="workflow-sharing" type="button" data-stage="sharing" aria-controls="workflow-sharing" aria-pressed="false"><span aria-hidden="true">↔</span><strong>Share discoveries across the team</strong><span>Learning connected every stage</span></button>
     <button class="workflow-all" type="button" data-workflow-all aria-pressed="false">Show all explanations</button>
   </div>
@@ -28,10 +30,23 @@ const stages = [
     const buttons = [...root.querySelectorAll<HTMLButtonElement>('[data-stage]')];
     const panels = [...root.querySelectorAll<HTMLElement>('[data-panel]')];
     const all = root.querySelector<HTMLButtonElement>('[data-workflow-all]')!;
+    const relationships: Record<string, { nodes: string[]; label: string }> = {
+      information: { nodes: ['information', 'handoff'], label: 'Information preparation → quicker handoffs' },
+      drawing: { nodes: ['drawing'], label: 'Coworkers’ shortcuts ↔ shared SolidWorks knowledge' },
+      handoff: { nodes: ['information', 'handoff'], label: 'Better information → work that moves between people' },
+      quality: { nodes: ['drawing', 'quality'], label: 'Drawing production → quality checking' },
+      sharing: { nodes: ['information', 'drawing', 'handoff', 'quality'], label: 'Shared discoveries connect every stage' },
+    };
+    const route = root.querySelector<HTMLElement>('[data-workflow-route]')!;
     let selected = 'information';
     let expanded = false;
     const render = () => {
-      buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.stage === selected)));
+      root.dataset.selected = selected;
+      route.textContent = relationships[selected].label;
+      buttons.forEach(button => {
+        button.setAttribute('aria-pressed', String(button.dataset.stage === selected));
+        button.classList.toggle('is-connected', relationships[selected].nodes.includes(button.dataset.stage!));
+      });
       panels.forEach(panel => { panel.hidden = !expanded && panel.dataset.panel !== selected; });
       all.setAttribute('aria-pressed', String(expanded));
       all.textContent = expanded ? 'Show selected explanation' : 'Show all explanations';
@@ -81,4 +96,27 @@ const stages = [
     .workflow-panels { min-height: 0; }
   }
   @media (prefers-reduced-motion: reduce) { .workflow * { scroll-behavior: auto; } }
+
+  .workflow-icon { width: 40px; height: 40px; margin-bottom: 4px; }
+  .workflow-stages button { position: relative; }
+  .workflow-stages button:not(:last-child)::after { content: '→'; position: absolute; right: -13px; top: 45%; color: #405b44; z-index: 1; }
+  .workflow-stages button.is-connected { border-color: #405b44; background: #edf1e9; }
+  .workflow-stages button[aria-pressed=true] { background: #d9e5d5; }
+  .workflow-bridges { display: grid; grid-template-columns: repeat(4, 1fr); height: 18px; border-bottom: 2px solid #a0ae9b; margin-inline: 12%; }
+  .workflow-bridges span { border-left: 2px solid #a0ae9b; margin-left: 50%; }
+  .workflow-route { text-align: center; color: #344c37; font-size: .9rem; margin: 10px 0; font-weight: 600; }
+  .workflow[data-selected=sharing] .workflow-bridges, .workflow[data-selected=sharing] .workflow-bridges span { border-color: #344c37; }
+  .workflow-panel + .workflow-panel { margin-top: 0; }
+  .workflow-panel:not([hidden]) ~ .workflow-panel:not([hidden]) { margin-top: 24px; }
+  @media (max-width: 760px) {
+    .workflow-stages { grid-template-columns: 1fr; }
+    .workflow-stages button { display: grid; grid-template-columns: 40px 1fr; gap: 4px 12px; }
+    .workflow-number { grid-column: 1; grid-row: 1; }
+    .workflow-icon { grid-column: 1; grid-row: 2 / 4; width: 32px; height: 32px; }
+    .workflow-stages strong { grid-column: 2; grid-row: 1 / 3; align-self: center; }
+    .workflow-stages button > span:last-child { grid-column: 2; }
+    .workflow-stages button:not(:last-child)::after { content: '↓'; right: auto; left: 27px; top: auto; bottom: -13px; }
+    .workflow-bridges { display: none; }
+    .workflow-route { text-align: left; }
+  }
 </style>
