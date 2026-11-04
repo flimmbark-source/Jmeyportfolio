@@ -1,122 +1,173 @@
 ---
-const stages = [
-  { id: 'information', label: 'Prepare information', note: 'Make the input easier to use.', title: 'The drawing starts before SolidWorks.', body: 'I collaborated with other parts of the team to encode information more efficiently. Improving the input supported quicker handoffs into the next part of the work.', connection: 'Information preparation and handoffs were connected parts of the improvement.' },
-  { id: 'drawing', label: 'Produce drawings', note: 'Combine knowledge of the tool.', title: 'Good shortcuts came from more than one person.', body: 'I combined my understanding of SolidWorks and its time-saving features with shortcuts my coworkers knew. We learned from one another while improving the drawing process.', connection: 'Software knowledge became more useful when we exchanged it.' },
-  { id: 'handoff', label: 'Hand work over', note: 'Help information move between people.', title: 'Look beyond the task at your own desk.', body: 'Working with other parts of the team helped us prepare information for quicker handoffs. The improvement involved how work moved between people, as well as how I produced drawings.', connection: 'A local improvement should support the next person in the process.' },
-  { id: 'quality', label: 'Check quality', note: 'Include QC in the workflow.', title: 'Quality checking was part of the process to improve.', body: 'Streamlining QC was another part of the work, alongside software efficiencies, information preparation, and handoffs. I considered the process beyond the drawing task itself.', connection: 'The reported turnaround figures cover the combined improvements, not a separate saving attributed to QC.' },
-  { id: 'sharing', label: 'Share discoveries across the team', note: 'Learning connected every stage.', title: 'Sharing discoveries deepened cooperation.', body: 'I shared what I discovered, learned shortcuts from coworkers, and worked with other parts of the team. That exchange allowed us to cooperate more deeply as we improved the process.', connection: 'The two-hour result was a team achievement. The later 37-minute result describes my further individual refinement.' },
+const improvements = [
+  {
+    id: 'layouts',
+    label: 'Reusable store layouts',
+    before: 'Each store was modeled from its audit notes and mechanical drawings.',
+    change: 'As recurring store configurations emerged, I built and expanded reusable layout patterns.',
+    effect: 'A new store could start from a relevant architectural pattern instead of requiring every part to be redrawn.',
+    steps: ['model', 'assemble'],
+  },
+  {
+    id: 'blocks',
+    label: 'SolidWorks blocks',
+    before: 'Outlets and existing fixtures had to be drawn as individual elements.',
+    change: 'Coworkers introduced blocks. I contributed to and improved our library of reusable elements.',
+    effect: 'Common details could be placed and adjusted rather than rebuilt individually.',
+    steps: ['model', 'assemble'],
+  },
+  {
+    id: 'assemblies',
+    label: 'Configurable fixture assemblies',
+    before: 'Fixture configurations added repeat modeling work.',
+    change: 'I used fixture sub-assemblies that could be reconfigured for different installations.',
+    effect: 'Repeated fixture geometry became adaptable components instead of entirely new drawings.',
+    steps: ['model', 'assemble'],
+  },
+  {
+    id: 'structure',
+    label: 'Model information architecture',
+    before: 'The model still needed to accommodate electrical, architecture, and fixture-placement layers.',
+    change: 'I organized the SolidWorks information structure for rapid, precise drawing and revision.',
+    effect: 'The right layers and reusable geometry were easier to work with as the store model developed.',
+    steps: ['model', 'assemble', 'drawings'],
+  },
 ];
 ---
-<section class="workflow" aria-labelledby="workflow-title" data-workflow>
-  <div class="workflow-heading"><div><p class="uxw-label">Inside the improvement</p><h4 id="workflow-title">Improve the work<br />between people.</h4></div><p>A simplified account of the workflow.<br /><span data-workflow-instruction hidden>Select a stage to see what changed.</span></p></div>
-  <div class="workflow-controls" data-workflow-controls hidden>
-    <div class="workflow-stages" role="group" aria-label="Explore workflow stages">
-      {stages.slice(0, 4).map((stage, index) => <button type="button" data-stage={stage.id} aria-controls={`workflow-${stage.id}`} aria-pressed={index === 0 ? 'true' : 'false'}><span class="workflow-number" aria-hidden="true">0{index + 1}</span><svg class="workflow-icon" viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">{index === 0 ? <><path d="M12 5h17l8 8v30H12zM29 5v10h8M18 23h13M18 30h13M18 37h8" /></> : index === 1 ? <><path d="M7 9h34v30H7zM7 17h34M15 17v22M20 33l13-13 5 5-13 13-6 1z" /></> : index === 2 ? <><path d="M4 12h14v24H4zM30 12h14v24H30zM17 24h15M26 18l6 6-6 6" /></> : <><path d="M24 5l16 6v12c0 10-16 20-16 20S8 33 8 23V11zM16 24l6 6 12-13" /></>}</svg><strong>{stage.label}</strong><span>{stage.note}</span></button>)}
+<section class="workflow" id="workflow-title" aria-labelledby="workflow-heading" data-workflow>
+  <div class="workflow-heading">
+    <div>
+      <p class="uxw-label">Inside the improvement / IDL Worldwide</p>
+      <h4 id="workflow-heading">From redrawing each store<br />to working with a reusable system.</h4>
     </div>
-    <div class="workflow-bridges" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-    <p class="workflow-route" data-workflow-route aria-live="polite"></p>
-    <button class="workflow-sharing" type="button" data-stage="sharing" aria-controls="workflow-sharing" aria-pressed="false"><span aria-hidden="true">↔</span><strong>Share discoveries across the team</strong><span>Learning connected every stage</span></button>
-    <button class="workflow-all" type="button" data-workflow-all aria-pressed="false">Show all explanations</button>
+    <p>The installation drawings still had to represent real, individually surveyed stores. The production method changed.</p>
   </div>
-  <div class="workflow-panels" aria-live="polite" aria-atomic="false">
-    {stages.map((stage, index) => <section class="workflow-panel" id={`workflow-${stage.id}`} data-panel={stage.id} aria-labelledby={`workflow-heading-${stage.id}`}><p class="uxw-label">{index < 4 ? `0${index + 1} / ${stage.label}` : 'Across the process'}</p><h5 id={`workflow-heading-${stage.id}`}>{stage.title}</h5><p>{stage.body}</p><p class="workflow-connection">{stage.connection}</p></section>)}
+  <div class="workflow-source">
+    <strong>What arrived</strong>
+    <p>On-site audits: measurements and notes on soffits, ceilings, electrical points, existing fixtures, placement, and installation areas, alongside store mechanical drawings.</p>
   </div>
+  <div class="workflow-comparison" aria-label="Original and improved drawing processes">
+    <div class="workflow-lane workflow-lane--before">
+      <p class="uxw-label">Before / draw from scratch</p>
+      <ol>
+        <li><strong>Interpret the audit</strong><span>Translate field notes and store plans</span></li>
+        <li data-flow-step="model"><strong>Model the store</strong><span>Draw architecture, electrical, and fixture layers in 3D</span></li>
+        <li data-flow-step="drawings"><strong>Produce installation drawings</strong><span>Extract 2D views and mechanical drawing slices</span></li>
+        <li><strong>Review and install</strong><span>QC and hand over to the installation team</span></li>
+      </ol>
+    </div>
+    <div class="workflow-lane workflow-lane--after">
+      <p class="uxw-label">After / build from accumulated knowledge</p>
+      <ol>
+        <li><strong>Interpret the audit</strong><span>Survey measurements still determine the store-specific work</span></li>
+        <li data-flow-step="assemble"><strong>Assemble and adapt</strong><span>Use layout patterns, blocks, fixture sub-assemblies, and model structure</span></li>
+        <li data-flow-step="drawings"><strong>Produce installation drawings</strong><span>Make accurate views from a more efficiently organized 3D model</span></li>
+        <li><strong>Review and install</strong><span>Request QC promptly, then deliver drawings to installers</span></li>
+      </ol>
+    </div>
+  </div>
+  <div class="workflow-discoveries">
+    <div class="workflow-discoveries__heading">
+      <div>
+        <p class="uxw-label">Four interconnected improvements</p>
+        <h5>Explore what changed in the middle.</h5>
+      </div>
+      <p>Select an improvement to see how it affected the production workflow.</p>
+    </div>
+    <div class="workflow-controls" role="group" aria-label="Inspect drawing workflow improvements" data-workflow-controls hidden>
+      {improvements.map((improvement, i) => <button type="button" data-improvement={improvement.id} aria-pressed={i === 0 ? 'true' : 'false'} aria-controls="workflow-explanation">
+        <span aria-hidden="true">0{i + 1}</span><strong>{improvement.label}</strong>
+      </button>)}
+    </div>
+    <div class="workflow-fallback">
+      {improvements.map(improvement => <article class="workflow-fallback__item">
+        <h6>{improvement.label}</h6>
+        <p>{improvement.change} {improvement.effect}</p>
+      </article>)}
+    </div>
+    <div class="workflow-explanation" id="workflow-explanation" aria-live="polite" data-workflow-explanation hidden>
+      <p class="uxw-label" data-workflow-category>01 / Reusable store layouts</p>
+      <h6 data-workflow-effect>Start from a pattern, then adapt it to the surveyed store.</h6>
+      <div class="workflow-explanation__grid">
+        <div><span>Original constraint</span><p data-workflow-before></p></div>
+        <div><span>Intervention</span><p data-workflow-change></p></div>
+        <div><span>Why it mattered</span><p data-workflow-result></p></div>
+      </div>
+    </div>
+  </div>
+  <p class="workflow-team"><strong>The knowledge was shared.</strong> Coworkers introduced blocks and common pattern libraries. I expanded those ideas, created store layouts, developed my own SolidWorks model structure, and refined my drawing practice. Working together brought the team's turnaround down before I improved my individual workflow further.</p>
+  <p class="workflow-method">Process reconstruction based on the designer's firsthand account, not an original historical process diagram. Individual improvement effects were not separately timed.</p>
 </section>
-<script>
-  const root = document.querySelector<HTMLElement>('[data-workflow]');
+<script define:vars={{ improvements }}>
+  const root = document.querySelector('[data-workflow]');
   if (root) {
-    const controls = root.querySelector<HTMLElement>('[data-workflow-controls]')!;
-    const instruction = root.querySelector<HTMLElement>('[data-workflow-instruction]')!;
-    const buttons = [...root.querySelectorAll<HTMLButtonElement>('[data-stage]')];
-    const panels = [...root.querySelectorAll<HTMLElement>('[data-panel]')];
-    const all = root.querySelector<HTMLButtonElement>('[data-workflow-all]')!;
-    const relationships: Record<string, { nodes: string[]; label: string }> = {
-      information: { nodes: ['information', 'handoff'], label: 'Information preparation → quicker handoffs' },
-      drawing: { nodes: ['drawing'], label: 'Coworkers’ shortcuts ↔ shared SolidWorks knowledge' },
-      handoff: { nodes: ['information', 'handoff'], label: 'Better information → work that moves between people' },
-      quality: { nodes: ['drawing', 'quality'], label: 'Drawing production → quality checking' },
-      sharing: { nodes: ['information', 'drawing', 'handoff', 'quality'], label: 'Shared discoveries connect every stage' },
-    };
-    const route = root.querySelector<HTMLElement>('[data-workflow-route]')!;
-    let selected = 'information';
-    let expanded = false;
-    const render = () => {
-      root.dataset.selected = selected;
-      route.textContent = relationships[selected].label;
-      buttons.forEach(button => {
-        button.setAttribute('aria-pressed', String(button.dataset.stage === selected));
-        button.classList.toggle('is-connected', relationships[selected].nodes.includes(button.dataset.stage!));
+    const controls = root.querySelector('[data-workflow-controls]');
+    const explanation = root.querySelector('[data-workflow-explanation]');
+    const fallback = root.querySelector('.workflow-fallback');
+    const buttons = Array.from(root.querySelectorAll('[data-improvement]'));
+    const show = (id) => {
+      const data = improvements.find(item => item.id === id);
+      if (!data) return;
+      buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.improvement === id)));
+      root.querySelector('[data-workflow-category]').textContent = data.label;
+      root.querySelector('[data-workflow-effect]').textContent = data.effect;
+      root.querySelector('[data-workflow-before]').textContent = data.before;
+      root.querySelector('[data-workflow-change]').textContent = data.change;
+      root.querySelector('[data-workflow-result]').textContent = data.effect;
+      root.querySelectorAll('[data-flow-step]').forEach(step => {
+        step.classList.toggle('workflow-step--active', data.steps.includes(step.dataset.flowStep));
       });
-      panels.forEach(panel => { panel.hidden = !expanded && panel.dataset.panel !== selected; });
-      all.setAttribute('aria-pressed', String(expanded));
-      all.textContent = expanded ? 'Show selected explanation' : 'Show all explanations';
     };
-    buttons.forEach(button => button.addEventListener('click', () => {
-      selected = button.dataset.stage!;
-      expanded = false;
-      render();
-    }));
-    all.addEventListener('click', () => { expanded = !expanded; render(); });
-    render();
+    buttons.forEach(button => button.addEventListener('click', () => show(button.dataset.improvement)));
+    show(improvements[0].id);
     controls.hidden = false;
-    instruction.hidden = false;
+    explanation.hidden = false;
+    fallback.hidden = true;
   }
 </script>
 <style>
-  .workflow { margin: 32px 0 0; border: 1px solid var(--pv2-line); border-radius: 12px; padding: clamp(20px, 3vw, 32px); background: #fff8; }
+  .workflow { margin: 34px 0 0; padding: clamp(18px, 3vw, 36px); border: 1px solid var(--pv2-line); border-radius: 12px; background: #faf8f2ec; color: var(--pv2-text); }
   .workflow [hidden] { display: none !important; }
-  .workflow-heading { display: flex; justify-content: space-between; gap: 24px; align-items: end; margin-bottom: 24px; }
-  h4 { margin: 10px 0 0; font-family: var(--pv2-font-display); font-size: clamp(1.6rem, 2.6vw, 2.2rem); line-height: 1.15; }
-  .workflow-heading > p { margin: 0; font-size: .9rem; color: var(--pv2-muted); }
-  .workflow-stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-  button { cursor: pointer; color: var(--pv2-text); font: inherit; }
-  button:focus-visible { outline: 3px solid var(--pv2-accent); outline-offset: 4px; }
-  .workflow-stages button { display: flex; flex-direction: column; text-align: left; gap: 8px; padding: 18px; background: var(--pv2-bg); border: 1px solid var(--pv2-line); border-radius: 6px; }
-  .workflow-stages button:hover { border-color: var(--pv2-accent); }
-  .workflow-stages button[aria-pressed=true] { background: #e1e9df; border-color: #405b44; box-shadow: inset 0 -3px #405b44; }
-  .workflow-number { color: var(--pv2-muted); font-size: .75rem; }
-  .workflow-stages strong { line-height: 1.3; font-weight: 650; }
-  .workflow-stages button > span:last-child { font-size: .85rem; line-height: 1.4; }
-  .workflow-sharing { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px 16px; width: 100%; margin-top: 12px; padding: 14px 18px; border: 1px solid #c4cdbf; background: #e9ede5; border-radius: 6px; }
-  .workflow-sharing[aria-pressed=true] { border-color: #405b44; box-shadow: inset 0 -3px #405b44; }
-  .workflow-sharing > span:last-child { font-size: .85rem; }
-  .workflow-all { display: block; margin: 8px 0 0 auto; min-height: 44px; padding: 8px 0; background: transparent; border: 0; text-decoration: underline; text-underline-offset: 4px; font-size: .9rem; }
-  .workflow-panels { min-height: 250px; }
-  .workflow-panel { padding: 24px 0 0; border-top: 1px solid var(--pv2-line); }
-  .workflow-panel + .workflow-panel { margin-top: 24px; }
-  h5 { font-family: var(--pv2-font-display); font-size: clamp(1.4rem, 2vw, 1.8rem); line-height: 1.2; margin: 10px 0 14px; }
-  .workflow-panel > p { max-width: 76ch; }
-  .workflow-connection { border-left: 3px solid #405b44; padding-left: 16px; color: var(--pv2-muted); font-size: .9rem; }
-  @media (max-width: 760px) {
-    .workflow-heading { display: block; }
-    .workflow-heading > p { margin-top: 16px; }
-    .workflow-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-    .workflow-stages button { padding: 12px; }
-    .workflow-sharing { justify-content: start; text-align: left; }
-    .workflow-panels { min-height: 0; }
-  }
-  @media (prefers-reduced-motion: reduce) { .workflow * { scroll-behavior: auto; } }
-
-  .workflow-icon { width: 40px; height: 40px; margin-bottom: 4px; }
-  .workflow-stages button { position: relative; }
-  .workflow-stages button:not(:last-child)::after { content: '→'; position: absolute; right: -13px; top: 45%; color: #405b44; z-index: 1; }
-  .workflow-stages button.is-connected { border-color: #405b44; background: #edf1e9; }
-  .workflow-stages button[aria-pressed=true] { background: #d9e5d5; }
-  .workflow-bridges { display: grid; grid-template-columns: repeat(4, 1fr); height: 18px; border-bottom: 2px solid #a0ae9b; margin-inline: 12%; }
-  .workflow-bridges span { border-left: 2px solid #a0ae9b; margin-left: 50%; }
-  .workflow-route { text-align: center; color: #344c37; font-size: .9rem; margin: 10px 0; font-weight: 600; }
-  .workflow[data-selected=sharing] .workflow-bridges, .workflow[data-selected=sharing] .workflow-bridges span { border-color: #344c37; }
-  .workflow-panel + .workflow-panel { margin-top: 0; }
-  .workflow-panel:not([hidden]) ~ .workflow-panel:not([hidden]) { margin-top: 24px; }
-  @media (max-width: 760px) {
-    .workflow-stages { grid-template-columns: 1fr; }
-    .workflow-stages button { display: grid; grid-template-columns: 40px 1fr; gap: 4px 12px; }
-    .workflow-number { grid-column: 1; grid-row: 1; }
-    .workflow-icon { grid-column: 1; grid-row: 2 / 4; width: 32px; height: 32px; }
-    .workflow-stages strong { grid-column: 2; grid-row: 1 / 3; align-self: center; }
-    .workflow-stages button > span:last-child { grid-column: 2; }
-    .workflow-stages button:not(:last-child)::after { content: '↓'; right: auto; left: 27px; top: auto; bottom: -13px; }
-    .workflow-bridges { display: none; }
-    .workflow-route { text-align: left; }
-  }
+  .workflow-heading { display: flex; justify-content: space-between; gap: 26px; align-items: end; }
+  .workflow-heading h4 { font-family: var(--pv2-font-display); font-size: clamp(1.7rem, 3vw, 2.65rem); line-height: 1.14; letter-spacing: -.035em; margin: 9px 0 0; }
+  .workflow-heading > p { max-width: 29ch; margin: 0 0 4px; line-height: 1.5; color: var(--pv2-muted); }
+  .workflow-source { display: grid; grid-template-columns: 140px 1fr; gap: 18px; border-block: 1px solid var(--pv2-line); padding: 18px 0; margin: 22px 0; }
+  .workflow-source p { margin: 0; max-width: 72ch; }
+  .workflow-comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .workflow-lane { border: 1px solid #d8d7d0; border-radius: 9px; padding: 20px; background: #f4f0e8; }
+  .workflow-lane--after { background: #edf2e8; border-color: #aec1ac; }
+  .workflow-lane > p { margin: 0 0 18px; font-weight: 700; color: #3e4b41; }
+  .workflow-lane ol { padding: 0; margin: 0; list-style: none; counter-reset: stages; display: grid; gap: 9px; }
+  .workflow-lane li { counter-increment: stages; display: grid; grid-template-columns: 25px minmax(0, 1fr); column-gap: 10px; padding: 12px; border-radius: 7px; border: 1px solid transparent; transition: background .18s ease, border-color .18s ease; }
+  .workflow-lane li::before { content: counter(stages, decimal-leading-zero); font-size: .73rem; font-weight: 700; color: #68756b; grid-row: span 2; padding-top: 3px; }
+  .workflow-lane li + li { border-top-color: #d4d5cd; }
+  .workflow-lane li strong { font-size: .97rem; line-height: 1.3; }
+  .workflow-lane li span { font-size: .83rem; color: #48564c; line-height: 1.45; padding-top: 4px; }
+  .workflow-lane li.workflow-step--active { background: #d9e7d4; border-color: #648268; }
+  .workflow-lane--before li.workflow-step--active { background: #f0e4db; border-color: #b59a87; }
+  .workflow-discoveries { margin-top: 30px; }
+  .workflow-discoveries__heading { display: flex; justify-content: space-between; align-items: end; gap: 20px; }
+  .workflow-discoveries__heading h5 { font-family: var(--pv2-font-display); font-size: clamp(1.4rem, 2.2vw, 2rem); margin: 4px 0 0; }
+  .workflow-discoveries__heading > p { max-width: 30ch; color: var(--pv2-muted); font-size: .9rem; margin: 0 0 3px; }
+  .workflow-controls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 18px; }
+  .workflow-controls button { text-align: left; display: flex; flex-direction: column; gap: 8px; min-height: 92px; padding: 14px; border: 1px solid #c7cfc3; border-radius: 7px; background: #f5f7f0; color: var(--pv2-text); cursor: pointer; font: inherit; }
+  .workflow-controls button span { font-size: .75rem; color: var(--pv2-muted); }
+  .workflow-controls button strong { font-size: .9rem; line-height: 1.3; }
+  .workflow-controls button[aria-pressed="true"] { background: #dce9d7; border-color: #405b44; box-shadow: inset 0 -3px #405b44; }
+  .workflow-controls button:focus-visible { outline: 3px solid var(--pv2-accent); outline-offset: 3px; }
+  .workflow-explanation { margin-top: 12px; padding: 22px; border-radius: 7px; background: #fff; border: 1px solid #cad6c8; }
+  .workflow-explanation h6 { font-family: var(--pv2-font-display); font-size: clamp(1.25rem, 1.8vw, 1.55rem); margin: 8px 0 18px; line-height: 1.3; }
+  .workflow-explanation__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+  .workflow-explanation__grid > div + div { border-left: 1px solid #d8ded4; padding-left: 18px; }
+  .workflow-explanation__grid span { display: block; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #526b55; }
+  .workflow-explanation__grid p { margin: 8px 0 0; font-size: .94rem; line-height: 1.55; }
+  .workflow-fallback { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+  .workflow-fallback__item { padding: 12px; border: 1px solid #cad6c8; border-radius: 6px; }
+  .workflow-fallback h6 { font-size: 1rem; margin: 0 0 6px; }
+  .workflow-fallback p { margin: 0; }
+  .workflow-team { padding: 18px 20px; background: #e7ede3; border-radius: 7px; margin: 22px 0 0; line-height: 1.6; }
+  .workflow-method { color: var(--pv2-muted); margin: 12px 0 0; font-size: .79rem; line-height: 1.5; }
+  @media (max-width: 850px) { .workflow-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); } .workflow-heading, .workflow-discoveries__heading { display: block; } .workflow-heading > p, .workflow-discoveries__heading > p { margin-top: 12px; max-width: 70ch; } }
+  @media (max-width: 640px) { .workflow-source { grid-template-columns: 1fr; gap: 5px; } .workflow-comparison, .workflow-explanation__grid, .workflow-fallback { grid-template-columns: 1fr; } .workflow-lane { padding: 14px; } .workflow-explanation { padding: 16px; } .workflow-explanation__grid > div + div { border-left: 0; border-top: 1px solid #d8ded4; padding: 13px 0 0; } }
+  @media (prefers-reduced-motion: reduce) { .workflow-lane li { transition: none; } }
 </style>
