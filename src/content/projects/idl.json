@@ -20,8 +20,8 @@
     "hero": {
       "eyebrow": "Professional work · Design engineering",
       "title": "IDL: improving a SolidWorks workflow",
-      "subtitle": "Two stages of improvement, with a clear distinction between the team result and my contribution.",
-      "summary": "I worked on store drawings for a nationwide Apple fixture rollout at AT&T retail locations. Alongside that delivery work, I helped improve the SolidWorks drawing workflow.",
+      "subtitle": "Improving the connections between tools, information, and people.",
+      "summary": "At IDL Worldwide, I worked on store drawings for a nationwide Apple fixture rollout at AT&T retail locations. I combined my understanding of SolidWorks with coworkers’ shortcuts, collaborated across the team to encode information more efficiently for quicker handoffs, and streamlined QC. Sharing discoveries helped deepen cooperation as we improved the process.",
       "meta": [
         {
           "label": "Official role",
@@ -57,15 +57,27 @@
     },
     "solution": {
       "title": "Improve the workflow, then keep refining it",
-      "description": "The improvement happened in two stages. With my team, I reduced drawing turnaround from eight hours to two hours. I subsequently refined my own workflow and reduced it to 37 minutes.",
+      "description": "I brought together software efficiencies, shortcuts learned from coworkers, better information preparation across the team, and a streamlined QC process. Sharing discoveries helped us improve the way we worked together. Drawing turnaround fell from eight hours to two hours with the team. I subsequently refined my own workflow to 37 minutes.",
       "steps": [
         {
-          "title": "Team improvement",
-          "description": "Worked with the team to bring the eight-hour turnaround down to two hours."
+          "title": "Prepare information",
+          "description": "Collaborated with other parts of the team to encode information more efficiently and support quicker handoffs."
         },
         {
-          "title": "Individual refinement",
-          "description": "Continued improving my own workflow after the team change, reaching 37 minutes."
+          "title": "Produce drawings",
+          "description": "Combined my understanding of SolidWorks and its time-saving features with shortcuts learned from coworkers."
+        },
+        {
+          "title": "Hand work over",
+          "description": "Improved how information moved between people, beyond the drawing task at my own desk."
+        },
+        {
+          "title": "Check quality",
+          "description": "Streamlined QC as part of the broader workflow improvement."
+        },
+        {
+          "title": "Share discoveries",
+          "description": "Shared what I discovered and learned from colleagues, supporting deeper cooperation."
         }
       ],
       "bars": {
@@ -86,7 +98,7 @@
     "impact": {
       "eyebrow": "Results",
       "title": "Drawing turnaround and delivery scope",
-      "description": "The two-hour result belongs to the team. The later 37-minute result describes my individual workflow.",
+      "description": "The two-hour result belongs to the team. The later 37-minute result describes my individual workflow. The figures reflect the combined improvements, not separately measured savings for each change. Financial savings, stress reduction, and worker autonomy were not measured here.",
       "metrics": [
         {
           "label": "Team result",

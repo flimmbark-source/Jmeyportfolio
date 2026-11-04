@@ -1,358 +1,166 @@
 ---
-// The Work screen, inside the portfolio's own system: the same painting
-// backdrop, type and nav as the homepage and the playground, so the UX door
-// leads into the same house. Project copy comes from src/content/projects.
 import { getCollection } from 'astro:content';
 import PortfolioBackdrop from '../components/PortfolioBackdrop.astro';
 import PortfolioPolish from '../components/PortfolioPolish.astro';
 import SiteNav from '../components/SiteNav.astro';
 import SiteHead from '../components/SiteHead.astro';
+import WorkflowExplorer from '../components/WorkflowExplorer.astro';
+import { HOME, RESUME, resolveHref } from '../data/siteNav';
 import '../styles/portfolio-v2.css';
 import '../styles/portfolio-chrome.css';
-import '../styles/portfolio-case.css';
-
-// Shared with the homepage, playground and case studies.
-import { HOME, RESUME } from '../data/siteNav';
 
 const projects = await getCollection('projects');
-const bySlug = (slug) => projects.find((project) => project.data.slug === slug)?.data;
-
-const selectedSlugs = ['earth-hero', 'letter-river', 'idl'];
-const selected = selectedSlugs.map(bySlug).filter(Boolean);
-const labels = {
-  'earth-hero': 'Client work · Tech Fleet',
-  'letter-river': 'Independent prototype',
-  idl: 'Professional design engineering',
-};
-
-// Each piece takes the shape its own evidence wants, rather than all three
-// repeating one card. Three identical modules in a row is the thing that reads
-// as a template no matter how good the type is.
-//
-//   letter-river  a real screenshot of the running app, run full width under
-//                 the writing
-//   idl           a photograph of the actual store drawings beside the real
-//                 before/after numbers: two artefacts, no mockup
-//   ai-archiving  a concept with nothing built, so its own documented flow is
-//                 the visual and it runs the full width
-//
-// Everything here is real material. public/images/ai-archiver.png is an
-// AI-generated picture of an interface — its labels read "ALASSISTANT",
-// "Confience level", "game wirning point" — so it is deliberately not used:
-// a generated screenshot presented as prototype work is the fastest way to
-// lose a reviewer's trust.
-const visuals = {
-  'earth-hero': {
-    layout: 'diagram',
-    steps: {
-      eyebrow: 'The loop',
-      title: 'Quest, action, points, team',
-      steps: [
-        { title: 'Choose a quest' },
-        { title: 'Log a daily action' },
-        { title: 'Earn Earth Points' },
-        { title: 'Join a team' },
-        { title: 'See where you stand' },
-      ],
-    },
-  },
-  'letter-river': {
-    layout: 'media',
-    src: '/images/derived/Desktop_Hero_Screen-1400.webp',
-    alt: 'Letter River home screen: language pickers, a greeting, and the Bridge Builder lesson in progress',
-  },
-  idl: {
-    layout: 'split',
-    src: '/images/derived/idl-case-study-1400.webp',
-    alt: 'Store drawings and fixture elevations spread across a desk',
-    bars: bySlug('idl')?.caseStudy?.solution?.bars,
-  },
-};
-
-// One sentence that makes a claim, in place of three bullets that were labels.
-// Each is drawn from the case study's own copy, not invented here.
-const claims = {
-  'earth-hero': 'People who already care about their footprint still stop logging actions after a week, so the work was motivation design \u2014 and then a study written to check whether players read the mechanics the way we intended.',
-  'letter-river': 'A learner who can name a letter still cannot hear it inside a word, so recognition, vocabulary and reading are one connected path rather than three separate drills.',
-  idl: 'An eight-hour drawing, repeated across a national rollout, is a process problem rather than a drafting one \u2014 so the work was finding which parts of it could be made repeatable, and then being exact about which share of the gain was the team\u0027s and which was mine.',
-};
-
-// What the work actually produced. Every card used to bury this: Earth Hero's
-// adoption sat at the end of the case study, Letter River had no outcome stated
-// anywhere, and IDL's numbers were drawn in small grey bars at the bottom of
-// the third card. It is the line a reviewer is scanning for, so it gets the
-// same slot on all three.
-//
-// The second line is the honest qualifier in each case, not a second helping of
-// praise. A result with its own limits attached is the more credible claim.
-const outcomes = {
-  'earth-hero': {
-    value: 'Taken into the live app',
-    note: 'Recommendations went to the client and Earth Hero took elements of the work into its product. The session findings belong to the engagement, not to me.',
-  },
-  'letter-river': {
-    value: 'Built, and public',
-    note: 'The prototype runs the whole path end to end and anyone can open it. Learning outcomes are unmeasured \u2014 the case study says so, and names the study that would settle it.',
-  },
-  idl: {
-    value: '8 hours \u2192 37 minutes',
-    note: 'Turnaround per store drawing. Eight hours down to two with the team; 37 minutes after I kept refining my own pass.',
-  },
-};
-
-// Role, scope, dates. The three things a reviewer asks before reading anything
-// else \u2014 and the place where a volunteer engagement and a staff job have to be
-// told apart rather than flattened into one word.
-const facts = {
-  'earth-hero': ['UX Researcher & Product Designer', 'Cross-functional team, with a design partner', '2022\u20132026'],
-  'letter-river': ['Designed and built it myself', 'Independent prototype', 'Self-directed'],
-  idl: ['Design Engineer, on staff', 'Apple fixture rollout across AT&T retail', '2015\u20132017'],
-};
-
-// The hero promised and then proved nothing: the panel beside it restated the
-// experience timeline further down the page. Three facts a reviewer can check
-// against the case studies do more in five seconds than a paragraph does.
-const proof = [
-  { value: '8h \u2192 37min', label: 'Store-drawing turnaround, brought down over two stages at IDL Worldwide' },
-  { value: '500+', label: 'AT&T retail locations digitized in SolidWorks for the Apple fixture rollout' },
-  { value: 'Live product', label: 'Earth Hero took elements of the gamification work into its released app' },
-];
-
-const supporting = projects
-  .filter((project) => !selectedSlugs.includes(project.data.slug))
-  .sort((a, b) => a.data.order - b.data.order)
-  .map((project) => project.data);
-
-// Exploration thumbnails, where a real one exists. A card with no entry here
-// is typed instead of filled, and says what state the work is in:
-//   agora-21      the only image is a photograph of a text slide, not the work
-//   ai-archiving  public/images/ai-archiver.png is an AI-generated picture of
-//                 an interface, so it is deliberately not shown
-//   bball         no interface capture in the repository
-const thumbs = {
-  rotogo: { src: '/images/derived/rotogoscreen-768.webp', fit: 'cover' },
-};
-
-const typeCardNote = {
-  'agora-21': 'Concept \u00b7 not built',
-  'ai-archiving': 'Concept \u00b7 prototype',
-  bball: 'Personal project',
-};
-
-// Most recent first.
+const selectedSlugs = ['idl', 'earth-hero', 'letter-river'];
+const project = (slug: string) => projects.find((entry) => entry.data.slug === slug)!.data;
+const earth = project('earth-hero');
+const letter = project('letter-river');
+const idl = project('idl');
+const caseLink = (data: typeof earth) => resolveHref(data.links!.find((link) => !link.external)!.href);
+const prototype = earth.links!.find((link) => link.external)!;
+const liveApp = letter.links!.find((link) => link.external)!;
+const supporting = projects.filter((entry) => !selectedSlugs.includes(entry.data.slug))
+  .sort((a, b) => a.data.order - b.data.order).map((entry) => entry.data);
 const experience = [
-  { dates: '2023–2026', company: 'Active Learning Adventures', role: 'Design Lead', detail: 'Used primary research, learning literature, rapid prototypes, playtesting, and stakeholder feedback to explore and revise learning-experience concepts.' },
-  { dates: '2022–2026 · Volunteer', company: 'Tech Fleet Community DAO', role: 'UX Researcher', detail: 'Designed and conducted interviews, surveys, and A/B tests, and co-designed app engagement features on a cross-functional client team.' },
-  { dates: '2018', company: 'SIG SAUER', role: 'Design Engineer', detail: 'Automated the migration of inventory and ticket data from large spreadsheets into Oracle.' },
-  { dates: 'May 2015–May 2017', company: 'IDL Worldwide', role: 'Design Engineer', detail: 'Produced store drawings for a nationwide Apple fixture rollout and digitized 500+ AT&T locations in SolidWorks. The workflow improvement is the case study above.' },
+  { dates: '2023–2026', company: 'Active Learning Adventures', role: 'Design Lead', detail: 'Primary research, learning literature, rapid prototypes, playtesting, and stakeholder feedback to explore and revise learning experiences.' },
+  { dates: '2022–2026 · Volunteer', company: 'Tech Fleet Community DAO', role: 'UX Researcher', detail: 'Interviews, surveys, and A/B tests, plus co-design of app engagement features on a cross-functional client team.' },
+  { dates: '2018', company: 'SIG SAUER', role: 'Design Engineer', detail: 'Automated migration of inventory and ticket data from large spreadsheets into Oracle.' },
+  { dates: 'May 2015–May 2017', company: 'IDL Worldwide', role: 'Design Engineer', detail: 'Store drawings for a nationwide Apple fixture rollout. Digitized 500+ AT&T locations in SolidWorks.' },
 ];
 ---
 <!doctype html>
 <html lang="en">
   <head>
-    <SiteHead
-      title="Work — Jacob Meyerkopf, Interactive Researcher & Product Designer"
-      description="UX research, independent interface prototypes, and professional design-engineering work by Jacob Meyerkopf."
-    />
+    <SiteHead title="Work — Jacob Meyerkopf, UX Research & Product Design" description="Selected work in Designing processes that support people’s work. Explore Jacob Meyerkopf’s workflow improvements, UX research, and interaction design." />
   </head>
   <body class="pv2-body">
+    <a class="uxw-skip" href="#main-content">Skip to main content</a>
     <PortfolioPolish />
     <PortfolioBackdrop />
     <div class="pv2-site">
       <SiteNav />
-
-      <main class="uxw">
+      <main class="uxw" id="main-content" tabindex="-1">
         <section class="uxw-hero" aria-labelledby="uxw-title">
-          <div class="uxw-hero__main">
-            <p class="pv2-overline">Interactive Researcher &amp; Product Designer</p>
-            <h1 id="uxw-title">Making complex systems make sense from the inside.</h1>
-            <p class="uxw-lead">I'm Jacob Meyerkopf. I bring UX research, prototyping, and a design-engineering background to problems where people need a clearer next step.</p>
-            <div class="uxw-actions">
-              <a class="uxw-button" href="#selected-work">Explore selected work</a>
-              <a class="uxw-link" href={RESUME} download>Download resume (PDF)</a>
+          <h1 id="uxw-title">Making work<br class="uxw-desktop-break" /> work for people.</h1>
+          <p class="uxw-label uxw-hero__eyebrow">Jacob Meyerkopf · UX research &amp; product design</p>
+          <p class="uxw-lead">I connect the tools, information, and people behind a process to find where work can become easier.</p>
+          <p class="uxw-intent">My aim: less wasted time and cost, less stress, and more control for the people doing the work.</p>
+          <div class="uxw-actions"><a class="uxw-button" href="#idl-title">See the workflow improvement <span aria-hidden="true">↓</span></a><a class="uxw-link" href="#approach">How I approach a problem</a></div>
+          <p class="uxw-location"><span aria-hidden="true">◎</span> Based in Tel Aviv-Yafo</p>
+        </section>
+
+        <section id="selected-work" aria-labelledby="uxw-selected">
+          <h2 class="uxw-label uxw-section-label" id="uxw-selected">Selected work</h2>
+          <article class="uxw-feature uxw-idl-feature" aria-labelledby="idl-title">
+            <div class="uxw-feature__main">
+              <div class="uxw-feature__text">
+                <p class="uxw-label">01 / Rethinking the working process</p>
+                <h3 id="idl-title">An eight-hour task.<br />A different way to work.</h3>
+                <p class="uxw-project-name">IDL Worldwide · SolidWorks workflow improvement</p>
+                <p class="uxw-description">I combined SolidWorks knowledge with coworkers’ shortcuts, worked across the team to improve information preparation and handoffs, and streamlined QC. Sharing discoveries helped us improve the process together.</p>
+                <p class="uxw-role">Design Engineer · Apple fixture rollout at AT&amp;T retail<br />May 2015–May 2017</p>
+                <div class="uxw-actions"><a class="uxw-button" href={caseLink(idl)}>Read the case study <span aria-hidden="true">↗</span><span class="sr-only">: IDL</span></a></div>
+              </div>
+              <figure class="uxw-work-evidence">
+                <img src="/images/derived/idl-case-study-1400.webp" alt="Store drawings, fixture elevations, and a rendered store layout from the IDL rollout" width="1400" height="1867" fetchpriority="high" />
+                <figcaption>Original drawing work for the retail rollout</figcaption>
+              </figure>
             </div>
-          </div>
-          <aside class="uxw-panel uxw-hero__aside" aria-labelledby="uxw-proof">
-            <p class="pv2-overline" id="uxw-proof">The short version</p>
-            <ul class="uxw-proof">
-              {proof.map((item) => (
-                <li>
-                  <span class="uxw-proof__value">{item.value}</span>
-                  <span class="uxw-proof__label">{item.label}</span>
-                </li>
-              ))}
-            </ul>
-            <p class="uxw-muted uxw-proof__foot">Tel Aviv-Yafo, Israel · Native English · Authorized to work in Israel</p>
-          </aside>
-        </section>
+            <WorkflowExplorer />
+            <div class="uxw-comparison" aria-labelledby="turnaround-title">
+              <div class="uxw-comparison__intro"><h4 id="turnaround-title">Same unit of work.<br />Less time to produce it.</h4><p>Turnaround per store drawing, across two stages of improvement.</p></div>
+              <ol class="uxw-time-bars">
+                <li><span>Initial process</span><span class="uxw-time-track"><i style="--time:100%"></i></span><strong>8h</strong></li>
+                <li><span>With the team</span><span class="uxw-time-track"><i style="--time:25%"></i></span><strong>2h</strong></li>
+                <li><span>My later refinement</span><span class="uxw-time-track"><i style="--time:7.7083%"></i></span><strong>37m</strong></li>
+              </ol>
+            </div>
 
-        <section class="uxw-section" id="selected-work" aria-labelledby="uxw-selected">
-          <div class="uxw-heading">
-            <p class="pv2-overline">Case studies</p>
-            <h2 id="uxw-selected">Selected work</h2>
-            <p>A client research and product-design engagement, an independent learning prototype, and a professional CAD workflow. Each card states what I did, what came of it, and what it does not prove.</p>
-          </div>
-
-          <div class="uxw-cases">
-            {selected.map((data) => {
-              const visual = visuals[data.slug];
-              const caseLink = data.links?.find((link) => !link.external);
-              const otherLinks = data.links?.filter((link) => link !== caseLink) ?? [];
-              const bars = visual?.bars;
-              const max = bars ? Math.max(...bars.values) : 1;
-              const steps = visual?.steps;
-
-              const Media = (
-                <figure class="uxw-shot">
-                  <img src={visual?.src} alt={visual?.alt} loading="lazy" decoding="async" />
-                </figure>
-              );
-
-              const Bars = bars && (
-                <figure class="uxw-bars">
-                  <figcaption class="uxw-label">{bars.label}</figcaption>
-                  {bars.labels.map((label, i) => (
-                    <div class={`uxw-bar${i === bars.values.length - 1 ? ' is-mine' : ''}`}>
-                      <span class="uxw-bar__label">{label}</span>
-                      <span class="uxw-bar__track"><span class="uxw-bar__fill" style={`width: ${(bars.values[i] / max) * 100}%`}></span></span>
-                      <span class="uxw-bar__value">{bars.values[i]} {bars.suffix}</span>
-                    </div>
-                  ))}
-                </figure>
-              );
-
-              const Steps = steps && (
-                <figure class="uxw-steps">
-                  <figcaption>
-                    <span class="uxw-label">{steps.eyebrow}</span>
-                    <strong>{steps.title}</strong>
-                  </figcaption>
-                  <ol>{steps.steps.map((step) => <li>{step.title}</li>)}</ol>
-                </figure>
-              );
-
-              const outcome = outcomes[data.slug];
-              const fact = facts[data.slug];
-
-              // One anatomy for all three: who and where, the title, the claim,
-              // the result, the scope. The old card said everything twice —
-              // a sharp framing sentence followed by the CV restatement of the
-              // same point — which halved the force of the good line. The
-              // summary still lives in the project data and still runs on the
-              // index below; it just no longer echoes the claim here.
-              const Text = (
-                <div class="uxw-case__text">
-                  <p class="uxw-label">{labels[data.slug]}</p>
-                  <h3>{data.title}</h3>
-                  <p class="uxw-case__claim">{claims[data.slug]}</p>
-                  {outcome && (
-                    <div class="uxw-outcome">
-                      <p class="uxw-outcome__value">{outcome.value}</p>
-                      <p class="uxw-outcome__note">{outcome.note}</p>
-                    </div>
-                  )}
-                  {fact && <ul class="uxw-facts">{fact.map((item) => <li>{item}</li>)}</ul>}
+            <details class="uxw-decision"><summary>What do these results establish?</summary><p>The time figures describe drawing turnaround. The two-hour result belongs to the team, and the later 37-minute result to my individual workflow. I digitized more than 500 locations during the rollout, but these figures do not establish a time saving for every location. Financial savings, stress reduction, and worker autonomy were not measured here.</p></details>
+          </article>
+          <section class="uxw-approach" id="approach" aria-labelledby="approach-title">
+            <div><p class="uxw-label">The perspective behind the work</p><h2 id="approach-title">The workaround is<br /> worth looking at.</h2></div>
+            <div><p>When someone has to keep compensating for a process, I want to understand what the process is asking of them. That is often where I see an opportunity to approach the problem differently.</p><p>I aim to make room for people’s judgment, reduce unnecessary effort, and connect those improvements to the needs of the business.</p></div>
+          </section>
+          <div class="uxw-related-heading"><h2>Supporting people in other contexts.</h2><p>The same concern for people’s effort also shapes how I approach motivation and learning.</p></div>
+          <div class="uxw-supporting">
+          <article class="uxw-card uxw-earth-card" aria-labelledby="earth-title">
+            <div class="uxw-feature__main">
+              <div class="uxw-feature__text">
+                <p class="uxw-label">02 / Supporting motivation</p>
+                <h3 id="earth-title">How can everyday actions<br /> feel like progress?</h3>
+                <p class="uxw-project-name">Earth Hero · Client research &amp; product design</p>
+                <p class="uxw-description">Exploring how everyday climate actions can become an ongoing practice.</p>
+                <p class="uxw-role">UX research &amp; product design · Tech Fleet<br />Volunteer client work, with a design partner</p>
+                <p class="uxw-outcome">Selected recommendations taken into the live app.</p>
+                <div class="uxw-actions">
+                  <a class="uxw-button" href={caseLink(earth)}>Explore the case study <span aria-hidden="true">↗</span><span class="sr-only">: Earth Hero</span></a>
+                  <a class="uxw-link" href={prototype.href} target="_blank" rel="noopener noreferrer">Open prototype <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a>
                 </div>
-              );
-
-              // Pulled out of the text block. On the split layout the button
-              // used to land between the writing and the two artefacts, so the
-              // call to action sat in the middle of the card. Every card now
-              // ends on it.
-              const Actions = (
-                <div class="uxw-actions uxw-case__actions">
-                  {caseLink && <a class="uxw-button" href={caseLink.href}>{caseLink.label}<span class="sr-only">: {data.title}</span></a>}
-                  {otherLinks.map((link) => (
-                    <a class="uxw-link" href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noopener noreferrer' : undefined}>
-                      {link.label} {link.external && <span aria-hidden="true">↗</span>}<span class="sr-only">: {data.title}{link.external ? ' (opens in a new tab)' : ''}</span>
-                    </a>
-                  ))}
-                </div>
-              );
-
-              // A layout that names content the piece does not have used to
-              // render an empty card in silence: IDL sat on 'diagram', which
-              // draws `steps`, while IDL has `bars` — so it lost both its
-              // photograph and its chart and nothing failed. Fall back to
-              // whatever the piece actually carries.
-              const has = { media: !!visual?.src, bars: !!bars, steps: !!steps };
-              const layout = visual?.layout === 'media' && has.media ? 'media'
-                : visual?.layout === 'split' && (has.media || has.bars) ? 'split'
-                : visual?.layout === 'diagram' && has.steps ? 'diagram'
-                : has.steps ? 'diagram'
-                : has.media && has.bars ? 'split'
-                : has.media ? 'media'
-                : 'diagram';
-
-              return (
-                <article class={`uxw-case uxw-case--${layout}`}>
-                  {Text}
-                  {layout === 'media' && Media}
-                  {layout === 'split' && <div class="uxw-case__pair">{has.media && Media}{Bars}</div>}
-                  {layout === 'diagram' && Steps}
-                  {Actions}
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section class="uxw-section" id="experience" aria-labelledby="uxw-experience">
-          <div class="uxw-heading">
-            <p class="pv2-overline">Experience</p>
-            <h2 id="uxw-experience">Professional experience</h2>
-          </div>
-          <ol class="uxw-timeline">
-            {experience.map((item) => (
-              <li>
-                <span class="uxw-timeline__dates">{item.dates}</span>
-                <div>
-                  <h3>{item.company}</h3>
-                  <p class="uxw-timeline__role">{item.role}</p>
-                  <p class="uxw-muted">{item.detail}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section class="uxw-section" aria-labelledby="uxw-further">
-          <div class="uxw-heading">
-            <p class="pv2-overline">More</p>
-            <h2 id="uxw-further">Further explorations</h2>
-          </div>
-          <!-- Three of these four have no image of the work, and three empty
-               typed panels in a row read as an unfinished site rather than as a
-               deliberate choice. This is an index, so it is set as one. -->
-          <ul class="uxw-index">
-            {supporting.map((data) => {
-              const link = data.links?.[0];
-              return (
-                <li class="uxw-index__row">
-                  <div class="uxw-index__head">
-                    <h3>{data.title}</h3>
-                    <p class="uxw-label">{data.tagline}</p>
+              </div>
+              <figure class="uxw-earth-art">
+                <div class="uxw-earth-art__stage">
+                  <div class="uxw-earth-art__paper">
+                    <span class="uxw-art-label">From paper…</span>
+                    <img src="/images/earth-hero/sketches.webp" alt="Hand-drawn Earth Hero wireframes with progress and screen-layout annotations" width="1300" height="641" />
+                    <p>Explore the mechanics before refining the interface.</p>
                   </div>
-                  <p class="uxw-index__note">{data.summary}</p>
-                  {link && (
-                    <a class="uxw-link uxw-index__link" href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noopener noreferrer' : undefined}>
-                      {link.label} <span aria-hidden="true">{link.external ? '\u2197' : '\u2192'}</span><span class="sr-only">: {data.title}{link.external ? ' (opens in a new tab)' : ''}</span>
-                    </a>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+                  <div class="uxw-earth-art__phone">
+                    <span class="uxw-art-label">…to prototype</span>
+                    <img src="/images/earth-hero.png" alt="Earth Hero prototype: choose a quest, earn Earth Points, and unlock teams" width="262" height="541" fetchpriority="high" />
+                  </div>
+                </div>
+                <figcaption>Original wireframes and Figma prototype from the engagement.</figcaption>
+              </figure>
+            </div>
+            <details class="uxw-decision"><summary>Explore the decision: connect actions to growth</summary><dl class="uxw-reasoning">
+              <div><dt class="uxw-label">The question</dt><dd>Do people experience the game mechanics as intended?</dd></div>
+              <div><dt class="uxw-label">The design</dt><dd>Connect daily actions to avatar growth and team progress.</dd></div>
+              <div><dt class="uxw-label">The evidence</dt><dd>A working prototype and moderated usability study. Session findings remain with the client.</dd></div>
+            </dl></details>
+          </article>
+
+
+            <article class="uxw-card" aria-labelledby="letter-title">
+              <p class="uxw-label">03 / Supporting learning</p>
+              <h3 id="letter-title">How does a letter become<br /> a sound you recognize?</h3>
+              <figure class="uxw-letter-art">
+                <img src="/images/Letter_River.png" alt="Letter River gameplay: drifting Hebrew letters above four sound-matching targets" width="342" height="715" loading="lazy" decoding="async" />
+                <figcaption><span class="uxw-art-label">Letter → sound</span><strong>Recognize it.<br />Hear it.<br />Make the connection.</strong><span>A screen from the working prototype.</span></figcaption>
+              </figure>
+              <p class="uxw-project-name">Letter River · Independent learning prototype</p>
+              <p class="uxw-card__description">A connected path from letter recognition to vocabulary and reading. Designed and built independently.</p>
+              <details class="uxw-decision"><summary>Explore the decision: connect recognition to reading</summary><p>Recognizing a letter is only part of reading. This prototype connects recognition, vocabulary, and reading in one practice path. It is a working design exploration, with learning outcomes still to be tested.</p></details>
+              <div class="uxw-actions">
+                <a class="uxw-button" href={caseLink(letter)}>Explore the case study <span aria-hidden="true">↗</span><span class="sr-only">: Letter River</span></a>
+                <a class="uxw-link" href={liveApp.href} target="_blank" rel="noopener noreferrer">Try it <span aria-hidden="true">↗</span><span class="sr-only">: Letter River (opens in a new tab)</span></a>
+              </div>
+            </article>
+
+          </div>
         </section>
 
-        <section class="uxw-section uxw-contact" id="contact" aria-labelledby="uxw-contact">
-          <h2 id="uxw-contact">Let's talk about the work.</h2>
-          <p>I'm exploring product-design and UX-research opportunities. Contact me to discuss a role or ask about a project.</p>
+        <section class="uxw-background" aria-label="Experience and further work">
+          <details class="uxw-disclosure" id="experience">
+            <summary><span class="uxw-label">Selected experience</span><span class="uxw-experience-preview">Active Learning Adventures · Tech Fleet · IDL Worldwide</span><span class="uxw-disclosure__action">View experience <span aria-hidden="true">+</span></span></summary>
+            <ol class="uxw-timeline">{experience.map((item) => <li><span class="uxw-note">{item.dates}</span><div><h3>{item.company}</h3><p class="uxw-project-name">{item.role}</p><p>{item.detail}</p></div></li>)}</ol>
+            <a class="uxw-link" href={RESUME} download>Download full resume (PDF)</a>
+          </details>
+          <details class="uxw-disclosure" id="explorations">
+            <summary><span class="uxw-label">Further explorations</span><span class="uxw-note">AI tools, civic participation, and product experiments</span><span class="uxw-disclosure__action">View projects <span aria-hidden="true">+</span></span></summary>
+            <ul class="uxw-index">{supporting.map((data) => {
+              const link = data.links?.[0];
+              return <li><div><h3>{data.title}</h3><p class="uxw-note">{data.tagline}</p><p>{data.summary}</p></div>{link && <a class="uxw-link" href={resolveHref(link.href)} target={link.external ? '_blank' : undefined} rel={link.external ? 'noopener noreferrer' : undefined}>{link.label} <span aria-hidden="true">↗</span><span class="sr-only">: {data.title}{link.external ? ' (opens in a new tab)' : ''}</span></a>}</li>;
+            })}</ul>
+          </details>
+        </section>
+
+        <section class="uxw-contact" id="contact" aria-labelledby="uxw-contact">
+          <div><h2 id="uxw-contact">Where is your process getting in the way?</h2><p>I'm exploring product design and UX research opportunities where I can make work better for the people doing it.</p></div>
           <div class="uxw-contact__links">
-            <a href="mailto:jmeyerkopf@gmail.com">jmeyerkopf@gmail.com</a>
-            <a href="https://www.linkedin.com/in/jacobmeyerkopf/" target="_blank" rel="noopener noreferrer">LinkedIn<span class="sr-only"> (opens in a new tab)</span></a>
-            <a href={RESUME} download>Resume (PDF)</a>
-            <a href={HOME}>Creative playground</a>
+            <a class="uxw-button" href="mailto:jmeyerkopf@gmail.com">Contact <span aria-hidden="true">↗</span></a>
+            <a class="uxw-link" href="https://www.linkedin.com/in/jacobmeyerkopf/" target="_blank" rel="noopener noreferrer">LinkedIn<span class="sr-only"> (opens in a new tab)</span></a>
+            <a class="uxw-link" href={RESUME} download>Resume</a>
+            <a class="uxw-link" href={HOME}>Creative playground</a>
           </div>
         </section>
       </main>
@@ -361,744 +169,170 @@ const experience = [
 </html>
 
 <style is:global>
-  .uxw {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: clamp(32px, 7vh, 82px) clamp(16px, 4vw, 48px) clamp(64px, 10vh, 120px);
-  }
-
-  .uxw p { line-height: 1.55; }
-  .uxw-muted { color: #5f5b55; }
-
-  .uxw-label {
-    margin: 0;
-    color: var(--pv2-accent);
-    font-size: .7rem;
-    font-weight: 650;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-  }
-
-  /* --- Hero ---------------------------------------------------------------- */
-  .uxw-hero {
-    display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(0, .65fr);
-    gap: clamp(28px, 5vw, 64px);
-    align-items: end;
-  }
-
-  .uxw-hero h1 {
-    margin: 0 0 clamp(16px, 2.6vh, 26px);
-    font-size: clamp(2.6rem, 5.4vw, 4.9rem);
-    line-height: .98;
-    letter-spacing: -.055em;
-    font-weight: 510;
-    text-wrap: balance;
-  }
-
-  .uxw-lead {
-    max-width: 58ch;
-    margin: 0;
-    color: #3d3a36;
-    font-size: clamp(1.02rem, 1.35vw, 1.18rem);
-  }
-
-  .uxw-panel {
-    padding: clamp(20px, 2.6vw, 28px);
-    border: 1px solid var(--pv2-line);
-    border-radius: var(--pv2-r-lg);
-    background: rgba(255, 255, 255, .66);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-  }
-
-  .uxw-panel p { margin: 0; }
-  .uxw-panel p + p { margin-top: 12px; }
-  .uxw-panel .uxw-muted { font-size: .9rem; }
-
-  /* Three checkable facts in place of the paragraph that used to restate the
-     experience timeline further down the page. */
-  .uxw-proof {
-    margin: 12px 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .uxw-proof li {
-    display: grid;
-    gap: 2px;
-    padding: 12px 0;
-    border-top: 1px solid var(--pv2-line);
-  }
-
-  .uxw-proof li:first-child { border-top: 0; padding-top: 0; }
-
-  .uxw-proof__value {
-    font-size: 1.3rem;
-    font-weight: 600;
-    line-height: 1.05;
-    letter-spacing: -.035em;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .uxw-proof__label {
-    color: var(--pv2-muted);
-    font-size: .85rem;
-    line-height: 1.4;
-  }
-
-  .uxw-proof__foot {
-    margin-top: 14px;
-    padding-top: 12px;
-    border-top: 1px solid var(--pv2-line);
-  }
-
-  .uxw-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 14px 24px;
-    margin-top: 26px;
-  }
-
-  .uxw-button {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    padding: 0 20px;
-    border-radius: 999px;
-    background: var(--pv2-accent);
-    color: #faf8f4;
-    font-weight: 600;
-    text-decoration: none;
-    transition: background var(--pv2-fast) ease;
-  }
-
+  .uxw { max-width: 1280px; margin: auto; padding: 56px 40px 48px; }
+  .uxw p { line-height: 1.5; }
+  .uxw a, .uxw summary { touch-action: manipulation; }
+  .uxw a:focus-visible, .uxw summary:focus-visible, .uxw-skip:focus-visible { outline: 3px solid var(--pv2-accent); outline-offset: 5px; }
+  .uxw-skip { position: fixed; top: 12px; left: 16px; z-index: 1100; transform: translateY(-200%); background: var(--pv2-bg); padding: 12px 18px; color: var(--pv2-text); }
+  .uxw-skip:focus { transform: none; }
+  .uxw-hero { padding-bottom: 34px; border-bottom: 1px solid var(--pv2-line); }
+  .uxw-hero h1 { max-width: 1050px; margin: 0 0 18px; font-size: clamp(2.8rem, 5.5vw, 5.1rem); line-height: 1.02; letter-spacing: -.055em; font-weight: 540; text-wrap: initial; }
+  .uxw-lead { margin: 0; font-size: clamp(1.1rem, 1.7vw, 1.5rem); }
+  .uxw-location { margin: 14px 0 0; font-size: .95rem; }
+  .uxw-location span { margin-right: 6px; }
+  .uxw-label { margin: 0; font-family: var(--pv2-font-text); color: var(--pv2-accent); font-size: .75rem; font-weight: 700; letter-spacing: .12em; line-height: 1.5; text-transform: uppercase; }
+  .uxw-section-label { margin: 26px 0 24px; }
+  .uxw-feature__main { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 40px; align-items: center; }
+  .uxw-feature__text { padding: 20px 0; }
+  .uxw-feature h3 { font-size: clamp(3rem, 5vw, 4.6rem); letter-spacing: -.055em; margin: 18px 0 8px; }
+  .uxw-subtitle { margin: 0 0 22px; font-family: var(--pv2-font-display); font-size: clamp(1.35rem, 2vw, 1.8rem); letter-spacing: -.035em; }
+  .uxw-description { font-size: 1.15rem; max-width: 35ch; margin: 0 0 22px; }
+  .uxw-role { color: var(--pv2-muted); font-size: .95rem; margin: 0; }
+  .uxw-outcome { border-left: 3px solid var(--pv2-accent); padding-left: 16px; font-weight: 600; margin: 26px 0; }
+  .uxw-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+  .uxw-button { display: inline-flex; align-items: center; justify-content: center; gap: 14px; min-height: 46px; padding: 11px 18px; border-radius: 7px; background: var(--pv2-accent); color: #fff; font-weight: 600; text-decoration: none; line-height: 1.4; }
   .uxw-button:hover { background: var(--pv2-accent-deep); }
-
-  .uxw-link {
-    display: inline-flex;
-    min-height: 44px;
-    align-items: center;
-    color: var(--pv2-text);
-    font-weight: 600;
-    text-decoration: underline;
-    text-decoration-color: rgba(36, 36, 36, .3);
-    text-underline-offset: 4px;
-    transition: text-decoration-color var(--pv2-fast) ease;
-  }
-
+  .uxw-link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--pv2-line); }
   .uxw-link:hover { text-decoration-color: currentColor; }
-
-  .uxw-button:focus-visible,
-  .uxw-link:focus-visible,
-  .uxw-contact a:focus-visible {
-    outline: 2px solid var(--pv2-text);
-    outline-offset: 3px;
+  .uxw-earth-art { margin: 0; padding: 26px 24px 18px; background: #e5e8df; border-radius: 4px; }
+  .uxw-earth-art__stage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 24px; }
+  .uxw-art-label { display: block; font-size: .75rem; color: #465247; font-weight: 650; letter-spacing: .04em; }
+  .uxw-earth-art__paper img { display: block; width: 100%; height: auto; margin-top: 12px; box-shadow: 0 8px 20px #2222; }
+  .uxw-earth-art__paper p { font-size: .95rem; color: #465247; margin: 16px 0 0; }
+  .uxw-earth-art__phone img { display: block; width: 100%; max-width: 230px; height: auto; margin: 10px auto 0; }
+  .uxw-earth-art > figcaption { margin: 18px 0 0; text-align: center; font-size: .78rem; color: #465247; }
+  .uxw-reasoning { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 23px 0; margin: 24px 0; border-block: 1px solid var(--pv2-line); }
+  .uxw-reasoning > div { padding: 0 24px; border-left: 1px solid var(--pv2-line); }
+  .uxw-reasoning > div:first-child { padding-left: 0; border: 0; }
+  .uxw-reasoning > div:last-child { padding-right: 0; }
+  .uxw-reasoning dd { margin: 8px 0 0; font-size: 1.05rem; line-height: 1.45; }
+  .uxw-supporting { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+  .uxw-card { display: flex; flex-direction: column; min-width: 0; padding: 24px; border: 1px solid var(--pv2-line); border-radius: 12px; background: #ffffff54; }
+  .uxw-card h3 { margin: 12px 0 22px; font-size: clamp(1.9rem, 2.8vw, 2.75rem); letter-spacing: -.045em; min-height: 2.2em; text-wrap: initial; }
+  .uxw-card figure { margin: 0 0 18px; height: 290px; border-radius: 8px; overflow: hidden; }
+  .uxw-letter-art { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 24px; padding: 18px 24px; background: #e0ebe6; }
+  .uxw-letter-art img { display: block; height: 254px; max-width: 100%; width: auto; object-fit: contain; justify-self: center; border-radius: 8px; }
+  .uxw-letter-art figcaption { display: grid; gap: 16px; font-size: .78rem; color: #465247; }
+  .uxw-letter-art strong { font-family: var(--pv2-font-display); font-size: clamp(1.15rem, 1.7vw, 1.5rem); color: #253e35; line-height: 1.3; font-weight: 500; }
+  .uxw-idl-art { position: relative; display: flex; align-items: flex-end; background: #e8dfd0; }
+  .uxw-idl-art > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 40%; }
+  .uxw-idl-art figcaption { position: relative; margin-left: auto; width: 74%; padding: 20px 22px; background: #f6f2e8f5; border-radius: 8px 0 0 0; }
+  .uxw-idl-art strong { display: block; font-family: var(--pv2-font-display); font-size: clamp(2.3rem, 3.5vw, 3.3rem); letter-spacing: -.05em; line-height: 1.1; }
+  .uxw-idl-art strong span { color: var(--pv2-accent); }
+  .uxw-idl-art figcaption > span { display: block; font-size: .8rem; margin: 7px 0; }
+  .uxw-idl-art p { margin: 8px 0 0; font-size: .85rem; }
+  .uxw-project-name { font-weight: 650; margin: 0 0 6px; }
+  .uxw-card__description { margin: 0 0 10px; }
+  .uxw-note { color: var(--pv2-muted); font-size: .85rem; }
+  .uxw-card > .uxw-note { margin: 0 0 18px; }
+  .uxw-card .uxw-actions { margin-top: auto; }
+  .uxw-background { margin-top: 26px; }
+  .uxw-disclosure { border-top: 1px solid var(--pv2-line); }
+  .uxw-disclosure summary { display: grid; grid-template-columns: 180px 1fr auto; gap: 20px; align-items: center; cursor: pointer; padding: 20px 0; list-style: none; }
+  .uxw-disclosure summary::-webkit-details-marker { display: none; }
+  .uxw-experience-preview { font-size: .9rem; }
+  .uxw-disclosure__action { display: flex; align-items: center; gap: 12px; color: var(--pv2-accent); font-size: .9rem; font-weight: 600; }
+  .uxw-disclosure__action > span { display: inline-block; font-size: 1.25rem; }
+  .uxw-disclosure[open] .uxw-disclosure__action > span { transform: rotate(45deg); }
+  .uxw-timeline, .uxw-index { margin: 0; padding: 0; list-style: none; }
+  .uxw-timeline li, .uxw-index li { display: grid; grid-template-columns: 180px 1fr; gap: 20px; padding: 20px 0; border-top: 1px solid var(--pv2-line); }
+  .uxw-timeline h3, .uxw-index h3 { font-size: 1.2rem; margin: 0 0 6px; }
+  .uxw-timeline p, .uxw-index p { margin: 0 0 6px; max-width: 70ch; }
+  .uxw-index li { grid-template-columns: 1fr auto; }
+  .uxw-index a { align-self: start; }
+  .uxw-disclosure > .uxw-link { margin-bottom: 16px; }
+  .uxw-contact { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-top: 32px; padding: 28px 30px; border-radius: 12px; background: var(--pv2-text); color: #f7f6f2; }
+  .uxw-contact h2 { font-size: clamp(1.8rem, 3vw, 2.7rem); letter-spacing: -.045em; margin: 0 0 8px; }
+  .uxw-contact p { margin: 0; font-size: .9rem; color: #d8d5cf; }
+  .uxw-contact__links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; max-width: 420px; }
+  .uxw-contact a:focus-visible { outline-color: #fff; }
+  @media (max-width: 1000px) {
+    .uxw { padding-inline: 24px; }
+    .uxw-feature__main { gap: 24px; }
+    .uxw-earth-art { padding-inline: 16px; }
+    .uxw-earth-art__stage { gap: 14px; }
+    .uxw-letter-art { padding-inline: 14px; gap: 12px; }
+    .uxw-disclosure summary { grid-template-columns: 150px 1fr auto; gap: 16px; }
+    .uxw-contact { flex-direction: column; align-items: flex-start; }
+    .uxw-contact__links { max-width: none; }
   }
-
-  /* --- Sections ------------------------------------------------------------ */
-  .uxw-section {
-    margin-top: clamp(72px, 11vh, 128px);
-  }
-
-  .uxw-heading {
-    max-width: 760px;
-    margin-bottom: 28px;
-  }
-
-  .uxw-heading h2 {
-    margin: 0 0 12px;
-    font-size: clamp(2rem, 4.2vw, 3.5rem);
-    line-height: 1;
-    letter-spacing: -.045em;
-    font-weight: 520;
-  }
-
-  .uxw-heading > p:last-child:not(.pv2-overline) {
-    max-width: 64ch;
-    margin: 0;
-    color: #4f4c47;
-    font-size: clamp(1rem, 1.3vw, 1.12rem);
-  }
-
-  /* --- Case studies -------------------------------------------------------- */
-  .uxw-cases {
-    display: flex;
-    flex-direction: column;
-    gap: clamp(28px, 4vh, 56px);
-  }
-
-  /* Three layouts, not three copies of one. Each is driven by what the piece
-     actually has to show; the shared rules are only the shell. */
-  .uxw-case {
-    display: grid;
-    gap: clamp(22px, 3vw, 40px);
-    padding: clamp(22px, 3.4vw, 40px);
-    border: 1px solid var(--pv2-line);
-    border-radius: var(--pv2-r-lg);
-    background: rgba(255, 255, 255, .7);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-  }
-
-  /* Image-led: the screen runs the full width of the card. The work is the
-     argument, so it gets the room — but the label and title still come first,
-     because that is what a reviewer scans. */
-  .uxw-case--media { grid-template-columns: minmax(0, 1fr); }
-  .uxw-case--media .uxw-case__text { max-width: var(--pv2-measure); }
-
-  /* Two real artefacts side by side: the photograph of the drawings and the
-     numbers they produced. */
-  .uxw-case--split { grid-template-columns: minmax(0, 1fr); }
-  .uxw-case__pair {
-    display: grid;
-    grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
-    gap: clamp(18px, 2.4vw, 32px);
-    align-items: stretch;
-  }
-
-  /* Nothing is built, so the documented flow is the visual and it runs wide
-     rather than being squeezed into a half-column. */
-  .uxw-case--diagram { grid-template-columns: minmax(0, 1fr); }
-  .uxw-case--diagram .uxw-case__text { max-width: var(--pv2-measure); }
-
-  .uxw-case h3 {
-    margin: 12px 0 14px;
-    font-size: clamp(1.5rem, 2.4vw, 2.1rem);
-    line-height: 1.08;
-    letter-spacing: -.035em;
-    font-weight: 560;
-    text-wrap: balance;
-  }
-
-  /* The claim. One sentence that says something, where three bullets used to
-     sit saying nothing. */
-  .uxw-case__claim {
-    margin: 0;
-    max-width: var(--pv2-measure);
-    color: var(--pv2-text);
-    font-size: var(--pv2-step-lead);
-    line-height: 1.45;
-  }
-
-  /* The result. Set at heading weight and marked with the accent rule, because
-     on a work page this is the sentence the reader came for — it should not
-     have to be found inside a paragraph. */
-  .uxw-outcome {
-    max-width: var(--pv2-measure);
-    margin-top: clamp(18px, 2.2vh, 24px);
-    padding-left: clamp(14px, 1.4vw, 18px);
-    border-left: 3px solid var(--pv2-accent);
-  }
-
-  .uxw-outcome__value {
-    margin: 0 0 6px;
-    font-size: clamp(1.3rem, 2.1vw, 1.8rem);
-    font-weight: 600;
-    line-height: 1.04;
-    letter-spacing: -.035em;
-    font-variant-numeric: tabular-nums;
-    text-wrap: balance;
-  }
-
-  .uxw-outcome__note {
-    margin: 0;
-    color: var(--pv2-muted);
-    font-size: .92rem;
-  }
-
-  /* Role, scope, dates. Small, but first in the order a reviewer actually asks
-     questions in, and the only place a volunteer engagement is distinguished
-     from a staff job. */
-  .uxw-facts {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    margin: clamp(16px, 2vh, 22px) 0 0;
-    padding: 0;
-    list-style: none;
-    color: #4f4c47;
-    font-size: .86rem;
-    line-height: 1.5;
-  }
-
-  .uxw-facts li + li::before {
-    content: '·';
-    padding: 0 10px;
-    color: rgba(36, 36, 36, .32);
-  }
-
-  /* The article is a grid, so the actions row inherits the card gap; its own
-     margin would double it. */
-  .uxw-case__actions { margin-top: 0; }
-
   @media (max-width: 760px) {
-    .uxw-case__pair { grid-template-columns: minmax(0, 1fr); }
-  }
-
-  .uxw-shot {
-    margin: 0;
-    overflow: hidden;
-    border-radius: var(--pv2-r-md);
-    border: 1px solid rgba(36, 36, 36, .12);
-    background: var(--pv2-soft);
-    box-shadow: 0 18px 40px -24px rgba(36, 30, 20, .55);
-  }
-
-  .uxw-shot img {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
-
-  /* The 1400px screenshot is wider than it is tall and leads the card, so it
-     is shown whole rather than cropped into a tile. */
-  .uxw-case--media .uxw-shot img { aspect-ratio: auto; }
-
-  /* The drawings photograph is portrait and much taller than the chart beside
-     it. Give the pair one fixed height: the photograph crops into it and the
-     numbers panel fills it, so the two artefacts sit as a pair instead of a
-     tall image with a small chart floating in the space next to it. */
-  .uxw-case--split .uxw-shot { height: clamp(300px, 30vw, 420px); }
-
-  .uxw-case--split .uxw-shot img {
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-  }
-
-  @media (max-width: 760px) {
-    .uxw-case--split .uxw-shot { height: clamp(240px, 56vw, 340px); }
-  }
-
-  /* IDL: the work's own numbers, drawn. Centred inside a panel that matches
-     the photograph beside it, so the two artefacts read as a pair rather than
-     as a tall image with a small chart parked next to it. */
-  .uxw-bars {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    margin: 0;
-    padding: clamp(18px, 2.4vw, 26px);
-    border-radius: var(--pv2-r-md);
-    background: rgba(247, 246, 242, .9);
-    border: 1px solid rgba(36, 36, 36, .1);
-  }
-
-  .uxw-bars figcaption { margin-bottom: 18px; }
-
-  .uxw-bar {
-    display: grid;
-    grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr) 4.2rem;
-    align-items: center;
-    gap: 12px;
-    font-size: .88rem;
-  }
-
-  .uxw-bar + .uxw-bar { margin-top: 12px; }
-
-  .uxw-bar__label { color: #4f4c47; }
-
-  .uxw-bar__track {
-    height: 14px;
-    border-radius: 999px;
-    background: rgba(36, 36, 36, .07);
-    overflow: hidden;
-  }
-
-  .uxw-bar__fill {
-    display: block;
-    height: 100%;
-    min-width: 4px;
-    border-radius: inherit;
-    background: #b9b4ab;
-  }
-
-  .uxw-bar.is-mine .uxw-bar__fill { background: var(--pv2-text); }
-  .uxw-bar.is-mine .uxw-bar__label,
-  .uxw-bar.is-mine .uxw-bar__value { color: var(--pv2-text); font-weight: 650; }
-
-  .uxw-bar__value {
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-    color: #4f4c47;
-  }
-
-  /* AI Archiving: its documented workflow, drawn. */
-  .uxw-steps {
-    margin: 0;
-    padding: clamp(18px, 2.4vw, 26px);
-    border-radius: var(--pv2-r-md);
-    background: rgba(247, 246, 242, .9);
-    border: 1px solid rgba(36, 36, 36, .1);
-  }
-
-  .uxw-steps figcaption {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 18px;
-  }
-
-  .uxw-steps figcaption strong {
-    font-size: 1.15rem;
-    font-weight: 600;
-    letter-spacing: -.02em;
-  }
-
-  .uxw-steps ol {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    counter-reset: step;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .uxw-steps li {
-    counter-increment: step;
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 10px 0;
-    font-size: .95rem;
-  }
-
-  .uxw-steps li::before {
-    content: counter(step);
-    flex: 0 0 auto;
-    display: grid;
-    place-items: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 1px solid rgba(36, 36, 36, .25);
-    background: #fff;
-    font-size: .8rem;
-    font-weight: 650;
-    position: relative;
-    z-index: 1;
-  }
-
-  /* The line that joins the steps when they are stacked. */
-  .uxw-steps li + li::after {
-    content: '';
-    position: absolute;
-    left: 15px;
-    top: -10px;
-    height: 20px;
-    width: 1px;
-    background: rgba(36, 36, 36, .22);
-  }
-
-  .uxw-steps li:last-child::before {
-    background: var(--pv2-text);
-    border-color: var(--pv2-text);
-    color: #f7f6f2;
-  }
-
-  /* Wide screens: run the steps across the card. Stacked, five of them filled
-     a third of a 1024px panel and left the rest blank, and a loop drawn as a
-     vertical list does not read as a loop.
-
-     The connector is the same pseudo-element, turned on its side: each step
-     after the first draws the segment back to the one before it. Items are
-     equal-width flex children, so that distance is one item plus one gap, and
-     the line stops at the last number instead of running off the panel — with
-     no step count written into the CSS. */
-  @media (min-width: 861px) {
-    .uxw-steps ol {
-      --uxw-step-gap: clamp(10px, 1.6vw, 22px);
-      flex-direction: row;
-      gap: var(--uxw-step-gap);
-    }
-
-    .uxw-steps li {
-      flex: 1 1 0;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 0;
-      font-size: .92rem;
-      line-height: 1.35;
-    }
-
-    .uxw-steps li + li::after {
-      top: 15px;
-      left: calc(15px - 100% - var(--uxw-step-gap));
-      width: calc(100% + var(--uxw-step-gap));
-      height: 1px;
-    }
-  }
-
-  /* --- Experience ---------------------------------------------------------- */
-  .uxw-timeline {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    border-top: 1px solid rgba(36, 36, 36, .14);
-  }
-
-  .uxw-timeline li {
-    display: grid;
-    grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
-    gap: 12px 32px;
-    padding: 22px 0;
-    border-bottom: 1px solid rgba(36, 36, 36, .14);
-  }
-
-  .uxw-timeline__dates {
-    color: #4f4c47;
-    font-size: .88rem;
-    font-variant-numeric: tabular-nums;
-    padding-top: 4px;
-  }
-
-  .uxw-timeline h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 600;
-    letter-spacing: -.02em;
-  }
-
-  .uxw-timeline__role {
-    margin: 2px 0 8px;
-    font-weight: 500;
-  }
-
-  .uxw-timeline .uxw-muted {
-    margin: 0;
-    max-width: 70ch;
-  }
-
-  /* The timeline sits on the painting; give it the same panel as the cards. */
-  .uxw-section#experience .uxw-timeline {
-    padding: 0 clamp(18px, 2.6vw, 28px);
-    border: 1px solid var(--pv2-line);
-    border-radius: var(--pv2-r-lg);
-    background: rgba(255, 255, 255, .66);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-  }
-
-  .uxw-section#experience .uxw-timeline li:last-child { border-bottom: 0; }
-
-  /* --- Further explorations ------------------------------------------------ */
-  .uxw-explore {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-  }
-
-  .uxw-explore__card {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 16px 16px 20px;
-    border: 1px solid var(--pv2-line);
-    border-radius: var(--pv2-r-lg);
-    background: rgba(255, 255, 255, .7);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-  }
-
-  .uxw-explore__thumb {
-    aspect-ratio: 16 / 10;
-    margin-bottom: 8px;
-    overflow: hidden;
-    border-radius: var(--pv2-r-md);
-    background: var(--pv2-soft);
-  }
-
-  .uxw-explore__thumb img {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-
-  /* Agora 21 was never implemented and there is no screenshot of it in the
-     repository — the only image is a photograph of a text slide. A dark panel
-     with the title typeset on it reads as a missing asset, so the card says
-     plainly that there is nothing to show instead of pretending there is. */
-  .uxw-explore__thumb.is-type {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 18px;
-    border: 1px dashed var(--pv2-line);
-    background: linear-gradient(135deg, rgba(255, 255, 255, .5), rgba(234, 230, 220, .55));
-  }
-
-  .uxw-explore__thumb.is-type span {
-    color: var(--pv2-muted);
-    font-size: .78rem;
-    font-weight: 650;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-  }
-
-  .uxw-explore__card h3 {
-    margin: 0;
-    font-size: 1.15rem;
-    font-weight: 600;
-    letter-spacing: -.02em;
-  }
-
-  .uxw-explore__card .uxw-muted {
-    margin: 0;
-    font-size: .92rem;
-    flex: 1;
-  }
-
-  .uxw-explore__card .uxw-link {
-    margin-top: 6px;
-    font-size: .92rem;
-  }
-
-  /* --- Contact ------------------------------------------------------------- */
-  .uxw-index {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    border-top: 1px solid var(--pv2-line);
-  }
-
-  .uxw-index__row {
-    display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr) auto;
-    gap: clamp(16px, 2.6vw, 40px);
-    align-items: baseline;
-    padding: clamp(18px, 2.4vh, 26px) 0;
-    border-bottom: 1px solid var(--pv2-line);
-  }
-
-  .uxw-index__head h3 {
-    margin: 0 0 3px;
-    font-size: var(--pv2-step-heading);
-    font-weight: 600;
-    line-height: 1.15;
-  }
-
-  .uxw-index__note {
-    margin: 0;
-    max-width: 56ch;
-    color: var(--pv2-muted);
-    font-size: .92rem;
-  }
-
-  .uxw-index__link { white-space: nowrap; }
-
-  @media (max-width: 780px) {
-    .uxw-index__row {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 8px;
-    }
-  }
-
-  .uxw-contact {
-    padding: clamp(28px, 5vw, 56px);
-    border-radius: var(--pv2-r-lg);
-    background: var(--pv2-text);
-    color: #f7f6f2;
-  }
-
-  .uxw-contact h2 {
-    margin: 0 0 14px;
-    font-size: clamp(2rem, 4vw, 3.2rem);
-    line-height: 1;
-    letter-spacing: -.045em;
-    font-weight: 520;
-  }
-
-  .uxw-contact p {
-    max-width: 60ch;
-    margin: 0;
-    color: #d8d5cf;
-  }
-
-  .uxw-contact__links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px 28px;
-    margin-top: 26px;
-    font-weight: 600;
-  }
-
-  .uxw-contact__links a {
-    color: #f7f6f2;
-    text-decoration: underline;
-    text-decoration-color: rgba(247, 246, 242, .35);
-    text-underline-offset: 4px;
-  }
-
-  .uxw-contact__links a:hover { text-decoration-color: currentColor; }
-  .uxw-contact a:focus-visible { outline-color: #f7f6f2; }
-
-  /* --- Narrow screens ------------------------------------------------------ */
-  @media (max-width: 860px) {
-    .uxw-hero,
-    .uxw-case {
-      grid-template-columns: minmax(0, 1fr);
-    }
-
-    .uxw-explore {
-      grid-template-columns: minmax(0, 1fr);
-    }
-  }
-
-  /* Phones: one 16px gutter to a panel, one 20px inset to its text (the
-     site's own side padding stacked on top of the page's). */
-  @media (max-width: 720px) {
     .pv2-site:has(.uxw) { padding-inline: 0; }
     .pv2-body:has(.uxw) .pv2-credit-drawer { display: none; }
-
-    .uxw { padding: 28px 16px 48px; }
-    .uxw-section { margin-top: 56px; }
-    .uxw-heading { margin-bottom: 20px; }
-    .uxw-heading h2 { font-size: 2rem; }
-    .uxw-hero { gap: 24px; }
-    .uxw-hero h1 { font-size: 2.45rem; line-height: 1.02; }
-    .uxw-lead { font-size: 1.02rem; }
-    .uxw .pv2-overline { letter-spacing: .1em; }
-    .uxw-actions { gap: 12px 20px; margin-top: 22px; }
-
-    .uxw-case,
-    .uxw-panel,
-    .uxw-contact { padding: 22px 20px; border-radius: var(--pv2-r-lg); }
-    .uxw-case { gap: 22px; }
-    .uxw-case h3 { font-size: 1.45rem; }
-    .uxw-cases { gap: 14px; }
-    .uxw-bars,
-    .uxw-steps { padding: 16px; }
-
-    .uxw-section#experience .uxw-timeline { padding: 0 20px; }
-    .uxw-timeline li { padding: 18px 0; }
-
-    .uxw-explore { gap: 14px; }
-    .uxw-contact h2 { font-size: 2rem; }
+    .uxw { padding: 30px 20px; }
+    .uxw-desktop-break { display: none; }
+    .uxw-hero h1 { font-size: clamp(2.5rem, 8vw, 3.8rem); }
+    .uxw-feature__main, .uxw-supporting { grid-template-columns: minmax(0, 1fr); }
+    .uxw-feature__text { padding: 0; }
+    .uxw-feature h3 { margin-top: 14px; }
+    .uxw-earth-art__stage { grid-template-columns: minmax(0, 1fr) minmax(0, .85fr); max-width: 480px; margin-inline: auto; gap: 24px; }
+    .uxw-earth-art__phone img { max-height: 330px; width: auto; max-width: 100%; }
+    .uxw-reasoning { grid-template-columns: 1fr; gap: 18px; }
+    .uxw-reasoning > div { padding: 0; border: 0; }
+    .uxw-reasoning dd { margin-top: 4px; }
+    .uxw-card { padding: 20px; }
+    .uxw-card h3 { font-size: 2rem; min-height: 0; }
+    .uxw-letter-art strong { font-size: 1.25rem; }
+    .uxw-disclosure summary { grid-template-columns: 1fr auto; gap: 8px; }
+    .uxw-disclosure summary > :nth-child(2) { grid-row: 2; grid-column: 1 / -1; }
+    .uxw-disclosure__action { grid-row: 1; grid-column: 2; }
+    .uxw-timeline li, .uxw-index li { grid-template-columns: 1fr; gap: 8px; }
+    .uxw-contact { padding: 24px; }
+  }
+  @media (max-width: 380px) {
+    .uxw { padding-inline: 16px; }
+    .uxw-card { padding: 16px; }
+    .uxw-letter-art { gap: 10px; padding-inline: 10px; }
+    .uxw-letter-art strong { font-size: 1.05rem; }
+    .uxw-idl-art figcaption { width: 88%; padding: 18px; }
+    .uxw-disclosure summary { grid-template-columns: 1fr; }
+    .uxw-disclosure__action { grid-row: 3; grid-column: 1; }
   }
 
-  @media (max-width: 560px) {
-    .uxw-timeline li {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 6px;
-    }
-
-    .uxw-bar {
-      grid-template-columns: minmax(0, 1fr) 3.6rem;
-    }
-
-    /* Wrapped onto three lines, the interpuncts land at the start of lines two
-       and three and read as bullets. Drop them and let the facts stack. */
-    .uxw-facts {
-      display: grid;
-      gap: 2px;
-    }
-
-    .uxw-facts li + li::before { content: none; }
-
-    .uxw-bar__label { grid-column: 1 / -1; }
+  .uxw-hero .uxw-lead { max-width: 47ch; }
+  .uxw-hero__eyebrow { margin-bottom: 18px; }
+  .uxw-intent { max-width: 60ch; color: var(--pv2-muted); margin: 16px 0 24px; }
+  .uxw-idl-feature h3 { font-size: clamp(2.4rem, 3.6vw, 3.6rem); }
+  .uxw-idl-feature .uxw-description { margin-top: 20px; max-width: 44ch; }
+  .uxw-idl-feature .uxw-actions { margin-top: 24px; }
+  .uxw-work-evidence { position: relative; margin: 0; height: 430px; overflow: hidden; border-radius: 8px; }
+  .uxw-work-evidence img { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; }
+  .uxw-work-evidence figcaption { position: absolute; inset: auto 0 0; padding: 12px 18px; background: #f4f2ecef; font-size: .8rem; }
+  .uxw-comparison { display: grid; grid-template-columns: 1fr 1.6fr; align-items: center; gap: 36px; background: #e4e9e0; padding: 28px; margin-top: 24px; border-radius: 8px; }
+  .uxw-comparison h4 { font-family: var(--pv2-font-display); font-size: 1.5rem; line-height: 1.2; margin: 0; }
+  .uxw-comparison p { font-size: .9rem; margin: 12px 0 0; }
+  .uxw-time-bars { list-style: none; padding: 0; margin: 0; }
+  .uxw-time-bars li { display: grid; grid-template-columns: 145px 1fr 48px; gap: 14px; align-items: center; font-size: .9rem; }
+  .uxw-time-bars li + li { margin-top: 18px; }
+  .uxw-time-track { display: block; background: #26392d12; height: 14px; border-radius: 3px; }
+  .uxw-time-track i { display: block; width: var(--time); height: 100%; background: #7d8c7c; border-radius: inherit; }
+  .uxw-time-bars li:last-child i { background: #334c3a; }
+  .uxw-time-bars strong { text-align: right; font-variant-numeric: tabular-nums; }
+  .uxw-decision { border-top: 1px solid var(--pv2-line); margin: 0 0 20px; }
+  .uxw-decision summary { cursor: pointer; padding: 16px 0; font-weight: 600; min-height: 48px; }
+  .uxw-decision p { max-width: 76ch; margin: 0 0 20px; color: var(--pv2-muted); }
+  .uxw-approach { display: grid; grid-template-columns: 1fr 1.2fr; gap: 48px; padding: 52px 0; border-block: 1px solid var(--pv2-line); margin: 40px 0; scroll-margin-top: 90px; }
+  .uxw-approach h2 { font-size: clamp(2rem, 3vw, 2.8rem); margin: 14px 0 0; }
+  .uxw-approach p { max-width: 55ch; margin-top: 0; }
+  .uxw-related-heading { margin-bottom: 24px; }
+  .uxw-related-heading h2 { font-size: clamp(1.7rem, 3vw, 2.4rem); margin: 0; }
+  .uxw-related-heading p { color: var(--pv2-muted); margin-bottom: 0; }
+  #idl-title { scroll-margin-top: 90px; }
+  .uxw-earth-card .uxw-feature__main { display: flex; flex-direction: column; gap: 0; align-items: stretch; }
+  .uxw-earth-card .uxw-feature__text { padding: 0; }
+  .uxw-earth-card .uxw-description { font-size: 1rem; }
+  .uxw-earth-card .uxw-earth-art { margin: 24px 0 0; padding: 16px; height: auto; }
+  .uxw-earth-card .uxw-earth-art__phone img { max-height: 245px; width: auto; max-width: 100%; }
+  .uxw-earth-card .uxw-reasoning { display: grid; grid-template-columns: 1fr; gap: 16px; border: 0; padding: 0; margin: 0 0 16px; }
+  .uxw-earth-card .uxw-reasoning > div { border: 0; padding: 0; }
+  .uxw-earth-card .uxw-decision { margin-top: 20px; margin-bottom: 0; }
+  .uxw-card .uxw-decision { margin-top: 16px; }
+  @media (max-width: 760px) {
+    .uxw-comparison, .uxw-approach { grid-template-columns: 1fr; gap: 24px; }
+    .uxw-work-evidence { height: 300px; }
+    .uxw-comparison { padding: 20px; }
+    .uxw-time-bars li { grid-template-columns: 1fr 48px; gap: 8px 14px; }
+    .uxw-time-bars li > span:first-child { grid-column: 1 / -1; }
+    .uxw-approach { padding: 30px 0; margin: 30px 0; }
   }
 </style>

@@ -760,10 +760,14 @@
   }
 
   function playgroundIsVisible() {
+    // The stage remains mounted behind the entry gate. Geometry alone does
+    // not mean the visitor has entered the playground.
+    if (document.hidden || document.documentElement.classList.contains('pv2-threshold-open')) return false;
     const overview = document.querySelector('.pv2-overview__stage');
     return Boolean(
       overview
       && overview.isConnected
+      && !overview.closest('[inert], [hidden], [aria-hidden="true"]')
       && overview.getClientRects().length
       && overview.offsetWidth > 0
       && overview.offsetHeight > 0
@@ -3658,6 +3662,7 @@
 
   function tick(now) {
     if (!stage) {
+      hideExploreCue();
       mark('waiting');
       frame = 0;
       return;

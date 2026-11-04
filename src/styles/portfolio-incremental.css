@@ -2331,3 +2331,11 @@ html.pv2-project-context-open .pv2-project-tile { pointer-events: none; }
     inset 0 0 0 2px rgba(138, 99, 210, .55),
     inset 0 0 44px -6px rgba(138, 99, 210, .35);
 }
+
+/* The cue is portalled to body, outside the stage's visibility/inert scope.
+   Hide it immediately when the gate is up or its owning stage is gone. */
+html.pv2-threshold-open .pv2-explore-cue,
+body:not(:has(.pv2-overview__stage)) .pv2-explore-cue,
+body:has(.pv2-overview__stage:is([inert], [hidden], [aria-hidden="true"])) .pv2-explore-cue {
+  display: none;
+}

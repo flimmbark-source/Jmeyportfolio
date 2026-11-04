@@ -1,3 +1,68 @@
+# Current revision: work that supports people
+
+The approved narrative is now “Making work work for people.” IDL leads with
+an explorable, simplified workflow: information preparation, drawing, handoff,
+and QC, connected by shared learning. The account comes from the owner's
+clarification about SolidWorks efficiencies, coworkers' shortcuts, cross-team
+information encoding, quicker handoffs, streamlined QC, and cooperation.
+
+Visitors select a stage to reveal its explanation in place or show everything.
+Native buttons expose selection and associated panel IDs. All explanations
+render without JavaScript, with controls revealed only after initialization.
+No autoplay, forced tour, or fabricated before/after artifact is introduced.
+
+The 480/120/37 minute comparison preserves team versus individual attribution.
+Earth Hero and Letter River support the story through motivation and learning,
+with optional decision explanations. The IDL case study now carries the same
+collaborative account. Stress, autonomy, and monetary gains remain aims, not
+measured outcomes. The playground cue fix remains included in this PR.
+
+Validation: Astro production build passed. Built Work and IDL pages passed
+internal destination, image, ID, and ARIA-target checks. All five explanations
+are available in static HTML. Browser checks confirmed stage selection,
+keyboard activation of Show all, and no desktop overflow with larger text.
+Mobile-specific browser verification remains outstanding.
+
+---
+
+## Superseded implementation notes
+
+# `/ux` — editorial Work layout, November 2026
+
+The current page follows the approved editorial concept: a short hero, Earth
+Hero as the flagship, two supporting projects, expandable experience and
+explorations, and a compact contact footer. The earlier notes below describe
+the superseded layout and its original asset fixes.
+
+## Current implementation
+
+- Retains shared typography, navigation, painting backdrop, larger-text control,
+  case-study routes, resume, external prototypes, and contact links.
+- Earth Hero pairs the original paper wireframes with the repository’s actual
+  prototype screenshot. A question/design/evidence strip explains the work
+  without inventing confidential session findings or performance metrics.
+- Letter River uses its gameplay screenshot rather than its home screen.
+- IDL makes 8h → 37m visible while retaining the 2h team intermediate result.
+- Native details/summary disclosures retain every experience and exploration
+  entry while shortening the default page. No new client-side JS is needed.
+- Layout stacks below 760px, with an additional narrow-phone adjustment.
+  Focus styles, image descriptions, external-link announcements, and a skip
+  link are included.
+
+## Validation for this revision
+
+- `npm run build` passes, generating all 15 routes.
+- Built `/ux` internal links, images, fragment targets, and unique IDs pass.
+- Browser inspection at 1363px: images render, no horizontal overflow,
+  experience and project disclosures open, and larger-text control works.
+- Mobile browser rendering was not verified in this environment.
+- Only `/ux` presentation changes. Case-study content and playground behavior
+  are unchanged. Preview-only host configuration was removed before commit.
+
+---
+
+## Previous revision (historical)
+
 # `/ux` — the Work screen, revamped
 
 The brief was "revamp the UX Work section." The page was not badly made: the
