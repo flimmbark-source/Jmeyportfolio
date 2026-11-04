@@ -4,7 +4,6 @@ import PortfolioBackdrop from '../components/PortfolioBackdrop.astro';
 import PortfolioPolish from '../components/PortfolioPolish.astro';
 import SiteNav from '../components/SiteNav.astro';
 import SiteHead from '../components/SiteHead.astro';
-import WorkflowExplorer from '../components/WorkflowExplorer.astro';
 import AnnotatedScreen from '../components/AnnotatedScreen.astro';
 import { HOME, RESUME, resolveHref } from '../data/siteNav';
 import '../styles/portfolio-v2.css';
@@ -59,24 +58,14 @@ const experience = [
                 <p class="uxw-project-name">IDL Worldwide · SolidWorks workflow improvement</p><p class="uxw-result-preview"><strong>~8h → ~2h → 37m</strong><span>Initial process · team result · my further refinement</span></p>
                 <p class="uxw-description">We stopped rebuilding every store from scratch. Coworkers shared blocks and common layout patterns, which I helped expand. I created reusable store layouts and a model information architecture that let me assemble, adapt, and draw with greater speed and precision.</p>
                 <p class="uxw-role">Design Engineer · Apple fixture rollout at AT&amp;T retail<br />May 2015–May 2017</p>
-                <div class="uxw-actions"><a class="uxw-button" href={caseLink(idl)}>Read the case study <span aria-hidden="true">↗</span><span class="sr-only">: IDL</span></a></div>
+                <div class="uxw-actions"><a class="uxw-button" href={caseLink(idl)}>Explore the full story <span aria-hidden="true">↗</span><span class="sr-only">: IDL</span></a></div>
               </div>
               <figure class="uxw-work-evidence">
                 <img src="/images/derived/idl-case-study-1400.webp" alt="Store drawings, fixture elevations, and a rendered store layout from the IDL rollout" width="1400" height="1867" fetchpriority="high" />
                 <figcaption>Original drawing work for the retail rollout</figcaption>
               </figure>
             </div>
-            <WorkflowExplorer />
-            <div class="uxw-comparison" aria-labelledby="turnaround-title">
-              <div class="uxw-comparison__intro"><h4 id="turnaround-title">Same unit of work.<br />Less time to produce it.</h4><p>Approximate turnaround per store drawing, across two stages of improvement.</p></div>
-              <ol class="uxw-time-bars">
-                <li><span>Initial process</span><span class="uxw-time-track"><i style="--time:100%"></i></span><strong>~8h</strong></li>
-                <li><span>With the team</span><span class="uxw-time-track"><i style="--time:25%"></i></span><strong>~2h</strong></li>
-                <li><span>My later refinement</span><span class="uxw-time-track"><i style="--time:7.7083%"></i></span><strong>37m</strong></li>
-              </ol>
-            </div>
-
-            <aside class="uxw-evidence-note" aria-labelledby="idl-evidence-title"><h4 id="idl-evidence-title">What these results measure</h4><p>These are reported drawing turnaround times rather than results from a formal timed study. The starting time was approximately eight hours, and the two-hour improvement was achieved with the team. The 37-minute figure describes my later individual refinement. I digitized over 500 locations during the rollout, but these figures do not establish savings for every location. Financial savings, stress reduction, and worker autonomy were not measured.</p></aside>
+            <p class="uxw-evidence-note"><strong>Reported per-drawing turnaround.</strong> The two-hour improvement was achieved with the team. The later 37-minute result was my individual workflow. See the case study for the process, contributions and evidence limits.</p>
           </article>
           <section class="uxw-approach" id="approach" aria-labelledby="approach-title">
             <div><p class="uxw-label">The perspective behind the work</p><h2 id="approach-title">The workaround is<br /> worth looking at.</h2></div>
