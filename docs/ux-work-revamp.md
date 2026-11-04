@@ -158,3 +158,11 @@ label; heading order is `h1, h2, h3×3, h2, h3×4, h2, h3×4, h2`.
 - Further explorations is still an index of four pieces, three of which have no
   image of the work. That was a deliberate earlier choice and this pass did not
   revisit it.
+
+
+## Final visual explanation pass
+- Condensed the opening so the IDL result is visible early, preserving baseline/team/individual attribution.
+- Added connected workflow stages with contextual relationship highlighting and a show-all alternative.
+- Added keyboard-operable numbered annotations on actual Earth Hero and Letter River screens. All explanations remain available without JavaScript.
+- Verified desktop workflow selections, five-panel expansion, keyboard annotation selection, and image loading. Corrected Earth Hero annotation positions after visual inspection.
+- Build passed. Mobile emulation was blocked by browser policy, so mobile device validation remains unverified. Human comprehension testing also remains unperformed.
