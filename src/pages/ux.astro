@@ -45,7 +45,7 @@ const experience = [
           <p class="uxw-label uxw-hero__eyebrow">Jacob Meyerkopf · UX research &amp; product design</p>
           <p class="uxw-lead">I connect the tools, information, and people behind a process to find where work can become easier.</p>
           <p class="uxw-intent">Less wasted effort. More control for the people doing the work.</p>
-          <a class="uxw-link uxw-hero-link" href="#workflow-title">Explore how the work changed <span aria-hidden="true">↓</span></a>
+          <a class="uxw-link uxw-hero-link" href="#idl-title">Explore the featured case study <span aria-hidden="true">↓</span></a>
           
         </section>
 
@@ -76,7 +76,7 @@ const experience = [
               </ol>
             </div>
 
-            <details class="uxw-decision"><summary>What do these results establish?</summary><p>The time figures describe drawing turnaround. The two-hour result belongs to the team, and the later 37-minute result to my individual workflow. I digitized more than 500 locations during the rollout, but these figures do not establish a time saving for every location. Financial savings, stress reduction, and worker autonomy were not measured here.</p></details>
+            <aside class="uxw-evidence-note" aria-labelledby="idl-evidence-title"><h4 id="idl-evidence-title">What these results measure</h4><p>These figures describe turnaround per store drawing. The two-hour improvement was achieved with the team; 37 minutes reflects my later individual refinement. I digitized over 500 locations during the rollout, but these figures do not establish savings for every location. Financial savings, stress reduction, and worker autonomy were not measured.</p></aside>
           </article>
           <section class="uxw-approach" id="approach" aria-labelledby="approach-title">
             <div><p class="uxw-label">The perspective behind the work</p><h2 id="approach-title">The workaround is<br /> worth looking at.</h2></div>
@@ -103,11 +103,11 @@ const experience = [
                 { label: 'Teams unlock', title: 'Connect personal progress to a group.', text: 'This screen previews Teams and the Earth Points needed to unlock it. Individual progress leads into the community features.', top: 54, height: 12 },
               ]} />
             </div>
-            <details class="uxw-decision"><summary>Explore the decision: connect actions to growth</summary><dl class="uxw-reasoning">
+            <section class="uxw-decision uxw-decision--visible" aria-labelledby="earth-decision-title"><h4 id="earth-decision-title">Design decision · connecting actions to growth</h4><dl class="uxw-reasoning">
               <div><dt class="uxw-label">The question</dt><dd>Do people experience the game mechanics as intended?</dd></div>
               <div><dt class="uxw-label">The design</dt><dd>Connect daily actions to avatar growth and team progress.</dd></div>
               <div><dt class="uxw-label">The evidence</dt><dd>A working prototype and moderated usability study. Session findings remain with the client.</dd></div>
-            </dl></details>
+            </dl></section>
           </article>
 
 
@@ -351,4 +351,9 @@ const experience = [
     .uxw-hero__eyebrow { font-size: .7rem; }
     .uxw-work-evidence { height: 230px; }
   }
+  .uxw-evidence-note { margin-top: 22px; padding: 18px 22px; background: #eef1e9; border-left: 4px solid #405b44; border-radius: 0 8px 8px 0; }
+  .uxw-evidence-note h4, .uxw-decision--visible h4 { font-family: var(--pv2-font-display); font-size: clamp(1.12rem, 1.7vw, 1.4rem); margin: 0 0 8px; }
+  .uxw-evidence-note p { max-width: 78ch; margin: 0; line-height: 1.6; }
+  .uxw-decision--visible { margin-top: 22px; }
+  .uxw-decision--visible .uxw-reasoning { margin: 10px 0 0; }
 </style>
