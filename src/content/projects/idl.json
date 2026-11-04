@@ -3,10 +3,10 @@
   "slug": "idl",
   "title": "IDL: improving a SolidWorks workflow",
   "tagline": "Professional work · Design engineering",
-  "summary": "As a Design Engineer at IDL Worldwide, I worked with the team to reduce store-drawing turnaround from eight hours to two hours, then personally reduced it to 37 minutes.",
+  "summary": "At IDL Worldwide, our team brought drawing turnaround from roughly eight hours to roughly two. I extended the shared SolidWorks techniques through reusable store layouts, model organization, and personal refinement, reaching a reported 37-minute drawing time.",
   "highlights": [
-    "Team improvement: 8 hours to 2 hours",
-    "Subsequent individual result: 37 minutes",
+    "Team improvement: approximately 8 hours to 2 hours",
+    "Later individual drawing turnaround: 37 minutes",
     "500+ AT&T locations digitized in SolidWorks"
   ],
   "links": [
@@ -20,8 +20,8 @@
     "hero": {
       "eyebrow": "Professional work · Design engineering",
       "title": "IDL: improving a SolidWorks workflow",
-      "subtitle": "Improving the connections between tools, information, and people.",
-      "summary": "At IDL Worldwide, I worked on store drawings for a nationwide Apple fixture rollout at AT&T retail locations. I combined my understanding of SolidWorks with coworkers’ shortcuts, collaborated across the team to encode information more efficiently for quicker handoffs, and streamlined QC. Sharing discoveries helped deepen cooperation as we improved the process.",
+      "subtitle": "From repeatedly modeling stores from scratch to building with reusable layouts and configurable components.",
+      "summary": "Store audits supplied measurements and mechanical drawings of ceilings, soffits, electrical points, existing fixtures, and install areas. We recreated stores in SolidWorks, then extracted installation drawings. Coworkers introduced blocks and common layout patterns. I contributed to those libraries, built reusable store configurations and an efficient SolidWorks model structure, and refined my own drawing practice.",
       "meta": [
         {
           "label": "Official role",
@@ -47,7 +47,7 @@
     "overview": {
       "eyebrow": "Context",
       "title": "Store drawings for a national retail rollout",
-      "description": "At IDL Worldwide, I digitized more than 500 AT&T retail locations in SolidWorks to support Apple fixture installations. Store-drawing turnaround was initially eight hours.",
+      "description": "At IDL Worldwide, I digitized more than 500 AT&T retail locations in SolidWorks to support Apple fixture installation. Survey notes and mechanical drawings informed layered 3D models of store architecture, electrical points, and fixtures. Installation drawing views were extracted from those models and passed to the installation team. Early drawings took roughly eight hours apiece.",
       "media": {
         "type": "image",
         "src": "/images/derived/idl-case-study-1400.webp",
@@ -56,32 +56,32 @@
       }
     },
     "solution": {
-      "title": "Improve the workflow, then keep refining it",
-      "description": "I brought together software efficiencies, shortcuts learned from coworkers, better information preparation across the team, and a streamlined QC process. Sharing discoveries helped us improve the way we worked together. Drawing turnaround fell from eight hours to two hours with the team. I subsequently refined my own workflow to 37 minutes.",
+      "title": "Create reusable building blocks instead of redrawing every store",
+      "description": "The team used shared shortcuts and libraries to reduce drawing turnaround to roughly two hours. I developed additional reusable store layouts, configurable fixture assemblies, a more efficient model information structure, and increasingly precise personal techniques. My later individual turnaround reached a reported 37 minutes. These improvements were not separately timed.",
       "steps": [
         {
-          "title": "Prepare information",
-          "description": "Collaborated with other parts of the team to encode information more efficiently and support quicker handoffs."
+          "title": "Read the store audit",
+          "description": "Use on-site measurements, notes and mechanical drawings covering soffits, ceilings, electrical, existing fixtures, and installation areas."
         },
         {
-          "title": "Produce drawings",
-          "description": "Combined my understanding of SolidWorks and its time-saving features with shortcuts learned from coworkers."
+          "title": "Reuse common patterns",
+          "description": "Build from familiar store layout configurations. Coworkers introduced reusable blocks and common patterns; I expanded the libraries and created additional layouts."
         },
         {
-          "title": "Hand work over",
-          "description": "Improved how information moved between people, beyond the drawing task at my own desk."
+          "title": "Adapt fixture assemblies",
+          "description": "Use configurable sub-assemblies for fixture variants instead of reproducing repeated geometry."
         },
         {
-          "title": "Check quality",
-          "description": "Streamlined QC as part of the broader workflow improvement."
+          "title": "Organize the SolidWorks model",
+          "description": "Structure architecture, electrical, and fixture placement information so the model can be assembled and modified quickly."
         },
         {
-          "title": "Share discoveries",
-          "description": "Shared what I discovered and learned from colleagues, supporting deeper cooperation."
+          "title": "Extract and review installation drawings",
+          "description": "Produce mechanical drawing views from the layered 3D model, request QC promptly, and pass drawings to the installation team."
         }
       ],
       "bars": {
-        "label": "Store-drawing turnaround in minutes",
+        "label": "Reported approximate per-drawing turnaround (minutes)",
         "suffix": "min",
         "labels": [
           "Initial process",
@@ -98,11 +98,11 @@
     "impact": {
       "eyebrow": "Results",
       "title": "Drawing turnaround and delivery scope",
-      "description": "The two-hour result belongs to the team. The later 37-minute result describes my individual workflow. The figures reflect the combined improvements, not separately measured savings for each change. Financial savings, stress reduction, and worker autonomy were not measured here.",
+      "description": "Initial and team-stage figures are approximate retrospective turnaround estimates, not a formal controlled timing study. The approximately two-hour result belongs to the team. The later 37-minute result is an individual report. The figures reflect combined improvements, not separately measured savings per technique or savings for every one of the 500+ locations. Financial savings, reduced stress, and worker autonomy were not measured.",
       "metrics": [
         {
           "label": "Team result",
-          "value": "2 hours"
+          "value": "~2 hours"
         },
         {
           "label": "Individual result",
@@ -116,7 +116,7 @@
     },
     "conclusion": {
       "title": "What this work contributes",
-      "description": "This is professional design-engineering experience in improving a complex production workflow. It informs how I approach repeated tasks, handoffs, and the effort required to move work forward.",
+      "description": "This work taught me to look for repeated patterns in a system and to build reusable structures around them. Team knowledge-sharing, new layouts, and clear model organization made repetitive production more efficient. It is design-engineering process improvement, not a claim of having formally measured UX outcomes.",
       "tags": [
         "Workflow improvement",
         "SolidWorks",
