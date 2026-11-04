@@ -59,3 +59,20 @@ An interactive element must reveal a meaningful new relationship, consequence, o
 - Unhide outcome caveats beside the IDL result.
 - Surface Earth Hero decision/evidence summary rather than hiding it in a disclosure.
 - Full workflow reconstruction is **blocked on historical detail** and should not be invented.
+
+
+## Owner follow-up, 2026-11-04: verified firsthand story
+- Inputs: audits of AT&T stores with measurements and notes about soffits, ceiling, electrical, existing fixtures, fixture placements and installation areas, plus mechanical drawings.
+- Production: manually build layered 3D SolidWorks store model (architecture, electrical, fixture placement), extract mechanical installation drawings, send to installation team.
+- Bottleneck: drawing repeated stores and elements from scratch.
+- Shared techniques: coworkers introduced blocks and common pattern libraries. Owner contributed and improved those libraries.
+- Owner interventions: developed reusable store layout patterns, configurable fixture sub-assemblies, an efficient SolidWorks model information architecture, and a fast but precise personal workflow.
+- Team result: initial ~8h per drawing down to ~2h after joint effort. Later individual result: 37m.
+- Collaboration: strong communication and sharing within the team. QC was requested promptly after drawing completion. **Do not assert** a specific redesigned QC method or an elaborate cross-department process.
+- Personal improvement: learning from errors, increasingly fewer or quickly fixable drawing mistakes. No measured error rate.
+- User described capacity to take on work of ten others. **Do not present this as a measured 10x productivity metric** without definition or supporting evidence.
+- No reported confidentiality concerns for this account.
+- Earth Hero and Letter River discovery questions remain unanswered.
+
+## Revision rationale
+The earlier stage-selector mainly disclosed text, and it gave too much prominence to information encoding across departments, formal QC redesign, and cross-team handoffs. The replacement leads with store audit inputs and a clearly labeled reconstructive before/after process, shows the reused components that changed the modeling stage, highlights related workflow stages on selecting a component, and keeps historical limitations visible. The detailed IDL case study was updated to match.
