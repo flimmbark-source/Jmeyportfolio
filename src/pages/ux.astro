@@ -1,348 +1,188 @@
 ---
-import { getCollection } from 'astro:content';
-import PortfolioBackdrop from '../components/PortfolioBackdrop.astro';
-import PortfolioPolish from '../components/PortfolioPolish.astro';
-import SiteNav from '../components/SiteNav.astro';
 import SiteHead from '../components/SiteHead.astro';
-import AnnotatedScreen from '../components/AnnotatedScreen.astro';
-import { HOME, RESUME, resolveHref } from '../data/siteNav';
-import '../styles/portfolio-v2.css';
-import '../styles/portfolio-chrome.css';
-
-const projects = await getCollection('projects');
-const selectedSlugs = ['idl', 'earth-hero', 'letter-river'];
-const project = (slug: string) => projects.find((entry) => entry.data.slug === slug)!.data;
-const earth = project('earth-hero');
-const letter = project('letter-river');
-const idl = project('idl');
-const caseLink = (data: typeof earth) => resolveHref(data.links!.find((link) => !link.external)!.href);
-const prototype = earth.links!.find((link) => link.external)!;
-const liveApp = letter.links!.find((link) => link.external)!;
-const supporting = projects.filter((entry) => !selectedSlugs.includes(entry.data.slug))
-  .sort((a, b) => a.data.order - b.data.order).map((entry) => entry.data);
-const experience = [
-  { dates: '2023–2026', company: 'Active Learning Adventures', role: 'Design Lead', detail: 'Primary research, learning literature, rapid prototypes, playtesting, and stakeholder feedback to explore and revise learning experiences.' },
-  { dates: '2022–2026 · Volunteer', company: 'Tech Fleet Community DAO', role: 'UX Researcher', detail: 'Interviews, surveys, and A/B tests, plus co-design of app engagement features on a cross-functional client team.' },
-  { dates: '2018', company: 'SIG SAUER', role: 'Design Engineer', detail: 'Automated migration of inventory and ticket data from large spreadsheets into Oracle.' },
-  { dates: 'May 2015–May 2017', company: 'IDL Worldwide', role: 'Design Engineer', detail: 'Store drawings for a nationwide Apple fixture rollout. Digitized 500+ AT&T locations in SolidWorks.' },
+const gallery = [
+  {
+    id: 'idl', name: 'IDL Worldwide', role: 'Design engineer', year: '2015–2017',
+    description: 'For a nationwide Apple fixture rollout at AT&T stores, I helped turn repetitive SolidWorks modeling into a reusable system. Team collaboration reduced reported drawing turnaround from about eight hours to two. My later individual process reached 37 minutes.',
+    note: 'Process images are contemporary reconstructions, not surviving original drawings. The turnaround figures are retrospective and not a controlled timing study.',
+    detail: '/idl',
+    images: [
+      {src:'/images/ux-gallery/idl-plan.svg', alt:'One isolated reconstructed architectural floor plan of a retail store', caption:'Retail plan / reconstructed model of the original type of work'},
+      {src:'/images/ux-gallery/idl-working.svg', alt:'Reconstructed retail drawing annotated with a circled fixture area', caption:'Working drawing / reconstruction of the planning and adaptation process'},
+      {src:'/images/derived/idl-case-study-1400.webp', alt:'Original retail rollout store drawings and fixture drawing materials', caption:'Original rollout drawing material'}
+    ]
+  },
+  {
+    id: 'earth', name: 'Earth Hero', role: 'UX research and product design, with a design partner', year: '2022–2026',
+    description: 'We explored how everyday climate actions could feel motivating and connected to meaningful progress. Research and prototyping informed engagement features, with selected recommendations entering the live product.',
+    note:'The usability-study findings remain with the client.',
+    detail:'/earth-hero',
+    images:[
+      {src:'/images/earth-hero.png', alt:'Earth Hero mobile interface prototype with quests and team progression', caption:'Quest and team progression / prototype'},
+      {src:'/images/earth-hero/sketches.webp', alt:'Earth Hero early design sketches', caption:'Exploring interaction and engagement ideas'},
+      {src:'/images/earth-hero/test-plan.webp', alt:'Earth Hero usability test plan', caption:'Research and testing materials'}
+    ]
+  },
+  {
+    id:'letter', name:'Letter River',role:'Independent learning prototype',year:'2026',
+    description:'A Hebrew learning experiment where letters become movable objects that learners match to sounds. I built the prototype to explore a more physical route from recognition toward reading.',
+    note:'Learning outcomes have not yet been measured.',
+    detail:'/letter-river',
+    images:[
+      {src:'/images/Letter_River.png',alt:'Letter River Hebrew letter matching prototype gameplay',caption:'Letters as movable objects'},
+      {src:'/images/letterriverscreen.png',alt:'Additional Letter River prototype screen',caption:'Learning interface study'}
+    ]
+  }
 ];
 ---
 <!doctype html>
 <html lang="en">
-  <head>
-    <SiteHead title="Work — Jacob Meyerkopf, UX Research & Product Design" description="Designing processes that support people’s work. Explore Jacob Meyerkopf’s workflow improvements, UX research, and interaction design." />
-  </head>
-  <body class="pv2-body">
-    <a class="uxw-skip" href="#main-content">Skip to main content</a>
-    <PortfolioPolish />
-    <PortfolioBackdrop />
-    <div class="pv2-site">
-      <SiteNav />
-      <main class="uxw" id="main-content" tabindex="-1">
-        <section class="uxw-hero" aria-labelledby="uxw-title">
-          <h1 id="uxw-title">Making work work for people.</h1>
-          <p class="uxw-label uxw-hero__eyebrow">Jacob Meyerkopf · UX research &amp; product design</p>
-          <p class="uxw-lead">I look for the patterns hidden inside repetitive work, then turn those discoveries into tools and processes people can build on together.</p>
-          <p class="uxw-intent">Less wasted effort. More control for the people doing the work.</p>
-          <a class="uxw-link uxw-hero-link" href="#idl-title">Explore the featured case study <span aria-hidden="true">↓</span></a>
-          
-        </section>
-
-        <section id="selected-work" aria-labelledby="uxw-selected">
-          <h2 class="uxw-label uxw-section-label" id="uxw-selected">Selected work</h2>
-          <article class="uxw-feature uxw-idl-feature" aria-labelledby="idl-title">
-            <div class="uxw-feature__main">
-              <div class="uxw-feature__text">
-                <p class="uxw-label">01 / Rethinking the working process</p>
-                <h3 id="idl-title">An eight-hour task.<br />A different way to work.</h3>
-                <p class="uxw-project-name">IDL Worldwide · SolidWorks workflow improvement</p><p class="uxw-result-preview"><strong>~8h → ~2h → 37m</strong><span>Initial process · team result · my further refinement</span></p>
-                <p class="uxw-description">We stopped rebuilding every store from scratch. Coworkers shared blocks and common layout patterns, which I helped expand. I created reusable store layouts and a model information architecture that let me assemble, adapt, and draw with greater speed and precision.</p>
-                <p class="uxw-role">Design Engineer · Apple fixture rollout at AT&amp;T retail<br />May 2015–May 2017</p>
-                <div class="uxw-actions"><a class="uxw-button" href={caseLink(idl)}>Explore the full story <span aria-hidden="true">↗</span><span class="sr-only">: IDL</span></a></div>
-              </div>
-              <figure class="uxw-work-evidence">
-                <img src="/images/derived/idl-case-study-1400.webp" alt="Store drawings, fixture elevations, and a rendered store layout from the IDL rollout" width="1400" height="1867" fetchpriority="high" />
-                <figcaption>Original drawing work for the retail rollout</figcaption>
-              </figure>
-            </div>
-            <p class="uxw-evidence-note"><strong>Reported per-drawing turnaround.</strong> The two-hour improvement was achieved with the team. The later 37-minute result was my individual workflow. See the case study for the process, contributions and evidence limits.</p>
-          </article>
-          <section class="uxw-approach" id="approach" aria-labelledby="approach-title">
-            <div><p class="uxw-label">The perspective behind the work</p><h2 id="approach-title">The workaround is<br /> worth looking at.</h2></div>
-            <div><p>When someone has to keep compensating for a process, I want to understand what the process is asking of them. That is often where I see an opportunity to approach the problem differently.</p><p>I look for the patterns worth making reusable, share what I learn with coworkers, and build systems that leave more time for the decisions that actually need human judgment.</p></div>
-          </section>
-          <div class="uxw-related-heading"><h2>Supporting people in other contexts.</h2><p>The same concern for people’s effort also shapes how I approach motivation and learning.</p></div>
-          <div class="uxw-supporting">
-          <article class="uxw-card uxw-earth-card" aria-labelledby="earth-title">
-            <div class="uxw-feature__main">
-              <div class="uxw-feature__text">
-                <p class="uxw-label">02 / Supporting motivation</p>
-                <h3 id="earth-title">How can everyday actions<br /> feel like progress?</h3>
-                <p class="uxw-project-name">Earth Hero · Client research &amp; product design</p>
-                <p class="uxw-description">Exploring how everyday climate actions can become an ongoing practice.</p>
-                <p class="uxw-role">UX research &amp; product design · Tech Fleet<br />Volunteer client work, with a design partner</p>
-                <p class="uxw-outcome">Selected recommendations taken into the live app.</p>
-                <div class="uxw-actions">
-                  <a class="uxw-button" href={caseLink(earth)}>Explore the case study <span aria-hidden="true">↗</span><span class="sr-only">: Earth Hero</span></a>
-                  <a class="uxw-link" href={prototype.href} target="_blank" rel="noopener noreferrer">Open prototype <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a>
-                </div>
-              </div>
-              <AnnotatedScreen id="earth" src="/images/earth-hero.png" alt="Earth Hero prototype with a Choose your quest button and a Teams feature that unlocks at 200 Earth Points" width={262} height={541} points={[
-                { label: 'Choose a quest', title: 'Give motivation a next step.', text: 'The quest button offers a concrete action to take. It is the entry into the gamification flow I co-designed.', top: 42, height: 8 },
-                { label: 'Teams unlock', title: 'Connect personal progress to a group.', text: 'This screen previews Teams and the Earth Points needed to unlock it. Individual progress leads into the community features.', top: 54, height: 12 },
-              ]} />
-            </div>
-            <section class="uxw-decision uxw-decision--visible" aria-labelledby="earth-decision-title"><h4 id="earth-decision-title">Design decision · connecting actions to growth</h4><dl class="uxw-reasoning">
-              <div><dt class="uxw-label">The question</dt><dd>Do people experience the game mechanics as intended?</dd></div>
-              <div><dt class="uxw-label">The design</dt><dd>Connect daily actions to avatar growth and team progress.</dd></div>
-              <div><dt class="uxw-label">The evidence</dt><dd>A working prototype and moderated usability study. Session findings remain with the client.</dd></div>
-            </dl></section>
-          </article>
-
-
-            <article class="uxw-card" aria-labelledby="letter-title">
-              <p class="uxw-label">03 / Supporting learning</p>
-              <h3 id="letter-title">How does a letter become<br /> a sound you recognize?</h3>
-              <AnnotatedScreen id="letter" src="/images/Letter_River.png" alt="Letter River prototype with drifting Hebrew letters and four sound-matching targets" width={342} height={715} points={[
-                { label: 'Drifting letters', title: 'Make recognition an action.', text: 'Letters become objects to select and move. The learner actively connects a written shape to a sound.', top: 37, height: 40 },
-                { label: 'Sound targets', title: 'Put the choices in reach.', text: 'The sound targets sit together at the bottom of the screen. Letter and sound are part of one matching interaction.', top: 85, height: 12 },
-              ]} />
-              <p class="uxw-project-name">Letter River · Independent learning prototype</p>
-              <p class="uxw-card__description">A connected path from letter recognition to vocabulary and reading. Designed and built independently.</p>
-              <details class="uxw-decision"><summary>Explore the decision: connect recognition to reading</summary><p>Recognizing a letter is only part of reading. This prototype connects recognition, vocabulary, and reading in one practice path. It is a working design exploration, with learning outcomes still to be tested.</p></details>
-              <div class="uxw-actions">
-                <a class="uxw-button" href={caseLink(letter)}>Explore the case study <span aria-hidden="true">↗</span><span class="sr-only">: Letter River</span></a>
-                <a class="uxw-link" href={liveApp.href} target="_blank" rel="noopener noreferrer">Try it <span aria-hidden="true">↗</span><span class="sr-only">: Letter River (opens in a new tab)</span></a>
-              </div>
-            </article>
-
-          </div>
-        </section>
-
-        <section class="uxw-background" aria-label="Experience and further work">
-          <details class="uxw-disclosure" id="experience">
-            <summary><span class="uxw-label">Selected experience</span><span class="uxw-experience-preview">Active Learning Adventures · Tech Fleet · IDL Worldwide</span><span class="uxw-disclosure__action">View experience <span aria-hidden="true">+</span></span></summary>
-            <ol class="uxw-timeline">{experience.map((item) => <li><span class="uxw-note">{item.dates}</span><div><h3>{item.company}</h3><p class="uxw-project-name">{item.role}</p><p>{item.detail}</p></div></li>)}</ol>
-            <a class="uxw-link" href={RESUME} download>Download full resume (PDF)</a>
-          </details>
-          <details class="uxw-disclosure" id="explorations">
-            <summary><span class="uxw-label">Further explorations</span><span class="uxw-note">AI tools, civic participation, and product experiments</span><span class="uxw-disclosure__action">View projects <span aria-hidden="true">+</span></span></summary>
-            <ul class="uxw-index">{supporting.map((data) => {
-              const link = data.links?.[0];
-              return <li><div><h3>{data.title}</h3><p class="uxw-note">{data.tagline}</p><p>{data.summary}</p></div>{link && <a class="uxw-link" href={resolveHref(link.href)} target={link.external ? '_blank' : undefined} rel={link.external ? 'noopener noreferrer' : undefined}>{link.label} <span aria-hidden="true">↗</span><span class="sr-only">: {data.title}{link.external ? ' (opens in a new tab)' : ''}</span></a>}</li>;
-            })}</ul>
-          </details>
-        </section>
-
-        <section class="uxw-contact" id="contact" aria-labelledby="uxw-contact">
-          <div><h2 id="uxw-contact">Where is your process getting in the way?</h2><p>I'm exploring product design and UX research opportunities where I can make work better for the people doing it.</p></div>
-          <div class="uxw-contact__links">
-            <a class="uxw-button" href="mailto:jmeyerkopf@gmail.com">Contact <span aria-hidden="true">↗</span></a>
-            <a class="uxw-link" href="https://www.linkedin.com/in/jacobmeyerkopf/" target="_blank" rel="noopener noreferrer">LinkedIn<span class="sr-only"> (opens in a new tab)</span></a>
-            <a class="uxw-link" href={RESUME} download>Resume</a>
-            <a class="uxw-link" href={HOME}>Creative playground</a>
-          </div>
-        </section>
-      </main>
+<head>
+  <SiteHead noindex title="Work gallery preview — Jacob Meyerkopf" description="A visual gallery of UX research, engineering systems and independent interactive work." />
+  <style>
+    :root { color-scheme:light; --ink:#1b1b1b; --paper:#f5f5f3; --gap:10px; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:Arial,Helvetica,sans-serif; }
+    button,a { font:inherit; }
+    button:focus-visible,a:focus-visible { outline:3px solid #226aa6; outline-offset:4px; }
+    .skip { position:fixed; top:-100px; z-index:30; background:white; padding:12px; }
+    .skip:focus { top:12px; }
+    .toolbar { position:fixed; z-index:15; top:17px; left:18px; background:#f7f7f2ed; backdrop-filter:blur(10px); padding:8px 11px; border-radius:3px; display:flex; align-items:center; gap:8px; box-shadow:0 1px 7px #0001; font: 11px/1.1 monospace; text-transform:uppercase; }
+    .toolbar a { color:inherit; text-decoration:none; }
+    .toolbar a[aria-current] { font-weight:800; }
+    .toolbar .divider { color:#a2a2a0; }
+    .identity { position:fixed; z-index:15; right:16px; top:18px; background:#f7f7f2ed; padding:8px 10px; font:11px monospace; text-decoration:none; color:inherit; }
+    .gallery { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:var(--gap); padding:10px; align-items:start; transition:filter .3s, transform .3s, opacity .3s; }
+    .artwork { display:block; padding:0; margin:0; width:100%; border:0; background:#eae8e3; text-align:left; cursor:zoom-in; overflow:hidden; position:relative; border-radius:9px; }
+    .artwork img { width:100%; height:100%; display:block; object-fit:cover; transition:transform .5s ease; }
+    .artwork:hover img { transform:scale(1.025); }
+    .artwork:nth-child(7n + 1),.artwork:nth-child(7n + 4) { grid-column:span 7; aspect-ratio:1.33; }
+    .artwork:nth-child(7n + 2),.artwork:nth-child(7n + 3) { grid-column:span 5; aspect-ratio:1.0; }
+    .artwork:nth-child(7n + 5) { grid-column:span 5; aspect-ratio:1.0; }
+    .artwork:nth-child(7n + 6) { grid-column:span 7; aspect-ratio:1.33; }
+    .artwork:nth-child(7n + 7) { grid-column:span 12; aspect-ratio:2.1; }
+    .artwork--portrait img { object-fit:contain; }
+    .artwork__hint { position:absolute; bottom:12px; left:12px; padding:6px 8px; background:#f5f5f0ec; color:#262626; font:10px monospace; opacity:0; transform:translateY(4px); transition:opacity .2s,transform .2s; }
+    .artwork:hover .artwork__hint,.artwork:focus-visible .artwork__hint { opacity:1; transform:none; }
+    .gallery-end { padding:12px 18px 40px; font:11px monospace; color:#666; }
+    body.is-focused { overflow:hidden; }
+    body.is-focused .gallery { filter:blur(15px) brightness(.94); transform:scale(1.01); pointer-events:none; }
+    body.is-focused .gallery-end { filter:blur(10px); }
+    .focus { position:fixed; inset:0; z-index:20; display:grid; grid-template-columns:minmax(0,1fr) minmax(210px,248px); gap:clamp(16px,3vw,50px); align-items:center; padding:52px 20px 52px clamp(22px,5vw,80px); background:#f5f5f314; backdrop-filter:blur(3px); }
+    .focus[hidden] { display:none; }
+    .focus__stage { width:100%; min-width:0; display:grid; grid-template-columns:36px minmax(0,1fr) 36px; gap:8px; align-items:center; }
+    .focus__image-wrap { display:flex; align-items:center; justify-content:center; min-height:0; max-height:calc(100dvh - 110px); }
+    .focus__image { max-width:100%; max-height:calc(100dvh - 110px); object-fit:contain; border-radius:9px; box-shadow:0 15px 45px #0002; }
+    .focus__nav { width:36px; height:56px; border:0; background:#f9f9f5d9; cursor:pointer; border-radius:4px; font-size:23px; }
+    .focus__panel { align-self:start; max-height:calc(100dvh - 70px); overflow-y:auto; background:#e8e8e7; padding:12px 13px 14px; color:#4a4a4a; font:11px/1.4 monospace; margin-top:4px; }
+    .focus__panel-top { display:flex; align-items:start; justify-content:space-between; color:#222; }
+    .focus__panel h2 { font:12px/1.2 monospace; text-transform:uppercase; margin:12px 0 4px; }
+    .focus__year { margin:0 0 8px; color:#666; }
+    .focus__year strong { color:#222; }
+    .focus__panel hr { height:1px; border:0; background:#ccc; margin:12px 0; }
+    .focus__description { text-transform:uppercase; font-size:11px; line-height:1.48; }
+    .focus__panel p { margin:8px 0; }
+    .focus__close { background:none; border:0; cursor:pointer; font-size:17px; line-height:1; padding:2px 3px; }
+    .focus__foot { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:15px; }
+    .focus__foot a { color:inherit; text-underline-offset:3px; }
+    .focus__counter { white-space:nowrap; }
+    .focus__caption { margin-top:12px; padding-top:11px; border-top:1px solid #ccc; color:#555; }
+    .focus__note { font-size:10px; color:#777; }
+    @media(max-width:700px) {
+      .identity { display:none; }
+      .gallery { gap:7px; padding:7px; }
+      .artwork { grid-column:span 12 !important; aspect-ratio:1.18 !important; border-radius:5px; }
+      .artwork:nth-child(3n+2) { grid-column:span 6 !important; aspect-ratio:.8 !important; }
+      .artwork:nth-child(3n+3) { grid-column:span 6 !important; aspect-ratio:.8 !important; }
+      .focus { padding:54px 10px 10px; grid-template-columns:1fr; grid-template-rows:minmax(0,1fr) auto; gap:10px; }
+      .focus__stage { grid-template-columns:28px minmax(0,1fr) 28px; gap:3px; }
+      .focus__nav { width:28px; height:48px; }
+      .focus__image-wrap { max-height:calc(100dvh - 285px); }
+      .focus__image { max-height:calc(100dvh - 285px); }
+      .focus__panel { margin:0; max-height:220px; width:100%; }
+      .focus__description { text-transform:none; }
+    }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none!important; scroll-behavior:auto!important; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#work-gallery">Skip to projects</a>
+  <nav class="toolbar" aria-label="Portfolio mode">
+    <a href="/ux" aria-current="page">Real Work</a><span class="divider">|</span><a href="/">Playground</a>
+  </nav>
+  <a class="identity" href="/contact">Jacob Meyerkopf · Contact</a>
+  <main id="work-gallery">
+    <h1 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Selected work</h1>
+    <div class="gallery" id="gallery">
+      {gallery.flatMap((project,projectIndex)=>project.images.map((image,imageIndex)=>
+        <button type="button" class:list={['artwork', {'artwork--portrait':project.id==='earth'||project.id==='letter'}]} data-project={projectIndex} data-image={imageIndex} aria-label={`Open ${project.name}, image ${imageIndex+1} of ${project.images.length}: ${image.caption}`}>
+          <img src={image.src} alt={image.alt} loading={projectIndex===0&&imageIndex===0?'eager':'lazy'} />
+          <span class="artwork__hint" aria-hidden="true">{project.name} · View project</span>
+        </button>
+      ))}
     </div>
-  </body>
+    <p class="gallery-end">Selected work · <a href="/contact">Get in touch</a> · <a href="/ux-previous">Previous Work page</a></p>
+  </main>
+  <section id="focus" class="focus" role="dialog" aria-modal="true" aria-labelledby="focus-title" aria-describedby="focus-description" hidden>
+    <div class="focus__stage">
+      <button type="button" class="focus__nav" data-prev aria-label="Previous artifact in project">‹</button>
+      <div class="focus__image-wrap"><img class="focus__image" data-focus-image alt="" /></div>
+      <button type="button" class="focus__nav" data-next aria-label="Next artifact in project">›</button>
+    </div>
+    <aside class="focus__panel">
+      <div class="focus__panel-top"><h2 id="focus-title" data-name></h2><button class="focus__close" type="button" data-close aria-label="Close project">×</button></div>
+      <p class="focus__year"><span data-role></span> · <strong data-year></strong></p>
+      <hr />
+      <p class="focus__description" id="focus-description" data-description></p>
+      <div class="focus__foot"><a data-case-link href="#">Full project ↗</a><span class="focus__counter" data-counter aria-live="polite"></span></div>
+      <p class="focus__caption" data-caption></p>
+      <p class="focus__note" data-note></p>
+    </aside>
+  </section>
+  <script define:vars={{gallery}}>
+    const modal=document.getElementById('focus');
+    const image=modal.querySelector('[data-focus-image]');
+    const controls=[...modal.querySelectorAll('button')];
+    let projectIndex=0, imageIndex=0, previouslyFocused=null;
+    const setText=(selector,text)=>modal.querySelector(selector).textContent=text;
+    function render(){
+      const project=gallery[projectIndex], item=project.images[imageIndex];
+      image.src=item.src; image.alt=item.alt;
+      setText('[data-name]',project.name);setText('[data-role]',project.role);setText('[data-year]',project.year);
+      setText('[data-description]',project.description);
+      setText('[data-counter]',`${imageIndex+1} / ${project.images.length}`);
+      setText('[data-caption]',item.caption);setText('[data-note]',project.note);
+      modal.querySelector('[data-case-link]').href=project.detail;
+    }
+    function openProject(p,i,trigger){
+      previouslyFocused=trigger;projectIndex=p;imageIndex=i;render();
+      modal.hidden=false;document.body.classList.add('is-focused');
+      modal.querySelector('[data-close]').focus({preventScroll:true});
+    }
+    function closeProject(){
+      modal.hidden=true;document.body.classList.remove('is-focused');
+      image.removeAttribute('src');
+      previouslyFocused?.focus({preventScroll:true});
+    }
+    function cycle(delta){const length=gallery[projectIndex].images.length;imageIndex=(imageIndex+delta+length)%length;render();}
+    document.querySelectorAll('[data-project]').forEach(button=>button.addEventListener('click',()=>openProject(Number(button.dataset.project),Number(button.dataset.image),button)));
+    modal.querySelector('[data-close]').addEventListener('click',closeProject);
+    modal.querySelector('[data-prev]').addEventListener('click',()=>cycle(-1));
+    modal.querySelector('[data-next]').addEventListener('click',()=>cycle(1));
+    modal.addEventListener('click',event=>{if(event.target===modal)closeProject();});
+    document.addEventListener('keydown',event=>{
+      if(modal.hidden)return;
+      if(event.key==='Escape'){event.preventDefault();closeProject();}
+      if(event.key==='ArrowRight'){event.preventDefault();cycle(1);}
+      if(event.key==='ArrowLeft'){event.preventDefault();cycle(-1);}
+      if(event.key==='Tab'){
+        const focusables=controls.concat([...modal.querySelectorAll('a[href]')]);
+        const first=focusables[0],last=focusables[focusables.length-1];
+        if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+        else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+      }
+    });
+  </script>
+</body>
 </html>
-
-<style is:global>
-  .uxw { max-width: 1280px; margin: auto; padding: 56px 40px 48px; }
-  .uxw p { line-height: 1.5; }
-  .uxw a, .uxw summary { touch-action: manipulation; }
-  .uxw a:focus-visible, .uxw summary:focus-visible, .uxw-skip:focus-visible { outline: 3px solid var(--pv2-accent); outline-offset: 5px; }
-  .uxw-skip { position: fixed; top: 12px; left: 16px; z-index: 1100; transform: translateY(-200%); background: var(--pv2-bg); padding: 12px 18px; color: var(--pv2-text); }
-  .uxw-skip:focus { transform: none; }
-  .uxw-hero { padding-bottom: 34px; border-bottom: 1px solid var(--pv2-line); }
-  .uxw-hero h1 { max-width: 1050px; margin: 0 0 18px; font-size: clamp(2.8rem, 5.5vw, 5.1rem); line-height: 1.02; letter-spacing: -.055em; font-weight: 540; text-wrap: initial; }
-  .uxw-lead { margin: 0; font-size: clamp(1.1rem, 1.7vw, 1.5rem); }
-  .uxw-location { margin: 14px 0 0; font-size: .95rem; }
-  .uxw-location span { margin-right: 6px; }
-  .uxw-label { margin: 0; font-family: var(--pv2-font-text); color: var(--pv2-accent); font-size: .75rem; font-weight: 700; letter-spacing: .12em; line-height: 1.5; text-transform: uppercase; }
-  .uxw-section-label { margin: 26px 0 24px; }
-  .uxw-feature__main { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 40px; align-items: center; }
-  .uxw-feature__text { padding: 20px 0; }
-  .uxw-feature h3 { font-size: clamp(3rem, 5vw, 4.6rem); letter-spacing: -.055em; margin: 18px 0 8px; }
-  .uxw-subtitle { margin: 0 0 22px; font-family: var(--pv2-font-display); font-size: clamp(1.35rem, 2vw, 1.8rem); letter-spacing: -.035em; }
-  .uxw-description { font-size: 1.15rem; max-width: 35ch; margin: 0 0 22px; }
-  .uxw-role { color: var(--pv2-muted); font-size: .95rem; margin: 0; }
-  .uxw-outcome { border-left: 3px solid var(--pv2-accent); padding-left: 16px; font-weight: 600; margin: 26px 0; }
-  .uxw-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
-  .uxw-button { display: inline-flex; align-items: center; justify-content: center; gap: 14px; min-height: 46px; padding: 11px 18px; border-radius: 7px; background: var(--pv2-accent); color: #fff; font-weight: 600; text-decoration: none; line-height: 1.4; }
-  .uxw-button:hover { background: var(--pv2-accent-deep); }
-  .uxw-link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--pv2-line); }
-  .uxw-link:hover { text-decoration-color: currentColor; }
-  .uxw-earth-art { margin: 0; padding: 26px 24px 18px; background: #e5e8df; border-radius: 4px; }
-  .uxw-earth-art__stage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 24px; }
-  .uxw-art-label { display: block; font-size: .75rem; color: #465247; font-weight: 650; letter-spacing: .04em; }
-  .uxw-earth-art__paper img { display: block; width: 100%; height: auto; margin-top: 12px; box-shadow: 0 8px 20px #2222; }
-  .uxw-earth-art__paper p { font-size: .95rem; color: #465247; margin: 16px 0 0; }
-  .uxw-earth-art__phone img { display: block; width: 100%; max-width: 230px; height: auto; margin: 10px auto 0; }
-  .uxw-earth-art > figcaption { margin: 18px 0 0; text-align: center; font-size: .78rem; color: #465247; }
-  .uxw-reasoning { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 23px 0; margin: 24px 0; border-block: 1px solid var(--pv2-line); }
-  .uxw-reasoning > div { padding: 0 24px; border-left: 1px solid var(--pv2-line); }
-  .uxw-reasoning > div:first-child { padding-left: 0; border: 0; }
-  .uxw-reasoning > div:last-child { padding-right: 0; }
-  .uxw-reasoning dd { margin: 8px 0 0; font-size: 1.05rem; line-height: 1.45; }
-  .uxw-supporting { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
-  .uxw-card { display: flex; flex-direction: column; min-width: 0; padding: 24px; border: 1px solid var(--pv2-line); border-radius: 12px; background: #ffffff54; }
-  .uxw-card h3 { margin: 12px 0 22px; font-size: clamp(1.9rem, 2.8vw, 2.75rem); letter-spacing: -.045em; min-height: 2.2em; text-wrap: initial; }
-  .uxw-card figure { margin: 0 0 18px; height: 290px; border-radius: 8px; overflow: hidden; }
-  .uxw-letter-art { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 24px; padding: 18px 24px; background: #e0ebe6; }
-  .uxw-letter-art img { display: block; height: 254px; max-width: 100%; width: auto; object-fit: contain; justify-self: center; border-radius: 8px; }
-  .uxw-letter-art figcaption { display: grid; gap: 16px; font-size: .78rem; color: #465247; }
-  .uxw-letter-art strong { font-family: var(--pv2-font-display); font-size: clamp(1.15rem, 1.7vw, 1.5rem); color: #253e35; line-height: 1.3; font-weight: 500; }
-  .uxw-idl-art { position: relative; display: flex; align-items: flex-end; background: #e8dfd0; }
-  .uxw-idl-art > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 40%; }
-  .uxw-idl-art figcaption { position: relative; margin-left: auto; width: 74%; padding: 20px 22px; background: #f6f2e8f5; border-radius: 8px 0 0 0; }
-  .uxw-idl-art strong { display: block; font-family: var(--pv2-font-display); font-size: clamp(2.3rem, 3.5vw, 3.3rem); letter-spacing: -.05em; line-height: 1.1; }
-  .uxw-idl-art strong span { color: var(--pv2-accent); }
-  .uxw-idl-art figcaption > span { display: block; font-size: .8rem; margin: 7px 0; }
-  .uxw-idl-art p { margin: 8px 0 0; font-size: .85rem; }
-  .uxw-project-name { font-weight: 650; margin: 0 0 6px; }
-  .uxw-card__description { margin: 0 0 10px; }
-  .uxw-note { color: var(--pv2-muted); font-size: .85rem; }
-  .uxw-card > .uxw-note { margin: 0 0 18px; }
-  .uxw-card .uxw-actions { margin-top: auto; }
-  .uxw-background { margin-top: 26px; }
-  .uxw-disclosure { border-top: 1px solid var(--pv2-line); }
-  .uxw-disclosure summary { display: grid; grid-template-columns: 180px 1fr auto; gap: 20px; align-items: center; cursor: pointer; padding: 20px 0; list-style: none; }
-  .uxw-disclosure summary::-webkit-details-marker { display: none; }
-  .uxw-experience-preview { font-size: .9rem; }
-  .uxw-disclosure__action { display: flex; align-items: center; gap: 12px; color: var(--pv2-accent); font-size: .9rem; font-weight: 600; }
-  .uxw-disclosure__action > span { display: inline-block; font-size: 1.25rem; }
-  .uxw-disclosure[open] .uxw-disclosure__action > span { transform: rotate(45deg); }
-  .uxw-timeline, .uxw-index { margin: 0; padding: 0; list-style: none; }
-  .uxw-timeline li, .uxw-index li { display: grid; grid-template-columns: 180px 1fr; gap: 20px; padding: 20px 0; border-top: 1px solid var(--pv2-line); }
-  .uxw-timeline h3, .uxw-index h3 { font-size: 1.2rem; margin: 0 0 6px; }
-  .uxw-timeline p, .uxw-index p { margin: 0 0 6px; max-width: 70ch; }
-  .uxw-index li { grid-template-columns: 1fr auto; }
-  .uxw-index a { align-self: start; }
-  .uxw-disclosure > .uxw-link { margin-bottom: 16px; }
-  .uxw-contact { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-top: 32px; padding: 28px 30px; border-radius: 12px; background: var(--pv2-text); color: #f7f6f2; }
-  .uxw-contact h2 { font-size: clamp(1.8rem, 3vw, 2.7rem); letter-spacing: -.045em; margin: 0 0 8px; }
-  .uxw-contact p { margin: 0; font-size: .9rem; color: #d8d5cf; }
-  .uxw-contact__links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; max-width: 420px; }
-  .uxw-contact a:focus-visible { outline-color: #fff; }
-  @media (max-width: 1000px) {
-    .uxw { padding-inline: 24px; }
-    .uxw-feature__main { gap: 24px; }
-    .uxw-earth-art { padding-inline: 16px; }
-    .uxw-earth-art__stage { gap: 14px; }
-    .uxw-letter-art { padding-inline: 14px; gap: 12px; }
-    .uxw-disclosure summary { grid-template-columns: 150px 1fr auto; gap: 16px; }
-    .uxw-contact { flex-direction: column; align-items: flex-start; }
-    .uxw-contact__links { max-width: none; }
-  }
-  @media (max-width: 760px) {
-    .pv2-site:has(.uxw) { padding-inline: 0; }
-    .pv2-body:has(.uxw) .pv2-credit-drawer { display: none; }
-    .uxw { padding: 30px 20px; }
-    .uxw-desktop-break { display: none; }
-    .uxw-hero h1 { font-size: clamp(2.5rem, 8vw, 3.8rem); }
-    .uxw-feature__main, .uxw-supporting { grid-template-columns: minmax(0, 1fr); }
-    .uxw-feature__text { padding: 0; }
-    .uxw-feature h3 { margin-top: 14px; }
-    .uxw-earth-art__stage { grid-template-columns: minmax(0, 1fr) minmax(0, .85fr); max-width: 480px; margin-inline: auto; gap: 24px; }
-    .uxw-earth-art__phone img { max-height: 330px; width: auto; max-width: 100%; }
-    .uxw-reasoning { grid-template-columns: 1fr; gap: 18px; }
-    .uxw-reasoning > div { padding: 0; border: 0; }
-    .uxw-reasoning dd { margin-top: 4px; }
-    .uxw-card { padding: 20px; }
-    .uxw-card h3 { font-size: 2rem; min-height: 0; }
-    .uxw-letter-art strong { font-size: 1.25rem; }
-    .uxw-disclosure summary { grid-template-columns: 1fr auto; gap: 8px; }
-    .uxw-disclosure summary > :nth-child(2) { grid-row: 2; grid-column: 1 / -1; }
-    .uxw-disclosure__action { grid-row: 1; grid-column: 2; }
-    .uxw-timeline li, .uxw-index li { grid-template-columns: 1fr; gap: 8px; }
-    .uxw-contact { padding: 24px; }
-  }
-  @media (max-width: 380px) {
-    .uxw { padding-inline: 16px; }
-    .uxw-card { padding: 16px; }
-    .uxw-letter-art { gap: 10px; padding-inline: 10px; }
-    .uxw-letter-art strong { font-size: 1.05rem; }
-    .uxw-idl-art figcaption { width: 88%; padding: 18px; }
-    .uxw-disclosure summary { grid-template-columns: 1fr; }
-    .uxw-disclosure__action { grid-row: 3; grid-column: 1; }
-  }
-
-  .uxw-hero .uxw-lead { max-width: 47ch; }
-  .uxw-hero__eyebrow { margin-bottom: 18px; }
-  .uxw-intent { max-width: 60ch; color: var(--pv2-muted); margin: 16px 0 24px; }
-  .uxw-idl-feature h3 { font-size: clamp(2.4rem, 3.6vw, 3.6rem); }
-  .uxw-idl-feature .uxw-description { margin-top: 20px; max-width: 44ch; }
-  .uxw-idl-feature .uxw-actions { margin-top: 24px; }
-  .uxw-work-evidence { position: relative; margin: 0; height: 430px; overflow: hidden; border-radius: 8px; }
-  .uxw-work-evidence img { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; }
-  .uxw-work-evidence figcaption { position: absolute; inset: auto 0 0; padding: 12px 18px; background: #f4f2ecef; font-size: .8rem; }
-  .uxw-comparison { display: grid; grid-template-columns: 1fr 1.6fr; align-items: center; gap: 36px; background: #e4e9e0; padding: 28px; margin-top: 24px; border-radius: 8px; }
-  .uxw-comparison h4 { font-family: var(--pv2-font-display); font-size: 1.5rem; line-height: 1.2; margin: 0; }
-  .uxw-comparison p { font-size: .9rem; margin: 12px 0 0; }
-  .uxw-time-bars { list-style: none; padding: 0; margin: 0; }
-  .uxw-time-bars li { display: grid; grid-template-columns: 145px 1fr 48px; gap: 14px; align-items: center; font-size: .9rem; }
-  .uxw-time-bars li + li { margin-top: 18px; }
-  .uxw-time-track { display: block; background: #26392d12; height: 14px; border-radius: 3px; }
-  .uxw-time-track i { display: block; width: var(--time); height: 100%; background: #7d8c7c; border-radius: inherit; }
-  .uxw-time-bars li:last-child i { background: #334c3a; }
-  .uxw-time-bars strong { text-align: right; font-variant-numeric: tabular-nums; }
-  .uxw-decision { border-top: 1px solid var(--pv2-line); margin: 0 0 20px; }
-  .uxw-decision summary { cursor: pointer; padding: 16px 0; font-weight: 600; min-height: 48px; }
-  .uxw-decision p { max-width: 76ch; margin: 0 0 20px; color: var(--pv2-muted); }
-  .uxw-approach { display: grid; grid-template-columns: 1fr 1.2fr; gap: 48px; padding: 52px 0; border-block: 1px solid var(--pv2-line); margin: 40px 0; scroll-margin-top: 90px; }
-  .uxw-approach h2 { font-size: clamp(2rem, 3vw, 2.8rem); margin: 14px 0 0; }
-  .uxw-approach p { max-width: 55ch; margin-top: 0; }
-  .uxw-related-heading { margin-bottom: 24px; }
-  .uxw-related-heading h2 { font-size: clamp(1.7rem, 3vw, 2.4rem); margin: 0; }
-  .uxw-related-heading p { color: var(--pv2-muted); margin-bottom: 0; }
-  #idl-title { scroll-margin-top: 90px; }
-  .uxw-earth-card .uxw-feature__main { display: flex; flex-direction: column; gap: 0; align-items: stretch; }
-  .uxw-earth-card .uxw-feature__text { padding: 0; }
-  .uxw-earth-card .uxw-description { font-size: 1rem; }
-  .uxw-earth-card .uxw-earth-art { margin: 24px 0 0; padding: 16px; height: auto; }
-  .uxw-earth-card .uxw-earth-art__phone img { max-height: 245px; width: auto; max-width: 100%; }
-  .uxw-earth-card .uxw-reasoning { display: grid; grid-template-columns: 1fr; gap: 16px; border: 0; padding: 0; margin: 0 0 16px; }
-  .uxw-earth-card .uxw-reasoning > div { border: 0; padding: 0; }
-  .uxw-earth-card .uxw-decision { margin-top: 20px; margin-bottom: 0; }
-  .uxw-card .uxw-decision { margin-top: 16px; }
-  @media (max-width: 760px) {
-    .uxw-comparison, .uxw-approach { grid-template-columns: 1fr; gap: 24px; }
-    .uxw-work-evidence { height: 300px; }
-    .uxw-comparison { padding: 20px; }
-    .uxw-time-bars li { grid-template-columns: 1fr 48px; gap: 8px 14px; }
-    .uxw-time-bars li > span:first-child { grid-column: 1 / -1; }
-    .uxw-approach { padding: 30px 0; margin: 30px 0; }
-  }
-
-  /* Keep the introduction short enough to put work and evidence in view. */
-  .uxw { padding-top: 28px; }
-  .uxw-hero { display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; padding-bottom: 22px; }
-  .uxw-hero h1 { grid-column: 1; grid-row: 1 / 5; font-size: clamp(2.6rem, 4.3vw, 4rem); max-width: 12ch; margin: 0; align-self: center; }
-  .uxw-hero > :not(h1) { grid-column: 2; }
-  .uxw-hero__eyebrow { margin: 0 0 10px; }
-  .uxw-hero .uxw-lead { font-size: 1.05rem; }
-  .uxw-intent { font-size: .9rem; margin: 10px 0 0; }
-  .uxw-hero-link { justify-self: start; font-size: .9rem; }
-  .uxw-idl-feature h3 { font-size: clamp(2rem, 3vw, 2.8rem); margin-top: 12px; }
-  .uxw-work-evidence { height: 310px; }
-  .uxw-idl-feature .uxw-description { font-size: 1rem; margin-block: 14px; }
-  .uxw-result-preview { margin: 14px 0 0; padding-left: 14px; border-left: 3px solid #405b44; }
-  .uxw-result-preview strong { display: block; font-family: var(--pv2-font-display); font-size: 1.65rem; }
-  .uxw-result-preview span { display: block; color: var(--pv2-muted); font-size: .8rem; }
-  .uxw-card figure.annotated { height: auto; overflow: visible; margin: 20px 0; }
-  .uxw-card h3 { font-size: clamp(1.7rem, 2.5vw, 2.3rem); }
-  #workflow-title { scroll-margin-top: 90px; }
-  @media (max-width: 760px) {
-    .uxw-hero { display: block; }
-    .uxw-hero h1 { max-width: 16ch; font-size: 2.6rem; margin-bottom: 16px; }
-    .uxw-hero__eyebrow { font-size: .7rem; }
-    .uxw-work-evidence { height: 230px; }
-  }
-  .uxw-evidence-note { margin-top: 22px; padding: 18px 22px; background: #eef1e9; border-left: 4px solid #405b44; border-radius: 0 8px 8px 0; }
-  .uxw-evidence-note h4, .uxw-decision--visible h4 { font-family: var(--pv2-font-display); font-size: clamp(1.12rem, 1.7vw, 1.4rem); margin: 0 0 8px; }
-  .uxw-evidence-note p { max-width: 78ch; margin: 0; line-height: 1.6; }
-  .uxw-decision--visible { margin-top: 22px; }
-  .uxw-decision--visible .uxw-reasoning { margin: 10px 0 0; }
-</style>
