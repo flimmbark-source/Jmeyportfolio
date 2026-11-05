@@ -1,0 +1,188 @@
+---
+import SiteHead from '../components/SiteHead.astro';
+const gallery = [
+  {
+    id: 'idl', name: 'IDL Worldwide', role: 'Design engineer', year: '2015–2017',
+    description: 'For a nationwide Apple fixture rollout at AT&T stores, I helped turn repetitive SolidWorks modeling into a reusable system. Team collaboration reduced reported drawing turnaround from about eight hours to two. My later individual process reached 37 minutes.',
+    note: 'Process images are contemporary reconstructions, not surviving original drawings. The turnaround figures are retrospective and not a controlled timing study.',
+    detail: '/idl',
+    images: [
+      {src:'/images/ux-gallery/idl-plan.svg', alt:'One isolated reconstructed architectural floor plan of a retail store', caption:'Retail plan / reconstructed model of the original type of work'},
+      {src:'/images/ux-gallery/idl-working.svg', alt:'Reconstructed retail drawing annotated with a circled fixture area', caption:'Working drawing / reconstruction of the planning and adaptation process'},
+      {src:'/images/derived/idl-case-study-1400.webp', alt:'Original retail rollout store drawings and fixture drawing materials', caption:'Original rollout drawing material'}
+    ]
+  },
+  {
+    id: 'earth', name: 'Earth Hero', role: 'UX research and product design, with a design partner', year: '2022–2026',
+    description: 'We explored how everyday climate actions could feel motivating and connected to meaningful progress. Research and prototyping informed engagement features, with selected recommendations entering the live product.',
+    note:'The usability-study findings remain with the client.',
+    detail:'/earth-hero',
+    images:[
+      {src:'/images/earth-hero.png', alt:'Earth Hero mobile interface prototype with quests and team progression', caption:'Quest and team progression / prototype'},
+      {src:'/images/earth-hero/sketches.webp', alt:'Earth Hero early design sketches', caption:'Exploring interaction and engagement ideas'},
+      {src:'/images/earth-hero/test-plan.webp', alt:'Earth Hero usability test plan', caption:'Research and testing materials'}
+    ]
+  },
+  {
+    id:'letter', name:'Letter River',role:'Independent learning prototype',year:'2026',
+    description:'A Hebrew learning experiment where letters become movable objects that learners match to sounds. I built the prototype to explore a more physical route from recognition toward reading.',
+    note:'Learning outcomes have not yet been measured.',
+    detail:'/letter-river',
+    images:[
+      {src:'/images/Letter_River.png',alt:'Letter River Hebrew letter matching prototype gameplay',caption:'Letters as movable objects'},
+      {src:'/images/letterriverscreen.png',alt:'Additional Letter River prototype screen',caption:'Learning interface study'}
+    ]
+  }
+];
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <SiteHead noindex title="Work gallery preview — Jacob Meyerkopf" description="A visual gallery of UX research, engineering systems and independent interactive work." />
+  <style>
+    :root { color-scheme:light; --ink:#1b1b1b; --paper:#f5f5f3; --gap:10px; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:Arial,Helvetica,sans-serif; }
+    button,a { font:inherit; }
+    button:focus-visible,a:focus-visible { outline:3px solid #226aa6; outline-offset:4px; }
+    .skip { position:fixed; top:-100px; z-index:30; background:white; padding:12px; }
+    .skip:focus { top:12px; }
+    .toolbar { position:fixed; z-index:15; top:17px; left:18px; background:#f7f7f2ed; backdrop-filter:blur(10px); padding:8px 11px; border-radius:3px; display:flex; align-items:center; gap:8px; box-shadow:0 1px 7px #0001; font: 11px/1.1 monospace; text-transform:uppercase; }
+    .toolbar a { color:inherit; text-decoration:none; }
+    .toolbar a[aria-current] { font-weight:800; }
+    .toolbar .divider { color:#a2a2a0; }
+    .identity { position:fixed; z-index:15; right:16px; top:18px; background:#f7f7f2ed; padding:8px 10px; font:11px monospace; text-decoration:none; color:inherit; }
+    .gallery { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:var(--gap); padding:10px; align-items:start; transition:filter .3s, transform .3s, opacity .3s; }
+    .artwork { display:block; padding:0; margin:0; width:100%; border:0; background:#eae8e3; text-align:left; cursor:zoom-in; overflow:hidden; position:relative; border-radius:9px; }
+    .artwork img { width:100%; height:100%; display:block; object-fit:cover; transition:transform .5s ease; }
+    .artwork:hover img { transform:scale(1.025); }
+    .artwork:nth-child(7n + 1),.artwork:nth-child(7n + 4) { grid-column:span 7; aspect-ratio:1.33; }
+    .artwork:nth-child(7n + 2),.artwork:nth-child(7n + 3) { grid-column:span 5; aspect-ratio:1.0; }
+    .artwork:nth-child(7n + 5) { grid-column:span 5; aspect-ratio:1.0; }
+    .artwork:nth-child(7n + 6) { grid-column:span 7; aspect-ratio:1.33; }
+    .artwork:nth-child(7n + 7) { grid-column:span 12; aspect-ratio:2.1; }
+    .artwork--portrait img { object-fit:contain; }
+    .artwork__hint { position:absolute; bottom:12px; left:12px; padding:6px 8px; background:#f5f5f0ec; color:#262626; font:10px monospace; opacity:0; transform:translateY(4px); transition:opacity .2s,transform .2s; }
+    .artwork:hover .artwork__hint,.artwork:focus-visible .artwork__hint { opacity:1; transform:none; }
+    .gallery-end { padding:12px 18px 40px; font:11px monospace; color:#666; }
+    body.is-focused { overflow:hidden; }
+    body.is-focused .gallery { filter:blur(15px) brightness(.94); transform:scale(1.01); pointer-events:none; }
+    body.is-focused .gallery-end { filter:blur(10px); }
+    .focus { position:fixed; inset:0; z-index:20; display:grid; grid-template-columns:minmax(0,1fr) minmax(210px,248px); gap:clamp(16px,3vw,50px); align-items:center; padding:52px 20px 52px clamp(22px,5vw,80px); background:#f5f5f314; backdrop-filter:blur(3px); }
+    .focus[hidden] { display:none; }
+    .focus__stage { width:100%; min-width:0; display:grid; grid-template-columns:36px minmax(0,1fr) 36px; gap:8px; align-items:center; }
+    .focus__image-wrap { display:flex; align-items:center; justify-content:center; min-height:0; max-height:calc(100dvh - 110px); }
+    .focus__image { max-width:100%; max-height:calc(100dvh - 110px); object-fit:contain; border-radius:9px; box-shadow:0 15px 45px #0002; }
+    .focus__nav { width:36px; height:56px; border:0; background:#f9f9f5d9; cursor:pointer; border-radius:4px; font-size:23px; }
+    .focus__panel { align-self:start; max-height:calc(100dvh - 70px); overflow-y:auto; background:#e8e8e7; padding:12px 13px 14px; color:#4a4a4a; font:11px/1.4 monospace; margin-top:4px; }
+    .focus__panel-top { display:flex; align-items:start; justify-content:space-between; color:#222; }
+    .focus__panel h2 { font:12px/1.2 monospace; text-transform:uppercase; margin:12px 0 4px; }
+    .focus__year { margin:0 0 8px; color:#666; }
+    .focus__year strong { color:#222; }
+    .focus__panel hr { height:1px; border:0; background:#ccc; margin:12px 0; }
+    .focus__description { text-transform:uppercase; font-size:11px; line-height:1.48; }
+    .focus__panel p { margin:8px 0; }
+    .focus__close { background:none; border:0; cursor:pointer; font-size:17px; line-height:1; padding:2px 3px; }
+    .focus__foot { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:15px; }
+    .focus__foot a { color:inherit; text-underline-offset:3px; }
+    .focus__counter { white-space:nowrap; }
+    .focus__caption { margin-top:12px; padding-top:11px; border-top:1px solid #ccc; color:#555; }
+    .focus__note { font-size:10px; color:#777; }
+    @media(max-width:700px) {
+      .identity { display:none; }
+      .gallery { gap:7px; padding:7px; }
+      .artwork { grid-column:span 12 !important; aspect-ratio:1.18 !important; border-radius:5px; }
+      .artwork:nth-child(3n+2) { grid-column:span 6 !important; aspect-ratio:.8 !important; }
+      .artwork:nth-child(3n+3) { grid-column:span 6 !important; aspect-ratio:.8 !important; }
+      .focus { padding:54px 10px 10px; grid-template-columns:1fr; grid-template-rows:minmax(0,1fr) auto; gap:10px; }
+      .focus__stage { grid-template-columns:28px minmax(0,1fr) 28px; gap:3px; }
+      .focus__nav { width:28px; height:48px; }
+      .focus__image-wrap { max-height:calc(100dvh - 285px); }
+      .focus__image { max-height:calc(100dvh - 285px); }
+      .focus__panel { margin:0; max-height:220px; width:100%; }
+      .focus__description { text-transform:none; }
+    }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none!important; scroll-behavior:auto!important; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#work-gallery">Skip to projects</a>
+  <nav class="toolbar" aria-label="Portfolio mode">
+    <a href="/ux-gallery" aria-current="page">Real Work</a><span class="divider">|</span><a href="/">Playground</a>
+  </nav>
+  <a class="identity" href="/contact">Jacob Meyerkopf · Contact</a>
+  <main id="work-gallery">
+    <h1 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Selected work</h1>
+    <div class="gallery" id="gallery">
+      {gallery.flatMap((project,projectIndex)=>project.images.map((image,imageIndex)=>
+        <button type="button" class:list={['artwork', {'artwork--portrait':project.id==='earth'||project.id==='letter'}]} data-project={projectIndex} data-image={imageIndex} aria-label={`Open ${project.name}, image ${imageIndex+1} of ${project.images.length}: ${image.caption}`}>
+          <img src={image.src} alt={image.alt} loading={projectIndex===0&&imageIndex===0?'eager':'lazy'} />
+          <span class="artwork__hint" aria-hidden="true">{project.name} · View project</span>
+        </button>
+      ))}
+    </div>
+    <p class="gallery-end">Selected work · <a href="/contact">Get in touch</a> · <a href="/ux">Previous Work page</a></p>
+  </main>
+  <section id="focus" class="focus" role="dialog" aria-modal="true" aria-labelledby="focus-title" aria-describedby="focus-description" hidden>
+    <div class="focus__stage">
+      <button type="button" class="focus__nav" data-prev aria-label="Previous artifact in project">‹</button>
+      <div class="focus__image-wrap"><img class="focus__image" data-focus-image alt="" /></div>
+      <button type="button" class="focus__nav" data-next aria-label="Next artifact in project">›</button>
+    </div>
+    <aside class="focus__panel">
+      <div class="focus__panel-top"><h2 id="focus-title" data-name></h2><button class="focus__close" type="button" data-close aria-label="Close project">×</button></div>
+      <p class="focus__year"><span data-role></span> · <strong data-year></strong></p>
+      <hr />
+      <p class="focus__description" id="focus-description" data-description></p>
+      <div class="focus__foot"><a data-case-link href="#">Full project ↗</a><span class="focus__counter" data-counter aria-live="polite"></span></div>
+      <p class="focus__caption" data-caption></p>
+      <p class="focus__note" data-note></p>
+    </aside>
+  </section>
+  <script define:vars={{gallery}}>
+    const modal=document.getElementById('focus');
+    const image=modal.querySelector('[data-focus-image]');
+    const controls=[...modal.querySelectorAll('button')];
+    let projectIndex=0, imageIndex=0, previouslyFocused=null;
+    const setText=(selector,text)=>modal.querySelector(selector).textContent=text;
+    function render(){
+      const project=gallery[projectIndex], item=project.images[imageIndex];
+      image.src=item.src; image.alt=item.alt;
+      setText('[data-name]',project.name);setText('[data-role]',project.role);setText('[data-year]',project.year);
+      setText('[data-description]',project.description);
+      setText('[data-counter]',`${imageIndex+1} / ${project.images.length}`);
+      setText('[data-caption]',item.caption);setText('[data-note]',project.note);
+      modal.querySelector('[data-case-link]').href=project.detail;
+    }
+    function openProject(p,i,trigger){
+      previouslyFocused=trigger;projectIndex=p;imageIndex=i;render();
+      modal.hidden=false;document.body.classList.add('is-focused');
+      modal.querySelector('[data-close]').focus({preventScroll:true});
+    }
+    function closeProject(){
+      modal.hidden=true;document.body.classList.remove('is-focused');
+      image.removeAttribute('src');
+      previouslyFocused?.focus({preventScroll:true});
+    }
+    function cycle(delta){const length=gallery[projectIndex].images.length;imageIndex=(imageIndex+delta+length)%length;render();}
+    document.querySelectorAll('[data-project]').forEach(button=>button.addEventListener('click',()=>openProject(Number(button.dataset.project),Number(button.dataset.image),button)));
+    modal.querySelector('[data-close]').addEventListener('click',closeProject);
+    modal.querySelector('[data-prev]').addEventListener('click',()=>cycle(-1));
+    modal.querySelector('[data-next]').addEventListener('click',()=>cycle(1));
+    modal.addEventListener('click',event=>{if(event.target===modal)closeProject();});
+    document.addEventListener('keydown',event=>{
+      if(modal.hidden)return;
+      if(event.key==='Escape'){event.preventDefault();closeProject();}
+      if(event.key==='ArrowRight'){event.preventDefault();cycle(1);}
+      if(event.key==='ArrowLeft'){event.preventDefault();cycle(-1);}
+      if(event.key==='Tab'){
+        const focusables=controls.concat([...modal.querySelectorAll('a[href]')]);
+        const first=focusables[0],last=focusables[focusables.length-1];
+        if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+        else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+      }
+    });
+  </script>
+</body>
+</html>
