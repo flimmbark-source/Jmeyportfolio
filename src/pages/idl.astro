@@ -1,12 +1,113 @@
 ---
-import { getEntry } from 'astro:content';
-import CaseStudyLayout from '../layouts/CaseStudyLayout.astro';
-
-const { data } = await getEntry('projects', 'idl');
-const caseStudy = data.caseStudy;
+import PortfolioShell from '../layouts/PortfolioShell.astro';
+import '../styles/idl-story.css';
 ---
-<CaseStudyLayout
-  title={`${caseStudy.hero.title} | Jacob Meyerkopf`}
-  description={caseStudy.hero.subtitle ?? data.summary}
-  caseStudy={caseStudy}
-/>
+<PortfolioShell
+  title="IDL Worldwide | From repetitive drawing to reusable work | Jacob Meyerkopf"
+  description="A visual case study of how shared knowledge, reusable SolidWorks components and better model organization changed AT&T store drawing production."
+  sections={[
+    {href:'#the-job',label:'The job'},
+    {href:'#the-pattern',label:'The pattern'},
+    {href:'#the-change',label:'The change'},
+    {href:'#the-outcome',label:'The outcome'}
+  ]}
+>
+  <article class="idl-story">
+    <header class="idl-hero">
+      <div class="idl-hero__words">
+        <p class="idl-eyebrow">IDL Worldwide / Design engineering / 2015–2017</p>
+        <h1>Stop starting from scratch.</h1>
+        <p class="idl-lead">Every AT&amp;T store needed accurate drawings for an Apple fixture rollout. But we kept rebuilding things we'd already drawn.</p>
+        <p class="idl-hero__thesis">I worked with my team to make that accumulated knowledge reusable.</p>
+        <dl class="idl-hero__meta">
+          <div><dt>Role</dt><dd>Design Engineer</dd></div>
+          <div><dt>Tools</dt><dd>SolidWorks</dd></div>
+          <div><dt>Scale</dt><dd>500+ locations digitized</dd></div>
+        </dl>
+        <a class="idl-next" href="#the-job">See how the work changed <span aria-hidden="true">↓</span></a>
+      </div>
+      <figure class="idl-artifact">
+        <a href="/images/derived/idl-case-study-1400.webp" target="_blank" rel="noopener noreferrer" aria-label="View the original store drawing artifact at full size in a new tab">
+          <img src="/images/derived/idl-case-study-1400.webp" width="1400" height="1867" alt="Original store plans, fixture elevations, technical drawing views and a rendered store layout" fetchpriority="high"/>
+        </a>
+        <figcaption>Original drawing work from the retail rollout. Select to inspect. <span aria-hidden="true">↗</span></figcaption>
+      </figure>
+    </header>
+
+    <aside class="idl-numbers" aria-label="Reported turnaround per drawing, in stages">
+      <p>Reported turnaround <span>/ one store drawing</span></p>
+      <div><strong>~8h <small>initial</small></strong><span aria-hidden="true">→</span><strong>~2h <small>team</small></strong><span aria-hidden="true">→</span><strong>37m <small>my later workflow</small></strong></div>
+    </aside>
+
+    <section class="idl-beat" id="the-job" aria-labelledby="idl-job-title">
+      <div class="idl-beat__words">
+        <p class="idl-step">01 / The job</p>
+        <h2 id="idl-job-title">A store arrived as fragments.</h2>
+        <p>Field audits gave us measurements, notes and plans. We recreated the space in a layered 3D model, then extracted mechanical drawings for the installation team.</p>
+      </div>
+      <ol class="idl-flow" aria-label="Production workflow">
+        <li><span>01</span><div><strong>Audit the store</strong><p>Ceilings, soffits, electrical points, existing fixtures and install areas</p></div></li>
+        <li><span>02</span><div><strong>Build the 3D model</strong><p>Architecture, electrical and fixture layers in SolidWorks</p></div></li>
+        <li><span>03</span><div><strong>Produce the installation drawings</strong><p>Extract 2D views, request QC and pass drawings to installers</p></div></li>
+      </ol>
+    </section>
+
+    <section class="idl-beat" id="the-pattern" aria-labelledby="idl-pattern-title">
+      <div class="idl-beat__words">
+        <p class="idl-step">02 / What I noticed</p>
+        <h2 id="idl-pattern-title">Different stores.<br/><em>Familiar patterns.</em></h2>
+        <p>Each store's measurements mattered. But its outlets, fixtures and layout structures often resembled work we'd already completed.</p>
+      </div>
+      <div class="idl-contrast">
+        <div class="idl-contrast__new"><span>Varied by store</span><strong>Measurements</strong><strong>Placement</strong><strong>Existing conditions</strong></div>
+        <div class="idl-contrast__known"><span>Could be reused</span><strong>Layout patterns</strong><strong>Standard elements</strong><strong>Fixture geometry</strong></div>
+      </div>
+    </section>
+
+    <section class="idl-beat idl-beat--change" id="the-change" aria-labelledby="idl-change-title">
+      <div class="idl-beat__words">
+        <p class="idl-step">03 / The change</p>
+        <h2 id="idl-change-title">Make the knowledge part of the process.</h2>
+        <p>Rather than drawing everything again, we built on what the team had learned. Shared shortcuts became reusable components, layouts and structures.</p>
+      </div>
+      <div class="idl-people">
+        <article><span>With the team</span><h3>Learn and share.</h3><p>Coworkers introduced blocks and common pattern libraries. I contributed to and expanded those shared resources.</p></article>
+        <article><span>My further refinement</span><h3>Build for reuse.</h3><p>I developed layout patterns, configurable fixture sub-assemblies and an efficient SolidWorks model structure, then refined my drawing practice.</p></article>
+      </div>
+      <details class="idl-detail">
+        <summary>Explore the four practical changes <span aria-hidden="true">+</span></summary>
+        <dl>
+          <div><dt>Blocks</dt><dd>Place common details, such as outlets and existing fixtures, instead of redrawing each one.</dd></div>
+          <div><dt>Layouts</dt><dd>Start from recognizable architectural patterns, then adapt to the store audit.</dd></div>
+          <div><dt>Sub-assemblies</dt><dd>Reconfigure repeated fixture geometry for different installations.</dd></div>
+          <div><dt>Model structure</dt><dd>Organize architecture, electrical and fixture information for efficient drawing and revision.</dd></div>
+        </dl>
+      </details>
+    </section>
+
+    <section class="idl-beat idl-beat--outcome" id="the-outcome" aria-labelledby="idl-outcome-title">
+      <div class="idl-beat__words">
+        <p class="idl-step">04 / The result</p>
+        <h2 id="idl-outcome-title">The drawings still had to be accurate. The process no longer had to start at zero.</h2>
+        <p>The team's shared improvements reduced a roughly eight-hour drawing task to about two hours. After further refining my own approach, I reached 37 minutes.</p>
+      </div>
+      <div class="idl-outcome-chart" role="img" aria-label="Reported time per store drawing: around eight hours originally, two hours after team improvements, and 37 minutes after individual refinement">
+        <div><span>Initial task</span><i><b style="width:100%"></b></i><strong>~8h</strong></div>
+        <div><span>Team improvement</span><i><b style="width:25%"></b></i><strong>~2h</strong></div>
+        <div><span>My later workflow</span><i><b style="width:7.71%"></b></i><strong>37m</strong></div>
+      </div>
+      <p class="idl-lesson">The useful insight wasn't a faster command. <strong>It was recognizing which parts of the work people shouldn't have to repeat.</strong></p>
+      <details class="idl-detail idl-detail--evidence">
+        <summary>What these numbers do and don't prove <span aria-hidden="true">+</span></summary>
+        <p>These are reported per-drawing turnaround figures, not a controlled time study. The two-hour result belongs to the team. The 37-minute result is my later individual account. The effects of individual interventions were not measured separately.</p>
+        <p>More than 500 locations were digitized, but the drawing times cannot be multiplied by that count to claim total savings. Financial benefits, stress reduction and worker autonomy were not measured.</p>
+      </details>
+    </section>
+
+    <footer class="idl-close">
+      <p class="idl-step">What I took from this</p>
+      <h2>Look at how people work. Find what the process keeps asking them to repeat.</h2>
+      <div><a href="/ux">Back to selected work ↗</a><a href="/contact">Contact ↗</a></div>
+    </footer>
+  </article>
+</PortfolioShell>
