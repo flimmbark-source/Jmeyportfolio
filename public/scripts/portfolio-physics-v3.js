@@ -1284,6 +1284,10 @@
       const returnFocus = event.returnFocus?.isConnected && event.returnFocus !== document.body
         ? event.returnFocus : event.body?.el?.querySelector('.pv2-project-tile');
       if (event.keyboardNavigation) returnFocus?.focus({ preventScroll: true });
+      if (rebuildAfterReward) {
+        rebuildAfterReward = false;
+        if (stage?.isConnected) init();
+      }
       window.setTimeout(openNextProjectLevelUp, reducedMotion() ? 0 : 60);
     }, reducedMotion() ? 0 : 200);
   }
@@ -1501,6 +1505,7 @@
   const projectProgressState = new Map();
   const projectLevelQueue = [];
   let activeProjectLevelUp = null;
+  let rebuildAfterReward = false;
   let projectLevelUpOverlay = null;
   let projectLevelSequence = 0;
 
@@ -3921,6 +3926,7 @@
   }
 
   function teardown() {
+    rebuildAfterReward = false;
     abortBushido();
     suspendProjectLevelUp();
     hideExploreCue();
@@ -4496,24 +4502,26 @@
     window.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && upgradeOverlay?.classList.contains('is-open')) closeUpgradeTree();
     });
-    // Height-only changes from mobile browser chrome are handled by the
-    // measured field. Rebuild for rotation or substantial window resizes.
+    // The field measures its current height each frame. Width changes can
+    // also change the project roster or token sizes, so rebuild for those.
     let lastViewportW = window.innerWidth;
-    let lastViewportH = window.innerHeight;
-    const URL_BAR_SLACK = 140;
 
     window.addEventListener('resize', () => {
       invalidateBumpers();
       if (upgradeOverlay?.classList.contains('is-open')) { clampTreePan(); applyTreeTransform(); }
-
-      const widthChanged = window.innerWidth !== lastViewportW;
-      const heightDelta = Math.abs(window.innerHeight - lastViewportH);
+      if (window.innerWidth === lastViewportW) return;
       lastViewportW = window.innerWidth;
-      lastViewportH = window.innerHeight;
-      if (!widthChanged && heightDelta <= URL_BAR_SLACK) return;
 
       clearTimeout(mutationTimer);
-      mutationTimer = window.setTimeout(() => whenHydrated(init), 100);
+      mutationTimer = window.setTimeout(() => {
+        // Rebuilding suspends the reward and returns it to the fact screen.
+        // Keep the current chest, choices and focus until the player is done.
+        if (activeProjectLevelUp && stage?.isConnected) {
+          rebuildAfterReward = true;
+          return;
+        }
+        whenHydrated(init);
+      }, 100);
     });
     whenHydrated(init);
   }
