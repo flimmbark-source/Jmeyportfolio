@@ -824,15 +824,23 @@
   }
 
   function positionProjectLevelUpDialog(overlay) {
-    const panel = overlay.querySelector('.pv2-project-levelup__panel');
+    const panel = overlay.querySelector('.pv2-project-levelup__panel, .pv2-project-levelup__floating-choices');
     if (!panel) return;
     const viewport = window.visualViewport;
     const top = viewport?.offsetTop || 0;
     const height = viewport?.height || window.innerHeight;
     const width = viewport?.width || window.innerWidth;
     const left = viewport?.offsetLeft || 0;
-    panel.style.maxHeight = Math.max(80, height - 24) + 'px';
-    panel.style.maxWidth = Math.max(80, width - 24) + 'px';
+    const maxHeight = Math.max(0, height - 24);
+    panel.style.maxWidth = Math.max(0, width - 24) + 'px';
+
+    // Preserve the chest and banner overflow on screens where the panel fits.
+    // On a short screen the dialog itself scrolls, independent of the field.
+    panel.style.maxHeight = '';
+    const scrollable = panel.offsetHeight > maxHeight;
+    panel.classList.toggle('is-viewport-scrollable', scrollable);
+    if (scrollable) panel.style.maxHeight = maxHeight + 'px';
+
     panel.style.left = (left + Math.max(12, (width - panel.offsetWidth) / 2)) + 'px';
     panel.style.top = (top + Math.max(12, (height - panel.offsetHeight) / 2)) + 'px';
   }
@@ -1173,16 +1181,16 @@
       }
       if (keyEvent.key === 'ArrowRight' || keyEvent.key === 'ArrowDown') {
         keyEvent.preventDefault();
-        cards[(index + 1) % cards.length]?.focus({ preventScroll: true });
+        cards[(index + 1) % cards.length]?.focus();
       } else if (keyEvent.key === 'ArrowLeft' || keyEvent.key === 'ArrowUp') {
         keyEvent.preventDefault();
-        cards[index < 0 ? cards.length - 1 : (index - 1 + cards.length) % cards.length]?.focus({ preventScroll: true });
+        cards[index < 0 ? cards.length - 1 : (index - 1 + cards.length) % cards.length]?.focus();
       } else if (keyEvent.key === 'Home') {
         keyEvent.preventDefault();
-        cards[0]?.focus({ preventScroll: true });
+        cards[0]?.focus();
       } else if (keyEvent.key === 'End') {
         keyEvent.preventDefault();
-        cards[cards.length - 1]?.focus({ preventScroll: true });
+        cards[cards.length - 1]?.focus();
       }
     });
 
