@@ -1741,6 +1741,7 @@
     exploreCue.setAttribute('aria-hidden', 'true');
     exploreCue.innerHTML = '<span class="pv2-explore-cue__box">Click to Explore!</span>';
     exploreCueBox = exploreCue.querySelector('.pv2-explore-cue__box');
+    if (!canHover.matches) exploreCueBox.textContent = 'Tap to Explore!';
     document.body.appendChild(exploreCue);
     return exploreCue;
   }
@@ -3197,7 +3198,10 @@
     body.el.classList.toggle('is-context-hover-active', active);
   }
 
+  const canHover = window.matchMedia('(any-hover: hover)');
+
   function updateContextHover(body, now, stageRect) {
+    if (!canHover.matches || touchGesture) return false;
     const directlyHovered = body.el.matches(':hover');
     // A first-contact latch passes the distance check while it catches up.
     const firstLatchGrace = body.contextHoverActive
@@ -3298,29 +3302,51 @@
     }
   }
 
+  let touchGesture = null;
+  let suppressTouchClickUntil = 0;
+
   function handlePointerDown(event) {
-    if (bushido) return;
-    if (event.pointerType !== 'touch') return;
+    if (event.pointerType !== 'touch' || !event.isPrimary) return;
+    suppressTouchClickUntil = 0;
+    if (bushido || !stage?.isConnected || !event.target.closest('.pv2-overview')) return;
     pointer = { x: event.clientX, y: event.clientY, t: performance.now() };
-    collideWithPointer(event);
+    touchGesture = { id: event.pointerId, x: pointer.x, y: pointer.y, dragging: false };
   }
 
   function handlePointerMove(event) {
     if (bushido) return; // Bushido tracks the pointer itself for slicing
+    const touch = event.pointerType === 'touch';
+    if (touch && touchGesture?.id !== event.pointerId) return;
+    if (touch && !touchGesture.dragging
+      && Math.hypot(event.clientX - touchGesture.x, event.clientY - touchGesture.y) < 8) return;
+
     const now = performance.now();
     const firstSample = pointer.x <= -9000;
     const dt = Math.max(8, now - pointer.t || 16);
     const pointerVx = firstSample ? 0 : (event.clientX - pointer.x) / dt;
     const pointerVy = firstSample ? 0 : (event.clientY - pointer.y) / dt;
+    if (touch && !touchGesture.dragging) {
+      touchGesture.dragging = true;
+      // The first move can already be past the rim of the sphere it started on.
+      collideWithPointer({ clientX: touchGesture.x, clientY: touchGesture.y, pointerType: 'touch' }, pointerVx, pointerVy);
+    }
     pointer = { x: event.clientX, y: event.clientY, t: now };
     if (firstSample) return;
     collideWithPointer(event, pointerVx, pointerVy);
   }
 
   function handlePointerEnd(event) {
-    if (event.pointerType !== 'touch') return;
+    if (event.pointerType !== 'touch' || touchGesture?.id !== event.pointerId) return;
+    if (touchGesture.dragging) suppressTouchClickUntil = performance.now() + 400;
+    touchGesture = null;
     pointer = { x: -9999, y: -9999, t: 0 };
     for (const body of bodies) body.pointerInside = false;
+  }
+
+  function handleClickAfterDrag(event) {
+    if (!event.detail || performance.now() >= suppressTouchClickUntil || !stage?.contains(event.target)) return;
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   // ===================== Bushido: double-click slice time ==================
@@ -3991,6 +4017,7 @@
     const applied = cells[0]?.applied || { dx: 0, dy: 0, s: 1, sx: 1, sy: 1 };
     const width = r.width / applied.sx;
     const height = r.height / applied.sy;
+    if (field && (Math.abs(width - field.width) > .5 || Math.abs(height - field.height) > .5)) invalidateBumpers();
     field = {
       left: r.left - applied.dx - (1 - applied.sx) * width / 2,
       top: r.top - applied.dy - (1 - applied.sy) * height / 2,
@@ -4457,16 +4484,12 @@
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('pointerup', handlePointerEnd, { passive: true });
     window.addEventListener('pointercancel', handlePointerEnd, { passive: true });
+    window.addEventListener('click', handleClickAfterDrag, true);
     window.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && upgradeOverlay?.classList.contains('is-open')) closeUpgradeTree();
     });
-    // Mobile browsers fire `resize` every time the URL bar slides in or out,
-    // which is constantly. A full init() tears the simulation down and respawns
-    // every block at a fresh home position, so reacting to those made the game
-    // visibly reset itself while the visitor was just moving a finger. Only a
-    // real geometry change — a rotation, or a window actually being resized —
-    // warrants a rebuild; the stage itself is sized in `svh`, so URL-bar
-    // movement no longer changes the play area at all.
+    // Height-only changes from mobile browser chrome are handled by the
+    // measured field. Rebuild for rotation or substantial window resizes.
     let lastViewportW = window.innerWidth;
     let lastViewportH = window.innerHeight;
     const URL_BAR_SLACK = 140;

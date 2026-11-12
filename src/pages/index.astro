@@ -115,7 +115,7 @@ const statement = {
         window.setTimeout(finish, 1500);
       })();
     </script>
-    <script src="/scripts/portfolio-physics-v3.js?v=83" defer></script>
+    <script src="/scripts/portfolio-physics-v3.js?v=84" defer></script>
     <script src="/scripts/portfolio-battle.js?v=1" defer></script>
     <script src="/scripts/ux-direct-link.js?v=2" defer></script>
     <script src="/scripts/letter-river-preview.js?v=8" defer></script>
@@ -140,24 +140,4 @@ const statement = {
     transform: translateY(0);
   }
 
-  .pv2-overview__statement {
-    position: absolute !important;
-    left: 50% !important;
-    top: 50% !important;
-    right: auto !important;
-    bottom: auto !important;
-    transform: translate(-50%, -50%) !important;
-  }
-
-  @media (max-width: 720px) {
-    html.pv2-physics-live .pv2-overview__statement {
-      top: 50% !important;
-    }
-
-    html:not(.pv2-physics-live) .pv2-overview__statement {
-      position: relative !important;
-      inset: auto !important;
-      transform: none !important;
-    }
-  }
 </style>

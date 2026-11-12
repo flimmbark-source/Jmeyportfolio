@@ -416,6 +416,7 @@
 /* The playground's game controls are created by the physics script, possibly
    after the threshold mounts, so they are hidden here rather than made inert:
    `visibility: hidden` also takes them out of the tab order. */
+html.pv2-threshold-open .pv2-nav,
 html.pv2-threshold-open .pv2-score-counter,
 html.pv2-threshold-open .pv2-motion-toggle {
   visibility: hidden;
@@ -425,15 +426,18 @@ html.pv2-threshold-open .pv2-motion-toggle {
    name above, links spread across, so four links fit at 320px. */
 @media (max-width: 720px) {
   .pv2-threshold__frame {
-    height: 64px;
-    padding: 7px 16px 6px;
+    height: var(--pv2-nav-height);
+    padding: 3px 16px;
     flex-direction: column;
     align-items: stretch;
     justify-content: center;
-    gap: 3px;
+    gap: 1px;
   }
 
   .pv2-threshold__name {
+    display: flex;
+    align-items: center;
+    min-height: 24px;
     font-size: .78rem;
     line-height: 1;
   }
@@ -445,7 +449,7 @@ html.pv2-threshold-open .pv2-motion-toggle {
   }
 
   .pv2-threshold__quick a {
-    padding: 5px 0;
+    padding: 9px 0;
     font-size: clamp(.68rem, 3.05vw, .8rem);
     line-height: 1;
     white-space: nowrap;

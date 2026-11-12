@@ -1,11 +1,14 @@
 .pv2-overview__statement {
+  width: min(650px, 48vw);
+}
+
+html.pv2-physics-live .pv2-overview__statement {
   position: absolute;
   top: 50%;
   left: 50%;
   right: auto;
   bottom: auto;
-  width: min(650px, 48vw);
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) !important;
   text-align: center;
   z-index: 2;
 }
@@ -158,40 +161,35 @@ html.pv2-physics-live .pv2-float-slot.is-physics-body {
 
 /* Live floating game on mobile: the stage becomes a fixed-height play area
    sized to the viewport, and tiles are flicked by dragging through them. */
-@media (max-width: 720px) {
-  html.pv2-physics-live .pv2-overview {
-    min-height: 0;
-  }
-
-  /* Height/min-height/max-height are set once, for every width, by the
-     "Viewport-edge Playground wall" block at the end of this file. */
+@media (max-width: 720px), (hover: none) and (max-height: 500px) {
   html.pv2-physics-live .pv2-overview__stage {
     display: block;
     padding: 0;
-    overflow: hidden;
-    touch-action: pinch-zoom;
   }
 
   html.pv2-physics-live .pv2-overview__statement {
-    width: min(84vw, 340px);
+    width: min(82vw, 360px);
     margin: 0;
-    text-align: center;
+    padding: 12px;
   }
 
   html.pv2-physics-live .pv2-overview__statement h1 {
-    font-size: clamp(1.9rem, 8vw, 2.9rem);
+    font-size: clamp(1.46rem, 7.2vw, 2.6rem);
+    line-height: 1.04;
   }
 
   html.pv2-physics-live .pv2-overview__statement > p:last-child {
-    margin: 10px auto 0;
-    font-size: .9rem;
+    width: 100%;
+    margin: 8px auto 0;
+    font-size: .84rem;
+    line-height: 1.4;
   }
 
   /* Half-size blocks on phones so they read as compact tokens orbiting the
      text blocks. The title still shows inside the square, so the caption
      below is dropped to keep each block's footprint tight. */
   html.pv2-physics-live .pv2-float-slot .pv2-project-tile {
-    width: clamp(46px, 14vw, 64px);
+    width: clamp(54px, min(16vw, 17dvh), 72px);
     gap: 0;
   }
 
@@ -215,18 +213,30 @@ html.pv2-physics-live .pv2-float-slot.is-physics-body {
   }
 
   html.pv2-physics-live .pv2-float-slot--gateway {
-    min-height: 0;
-    border: 0;
-    padding: 0;
+    top: auto !important;
+    bottom: 12px;
+  }
+
+  html.pv2-physics-live .pv2-float-slot[data-node-id="ux-work"] {
+    left: 48px !important;
+  }
+
+  html.pv2-physics-live .pv2-float-slot[data-node-id="unfinished"] {
+    left: auto !important;
+    right: 12px;
   }
 
   html.pv2-physics-live .pv2-float-slot .pv2-gateway-link {
     width: auto;
     min-width: max-content;
-    min-height: 0;
+    min-height: 44px;
     justify-content: center;
     border: 0;
-    padding: 10px 12px;
+    padding: 6px 8px;
+  }
+
+  html.pv2-physics-live .pv2-float-slot .pv2-gateway-link > span {
+    display: none;
   }
 
   html.pv2-physics-live .pv2-visual {
@@ -235,50 +245,31 @@ html.pv2-physics-live .pv2-float-slot.is-physics-body {
 }
 
 
-/* ================= Mobile Playground correction ================= */
-@media (max-width:720px) {
-  html.pv2-physics-live .pv2-float-slot .pv2-project-tile {
-    width: clamp(58px, 18vw, 76px);
-  }
-
+@media (hover: none) and (max-height: 500px) {
   html.pv2-physics-live .pv2-overview__statement {
-    width: min(88vw, 340px);
+    width: min(62vw, 420px);
   }
 
   html.pv2-physics-live .pv2-overview__statement h1 {
-    /* The floor has to clear 320px: "Interactive Designer" is held on one
-       line by a <br>, so too high a minimum pushed it past the screen edge. */
-    font-size: clamp(1.46rem, 7.6vw, 2.65rem);
-    line-height: 1;
-  }
-
-  html.pv2-physics-live .pv2-overview__statement > p:last-child {
-    max-width: 300px;
-    font-size: .82rem;
-    line-height: 1.38;
+    font-size: clamp(1.3rem, 5.8dvh, 1.9rem);
   }
 }
 
+/* The overview also receives gestures between the cells after a division. */
+html.pv2-physics-live .pv2-overview {
+  touch-action: pinch-zoom;
+  min-height: calc(100dvh - var(--pv2-nav-height));
+}
 
-/* ================= Viewport-edge Playground wall =================
-   The live playground fills the viewport below the nav at every width, with
-   no bottom padding, so the page is never scrollable and the bottom wall sits
-   on the screen edge. `dvh` is safe precisely because of that: with nothing to
-   scroll, a mobile URL bar never retracts, and the document height tracks the
-   visible viewport instead of overflowing it. The resize handler in
-   portfolio-physics-v3.js ignores URL-bar-sized height changes regardless, so
-   a bar that does move can no longer tear down and respawn the simulation. */
+/* Keep the field and its bottom wall aligned with the visible viewport. */
 html.pv2-physics-live .pv2-site {
   padding-inline: 0;
   padding-bottom: 0;
-}
-
-html.pv2-physics-live .pv2-overview {
-  min-height: calc(100dvh - var(--pv2-nav-height));
 }
 
 html.pv2-physics-live .pv2-overview__stage {
   height: calc(100dvh - var(--pv2-nav-height));
   min-height: 0;
   max-height: none;
+  overflow: hidden;
 }

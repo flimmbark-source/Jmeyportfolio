@@ -356,7 +356,7 @@ function ProjectTile({ node, placement, index, onSelect, reducedMotion, register
 
 function GatewayLink({ id, className, eyebrow, title, onClick, reducedMotion, delay = 0, register, position, arrived, playIntro }) {
   return (
-    <div ref={(el) => register(id, el)} className="pv2-float-slot pv2-float-slot--gateway" style={position || overviewAnchorStyle(id)}>
+    <div ref={(el) => register(id, el)} className="pv2-float-slot pv2-float-slot--gateway" data-node-id={id} style={position || overviewAnchorStyle(id)}>
       <motion.button
         className={`pv2-gateway-link ${className}`}
         type="button"

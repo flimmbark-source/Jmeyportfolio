@@ -376,26 +376,6 @@
   .pv2-focus__actions {
     justify-content: flex-start;
   }
-
-  /* The floating game now runs on mobile, so the score/upgrades entry stays. */
-  .pv2-score-counter {
-    top: 70px;
-    right: 14px;
-    padding: 7px 10px;
-    gap: 7px;
-    z-index: 1180;
-  }
-
-  .pv2-score-counter__value {
-    font-size: 1rem;
-  }
-
-  .pv2-motion-toggle {
-    top: 116px;
-    right: 14px;
-    width: 32px;
-    height: 32px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -511,11 +491,12 @@ html.pv2-project-context-open .pv2-project-hover-meta {
 }
 
 
-/* ================= Mobile HUD correction ================= */
-@media (max-width:720px) {
+/* Keep touch controls together at the top edge of the field. */
+@media (max-width: 720px), (hover: none) and (max-height: 500px) {
   .pv2-score-counter {
     top: calc(var(--pv2-nav-height) + 9px);
-    right: 12px;
+    right: 62px;
+    min-height: 44px;
     gap: 6px;
     padding: 6px 8px;
   }
@@ -529,10 +510,10 @@ html.pv2-project-context-open .pv2-project-hover-meta {
   }
 
   .pv2-motion-toggle {
-    top: calc(var(--pv2-nav-height) + 47px);
+    top: calc(var(--pv2-nav-height) + 9px);
     right: 12px;
-    width: 30px;
-    height: 30px;
+    width: 44px;
+    height: 44px;
   }
 
   .pv2-motion-toggle svg {

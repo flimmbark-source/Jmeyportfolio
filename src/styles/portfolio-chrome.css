@@ -168,14 +168,14 @@
 
 @media (max-width: 720px) {
   /* One fixed, measurable nav height on phones. It has to be a real length,
-     not `auto`: the overview stage is sized `100svh - var(--pv2-nav-height)`
+     not `auto`: the overview stage is sized `100dvh - var(--pv2-nav-height)`
      and .pv2-site reserves the same value, so an `auto` nav that grew past it
      left the top of the stage (and the UX Work link) hidden behind the bar. */
   :root {
     --pv2-nav-height: 64px;
   }
 
-  .pv2-nav {
+  .pv2-body .pv2-nav {
     height: var(--pv2-nav-height);
     min-height: var(--pv2-nav-height);
     /* Stacked: name on one row, links on the next, both inset from the
@@ -183,16 +183,17 @@
     flex-direction: column;
     align-items: stretch;
     justify-content: center;
-    gap: 3px;
-    padding: 7px 16px 6px;
+    gap: 1px;
+    padding: 3px 16px;
   }
 
-  .pv2-nav__name {
+  .pv2-body .pv2-nav__name {
+    min-height: 24px;
     font-size: .78rem;
     line-height: 1;
   }
 
-  .pv2-nav nav {
+  .pv2-body .pv2-nav nav {
     width: 100%;
     /* `nowrap` keeps all five links on one row at 320px — wrapping pushed
        "Contact" onto a third line and doubled the bar's height. */
@@ -201,17 +202,13 @@
     gap: 4px;
   }
 
-  .pv2-nav nav a,
-  .pv2-nav nav button {
+  .pv2-body .pv2-nav nav a,
+  .pv2-body .pv2-nav nav button {
     flex: 0 1 auto;
-    padding: 5px 0;
+    padding: 9px 0;
     font-size: clamp(.68rem, 3.05vw, .8rem);
     line-height: 1;
     white-space: nowrap;
-  }
-
-  .pv2-site {
-    padding-top: var(--pv2-nav-height);
   }
 
   .pv2-page-backdrop__art {
